@@ -1,0 +1,514 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,french]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{mathtools}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
+
+\geometry{margin=2.5cm}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Définition}[section]
+\newtheorem{theorem}{Théorème}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollaire}[section]
+\newtheorem{remark}{Remarque}[section]
+\newtheorem{example}{Exemple}[section]
+
+\newcommand{\cbrt}[1]{\sqrt[3]{#1}}
+\newcommand{\prt}[2]{\sqrt[#1]{#2}}
+\newcommand{\eps}{\varepsilon}
+
+\title{\textbf{Poussi\`ere de Pandrosion g\'en\'eralis\'ee}\\[0.3em]
+  \large Profil r\'esiduel d'une construction g\'eom\'etrique it\'erative
+  pour les racines $p$-i\`emes de tout r\'eel positif}
+\author{Ivan \textsc{Besevic}}
+\date{Avril 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+On généralise la construction géométrique de Pandrosion --- initialement conçue pour approcher $\cbrt{2}$ par insertion de moyennes proportionnelles via le théorème de Thalès --- à tout entier $p \geq 2$ et tout réel $x > 0$. La construction produit deux suites : un paramètre interne $u_n$ et une sortie $v_n \to \alpha = x^{1/p}$. Après substitution normalisée $s_n = (C - u_n)/C$, l'itération se réécrit sous une forme universelle faisant apparaître le polynôme géométrique $S_p(s) = \sum_{k=0}^{p-1} s^k$. On démontre que le point fixe est $s^* = x^{-1/p} = \alpha^{-1}$, que la convergence est \emph{linéaire}, et on calcule le coefficient de poussière exact
+\[
+  \lambda_{p,x} = \frac{(\alpha - 1)\displaystyle\sum_{k=1}^{p-1} k\,\alpha^{p-1-k}}{\displaystyle\sum_{k=0}^{p-1} \alpha^k},
+  \qquad \alpha = x^{1/p}.
+\]
+Ce coefficient, exprimé entièrement en termes de la cible $\alpha$, est la \emph{signature de poussière} de la méthode de Pandrosion. On obtient des formules closes pour $p = 2$ et $p = 3$, on vérifie numériquement les prédictions, et on compare avec le profil quadratique de la méthode de Newton.
+\end{abstract}
+
+\medskip
+\begin{otherlanguage}{english}
+\noindent\textbf{Abstract.}
+We generalize Pandrosion's geometric construction --- originally designed to approximate $\cbrt{2}$ by inserting proportional means via Thales' theorem --- to any integer $p \geq 2$ and any positive real $x$. The construction produces two sequences: an internal parameter $s_n$ and an output $v_n \to \alpha = x^{1/p}$. After normalized substitution, the iteration takes the universal form $s_{n+1} = 1 - (x-1)/(x \cdot S_p(s_n))$ involving the geometric polynomial $S_p(s) = \sum_{k=0}^{p-1} s^k$. We prove that the unique fixed point is $s^* = x^{-1/p}$, that convergence is \emph{linear}, and we compute the exact dust coefficient
+\[
+  \lambda_{p,x} = \frac{(\alpha - 1)\displaystyle\sum_{k=1}^{p-1} k\,\alpha^{p-1-k}}{\displaystyle\sum_{k=0}^{p-1} \alpha^k},
+  \qquad \alpha = x^{1/p}.
+\]
+This coefficient, expressed entirely in terms of the target $\alpha$, is the \emph{dust signature} of Pandrosion's method. Closed-form expressions are given for $p=2$, $3$, and $4$. Numerical verification confirms all predictions. We compare with Newton's quadratically convergent dust profile.
+\end{otherlanguage}
+
+\tableofcontents
+\bigskip
+
+%=====================================================================
+\section{Introduction}
+%=====================================================================
+
+Le problème grec de la duplication du cube consiste à construire un segment de longueur $\cbrt{2}$ à partir d'un segment unité. Il est équivalent à trouver deux moyennes proportionnelles $m_1, m_2$ entre $1$ et $2$, c'est-à-dire tels que
+\[
+  \frac{1}{m_1} = \frac{m_1}{m_2} = \frac{m_2}{2},
+\]
+ce qui donne $m_1 = \cbrt{2}$ et $m_2 = \cbrt{4}$. Pandrosion d'Alexandrie propose une méthode géométrique \emph{approchée}, rapportée par Pappus dans la \textit{Collectio}, Livre~III~\cite{pappus} : par des parallèles successives (théorème de Thalès), elle construit des rapports proportionnels qui se rapprochent de ces moyennes sans jamais les atteindre exactement en un nombre fini d'étapes.
+
+\medskip
+
+Ce travail part d'une observation fondamentale :
+
+\begin{quote}
+\itshape Un nombre réel est exact en mathématiques pures. Mais une méthode pour l'atteindre possède un profil résiduel mesurable --- une ``poussière'' propre à la méthode.
+\end{quote}
+
+À chaque étape finie de la construction de Pandrosion, il reste un écart $\eps_n = |v_n - \alpha|$ entre l'approximation géométrique et la valeur idéale. La suite $(\eps_n)$ est le \textbf{profil de poussière} de la méthode. Notre but est de calculer exactement ce profil pour toute racine $p$-ième $x^{1/p}$, et d'identifier le coefficient de décroissance qui caractérise la méthode de Pandrosion.
+
+\medskip
+
+À notre connaissance, le coefficient $\lambda_{p,x}$ sous la forme~\eqref{eq:lambda_general} n'apparaît pas dans les traités standard d'analyse numérique (Stoer--Bulirsch~\cite{stoer}, \textit{Numerical Recipes}~\cite{numrecipes}), ni dans les ouvrages consacrés à l'histoire de la duplication du cube. Le résultat semble donc nouveau.
+
+\medskip
+
+\textbf{Plan.} La section~\ref{sec:pandrosion3} rappelle la construction de Pandrosion pour $\cbrt{2}$ et analyse sa poussière. La section~\ref{sec:generalisation} énonce la généralisation à tout $p, x$. La section~\ref{sec:coefficient} calcule le coefficient de poussière $\lambda_{p,x}$ et en donne des formules closes. La section~\ref{sec:exemples} présente des tables numériques. La section~\ref{sec:newton} compare avec la méthode de Newton. La section~\ref{sec:conclusion} conclut.
+
+%=====================================================================
+\section{La construction de Pandrosion pour \texorpdfstring{$\cbrt{2}$}{cbrt(2)}}
+\label{sec:pandrosion3}
+%=====================================================================
+
+\subsection{Les deux suites}
+
+La construction géométrique produit deux suites en fonction d'un paramètre initial $u_0$ :
+\begin{equation}
+  \label{eq:pandrosion_orig}
+  u_{n+1} = \frac{u_n}{2 - 2\!\left(\dfrac{4 - u_n}{4}\right)^{\!3}},
+  \qquad
+  v_n = 2\!\left(\frac{4 - u_n}{4}\right)^{\!2},
+  \qquad u_0 = 0{,}5.
+\end{equation}
+
+La suite $(u_n)$ est le \emph{paramètre interne} de la construction (une longueur dans le diagramme de Thalès). La suite $(v_n)$ est la \emph{lecture} : l'approximation de $\cbrt{2}$ produite à l'étape $n$.
+
+\begin{proposition}
+$\displaystyle\lim_{n\to\infty} v_n = \cbrt{2}$.
+\end{proposition}
+
+\subsection{Substitution normalisée}
+
+On pose $s_n = (4 - u_n)/4$, d'où $s_n \in (0,1)$. Alors :
+\begin{itemize}
+  \item $u_n = 4(1 - s_n)$,
+  \item $v_n = 2s_n^2$,
+  \item $u_{n+1} = \dfrac{4(1-s_n)}{2(1-s_n^3)} = \dfrac{2}{1 + s_n + s_n^2}$.
+\end{itemize}
+
+L'itération sur $s_n$ devient alors :
+\begin{equation}
+  \label{eq:iter_s3}
+  s_{n+1} = 1 - \frac{u_{n+1}}{4} = \frac{2s_n^2 + 2s_n + 1}{2s_n^2 + 2s_n + 2}.
+\end{equation}
+
+\subsection{Point fixe}
+
+Le point fixe $s^*$ satisfait $s^* = (2s^{*2} + 2s^* + 1)/(2s^{*2} + 2s^* + 2)$, ce qui donne $2(1-s^*)(1+s^*+s^{*2}) = 1$, soit $2(1-s^{*3}) = 1$, donc $s^{*3} = 1/2$, d'où :
+\[
+  s^* = 2^{-1/3} = \frac{1}{\cbrt{2}}.
+\]
+La sortie au point fixe est $v^* = 2s^{*2} = 2 \cdot 2^{-2/3} = 2^{1/3} = \cbrt{2}$. \checkmark
+
+\subsection{Poussière : convergence linéaire}
+
+Soit $h(s) = (2s^2 + 2s + 1)/(2s^2 + 2s + 2)$. La dérivée en $s^*$ donne le taux de convergence :
+\[
+  h'(s^*) = \frac{4s^* + 2}{(2s^{*2} + 2s^* + 2)^2} = \frac{2(2s^*+1)}{4(s^{*2}+s^*+1)^2} = \frac{2s^*+1}{2(s^{*2}+s^*+1)^2}.
+\]
+
+En substituant $s^* = 2^{-1/3}$ et en utilisant la formule close~\eqref{eq:lambda3} :
+\[
+  \lambda_{3,2} = \frac{(\cbrt{2}-1)(\cbrt{2}+2)}{\cbrt{4}+\cbrt{2}+1} \approx 0{,}2202.
+\]
+
+\begin{theorem}[Loi de poussière linéaire pour $p=3$, $x=2$]
+Sous les hypothèses ci-dessus, pour tout $s_0$ suffisamment proche de $s^*$ :
+\[
+  \eps_{n+1}^{(s)} \approx \lambda_{3,2}\,\eps_n^{(s)}, \qquad \lambda_{3,2} \approx 0{,}2202.
+\]
+Puisque $v_n - \cbrt{2} \approx (p-1)\alpha^2\,(s_n - s^*)$ et $(p-1)\alpha^2 = 2 \cdot \cbrt{4}$, la poussière de la sortie $v_n$ converge au même taux linéaire.
+\end{theorem}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+$n$ & $s_n$ & $v_n$ & $\eps_n = |v_n - \cbrt{2}|$ & $\eps_{n+1}/\eps_n$ \\
+\midrule
+0 & 0{,}8750 & 1{,}5312 & $2{,}713 \times 10^{-1}$ & --- \\
+1 & 0{,}8107 & 1{,}3143 & $5{,}44\phantom{0} \times 10^{-2}$ & 0{,}200 \\
+2 & 0{,}7974 & 1{,}2717 & $1{,}17\phantom{0} \times 10^{-2}$ & 0{,}216 \\
+3 & 0{,}7945 & 1{,}2625 & $2{,}58\phantom{0} \times 10^{-3}$ & 0{,}219 \\
+4 & 0{,}7939 & 1{,}2605 & $5{,}67\phantom{0} \times 10^{-4}$ & 0{,}220 \\
+$\infty$ & $2^{-1/3}$ & $\cbrt{2}$ & $0$ & $\to \lambda_{3,2}$ \\
+\bottomrule
+\end{tabular}
+\caption{Profil de poussière numérique pour $p=3$, $x=2$ ($u_0 = 0{,}5$, soit $s_0 = 0{,}875$). Le ratio converge vers $\lambda_{3,2} \approx 0{,}220$.}
+\end{table}
+
+%=====================================================================
+\section{Origine géométrique : pourquoi $S_p$ apparaît naturellement}
+\label{sec:geometrie}
+%=====================================================================
+
+\subsection{La construction par parallèles successives}
+
+La construction de Pandrosion repose sur le théorème de Thalès appliqué à un rectangle. On se donne un rectangle de côtés $H$ et $W$ muni de deux diagonales (Figure~\ref{fig:geometry}). Une horizontale à la hauteur $u_n$ depuis le bas coupe les deux diagonales et définit :
+\begin{itemize}
+  \item le paramètre $s_n = (H - u_n)/H$ (position normalisée depuis le haut),
+  \item la longueur lue $v_n = x \cdot s_n^{p-1}$ (la sortie de la construction).
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.52\textwidth]{pandrosion_geometry.pdf}
+  \caption{Construction géométrique de Pandrosion pour $p=3$, $x=2$.
+  Les lignes horizontales bleues (étapes $n=0,1,2,3$) convergent vers la ligne rouge en tirets,
+  qui correspond à $v^* = \sqrt[3]{2}$.}
+  \label{fig:geometry}
+\end{figure}
+
+\subsection{D'où vient le polynôme $S_p$ ?}
+
+L'idée fondamentale est la suivante. On cherche à insérer $p-1$ moyennes proportionnelles entre $1$ et $x$, c'est-à-dire construire la suite géométrique idéale $1, \alpha, \alpha^2, \ldots, \alpha^{p-1}, x$ où $\alpha = x^{1/p}$. Si $s_n \approx \alpha^{-1}$ est l'approximation courante du rapport inverse, la somme de la suite géométrique approchée est :
+\[
+  S_p(s_n) = 1 + s_n + s_n^2 + \cdots + s_n^{p-1}.
+\]
+La suite idéale satisfait $x \cdot S_p(s^*) \cdot (1-s^*) = x-1$, ce qui se réécrit $x(1-s^{*p}) = x-1$. La correction de Pandrosion ajuste $s_n$ de façon à réduire l'écart entre $S_p(s_n)$ et sa valeur idéale via la formule :
+\[
+  s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)}.
+\]
+Géométriquement, ce rapport $(x-1)/(x \cdot S_p(s_n))$ mesure la \emph{déviation} de la chaîne proportionnelle actuelle par rapport à la chaîne géométrique parfaite, et la soustraction à $1$ produit le rapport corrigé. Le polynôme $S_p$ est donc la transcription analytique de la somme des $p$ segments construits par Thalès.
+
+%=====================================================================
+\section{Généralisation : construction de Pandrosion pour \texorpdfstring{$x^{1/p}$}{x\^{}(1/p)}}
+\label{sec:generalisation}
+%=====================================================================
+
+\subsection{L'itération universelle}
+
+Soient $x > 0$ et $p \geq 2$ un entier. Posons $\alpha = x^{1/p}$. La construction géométrique de Pandrosion généralisée est définie comme suit.
+
+\begin{definition}[Itération de Pandrosion généralisée]
+\label{def:pandrosion_gen}
+On définit la suite $(s_n)_{n \geq 0}$ dans $(0, 1)$ par
+\begin{equation}
+  \label{eq:pandrosion_gen}
+  s_{n+1} = 1 - \frac{x - 1}{x \cdot S_p(s_n)},
+  \qquad
+  S_p(s) = \sum_{k=0}^{p-1} s^k = \frac{1 - s^p}{1 - s},
+\end{equation}
+et la suite de sortie par
+\begin{equation}
+  \label{eq:vn_gen}
+  v_n = x \cdot s_n^{p-1}.
+\end{equation}
+On appelle $\eps_n = |v_n - \alpha|$ la \textbf{poussière de Pandrosion} à l'étape $n$.
+\end{definition}
+
+\begin{remark}
+Pour $p = 3$, $x = 2$, on retrouve exactement l'itération~\eqref{eq:iter_s3}. En effet :
+\[
+  1 - \frac{1}{2(1+s+s^2)} = \frac{2s^2+2s+1}{2s^2+2s+2}. \checkmark
+\]
+\end{remark}
+
+\subsection{Interprétation géométrique}
+
+L'itération~\eqref{eq:pandrosion_gen} traduit analytiquement l'opération de Thalès : à chaque étape, $S_p(s_n)$ mesure la ``somme géométrique'' des segments construits, et la correction $(x-1)/(x \cdot S_p(s_n))$ ajuste la position proportionnellement à l'écart avec la suite géométrique idéale $1, \alpha, \alpha^2, \ldots, \alpha^{p-1}, x$.
+
+\subsection{Point fixe}
+
+\begin{theorem}[Point fixe]
+\label{thm:fixed_point}
+Le seul point fixe de l'itération~\eqref{eq:pandrosion_gen} dans $(0,1)$ est $s^* = x^{-1/p} = \alpha^{-1}$. La sortie correspondante est $v^* = x \cdot (x^{-1/p})^{p-1} = x^{1/p} = \alpha$.
+\end{theorem}
+
+\begin{proof}
+À un point fixe $s^*$, on a $1 - (x-1)/(x \cdot S_p(s^*)) = s^*$, soit
+\[
+  x \cdot S_p(s^*) \cdot (1 - s^*) = x - 1.
+\]
+Comme $S_p(s)(1-s) = 1 - s^p$, cela donne $x(1 - s^{*p}) = x - 1$, d'où $s^{*p} = 1/x$, soit $s^* = x^{-1/p}$. La formule pour $v^*$ suit immédiatement.
+\end{proof}
+
+%=====================================================================
+\section{Le coefficient de poussière \texorpdfstring{$\lambda_{p,x}$}{lambda}}
+\label{sec:coefficient}
+%=====================================================================
+
+\subsection{Calcul général}
+
+\begin{theorem}[Coefficient de poussière de Pandrosion]
+\label{thm:lambda}
+La convergence de l'itération~\eqref{eq:pandrosion_gen} vers $s^* = \alpha^{-1}$ est \emph{linéaire} avec coefficient
+\begin{equation}
+  \label{eq:lambda_general}
+  \boxed{
+  \lambda_{p,x} = \frac{(\alpha - 1)\displaystyle\sum_{k=1}^{p-1} k\,\alpha^{p-1-k}}{\displaystyle\sum_{k=0}^{p-1} \alpha^k}
+  }, \qquad \alpha = x^{1/p}.
+\end{equation}
+En particulier, la poussière obéit à la loi $\eps_{n+1} \approx \lambda_{p,x} \cdot \eps_n$.
+\end{theorem}
+
+\begin{proof}
+Soit $h(s) = 1 - (x-1)/(x \cdot S_p(s))$. Alors
+\[
+  h'(s) = \frac{x-1}{x} \cdot \frac{S_p'(s)}{S_p(s)^2},
+\]
+où $S_p'(s) = \sum_{k=1}^{p-1} k s^{k-1}$.
+
+Au point fixe $s^* = \alpha^{-1}$ :
+\begin{align*}
+  S_p(s^*) &= \frac{1 - \alpha^{-p}}{1 - \alpha^{-1}} = \frac{\alpha(x-1)}{x(\alpha-1)}, \\
+  S_p'(s^*) &= \sum_{k=1}^{p-1} k\,\alpha^{-(k-1)} = \alpha \sum_{k=1}^{p-1} k\,\alpha^{-k}.
+\end{align*}
+
+En substituant :
+\[
+  h'(s^*) = \frac{x-1}{x} \cdot \frac{\alpha \sum_{k=1}^{p-1} k\,\alpha^{-k}}{\left[\dfrac{\alpha(x-1)}{x(\alpha-1)}\right]^2}
+  = \frac{x(\alpha-1)^2}{\alpha(x-1)} \sum_{k=1}^{p-1} k\,\alpha^{-k}.
+\]
+
+En multipliant numérateur et dénominateur par $\alpha^{p-1}$, et en utilisant $x = \alpha^p$ :
+\[
+  h'(s^*) = \frac{(\alpha-1)^2\,\alpha^{p-1}\sum_{k=1}^{p-1}k\,\alpha^{-k}}{\alpha^p - 1}
+  = \frac{(\alpha-1)\sum_{k=1}^{p-1}k\,\alpha^{p-1-k}}{\sum_{k=0}^{p-1}\alpha^k},
+\]
+où l'on a utilisé $\alpha^p - 1 = (\alpha-1)\sum_{k=0}^{p-1}\alpha^k$. Ceci établit~\eqref{eq:lambda_general}.
+\end{proof}
+
+\begin{remark}
+Le coefficient $\lambda_{p,x}$ est entièrement déterminé par $\alpha = x^{1/p}$ : la cible elle-même dicte la vitesse à laquelle on s'en approche par la méthode de Pandrosion. C'est la \textbf{signature de poussière} de la méthode.
+\end{remark}
+
+\subsection{Formules closes pour \texorpdfstring{$p=2$}{p=2} et \texorpdfstring{$p=3$}{p=3}}
+
+Pour $p = 2$ : $\sum_{k=1}^{1} k\,\alpha^{0} = 1$, $\sum_{k=0}^{1}\alpha^k = 1 + \alpha$.
+\begin{equation}
+  \label{eq:lambda2}
+  \lambda_{2,x} = \frac{\alpha - 1}{\alpha + 1} = \frac{\sqrt{x} - 1}{\sqrt{x} + 1}.
+\end{equation}
+
+Pour $p = 3$ : $\sum_{k=1}^{2} k\,\alpha^{2-k} = \alpha + 2$, $\sum_{k=0}^{2}\alpha^k = \alpha^2+\alpha+1$.
+\begin{equation}
+  \label{eq:lambda3}
+  \lambda_{3,x} = \frac{(\alpha-1)(\alpha+2)}{\alpha^2 + \alpha + 1} = \frac{(\cbrt{x}-1)(\cbrt{x}+2)}{\cbrt{x^2}+\cbrt{x}+1}.
+\end{equation}
+
+Pour $p = 4$ : $\sum_{k=1}^{3}k\,\alpha^{3-k} = \alpha^2 + 2\alpha + 3$, $\sum_{k=0}^{3}\alpha^k = \alpha^3+\alpha^2+\alpha+1$.
+\begin{equation}
+  \label{eq:lambda4}
+  \lambda_{4,x} = \frac{(\alpha-1)(\alpha^2+2\alpha+3)}{\alpha^3+\alpha^2+\alpha+1}.
+\end{equation}
+
+\begin{remark}[Comportement asymptotique en $x$]
+Pour $p = 2$ fixé et $x \to \infty$ : $\lambda_{2,x} = (\sqrt{x}-1)/(\sqrt{x}+1) \to 1^-$. Plus $x$ est grand, plus la convergence est lente. Pour $x \to 1^+$ : $\lambda_{p,x} \to 0$, la convergence est très rapide près de $1$.
+\end{remark}
+
+%=====================================================================
+\section{Illustrations graphiques}
+\label{sec:figures}
+%=====================================================================
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{pandrosion_figures.pdf}
+  \caption{\textbf{Gauche :} Diagramme cobweb de l'itération $s_{n+1} = h(s_n)$ pour
+  $p=3$, $x=2$, démarrant en $s_0=0{,}875$. La spirale converge vers $s^* = 2^{-1/3}$
+  avec taux $\lambda_{3,2} \approx 0{,}220$.
+  \textbf{Droite :} Profils de poussière en échelle semi-logarithmique.
+  La décroissance linéaire (droites) confirme la convergence géométrique
+  $\varepsilon_n \sim \lambda^n$ pour Pandrosion, tandis que Newton (courbe rouge
+  à courbure prononcée) montre une décroissance doublement exponentielle.}
+  \label{fig:figures}
+\end{figure}
+
+%=====================================================================
+\section{Exemples numériques}
+\label{sec:exemples}
+%=====================================================================
+
+\subsection{Table des coefficients de poussière}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+$p$ & $x$ & $\alpha = x^{1/p}$ & $\lambda_{p,x}$ (exact) & $\lambda_{p,x}$ (numérique) \\
+\midrule
+2 & 2 & $\sqrt{2}$ & $(\sqrt{2}-1)/(\sqrt{2}+1)$ & $0{,}1716$ \\
+2 & 3 & $\sqrt{3}$ & $(\sqrt{3}-1)/(\sqrt{3}+1)$ & $0{,}2679$ \\
+2 & 5 & $\sqrt{5}$ & $(\sqrt{5}-1)/(\sqrt{5}+1)$ & $0{,}3820$ \\
+\midrule
+3 & 2 & $\cbrt{2}$ & $(\cbrt{2}-1)(\cbrt{2}+2)/(\cbrt{4}+\cbrt{2}+1)$ & $0{,}2202$ \\
+3 & 3 & $\cbrt{3}$ & $(\cbrt{3}-1)(\cbrt{3}+2)/(\cbrt{9}+\cbrt{3}+1)$ & $0{,}3366$ \\
+3 & 8 & $2$ & $(2-1)(2+2)/(4+2+1)$ & $0{,}5714$ \\
+\midrule
+4 & 2 & $\sqrt[4]{2}$ & (formule~\eqref{eq:lambda4}) & $0{,}2427$ \\
+4 & 16 & $2$ & $(2-1)(4+4+3)/(8+4+2+1)$ & $0{,}7333$ \\
+\midrule
+5 & 2 & $\sqrt[5]{2}$ & (formule générale) & $0{,}2565$ \\
+\bottomrule
+\end{tabular}
+\caption{Coefficients de poussière $\lambda_{p,x}$ pour diverses valeurs de $p$ et $x$. Une valeur proche de $0$ signifie une convergence très rapide ; proche de $1$, très lente.}
+\end{table}
+
+\subsection{Profil numérique détaillé pour \texorpdfstring{$p=2$, $x=2$}{p=2, x=2}}
+
+Pour $\alpha = \sqrt{2}$, le coefficient théorique est $\lambda_{2,2} = (\sqrt{2}-1)/(\sqrt{2}+1) \approx 0{,}1716$ (formule~\eqref{eq:lambda2}). L'itération est :
+\[
+  s_{n+1} = 1 - \frac{1}{2(1 + s_n)}, \qquad v_n = 2s_n.
+\]
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+$n$ & $s_n$ & $v_n$ & $\eps_n = |v_n - \sqrt{2}|$ & $\eps_{n+1}/\eps_n$ \\
+\midrule
+0 & 0{,}7500 & 1{,}5000 & $8{,}579\times 10^{-2}$ & --- \\
+1 & 0{,}7143 & 1{,}4286 & $1{,}44\phantom{0}\times 10^{-2}$ & 0{,}167 \\
+2 & 0{,}7083 & 1{,}4167 & $2{,}45\phantom{0}\times 10^{-3}$ & 0{,}171 \\
+3 & 0{,}7073 & 1{,}4146 & $4{,}21\phantom{0}\times 10^{-4}$ & 0{,}171 \\
+4 & 0{,}7071 & 1{,}4143 & $7{,}22\phantom{0}\times 10^{-5}$ & 0{,}172 \\
+5 & 0{,}7071 & 1{,}4142 & $1{,}24\phantom{0}\times 10^{-5}$ & 0{,}171 \\
+$\infty$ & $1/\sqrt{2}$ & $\sqrt{2}$ & $0$ & $\to \lambda_{2,2}$ \\
+\bottomrule
+\end{tabular}
+\caption{Profil numérique pour $p=2$, $x=2$, $s_0 = 0{,}75$. Le ratio $\eps_{n+1}/\eps_n$ converge rapidement vers $\lambda_{2,2} \approx 0{,}172$.}
+\end{table}
+
+\subsection{La poussière comme caractérisation d'une cible}
+
+La formule~\eqref{eq:lambda_general} implique un résultat remarquable : \textit{pour tout entier $n \geq 1$, on a $\lambda_{p, \alpha^p} = f(\alpha)$ où $f$ est une fonction rationnelle en $\alpha$ uniquement.} La poussière ne dépend pas de la ``façon d'écrire'' $x$, mais seulement de la valeur de la racine cherchée $\alpha$.
+
+En particulier, pour $p = 3$ :
+\[
+  \lambda_{3,x} = \frac{(\alpha-1)(\alpha+2)}{\alpha^2+\alpha+1} \xrightarrow[\alpha \to 1]{} 0, \quad
+  \lambda_{3,x} \xrightarrow[\alpha \to \infty]{} 1.
+\]
+
+%=====================================================================
+\section{Comparaison avec la méthode de Newton}
+\label{sec:newton}
+%=====================================================================
+
+La méthode de Newton pour $f(u) = u^p - x$ donne l'itération
+\[
+  u_{n+1} = \frac{(p-1)u_n + x/u_n^{p-1}}{p},
+\]
+dont la convergence vers $\alpha = x^{1/p}$ est \emph{quadratique} :
+\[
+  \eps_{n+1}^{\text{Newton}} \approx K_{p,x}\,(\eps_n^{\text{Newton}})^2, \qquad K_{p,x} = \frac{p-1}{2\alpha}.
+\]
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lcc}
+\toprule
+& \textbf{Pandrosion} & \textbf{Newton} \\
+\midrule
+Nature & Géométrique (Thalès) & Analytique \\
+Ordre de convergence & Linéaire ($q = 1$) & Quadratique ($q = 2$) \\
+Coefficient de poussière & $\lambda_{p,x} \in (0,1)$ & $K_{p,x} \cdot \eps_n \to 0$ \\
+Formule (p=3, x=2) & $\lambda \approx 0{,}220$ & $K = 1/\cbrt{2} \approx 0{,}794$ \\
+Décroissance de $\eps_n$ & Géométrique : $\sim \lambda^n$ & Doublement exponentiel : $\sim C^{-2^n}$ \\
+\bottomrule
+\end{tabular}
+\caption{Comparaison des profils de poussière des méthodes de Pandrosion et de Newton pour $x^{1/p}$.}
+\end{table}
+
+Newton converge beaucoup plus vite asymptotiquement, mais la méthode de Pandrosion est fondamentalement différente dans sa nature : elle est de \emph{nature géométrique pure}, et produit une décroissance régulière et prévisible de la poussière à chaque étape de construction.
+
+La coexistence des deux profils pour le même nombre $\alpha = \cbrt{2}$ illustre la thèse centrale : \textbf{la poussière est une propriété de la méthode, non du nombre.}
+
+%=====================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+%=====================================================================
+
+Partant de la construction géométrique de Pandrosion pour $\cbrt{2}$, nous avons dégagé une structure universelle : l'itération
+\[
+  s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)},
+\]
+dont le point fixe est $s^* = x^{-1/p}$ et dont la sortie $v_n = x \cdot s_n^{p-1}$ converge vers $x^{1/p}$. La convergence est linéaire, avec un coefficient de poussière exact
+\[
+  \lambda_{p,x} = \frac{(\alpha-1)\displaystyle\sum_{k=1}^{p-1} k\,\alpha^{p-1-k}}{\displaystyle\sum_{k=0}^{p-1}\alpha^k}, \qquad \alpha = x^{1/p},
+\]
+qui ne dépend que de la cible $\alpha$ et de l'ordre $p$. C'est la \textbf{signature de poussière} de la méthode de Pandrosion.
+
+\medskip
+
+Ce résultat offre un cadre propre pour comparer des méthodes d'approximation : une méthode géométrique (Pandrosion, ordre 1) et une méthode analytique (Newton, ordre 2) produisent des profils de poussière fondamentalement différents sur la même cible, révélant ainsi que la poussière est attachée à la méthode, non au nombre.
+
+\medskip
+
+\textbf{Perspectives.} Il serait naturel d'étudier des constructions de Pandrosion généralisées non linéaires (avec d'autres polynômes $S$), de comparer les poussières sur des suites géométriques plus générales $1, \alpha, \alpha^2, \ldots, x^{(p-1)/p}, x$, ou d'analyser le comportement de $\lambda_{p,x}$ en fonction du rapport $x$ pour des entiers $p$ variables.
+
+%=====================================================================
+\begin{thebibliography}{9}
+
+\bibitem{mactutor_pandrosion}
+J.~J. O'Connor and E.~F. Robertson,
+``Pandrosion of Alexandria,''
+\textit{MacTutor History of Mathematics}, University of St~Andrews, 2020.
+\url{https://mathshistory.st-andrews.ac.uk/Biographies/Pandrosion/}
+
+\bibitem{mactutor_cube}
+J.~J. O'Connor and E.~F. Robertson,
+``Doubling the cube,''
+\textit{MacTutor History of Mathematics}, University of St~Andrews, 2002.
+\url{https://mathshistory.st-andrews.ac.uk/HistTopics/Doubling_the_cube/}
+
+\bibitem{pappus}
+Pappus d'Alexandrie,
+\textit{Collectio}, Livre~III (circa 340~apr.~J.-C.).
+Édition critique~: F.~Hultsch, \textit{Pappi Alexandrini Collectionis quae supersunt},
+Weidmann, Berlin, 1876--1878.
+
+\bibitem{wantzel}
+P.~Wantzel,
+``Recherches sur les moyens de reconnaître si un problème de Géométrie peut se résoudre avec la règle et le compas,''
+\textit{Journal de Mathématiques Pures et Appliquées}, sér.~1, vol.~2, pp.~366--372, 1837.
+
+\bibitem{stoer}
+J.~Stoer and R.~Bulirsch,
+\textit{Introduction to Numerical Analysis},
+3rd~ed., Springer, New York, 2002.
+Chap.~5~: itérations de point fixe et taux de convergence.
+
+\bibitem{numrecipes}
+W.~H. Press, S.~A. Teukolsky, W.~T. Vetterling, and B.~P. Flannery,
+\textit{Numerical Recipes: The Art of Scientific Computing},
+3rd~ed., Cambridge University Press, 2007.
+
+\end{thebibliography}
+
+\end{document}
