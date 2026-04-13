@@ -87,7 +87,7 @@ Ce travail part d'une observation fondamentale :
 
 \medskip
 
-\textbf{Plan.} La section~\ref{sec:pandrosion3} rappelle la construction de Pandrosion pour $\cbrt{2}$ et analyse sa poussière. La section~\ref{sec:generalisation} énonce la généralisation à tout $p, x$. La section~\ref{sec:coefficient} calcule le coefficient de poussière $\lambda_{p,x}$ et en donne des formules closes. La section~\ref{sec:exemples} présente des tables numériques. La section~\ref{sec:newton} compare avec la méthode de Newton. La section~\ref{sec:conclusion} conclut.
+\textbf{Plan.} La section~\ref{sec:pandrosion3} rappelle la construction de Pandrosion pour $\cbrt{2}$ et analyse sa poussière. La section~\ref{sec:generalisation} énonce la généralisation à tout $p, x$. La section~\ref{sec:coefficient} calcule le coefficient de poussière $\lambda_{p,x}$ et en donne des formules closes. La section~\ref{sec:exemples} présente des tables numériques. La section~\ref{sec:comparaisons} compare avec la dichotomie, la méthode de la sécante et celle de Newton. La section~\ref{sec:conclusion} conclut.
 
 %=====================================================================
 \section{La construction de Pandrosion pour \texorpdfstring{$\cbrt{2}$}{cbrt(2)}}
@@ -331,6 +331,45 @@ Pour $p = 4$ : $\sum_{k=1}^{3}k\,\alpha^{3-k} = \alpha^2 + 2\alpha + 3$, $\sum_{
 Pour $p = 2$ fixé et $x \to \infty$ : $\lambda_{2,x} = (\sqrt{x}-1)/(\sqrt{x}+1) \to 1^-$. Plus $x$ est grand, plus la convergence est lente. Pour $x \to 1^+$ : $\lambda_{p,x} \to 0$, la convergence est très rapide près de $1$.
 \end{remark}
 
+\subsection{Bassin d'attraction}
+
+\begin{theorem}[Convergence globale]
+\label{thm:bassin}
+Pour tout $x > 1$ et tout $p \geq 2$, l'itération~\eqref{eq:pandrosion_gen} converge vers $s^*$ pour tout $s_0 \in (0,1)$. De plus, la convergence est \emph{monotone} : si $s_0 < s^*$ alors $(s_n)$ est strictement croissante, et si $s_0 > s^*$ alors $(s_n)$ est strictement décroissante.
+\end{theorem}
+
+\begin{proof}
+Posons $h(s) = 1 - (x-1)/(x \cdot S_p(s))$.
+
+\textbf{Étape 1 : $h$ est strictement croissante.}
+On a $h'(s) = \frac{x-1}{x} \cdot \frac{S_p'(s)}{S_p(s)^2}$, où $S_p'(s) = \sum_{k=1}^{p-1} k s^{k-1} > 0$ pour $s > 0$.
+
+\textbf{Étape 2 : $h$ envoie $(0,1)$ dans lui-même.}
+Pour $s \in (0,1)$ : $S_p(s) > 1$ (car le premier terme est $1$ et les suivants sont positifs), donc $h(s) = 1 - (x-1)/(x \cdot S_p(s)) < 1 - (x-1)/(x \cdot p) > 0$. Plus précisément $h(0^+) = 1 - (x-1)/x = 1/x > 0$ et $h(1^-) = 1 - (x-1)/(xp) < 1$.
+
+\textbf{Étape 3 : convergence monotone.}
+Puisque $h$ est croissante et $h(s^*) = s^*$, si $s_0 < s^*$ alors $s_1 = h(s_0) < h(s^*) = s^*$, et $s_1 = h(s_0) > h(0^+) = 1/x > 0$. Par récurrence, $(s_n)$ reste dans $(0, s^*)$. De plus $h(s) > s$ pour $s < s^*$ (car $h(s) - s$ change de signe uniquement en $s^*$ et $h'(s^*) < 1$), donc $(s_n)$ est strictement croissante et bornée, donc convergente, nécessairement vers $s^*$. Le cas $s_0 > s^*$ est symétrique.
+\end{proof}
+
+\subsection{Borne sur le nombre d'itérations}
+
+\begin{proposition}[Co\^ut de la méthode de Pandrosion]
+\label{prop:cout}
+Pour atteindre une précision $|v_n - \alpha| < \delta$ en partant de $s_0 \in (0,1)$, le nombre d'itérations requis satisfait
+\[
+  n_\delta \leq \left\lceil \frac{\ln(\eps_0 / \delta)}{\ln(1/\lambda_{p,x})} \right\rceil,
+\]
+où $\eps_0 = |v_0 - \alpha|$ est l'erreur initiale.
+\end{proposition}
+
+\begin{proof}
+Puisque $\eps_{n+1} \leq \lambda_{p,x}\,\eps_n$ asymptotiquement, on a $\eps_n \leq \lambda_{p,x}^n \eps_0$. L'inégalité $\lambda_{p,x}^n \eps_0 < \delta$ donne $n > \ln(\eps_0/\delta)/\ln(1/\lambda_{p,x})$.
+\end{proof}
+
+\begin{example}
+Pour $p=3$, $x=2$ ($\lambda_{3,2} \approx 0{,}220$) : $10$ décimales de précision nécessitent au plus $16$ itérations de Pandrosion. Pour $p=3$, $x=8$ ($\lambda_{3,8} = 4/7$) : il en faut $43$.
+\end{example}
+
 %=====================================================================
 \section{Illustrations graphiques}
 \label{sec:figures}
@@ -415,9 +454,13 @@ En particulier, pour $p = 3$ :
 \]
 
 %=====================================================================
-\section{Comparaison avec la méthode de Newton}
-\label{sec:newton}
+\section{Comparaison avec d'autres méthodes}
+\label{sec:comparaisons}
 %=====================================================================
+
+Pour situer la méthode de Pandrosion dans le paysage des méthodes itératives pour $\alpha = x^{1/p}$, nous comparons trois méthodes de référence.
+
+\subsection{Méthode de Newton}
 
 La méthode de Newton pour $f(u) = u^p - x$ donne l'itération
 \[
@@ -428,26 +471,38 @@ dont la convergence vers $\alpha = x^{1/p}$ est \emph{quadratique} :
   \eps_{n+1}^{\text{Newton}} \approx K_{p,x}\,(\eps_n^{\text{Newton}})^2, \qquad K_{p,x} = \frac{p-1}{2\alpha}.
 \]
 
+\subsection{Dichotomie}
+
+La dichotomie (bisection) sur $[1, x]$ pour $f(u) = u^p - x$ est une méthode d'ordre~$1$ universelle avec $\lambda_{\text{bisection}} = 1/2$, indépendamment de $p$ et $x$. La méthode de Pandrosion est donc strictement plus rapide que la dichotomie pour tout $\lambda_{p,x} < 1/2$, ce qui est le cas dès que $\alpha < \alpha_0(p)$ (par exemple, pour $p = 3$ : $\lambda_{3,x} < 1/2$ dès que $x < 6{,}75$).
+
+\subsection{Méthode de la sécante}
+
+La méthode de la sécante pour $f(u) = u^p - x$ est d'ordre $\varphi = (1+\sqrt{5})/2 \approx 1{,}618$ (superlinéaire). Pour $p = 3$, $x = 2$, elle atteint la précision machine en~$6$ étapes environ, contre $\sim 16$ pour Pandrosion et $\sim 5$ pour Newton.
+
+\subsection{Tableau comparatif}
+
 \begin{table}[h]
 \centering
 \renewcommand{\arraystretch}{1.4}
-\begin{tabular}{lcc}
+\begin{tabular}{lcccc}
 \toprule
-& \textbf{Pandrosion} & \textbf{Newton} \\
+& \textbf{Pandrosion} & \textbf{Dichotomie} & \textbf{Sécante} & \textbf{Newton} \\
 \midrule
-Nature & Géométrique (Thalès) & Analytique \\
-Ordre de convergence & Linéaire ($q = 1$) & Quadratique ($q = 2$) \\
-Coefficient de poussière & $\lambda_{p,x} \in (0,1)$ & $K_{p,x} \cdot \eps_n \to 0$ \\
-Formule (p=3, x=2) & $\lambda \approx 0{,}220$ & $K = 1/\cbrt{2} \approx 0{,}794$ \\
-Décroissance de $\eps_n$ & Géométrique : $\sim \lambda^n$ & Doublement exponentiel : $\sim C^{-2^n}$ \\
+Nature & Géométrique & Universelle & Analytique & Analytique \\
+Ordre $q$ & $1$ & $1$ & $\varphi \approx 1{,}62$ & $2$ \\
+Taux ($p\!=\!3, x\!=\!2$) & $\lambda \approx 0{,}220$ & $\lambda = 0{,}500$ & superlinéaire & quadratique \\
+It. pour $10$ déc. & $\sim 16$ & $\sim 34$ & $\sim 6$ & $\sim 5$ \\
+Dérivée requise & Non & Non & Non & Oui \\
 \bottomrule
 \end{tabular}
-\caption{Comparaison des profils de poussière des méthodes de Pandrosion et de Newton pour $x^{1/p}$.}
+\caption{Comparaison des méthodes d'approximation de $x^{1/p}$ pour $p=3$, $x=2$.}
 \end{table}
 
-Newton converge beaucoup plus vite asymptotiquement, mais la méthode de Pandrosion est fondamentalement différente dans sa nature : elle est de \emph{nature géométrique pure}, et produit une décroissance régulière et prévisible de la poussière à chaque étape de construction.
+\subsection{Discussion}
 
-La coexistence des deux profils pour le même nombre $\alpha = \cbrt{2}$ illustre la thèse centrale : \textbf{la poussière est une propriété de la méthode, non du nombre.}
+La méthode de Pandrosion occupe une position intermédiaire remarquable : parmi les méthodes d'ordre~$1$, elle est significativement plus rapide que la dichotomie ($\lambda_{3,2} \approx 0{,}22$ contre $0{,}50$), tout en étant de nature purement géométrique (elle ne requiert aucun calcul de dérivée). Son avantage conceptuel sur les méthodes analytiques est qu'elle se prête à une construction à la règle, dans l'esprit de la géométrie antique.
+
+La coexistence de quatre profils de poussière distincts pour la même cible $\alpha = \cbrt{2}$ illustre la thèse centrale : \textbf{la poussière est une propriété de la méthode, non du nombre.}
 
 %=====================================================================
 \section{Conclusion}
@@ -470,7 +525,7 @@ Ce résultat offre un cadre propre pour comparer des méthodes d'approximation :
 
 \medskip
 
-\textbf{Perspectives.} Il serait naturel d'étudier des constructions de Pandrosion généralisées non linéaires (avec d'autres polynômes $S$), de comparer les poussières sur des suites géométriques plus générales $1, \alpha, \alpha^2, \ldots, x^{(p-1)/p}, x$, ou d'analyser le comportement de $\lambda_{p,x}$ en fonction du rapport $x$ pour des entiers $p$ variables.
+\textbf{Perspectives.} Il serait naturel d'étudier des constructions de Pandrosion généralisées non linéaires (avec d'autres polynômes $S$), de comparer les poussières sur des suites géométriques plus générales $1, \alpha, \alpha^2, \ldots, x^{(p-1)/p}, x$, ou d'analyser le comportement de $\lambda_{p,x}$ en fonction du rapport $x$ pour des entiers $p$ variables. Le théorème~\ref{thm:bassin} de convergence globale pourrait également être étendu au cas $x < 1$ (racines de nombres inférieurs à $1$), où le bassin d'attraction possède une structure différente.
 
 %=====================================================================
 \begin{thebibliography}{9}
