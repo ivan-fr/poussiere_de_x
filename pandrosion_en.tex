@@ -556,7 +556,7 @@ $x$ & $\lambda_{2,x}$ & $\lambda_{10,x}$ & $\lambda_{100,x}$ \\
 $1.001$ & $0.00025$ & $0.00045$ & $0.00050$ \\
 $2$ & $0.1716$ & $0.2823$ & $0.3044$ \\
 $10$ & $0.5195$ & $0.7123$ & $0.7412$ \\
-$100$ & $0.8182$ & $0.9126$ & $0.9353$ \\
+$100$ & $0.8182$ & $0.9409$ & $0.9524$ \\
 \bottomrule
 \end{tabular}
 \caption{Contraction ratios illustrating monotonicity in $p$ and $x$. Each column is increasing (fixed $p$); each row is increasing (fixed $x$).}
@@ -637,11 +637,11 @@ $p$ & $x$ & $\alpha = x^{1/p}$ & $s^* = \alpha^{-1}$ & $\lambda_{p,x}$ & $|\lamb
 3 & 0.125 & $0.5$ & $2$ & $-0.7143$ & $0.7143$ \\
 \bottomrule
 \end{tabular}
-\caption{Contraction ratios for $x < 1$. The negative sign indicates oscillatory convergence. Note the symmetry: $|\lambda_{p,x}| = |\lambda_{p,1/x}|$.}
+\caption{Contraction ratios for $x < 1$. The negative sign indicates oscillatory convergence.}
 \end{table}
 
-\begin{remark}[Residual symmetry]
-An attractive consequence is the \emph{residual symmetry}: $|\lambda_{p,x}| = |\lambda_{p,1/x}|$. Computing the $p$-th root of $x$ and that of $1/x$ by Pandrosion's method have exactly the same speed of convergence.
+\begin{remark}[Residual symmetry for $p=2$]
+For $p = 2$, the closed form $\lambda_{2,x} = (\sqrt{x}-1)/(\sqrt{x}+1)$ yields the symmetry $|\lambda_{2,x}| = |\lambda_{2,1/x}|$: computing $\sqrt{x}$ and $\sqrt{1/x}$ by Pandrosion's method have exactly the same speed of convergence. For $p \geq 3$, this symmetry does not hold in general.
 \end{remark}
 
 %=====================================================================
@@ -790,7 +790,7 @@ Beyond this central result, we have established:
 \begin{itemize}
   \item \textbf{Non-asymptotic bounds} (Theorem~\ref{thm:nonasymp}): $|s_n - s^*| \leq \Lambda^n |s_0 - s^*|$ for all $n$, with explicit $\Lambda$.
   \item \textbf{Double monotonicity} (Theorem~\ref{thm:monotonicity}): $\lambda_{p,x}$ is increasing in both $p$ and $x$.
-  \item \textbf{Extension to $x < 1$} (Proposition~\ref{prop:x_small}): the method converges with \emph{oscillatory} contraction ratio $\lambda < 0$, and $|\lambda_{p,x}| = |\lambda_{p,1/x}|$.
+  \item \textbf{Extension to $x < 1$} (Proposition~\ref{prop:x_small}): the method converges with \emph{oscillatory} contraction ratio $\lambda < 0$, with $|\lambda| < 1$.
   \item \textbf{Optimal starting point} (Proposition~\ref{prop:optimal_start}): $s_0 = h(1) = 1 - (x-1)/(xp)$ minimizes the initial residual.
   \item \textbf{Steffensen acceleration} (Theorem~\ref{thm:steffensen}): Aitken's $\Delta^2$ process transforms Pandrosion's linear method into a quadratically convergent, derivative-free method with constant $K_S \ll K_{\text{Newton}}$.
 \end{itemize}
