@@ -2,7 +2,7 @@
 
 **Residual profile of an iterative geometric construction for *p*-th roots of any positive real number.**
 
-[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+[![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![HAL](https://img.shields.io/badge/HAL-preprint-blue)](https://hal.science)
 
 ## Overview
@@ -134,7 +134,7 @@ Combined with Steffensen: **2–3 steps** for any x, any p.
 
 ## License
 
-This work is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+This work is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative Commons Attribution-ShareAlike 4.0 International).
 
 ## Author
 
