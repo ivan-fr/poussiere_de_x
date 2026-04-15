@@ -3,6 +3,7 @@
 **Residual profile of an iterative geometric construction for *p*-th roots of any positive real number.**
 
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19598498.svg)](https://doi.org/10.5281/zenodo.19598498)
 [![HAL](https://img.shields.io/badge/HAL-preprint-blue)](https://hal.science)
 
 ## Overview
@@ -128,7 +129,8 @@ Combined with Steffensen: **2–3 steps** for any x, any p.
                Iterative Geometric Construction for $p$-th Roots},
   author    = {Besevic, Ivan},
   year      = {2026},
-  note      = {Preprint, HAL}
+  note      = {Preprint, HAL},
+  doi       = {10.5281/zenodo.19598498}
 }
 ```
 
