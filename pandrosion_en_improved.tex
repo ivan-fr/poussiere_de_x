@@ -769,6 +769,20 @@ Evaluations of $S_p$ & --- & $6$ (total) \\
 \caption{Comparison of the two quadratically convergent methods for $\cbrt{2}$. Steffensen--Pandrosion has a much smaller quadratic constant ($K_S \ll K_N$), compensating for the double evaluation cost per step.}
 \end{table}
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{pandrosion_steffensen.pdf}
+  \caption{\textbf{Left:} Error decay comparison for $\cbrt{2}$.
+  Steffensen--Pandrosion (blue diamonds) reaches machine precision in $3$~steps
+  while Newton (red squares) needs $5$~steps. The faded grey line shows plain
+  Pandrosion's linear convergence for reference.
+  \textbf{Right:} The quadratic constants $K_S \approx 0.013$ and
+  $K_N \approx 0.794$ differ by a factor of ${\sim}\,61$, explaining why the
+  derivative-free Steffensen--Pandrosion method converges faster in practice
+  despite its higher per-step cost.}
+  \label{fig:steffensen}
+\end{figure}
+
 \begin{remark}[A bridge between ancient and modern]
 The Steffensen--Pandrosion method is particularly striking: it takes a purely geometric, ancient construction (Pandrosion, order~1) and, through a universal algebraic acceleration (Aitken, 1926), produces a derivative-free, quadratically convergent method.  This provides a concrete bridge between ancient geometric approximation and modern numerical analysis, demonstrating that the ``slow'' linear convergence of Pandrosion is not an intrinsic limitation but rather a platform for acceleration.
 \end{remark}

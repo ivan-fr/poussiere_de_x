@@ -26,7 +26,7 @@ def lambda_theoretical(p, x):
 
 
 # ═══════════════════════════════════════════════════════════════════
-# FIGURE 1  — construction géométrique de Pandrosion (p=3, x=2)
+# FIGURE 1  — Pandrosion's geometric construction (p=3, x=2)
 # ═══════════════════════════════════════════════════════════════════
 
 fig, ax = plt.subplots(figsize=(9, 8.5))
@@ -36,7 +36,7 @@ ax.set_facecolor('#f5f2eb')
 W, H = 5.0, 5.0
 p, x_val = 3, 2
 
-# --- itérations
+# --- iterations
 s = 0.30
 s_list = [s]
 for _ in range(3):
@@ -44,19 +44,19 @@ for _ in range(3):
     s_list.append(s)
 s_star = x_val**(-1/p)
 
-# --- rectangle avec léger gradient
+# --- rectangle with subtle gradient
 rect = mpatches.FancyBboxPatch((0, 0), W, H,
     boxstyle='square,pad=0', linewidth=2.0,
     edgecolor='#333333', facecolor='#ede8dc', zorder=1)
 ax.add_patch(rect)
 
-# --- diagonale principale (Thalès) : (0,H) → (W,0)
+# --- main diagonal (Thales) : (0,H) → (W,0)
 ax.plot([0, W], [H, 0], color='#444444', linewidth=2.5, zorder=4)
 
 # label diagonale
 mid_diag_x, mid_diag_y = W * 0.25, H * 0.75
 ax.text(mid_diag_x - 0.55, mid_diag_y + 0.20,
-        r'Diagonale — Thalès',
+        r'Diagonal — Thales',
         fontsize=9.5, color='#444', ha='left', va='bottom',
         rotation=-45, style='italic')
 
@@ -74,7 +74,7 @@ mask = (x_curve >= 0) & (x_curve <= W) & (y_curve >= 0) & (y_curve <= H)
 ax.plot(x_curve[mask], y_curve[mask], color='#8855aa', linewidth=2.2, zorder=4,
         linestyle='-', alpha=0.85)
 ax.text(W * 0.68, H * 0.08,
-        r'Courbe $v = x\,s^{p-1}$',
+        r'Curve $v = x\,s^{p-1}$',
         fontsize=9.5, color='#8855aa', ha='center', va='bottom',
         style='italic')
 
@@ -86,15 +86,15 @@ for i, s_n in enumerate(s_list):
     u_n = H * (1 - s_n)
     col = blue_shades[i]
 
-    # Point d'intersection avec la diagonale: diagonale va de (0,H) à (W,0)
+    # Intersection with diagonal: diagonal goes from (0,H) to (W,0)
     # y = H - (H/W)*x, donc à y=u_n: x_diag = W*(H-u_n)/H = W*s_n
     x_diag = W * s_n
 
-    # Point d'intersection avec la courbe parabolique:
+    # Intersection with parabolic curve:
     # y_curve = H*(1-s_n) = u_n, x_curve = W*s_n^(p-1)
     x_para = W * s_n**(p-1)
 
-    # horizontale entre les deux points d'intersection
+    # horizontal line between the two intersection points
     x_left = min(x_diag, x_para)
     x_right = max(x_diag, x_para)
     ax.hlines(u_n, 0, W, colors=col, linewidth=1.2, alpha=0.35, zorder=2,
@@ -103,26 +103,26 @@ for i, s_n in enumerate(s_list):
     ax.plot([x_left, x_right], [u_n, u_n], color=col, linewidth=2.2,
             alpha=0.85, zorder=3)
 
-    # point sur la diagonale
+    # point on diagonal
     ax.plot(x_diag, u_n, 'o', color=col, markersize=8, zorder=6,
             markeredgecolor='white', markeredgewidth=0.8)
 
-    # point sur la courbe parabolique
+    # point on parabolic curve
     ax.plot(x_para, u_n, 's', color=col, markersize=7, zorder=6,
             markeredgecolor='white', markeredgewidth=0.8)
 
-    # label s_n sur la gauche : segment annoté
+    # label s_n on the left
     ax.text(-0.35, u_n, f'$s_{i}$',
             fontsize=11, va='center', ha='right', color=col)
 
-    # label u_n à droite
+    # label u_n on the right
     y_off = 0
     if i == 3:
         y_off = -0.22
     ax.text(W + 0.15, u_n + y_off, f'$u_{i}$',
             fontsize=11, va='center', color=col)
 
-    # Flèche de projection vers le bas : du point parabolique vers l'axe x
+    # Projection arrow downward: from parabolic point to x-axis
     v_n = x_val * s_n**(p-1)
     v_x = v_n * (W / x_val)
     ax.annotate('', xy=(v_x, -0.08), xytext=(x_para, u_n),
@@ -131,18 +131,18 @@ for i, s_n in enumerate(s_list):
                                 connectionstyle='arc3,rad=0.0',
                                 linestyle='dashed'))
 
-    # Label v_n sous le rectangle
+    # Label v_n below the rectangle
     ax.text(v_x, -0.30 - 0.28 * i,
             f'$v_{i}={v_n:.3f}$', ha='center', fontsize=9, color=col)
 
-# --- ligne du point fixe u*
+# --- fixed point line u*
 u_star = H * (1 - s_star)
 ax.hlines(u_star, 0, W, colors='#bb2222', linewidth=2.2,
           linestyle='--', zorder=5)
 ax.text(W + 0.15, u_star, r'$u^*$',
         fontsize=13, va='center', color='#bb2222', fontweight='bold')
 
-# Annotations s* et 1-s* sur le bord gauche
+# Annotations s* and 1-s* on the left edge
 ax.annotate('', xy=(-0.10, H), xytext=(-0.10, u_star),
             arrowprops=dict(arrowstyle='<->', color='#bb2222',
                             lw=1.5, mutation_scale=10))
@@ -160,7 +160,7 @@ ax.text(-0.60, u_star / 2, r'$1\!-\!s^*$',
         bbox=dict(boxstyle='round,pad=0.15', facecolor='#f0f0f0',
                   edgecolor='#999', alpha=0.8))
 
-# Point fixe: point sur la diagonale et sur la courbe
+# Fixed point: point on diagonal and on curve
 x_diag_star = W * s_star
 x_para_star = W * s_star**(p-1)
 ax.plot(x_diag_star, u_star, 'o', color='#bb2222', markersize=9, zorder=7,
@@ -168,7 +168,7 @@ ax.plot(x_diag_star, u_star, 'o', color='#bb2222', markersize=9, zorder=7,
 ax.plot(x_para_star, u_star, 's', color='#bb2222', markersize=8, zorder=7,
         markeredgecolor='white', markeredgewidth=1.0)
 
-# v* sous le rectangle
+# v* below the rectangle
 v_star = x_val * s_star**(p-1)
 vs_x = v_star * (W / x_val)
 ax.annotate('', xy=(vs_x, -0.08), xytext=(x_para_star, u_star),
@@ -180,7 +180,7 @@ ax.text(vs_x, y_vstar,
         r'$v^{\!*}=\sqrt[3]{2}\approx 1.260$', ha='center', fontsize=11,
         color='#bb2222', fontweight='bold')
 
-# --- axe de lecture gradué (sous le rectangle)
+# --- graduated readout axis (below rectangle)
 y_axis = -0.08
 ax.plot([0, W], [y_axis, y_axis], 'k-', linewidth=1.5, zorder=2)
 for v_tick in [0, 0.5, 1.0, 1.5, 2.0]:
@@ -188,28 +188,28 @@ for v_tick in [0, 0.5, 1.0, 1.5, 2.0]:
     ax.plot(xt, y_axis, 'k|', markersize=7, zorder=3)
     ax.text(xt, y_axis - 0.20, f'{v_tick}', ha='center', fontsize=9.5, color='#444')
 
-# tick spécial pour cbrt(2)
+# special tick for cbrt(2)
 xt_star = v_star * (W / x_val)
 ax.plot(xt_star, y_axis, '|', color='#bb2222', markersize=9, zorder=4)
 ax.text(xt_star, y_axis - 0.20, r'$\sqrt[3]{2}$', ha='center', fontsize=10,
         color='#bb2222')
 
-# légende manuelle
+# manual legend
 legend_items = [
-    plt.Line2D([0], [0], color='#444', linewidth=2.2, label='Diagonale (Thalès)'),
-    plt.Line2D([0], [0], color='#8855aa', linewidth=2.0, label=r'Courbe $v=x\,s^{p-1}$'),
-    plt.Line2D([0], [0], color='#bb2222', linewidth=2.0, linestyle='--', label=r'Point fixe $u^*$'),
+    plt.Line2D([0], [0], color='#444', linewidth=2.2, label='Diagonal (Thales)'),
+    plt.Line2D([0], [0], color='#8855aa', linewidth=2.0, label=r'Curve $v=x\,s^{p-1}$'),
+    plt.Line2D([0], [0], color='#bb2222', linewidth=2.0, linestyle='--', label=r'Fixed point $u^*$'),
     plt.Line2D([0], [0], marker='o', color='#4477bb', markersize=7,
-               linestyle='', label=r'Intersection diagonale'),
+               linestyle='', label=r'Diagonal intersection'),
     plt.Line2D([0], [0], marker='s', color='#4477bb', markersize=6,
-               linestyle='', label=r'Intersection courbe'),
+               linestyle='', label=r'Curve intersection'),
 ]
 ax.legend(handles=legend_items, loc='upper right', fontsize=9,
           framealpha=0.85, bbox_to_anchor=(1.0, 1.0))
 
 # --- axes labels
 ax.text(W / 2, -0.60 - 0.28 * N,
-        r'Sortie $v_n = x\,s_n^{p-1}$  (converge vers $\sqrt[3]{2}$)',
+        r'Output $v_n = x\,s_n^{p-1}$  (converges to $\sqrt[3]{2}$)',
         ha='center', fontsize=11, color='#333', style='italic')
 
 # Dimensions
@@ -218,8 +218,8 @@ ax.set_ylim(-0.60 - 0.28 * (N + 1), H + 0.45)
 ax.set_aspect('equal')
 ax.axis('off')
 ax.set_title(
-    r'Construction de Pandrosion  ($p=3$, $x=2$)' + '\n'
-    r'Parallèles successives — convergence vers $v^*=\sqrt[3]{2}$',
+    r"Pandrosion's construction  ($p=3$, $x=2$)" + '\n'
+    r'Successive parallels — convergence to $v^*=\sqrt[3]{2}$',
     fontsize=13, pad=14, fontweight='bold')
 
 plt.tight_layout()
@@ -227,18 +227,18 @@ plt.savefig('pandrosion_geometry.pdf', dpi=200, bbox_inches='tight',
             facecolor='#f5f2eb')
 plt.savefig('pandrosion_geometry.png', dpi=200, bbox_inches='tight',
             facecolor='#f5f2eb')
-print("Figure géométrique sauvegardée.")
+print("Geometric figure saved.")
 plt.close()
 
 
 # ═══════════════════════════════════════════════════════════════════
-# FIGURE 2  — cobweb + profils de poussière
+# FIGURE 2  — cobweb + residual profiles
 # ═══════════════════════════════════════════════════════════════════
 
 fig2, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5.5))
 fig2.patch.set_facecolor('#fafaf8')
 
-# ── gauche : cobweb ──────────────────────────────────────────────
+# ── left panel: cobweb ───────────────────────────────────────────
 ax1.set_facecolor('#fafaf8')
 
 p_c, x_c = 3, 2
@@ -276,12 +276,12 @@ ax1.set_xlim(0.40, 1.02)
 ax1.set_ylim(0.40, 1.02)
 ax1.set_xlabel(r'$s_n$', fontsize=13)
 ax1.set_ylabel(r'$s_{n+1}$', fontsize=13)
-ax1.set_title('Diagramme cobweb — convergence de Pandrosion\n'
-              r'($p=3,\ x=2$,   $s_0=0{,}5$)', fontsize=11)
+ax1.set_title('Cobweb diagram — Pandrosion convergence\n'
+              r'($p=3,\ x=2$,   $s_0=0.5$)', fontsize=11)
 ax1.legend(fontsize=9.5, loc='upper left')
 ax1.grid(True, alpha=0.25)
 
-# ── droite : profils de poussière ───────────────────────────────
+# ── right panel: residual profiles ──────────────────────────────
 ax2.set_facecolor('#fafaf8')
 
 configs_pand = [
@@ -315,9 +315,9 @@ ax2.semilogy(range(len(eps_newton)), eps_newton,
              's--', color='#cc2222', label=r'Newton  $p=3,\ x=2$',
              linewidth=2.0, markersize=8)
 
-ax2.set_xlabel(r'Étape $n$', fontsize=13)
+ax2.set_xlabel(r'Step $n$', fontsize=13)
 ax2.set_ylabel(r'$\varepsilon_n = |v_n - \alpha|$', fontsize=13)
-ax2.set_title('Profils de poussière : Pandrosion vs Newton', fontsize=11)
+ax2.set_title('Residual profiles: Pandrosion vs Newton', fontsize=11)
 ax2.legend(fontsize=9.5)
 ax2.grid(True, alpha=0.25)
 
@@ -326,5 +326,162 @@ plt.savefig('pandrosion_figures.pdf', dpi=200, bbox_inches='tight',
             facecolor='#fafaf8')
 plt.savefig('pandrosion_figures.png', dpi=150, bbox_inches='tight',
             facecolor='#fafaf8')
-print("Figure cobweb + poussière sauvegardée.")
+print("Cobweb + residual profiles figure saved.")
+plt.close()
+
+
+# ═══════════════════════════════════════════════════════════════════
+# FIGURE 3  — Steffensen–Pandrosion vs Newton (quadratic convergence)
+# ═══════════════════════════════════════════════════════════════════
+
+fig3, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(13, 5.5),
+                                          gridspec_kw={'width_ratios': [1.1, 1]})
+fig3.patch.set_facecolor('#fafaf8')
+
+p_sp, x_sp = 3, 2
+alpha_sp = x_sp**(1/p_sp)
+s_star_sp = 1 / alpha_sp
+
+# ── left panel: error vs step ────────────────────────────────────
+ax_left.set_facecolor('#fafaf8')
+
+# Steffensen–Pandrosion
+def steffensen_step(s, p, x):
+    s0 = s
+    s1 = pandrosion_s(s0, p, x)
+    s2 = pandrosion_s(s1, p, x)
+    denom = s2 - 2*s1 + s0
+    if abs(denom) < 1e-30:
+        return s2
+    return s0 - (s1 - s0)**2 / denom
+
+s_steff = 0.875
+eps_steff = []
+s_steff_vals = [s_steff]
+for i in range(5):
+    v = x_sp * s_steff**(p_sp - 1)
+    eps_steff.append(abs(v - alpha_sp))
+    if abs(s_steff - s_star_sp) < 1e-16:
+        break
+    s_steff = steffensen_step(s_steff, p_sp, x_sp)
+    s_steff_vals.append(s_steff)
+# Final value
+v = x_sp * s_steff**(p_sp - 1)
+eps_steff.append(abs(v - alpha_sp))
+
+# Newton: u_{n+1} = ((p-1)*u_n + x/u_n^{p-1}) / p
+u_newt = 1.5  # same starting approximation as v_0 for Steffensen
+eps_newton = []
+for i in range(8):
+    eps_newton.append(abs(u_newt - alpha_sp))
+    u_newt = ((p_sp - 1) * u_newt + x_sp / u_newt**(p_sp - 1)) / p_sp
+
+# Plain Pandrosion (linear)
+s_pand = 0.875
+eps_pand = []
+for i in range(18):
+    v = x_sp * s_pand**(p_sp - 1)
+    eps_pand.append(abs(v - alpha_sp))
+    s_pand = pandrosion_s(s_pand, p_sp, x_sp)
+
+# Plot — filter out zeros for log scale
+def plot_filtered(ax, data, **kwargs):
+    ns = list(range(len(data)))
+    filtered_n = [n for n, e in zip(ns, data) if e > 1e-17]
+    filtered_e = [e for e in data if e > 1e-17]
+    ax.semilogy(filtered_n, filtered_e, **kwargs)
+
+plot_filtered(ax_left, eps_steff,
+              color='#2255aa', marker='D', markersize=9, linewidth=2.5,
+              markeredgecolor='white', markeredgewidth=1.0,
+              label=r'Steffensen–Pandrosion', zorder=5)
+
+plot_filtered(ax_left, eps_newton,
+              color='#cc2222', marker='s', markersize=8, linewidth=2.2,
+              markeredgecolor='white', markeredgewidth=0.8,
+              label=r'Newton', linestyle='--', zorder=4)
+
+plot_filtered(ax_left, eps_pand,
+              color='#888888', marker='o', markersize=5, linewidth=1.5,
+              alpha=0.6, label=r'Pandrosion (linear)', zorder=3)
+
+# Machine precision line
+ax_left.axhline(y=2.2e-16, color='#999', linewidth=1.0, linestyle=':',
+                alpha=0.7, zorder=1)
+ax_left.text(0.3, 4e-16, 'Machine precision', fontsize=9, color='#999',
+             style='italic')
+
+# Annotations
+ax_left.annotate(r'$K_S \approx 0.013$' + '\n' + r'$3$ steps to $10^{-16}$',
+                 xy=(2, eps_steff[2] if len(eps_steff) > 2 else 1e-9),
+                 xytext=(3.5, 1e-5),
+                 fontsize=10, color='#2255aa',
+                 arrowprops=dict(arrowstyle='->', color='#2255aa', lw=1.5),
+                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#eef4ff',
+                          edgecolor='#2255aa', alpha=0.9))
+
+ax_left.annotate(r'$K_N \approx 0.794$' + '\n' + r'$5$ steps to $10^{-15}$',
+                 xy=(3, eps_newton[3] if len(eps_newton) > 3 else 1e-5),
+                 xytext=(4.5, 1e-2),
+                 fontsize=10, color='#cc2222',
+                 arrowprops=dict(arrowstyle='->', color='#cc2222', lw=1.5),
+                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#fff0f0',
+                          edgecolor='#cc2222', alpha=0.9))
+
+ax_left.set_xlabel(r'Step $n$', fontsize=13)
+ax_left.set_ylabel(r'$\varepsilon_n = |v_n - \sqrt[3]{2}|$', fontsize=13)
+ax_left.set_title(r'Convergence comparison ($p=3$, $x=2$)', fontsize=12,
+                   fontweight='bold')
+ax_left.legend(fontsize=10, loc='upper right')
+ax_left.set_ylim(1e-17, 2)
+ax_left.set_xlim(-0.3, 8.5)
+ax_left.grid(True, alpha=0.25, which='both')
+
+# ── right panel: quadratic constant comparison bar chart ─────────
+ax_right.set_facecolor('#fafaf8')
+
+methods = ['Steffensen–\nPandrosion', 'Newton']
+K_values = [0.013, 0.794]
+colors = ['#2255aa', '#cc2222']
+bars = ax_right.bar(methods, K_values, color=colors, width=0.55,
+                    edgecolor='white', linewidth=2, zorder=3)
+
+# Value labels on top of bars
+for bar, K in zip(bars, K_values):
+    ax_right.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.025,
+                  f'$K \\approx {K}$', ha='center', fontsize=13, fontweight='bold',
+                  color=bar.get_facecolor())
+
+# Ratio annotation
+ax_right.annotate('',
+                  xy=(0, 0.013), xycoords='data',
+                  xytext=(0, 0.794), textcoords='data',
+                  arrowprops=dict(arrowstyle='<->', color='#333', lw=1.8,
+                                  mutation_scale=15))
+ax_right.text(-0.38, 0.40, r'$\times\, 61$', fontsize=14, fontweight='bold',
+              ha='center', color='#333',
+              bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffdd',
+                       edgecolor='#999', alpha=0.9))
+
+# Additional info
+ax_right.text(0, -0.09, 'Derivative-free\n2 evals of $S_p$ / step',
+              ha='center', fontsize=9, color='#2255aa', style='italic')
+ax_right.text(1, -0.09, "Requires $f'$\n1 eval / step",
+              ha='center', fontsize=9, color='#cc2222', style='italic')
+
+ax_right.set_ylabel(r'Quadratic constant $K$', fontsize=13)
+ax_right.set_title('Quadratic constant comparison\n'
+                    r'$\varepsilon_{n+1} \leq K \cdot \varepsilon_n^2$',
+                    fontsize=12, fontweight='bold')
+ax_right.set_ylim(0, 0.95)
+ax_right.grid(True, alpha=0.2, axis='y')
+ax_right.spines['top'].set_visible(False)
+ax_right.spines['right'].set_visible(False)
+
+plt.tight_layout(pad=2.5)
+plt.savefig('pandrosion_steffensen.pdf', dpi=200, bbox_inches='tight',
+            facecolor='#fafaf8')
+plt.savefig('pandrosion_steffensen.png', dpi=150, bbox_inches='tight',
+            facecolor='#fafaf8')
+print("Steffensen vs Newton figure saved.")
 plt.close()
