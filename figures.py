@@ -334,8 +334,8 @@ plt.close()
 # FIGURE 3  — Steffensen–Pandrosion vs Newton (quadratic convergence)
 # ═══════════════════════════════════════════════════════════════════
 
-fig3, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(13, 5.5),
-                                          gridspec_kw={'width_ratios': [1.1, 1]})
+fig3, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(14, 6.5),
+                                          gridspec_kw={'width_ratios': [1.2, 1]})
 fig3.patch.set_facecolor('#fafaf8')
 
 p_sp, x_sp = 3, 2
@@ -391,38 +391,38 @@ def plot_filtered(ax, data, **kwargs):
     filtered_e = [e for e in data if e > 1e-17]
     ax.semilogy(filtered_n, filtered_e, **kwargs)
 
-plot_filtered(ax_left, eps_steff,
-              color='#2255aa', marker='D', markersize=9, linewidth=2.5,
-              markeredgecolor='white', markeredgewidth=1.0,
-              label=r'Steffensen–Pandrosion', zorder=5)
+plot_filtered(ax_left, eps_pand,
+              color='#aaaaaa', marker='o', markersize=4, linewidth=1.2,
+              alpha=0.5, label=r'Pandrosion (linear)', zorder=3)
 
 plot_filtered(ax_left, eps_newton,
-              color='#cc2222', marker='s', markersize=8, linewidth=2.2,
+              color='#cc2222', marker='s', markersize=9, linewidth=2.2,
               markeredgecolor='white', markeredgewidth=0.8,
               label=r'Newton', linestyle='--', zorder=4)
 
-plot_filtered(ax_left, eps_pand,
-              color='#888888', marker='o', markersize=5, linewidth=1.5,
-              alpha=0.6, label=r'Pandrosion (linear)', zorder=3)
+plot_filtered(ax_left, eps_steff,
+              color='#2255aa', marker='D', markersize=10, linewidth=2.5,
+              markeredgecolor='white', markeredgewidth=1.0,
+              label=r'Steffensen–Pandrosion', zorder=5)
 
 # Machine precision line
 ax_left.axhline(y=2.2e-16, color='#999', linewidth=1.0, linestyle=':',
                 alpha=0.7, zorder=1)
-ax_left.text(0.3, 4e-16, 'Machine precision', fontsize=9, color='#999',
-             style='italic')
+ax_left.text(8.2, 3e-16, 'Machine\nprecision', fontsize=8, color='#999',
+             style='italic', ha='left', va='bottom')
 
-# Annotations
-ax_left.annotate(r'$K_S \approx 0.013$' + '\n' + r'$3$ steps to $10^{-16}$',
-                 xy=(2, eps_steff[2] if len(eps_steff) > 2 else 1e-9),
-                 xytext=(3.5, 1e-5),
+# Annotations — positioned to avoid overlap
+ax_left.annotate(r'$K_S \approx 0.013$' + '\n' + r'3 steps to $10^{-16}$',
+                 xy=(3, eps_steff[3] if len(eps_steff) > 3 else 1e-16),
+                 xytext=(5.5, 1e-12),
                  fontsize=10, color='#2255aa',
                  arrowprops=dict(arrowstyle='->', color='#2255aa', lw=1.5),
                  bbox=dict(boxstyle='round,pad=0.3', facecolor='#eef4ff',
                           edgecolor='#2255aa', alpha=0.9))
 
-ax_left.annotate(r'$K_N \approx 0.794$' + '\n' + r'$5$ steps to $10^{-15}$',
-                 xy=(3, eps_newton[3] if len(eps_newton) > 3 else 1e-5),
-                 xytext=(4.5, 1e-2),
+ax_left.annotate(r'$K_N \approx 0.794$' + '\n' + r'5 steps to $10^{-15}$',
+                 xy=(4, eps_newton[4] if len(eps_newton) > 4 else 1e-7),
+                 xytext=(5.5, 1e-4),
                  fontsize=10, color='#cc2222',
                  arrowprops=dict(arrowstyle='->', color='#cc2222', lw=1.5),
                  bbox=dict(boxstyle='round,pad=0.3', facecolor='#fff0f0',
@@ -430,11 +430,11 @@ ax_left.annotate(r'$K_N \approx 0.794$' + '\n' + r'$5$ steps to $10^{-15}$',
 
 ax_left.set_xlabel(r'Step $n$', fontsize=13)
 ax_left.set_ylabel(r'$\varepsilon_n = |v_n - \sqrt[3]{2}|$', fontsize=13)
-ax_left.set_title(r'Convergence comparison ($p=3$, $x=2$)', fontsize=12,
+ax_left.set_title(r'Convergence comparison ($p=3$, $x=2$)', fontsize=13,
                    fontweight='bold')
 ax_left.legend(fontsize=10, loc='upper right')
-ax_left.set_ylim(1e-17, 2)
-ax_left.set_xlim(-0.3, 8.5)
+ax_left.set_ylim(1e-17, 5)
+ax_left.set_xlim(-0.3, 10)
 ax_left.grid(True, alpha=0.25, which='both')
 
 # ── right panel: quadratic constant comparison bar chart ─────────
@@ -442,43 +442,49 @@ ax_right.set_facecolor('#fafaf8')
 
 methods = ['Steffensen–\nPandrosion', 'Newton']
 K_values = [0.013, 0.794]
-colors = ['#2255aa', '#cc2222']
-bars = ax_right.bar(methods, K_values, color=colors, width=0.55,
+colors_bar = ['#2255aa', '#cc2222']
+bars = ax_right.bar(methods, K_values, color=colors_bar, width=0.50,
                     edgecolor='white', linewidth=2, zorder=3)
 
 # Value labels on top of bars
-for bar, K in zip(bars, K_values):
-    ax_right.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.025,
-                  f'$K \\approx {K}$', ha='center', fontsize=13, fontweight='bold',
-                  color=bar.get_facecolor())
+for bar, K, col in zip(bars, K_values, colors_bar):
+    ax_right.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.03,
+                  f'$K \\approx {K}$', ha='center', fontsize=14, fontweight='bold',
+                  color=col)
 
-# Ratio annotation
+# Ratio annotation arrow between the two bars
 ax_right.annotate('',
-                  xy=(0, 0.013), xycoords='data',
-                  xytext=(0, 0.794), textcoords='data',
-                  arrowprops=dict(arrowstyle='<->', color='#333', lw=1.8,
+                  xy=(0.15, 0.025), xycoords='data',
+                  xytext=(0.15, 0.78), textcoords='data',
+                  arrowprops=dict(arrowstyle='<->', color='#333', lw=2.0,
                                   mutation_scale=15))
-ax_right.text(-0.38, 0.40, r'$\times\, 61$', fontsize=14, fontweight='bold',
+ax_right.text(0.15, 0.38, r'$\times\, 61$', fontsize=16, fontweight='bold',
               ha='center', color='#333',
-              bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffdd',
-                       edgecolor='#999', alpha=0.9))
+              bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffdd',
+                       edgecolor='#999', alpha=0.95))
 
-# Additional info
-ax_right.text(0, -0.09, 'Derivative-free\n2 evals of $S_p$ / step',
+# Info boxes below bars
+ax_right.text(0, -0.13, 'Derivative-free',
+              ha='center', fontsize=10, color='#2255aa', fontweight='bold')
+ax_right.text(0, -0.20, r'2 evals of $S_p$ / step',
               ha='center', fontsize=9, color='#2255aa', style='italic')
-ax_right.text(1, -0.09, "Requires $f'$\n1 eval / step",
+
+ax_right.text(1, -0.13, "Requires $f'(x)$",
+              ha='center', fontsize=10, color='#cc2222', fontweight='bold')
+ax_right.text(1, -0.20, '1 eval / step',
               ha='center', fontsize=9, color='#cc2222', style='italic')
 
 ax_right.set_ylabel(r'Quadratic constant $K$', fontsize=13)
 ax_right.set_title('Quadratic constant comparison\n'
                     r'$\varepsilon_{n+1} \leq K \cdot \varepsilon_n^2$',
-                    fontsize=12, fontweight='bold')
-ax_right.set_ylim(0, 0.95)
+                    fontsize=13, fontweight='bold')
+ax_right.set_ylim(-0.05, 1.0)
 ax_right.grid(True, alpha=0.2, axis='y')
 ax_right.spines['top'].set_visible(False)
 ax_right.spines['right'].set_visible(False)
 
-plt.tight_layout(pad=2.5)
+plt.tight_layout(pad=3.0)
+plt.subplots_adjust(bottom=0.15)
 plt.savefig('pandrosion_steffensen.pdf', dpi=200, bbox_inches='tight',
             facecolor='#fafaf8')
 plt.savefig('pandrosion_steffensen.png', dpi=150, bbox_inches='tight',
