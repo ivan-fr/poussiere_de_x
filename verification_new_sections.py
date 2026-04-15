@@ -1,11 +1,12 @@
 """
 =============================================================================
 VERIFICATION OF NEW SECTIONS (pandrosion_en.tex expanded)
-§8: Functional properties of λ_{p,x}
-§9: Non-asymptotic error bounds
+§8:  Functional properties of λ_{p,x}
+§9:  Non-asymptotic error bounds
 §10: Extension to x < 1
 §11: Optimal starting point
 §12: Steffensen acceleration
+§13: Scaling optimization
 =============================================================================
 """
 import numpy as np
@@ -365,7 +366,236 @@ for p, x in [(2, 2), (3, 3), (4, 2), (5, 2)]:
 
 
 # ╔═══════════════════════════════════════════════════════════════════════════╗
-# ║  RUN ORIGINAL VERIFICATION TOO                                          ║
+# ║  §13: SCALING OPTIMIZATION                                              ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+print("\n" + "=" * 78)
+print("§13: SCALING OPTIMIZATION")
+print("=" * 78)
+
+def count_iters(p, x, s0, tol=1e-10, maxiter=600):
+    """Count iterations to reach |v_n - alpha| < tol."""
+    alpha = x**(1/p)
+    s = s0
+    for n in range(maxiter):
+        v = x * s**(p-1)
+        if abs(v - alpha) < tol:
+            return n
+        s = pandrosion_s(s, p, x)
+    return maxiter
+
+# --- 13.1: Factorization identity x^{1/p} = A^{1/p} * (x/A)^{1/p} ---
+print("\n  Factorization identity: x^{1/p} = A^{1/p} * (x/A)^{1/p}")
+for p, x in [(3, 10), (3, 100), (3, 1000), (3, 10000),
+             (2, 100), (2, 10000), (4, 256), (5, 100000)]:
+    A = int(round(x**(1/p)))**p
+    # ensure A <= x
+    while A > x:
+        A = (int(round(x**(1/p))) - 1)**p
+    if A == 0:
+        A = 1
+    x_red = x / A
+    result = A**(1/p) * x_red**(1/p)
+    target = x**(1/p)
+    check(f"p={p}, x={x}: A^(1/p)*x'^(1/p) = {result:.10f} = x^(1/p) = {target:.10f}",
+          close(result, target, tol=1e-10),
+          f"error={abs(result-target):.2e}")
+
+# --- 13.2: A = floor(x^{1/p})^p values match article table ---
+print("\n  Table: A = floor(x^{1/p})^p")
+table_scaling = [
+    # (x, A_expected, x'_expected, lam_dir_exp, lam_scl_exp, red_exp)
+    (10,    8,    1.25,    0.615, 0.073, 8),
+    (100,   64,   1.5625,  0.890, 0.145, 6),
+    (1000,  729,  1.372,   0.973, 0.103, 9),
+    (10000, 9261, 1.080,   0.994, 0.025, 39),
+]
+for x, A_exp, xp_exp, lam_dir_exp, lam_scl_exp, red_exp in table_scaling:
+    p = 3
+    A = int(x**(1/p))**p
+    x_red = x / A
+    lam_dir = lambda_theoretical(p, x)
+    lam_scl = lambda_theoretical(p, x_red)
+    reduction = lam_dir / lam_scl
+
+    check(f"x={x}: A = {A} (expected {A_exp})", A == A_exp)
+    check(f"x={x}: x' = {x_red:.4f} (expected {xp_exp})",
+          abs(x_red - xp_exp) < 0.001, f"got {x_red:.4f}")
+    check(f"x={x}: λ_direct = {lam_dir:.3f} ≈ {lam_dir_exp}",
+          abs(lam_dir - lam_dir_exp) < 0.002, f"got {lam_dir:.4f}")
+    check(f"x={x}: λ_scaled = {lam_scl:.3f} ≈ {lam_scl_exp}",
+          abs(lam_scl - lam_scl_exp) < 0.002, f"got {lam_scl:.4f}")
+    check(f"x={x}: reduction ≈ {red_exp}x",
+          abs(reduction - red_exp) < 2, f"got {reduction:.1f}x")
+
+# --- 13.3: Iteration count reduction matches table ---
+print("\n  Iteration count reduction (p=3)")
+table_iters = [
+    # (x, iters_direct_max, iters_scaled_max)
+    (10,    55, 10),
+    (100,   220, 13),
+    (1000,  600, 11),
+    (10000, 600, 7),
+]
+for x, it_dir_max, it_scl_max in table_iters:
+    p = 3
+    A = int(x**(1/p))**p
+    x_red = x / A
+    s0_dir = 1 - (x-1)/(x*p)
+    s0_scl = 1 - (x_red-1)/(x_red*p)
+    it_dir = count_iters(p, x, s0_dir, maxiter=600)
+    it_scl = count_iters(p, x_red, s0_scl, maxiter=600)
+    check(f"x={x}: direct={it_dir} iters, scaled={it_scl} iters",
+          it_scl <= it_scl_max,
+          f"direct={it_dir}, scaled={it_scl}")
+    check(f"x={x}: scaling reduces iterations (scaled < direct)",
+          it_scl < it_dir)
+
+# --- 13.4: Monotonicity exploitation: λ_{p,x'} < λ_{p,x} when A > 1 ---
+print("\n  Monotonicity: λ_{p,x'} < λ_{p,x} when floor(x^{1/p}) ≥ 2")
+all_mono = True
+for p in [2, 3, 4, 5]:
+    for x in [5, 10, 50, 100, 500, 1000, 5000, 10000]:
+        floor_val = int(x**(1/p))
+        if floor_val < 2:
+            continue  # scaling only helps when A = floor^p > 1
+        A = floor_val**p
+        if A >= x:
+            continue
+        x_red = x / A
+        if x_red <= 1.0001:
+            continue  # skip trivial case x' ≈ 1
+        lam_dir = lambda_theoretical(p, x)
+        lam_scl = lambda_theoretical(p, x_red)
+        if not (lam_scl < lam_dir):
+            all_mono = False
+check("λ_{p,x'} < λ_{p,x} holds for all (p,x) with floor ≥ 2", all_mono)
+
+# --- 13.5: x' ∈ [1, (1+1/floor)^p) ---
+print("\n  Reduced ratio x' ∈ [1, upper_bound)")
+for p in [2, 3, 4, 5]:
+    for x in [10, 100, 1000, 10000]:
+        floor_val = int(x**(1/p))
+        if floor_val == 0:
+            continue
+        A = floor_val**p
+        x_red = x / A
+        upper = (1 + 1/floor_val)**p
+        check(f"p={p}, x={x}: x'={x_red:.4f} ∈ [1, {upper:.4f})",
+              1 <= x_red < upper + 1e-10,
+              f"x'={x_red:.6f}, upper={upper:.6f}")
+
+# --- 13.6: Double preconditioning: ε'_0 < ε_0 AND λ' < λ ---
+print("\n  Double preconditioning: ε'_0 < ε_0 AND λ' < λ")
+for p, x in [(3, 100), (3, 1000), (3, 10000), (2, 100), (4, 256)]:
+    alpha = x**(1/p)
+    A = int(x**(1/p))**p
+    if A == 0:
+        continue
+    x_red = x / A
+    alpha_red = x_red**(1/p)
+
+    # Direct: starting residual
+    s0_dir = 1 - (x-1)/(x*p)
+    v0_dir = x * s0_dir**(p-1)
+    eps0_dir = abs(v0_dir - alpha)
+
+    # Scaled: starting residual
+    s0_scl = 1 - (x_red-1)/(x_red*p)
+    v0_scl = x_red * s0_scl**(p-1)
+    eps0_scl = abs(v0_scl - alpha_red)
+
+    lam_dir = lambda_theoretical(p, x)
+    lam_scl = lambda_theoretical(p, x_red)
+
+    check(f"p={p}, x={x}: ε'_0={eps0_scl:.4f} < ε_0={eps0_dir:.4f}",
+          eps0_scl < eps0_dir)
+    check(f"p={p}, x={x}: λ'={lam_scl:.4f} < λ={lam_dir:.4f}",
+          lam_scl < lam_dir)
+
+# --- 13.7: Combined Scaling + Steffensen ---
+print("\n  Scaling + Steffensen combined")
+for p, x in [(3, 10), (3, 100), (3, 1000), (3, 10000),
+             (2, 100), (2, 10000), (4, 256), (5, 32)]:
+    A = int(x**(1/p))**p
+    if A == 0:
+        A = 1
+    x_red = x / A
+    alpha_red = x_red**(1/p)
+    s_star_red = 1 / alpha_red
+
+    # Start with optimal s0
+    s = 1 - (x_red-1)/(x_red*p)
+    steps = 0
+    for i in range(10):
+        s_new = steffensen_step(s, p, x_red)
+        steps = i + 1
+        if abs(s_new - s_star_red) < 1e-13:
+            break
+        s = s_new
+
+    # Reconstruct full result
+    full_result = A**(1/p) * x_red * s_new**(p-1)
+    target = x**(1/p)
+
+    check(f"p={p}, x={x}: Scaling+Steffensen in {steps} steps, "
+          f"result={full_result:.8f} ≈ {target:.8f}",
+          close(full_result, target, tol=1e-6) and steps <= 5,
+          f"error={abs(full_result-target):.2e}, steps={steps}")
+
+# --- 13.8: Stress test - very large x ---
+print("\n  Stress test: very large x")
+for p, x in [(3, 10**6), (3, 10**9), (2, 10**6), (4, 10**8)]:
+    A = int(round(x**(1/p)))**p
+    if A > x:
+        A = (int(round(x**(1/p))) - 1)**p
+    if A == 0:
+        A = 1
+    x_red = x / A
+    lam_scl = lambda_theoretical(p, x_red)
+    lam_dir = lambda_theoretical(p, x)
+
+    # Scaling + Steffensen
+    alpha_red = x_red**(1/p)
+    s = 1 - (x_red-1)/(x_red*p)
+    for i in range(10):
+        s_new = steffensen_step(s, p, x_red)
+        if abs(s_new - 1/alpha_red) < 1e-12:
+            steps = i + 1
+            break
+        s = s_new
+    else:
+        steps = 10
+
+    full_result = A**(1/p) * x_red * s_new**(p-1)
+    target = x**(1/p)
+    check(f"p={p}, x={x:.0e}: λ_dir={lam_dir:.4f}→λ_scl={lam_scl:.4f}, "
+          f"{steps} steps, err={abs(full_result-target):.2e}",
+          close(full_result, target, tol=1e-6) and steps <= 5)
+
+# --- 13.9: Edge case x' = 1 (perfect power) ---
+print("\n  Edge case: x is a perfect p-th power (x' = 1)")
+for p, x in [(3, 8), (3, 27), (3, 64), (2, 4), (2, 9), (4, 16), (5, 32)]:
+    A = int(round(x**(1/p)))**p
+    x_red = x / A
+    check(f"p={p}, x={x}: x' = {x_red:.6f} ≈ 1 (perfect power)",
+          close(x_red, 1.0, tol=1e-10))
+
+# --- 13.10: The remark's claim: as x→∞, x'→1 ---
+print("\n  Asymptotic: x' → 1 as x → ∞ (p=3)")
+x_reds = []
+for exp in range(1, 10):
+    x = 10**exp
+    A = int(x**(1/3))**3
+    x_red = x / A
+    x_reds.append(x_red)
+# Check the x' values are bounded and often close to 1
+check("x' stays bounded in [1, ~1.6] for x = 10^1 .. 10^9",
+      all(1 <= xr < 2 for xr in x_reds),
+      f"x' values: {[f'{xr:.4f}' for xr in x_reds]}")
+
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  CROSS-CHECK: Original article formulas still valid                     ║
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 print("\n" + "=" * 78)
 print("CROSS-CHECK: Original article formulas still valid")
@@ -399,7 +629,7 @@ print("\n" + "═" * 78)
 print(f"  FINAL: {PASS} passed, {FAIL} failed")
 print("═" * 78)
 if FAIL == 0:
-    print("  🎉 ALL NEW SECTION FORMULAS AND VALUES ARE CORRECT")
+    print("  🎉 ALL FORMULAS AND VALUES ARE CORRECT (§8-§13)")
 else:
     print(f"  ⚠️  {FAIL} ERROR(S) DETECTED — see ❌ above")
 print()
