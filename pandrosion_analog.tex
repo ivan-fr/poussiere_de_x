@@ -138,13 +138,15 @@ All 5 Pandrosion operations are geometric: products, sums, and ratios of physica
 \label{sec:scaling}
 %=====================================================================
 
-From Paper~I~\cite{besevic2026}, the \emph{optimal starting point} for the Pandrosion iteration is:
+From Paper~I~\cite{besevic2026}, the iteration is dramatically accelerated by exploiting monotonicity through the \textbf{Geometric interpretation: Thales preconditioning}. This guarantees the \emph{optimal starting point} for the Pandrosion iteration:
 \begin{equation}
   \label{eq:s0opt}
   s_0^{\mathrm{opt}} = h(1) = 1 - \frac{x-1}{x \cdot p}.
 \end{equation}
 
-This is one evaluation of $h$ at the constant voltage $s = 1$ (i.e., $V_{\text{ref}}$).  For $p = 3$, $x = 2$: $s_0^{\mathrm{opt}} = 5/6 \approx 0.833$, while $s^* = 1/\cbrt{2} \approx 0.794$.  The initial residual is:
+This represents one evaluation of $h$ at the continuous reference voltage $V_{\text{ref}} = 1$~V. The residual is further bounded by applying \textbf{The scaling principle} ($x \to x/A$) as an analog pre-amplification stage: if the physical input $x$ is large, a simple analog attenuator $1/A$ scales the input into the optimal dynamic range $[1, 2]$~V before processing. 
+
+For $p = 3$, an unscaled $x = 2$ gives $s_0^{\mathrm{opt}} = 5/6 \approx 0.833$, while $s^* = 1/\cbrt{2} \approx 0.794$.  The initial residual is therefore tightly constrained:
 \[
   |s_0^{\mathrm{opt}} - s^*| \approx 0.040.
 \]
