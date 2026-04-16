@@ -1,6 +1,6 @@
-# Generalized Pandrosion Residuals
+# The Pandrosion Pentalogy
 
-**Residual profile of an iterative geometric construction for *p*-th roots of any positive real number.**
+**From ancient geometry to analog hardware computation: A complete mathematical and physical study of derivative-free $p$-th root extraction.**
 
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19598498.svg)](https://doi.org/10.5281/zenodo.19598498)
@@ -8,58 +8,77 @@
 
 ## Overview
 
-We revisit **Pandrosion of Alexandria's** classical geometric construction for approximating cube roots — reported by Pappus in the *Collectio* (c. 340 AD) — and generalize it to the computation of *p*-th roots of any positive real *x*.
+This repository contains the complete five-part research series exploring **Pandrosion of Alexandria's** geometric construction (c. 340 AD) and its rigorous transformation into an optimal algorithm for analog integrated circuits. The iteration reduces to a single recurrence involving the geometric sum $S_p(s)$:
 
-The iteration reduces to a single recurrence involving the geometric sum $S_p(s) = 1 + s + \cdots + s^{p-1}$:
+$$s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)}$$
 
-$$s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)}, \qquad v_n = x \cdot s_n^{p-1} \;\to\; x^{1/p}$$
+The research spans five distinct papers, each tackling a specific facet of this algorithm:
 
-We derive the **exact contraction ratio** (convergence signature):
+---
 
-$$\lambda_{p,x} = \frac{(\alpha - 1)\sum_{k=1}^{p-1} k\,\alpha^{p-1-k}}{\sum_{k=0}^{p-1} \alpha^k}, \qquad \alpha = x^{1/p}$$
+### Paper I: Generalized Pandrosion Residuals
+**Focus:** Core geometry, contraction ratio $\lambda_{p,x}$, and the geometric scaling optimization.
 
-### Key Results
-
-| Result | Reference |
-|--------|-----------|
-| Closed-form contraction ratio λ_{p,x} | Theorem 4.1 |
-| Double monotonicity (in *p* and *x*) | Theorem 8.1 |
-| Non-asymptotic error bounds | Theorem 9.1 |
-| Extension to *x* < 1 (oscillatory) | Proposition 10.1 |
-| Optimal starting point | Proposition 11.1 |
-| **Steffensen–Pandrosion** (quadratic, derivative-free) | Theorem 12.1 |
-| **Scaling optimization** (39× reduction for large *x*) | Proposition 13.1 |
-
-### Steffensen–Pandrosion vs Newton
-
-The paper's central applied result: Steffensen's acceleration transforms Pandrosion's ancient geometric construction into a **quadratically convergent, derivative-free** method with constant $K_S \approx 0.013$, vastly outperforming Newton's $K_N \approx 0.794$ for the same problem.
-
-| Method | Order | Constant *K* | Steps to 10⁻¹⁶ | Derivative? |
-|--------|:-----:|:------------:|:---------------:|:-----------:|
-| Pandrosion | 1 | λ ≈ 0.220 | ~16 | No |
-| Newton | 2 | K ≈ 0.794 | 5 | **Yes** |
-| **Steffensen–Pandrosion** | **2** | **K ≈ 0.013** | **3** | **No** |
-
-## Figures
+We prove the convergence signature of the core map $h(s)$ and establish the "Thales preconditioning" $s_0^{\text{opt}} = h(1)$, which exponentially accelerates the fallback convergence without scaling the physical variables.
 
 <p align="center">
-  <img src="pandrosion_geometry.png" width="400" alt="Pandrosion's geometric construction"/>
-  <br><em>Pandrosion's geometric construction for p=3, x=2</em>
+  <img src="figures/pandrosion_geometry.png" width="400" alt="Pandrosion's geometric construction"/>
+  <br><em>Pandrosion's pure geometric construction</em>
 </p>
+
+---
+
+### Paper II: Complex Dynamics
+**Focus:** Basins of attraction and absence of fractal chaos in $\mathbb{C}$.
+
+Unlike Newton's method, which is plagued by chaotic fractal boundaries that can trap noisy signals, Pandrosion's map guarantees smooth, robust basins of attraction over the complex plane, intrinsically protecting against phase-noise trapping.
 
 <p align="center">
-  <img src="pandrosion_figures.png" width="700" alt="Cobweb diagram and residual profiles"/>
-  <br><em>Cobweb diagram and residual profiles: Pandrosion vs Newton</em>
+  <img src="figures/pandrosion_complex_basins.png" width="800" alt="Pandrosion complex basins"/>
+  <br><em>Smooth, non-fractal basins of attraction</em>
 </p>
+
+---
+
+### Paper III: Steffensen-Pandrosion & Optimality
+**Focus:** Reaching quadratic convergence without derivatives.
+
+By applying Steffensen's acceleration to the geometric core, we construct a purely derivative-free quadratic method that yields a near-minimal asymptotic error constant $K_S \approx 0.013$ (vastly smaller than Newton's $0.794$).
 
 <p align="center">
-  <img src="pandrosion_steffensen.png" width="700" alt="Steffensen–Pandrosion vs Newton"/>
-  <br><em>Steffensen–Pandrosion reaches machine precision in 3 steps (K_S/K_N ≈ 1/61)</em>
+  <img src="figures/pandrosion_steffensen.png" width="800" alt="Steffensen-Pandrosion vs Newton"/>
+  <br><em>Steffensen–Pandrosion reaches machine precision in 3 steps</em>
 </p>
 
-## Repository Structure (The Pandrosion Pentalogy)
+---
 
-The research has expanded into a five-part series covering pure geometry to physical hardware realization. All assets are organized by type:
+### Paper IV: Higher-Order KT-Optimal Methods
+**Focus:** Saturating the Kung-Traub optimal bound.
+
+Extending the principles of Paper III, we establish an entire hierarchy of Kung-Traub optimal extrapolation methods ($T_4, T_8$). They achieve convergence of order $2^{n-1}$ using exactly $n$ evaluations of the core sum $S_p(s)$, heavily outperforming classical high-order techniques.
+
+<p align="center">
+  <img src="figures/pandrosion_higher_order.png" width="800" alt="Higher-Order KT-Optimal convergence"/>
+  <br><em>Order 4 and Order 8 saturation</em>
+</p>
+
+---
+
+### Paper V: Analog Hardware Architecture
+**Focus:** Physical VLSI realization and systematic bias.
+
+Returning to the constraints of the real world—where mathematical extrapolations like $T_4$ fail due to analog noise amplification—we prove that iterating the pure, primitive map $h(n)$ from Paper I provides the **ultimate analog architecture**. A simple 15-component Pandrosion pipeline ($h^2$) delivers **12× lower systematic bias** than a Newton pipeline, requires no clock, and is unconditionally stable at 10% thermal noise. 
+
+<p align="center">
+  <img src="figures/pandrosion_analog.png" width="800" alt="Analog Bias Evaluation"/>
+  <br><em>Systematic bias and precision scaling in analog VLSI noise</em>
+</p>
+
+---
+
+## Repository Structure
+
+All assets are cleanly organized by type:
 
 ```text
 ├── articles/                        # Compiled PDFs
@@ -69,77 +88,51 @@ The research has expanded into a five-part series covering pure geometry to phys
 │   ├── pandrosion_higher_order.pdf  # Paper IV: Higher-Order KT-Optimal Methods
 │   └── pandrosion_analog.pdf        # Paper V: Analog Hardware Architecture
 ├── latex/                           # LaTeX source files for all 5 papers
-│   ├── pandrosion_en_improved.tex   # ... and others
 ├── figures/                         # High-res output figures (.png and .pdf)
-├── verification_*.py                # 300+ Monte Carlo assertions and unit tests
+├── verification_*.py                # 309+ numerical Monte Carlo/Assertions
 └── figures_*.py                     # Python scripts generating all plots
 ```
 
 ## Building
 
-### Compile the PDF
-
+### Compile the PDFs
 ```bash
-# Using tectonic (recommended)
-tectonic pandrosion_en_improved.tex
-
-# Or using pdflatex
-pdflatex pandrosion_en_improved.tex && pdflatex pandrosion_en_improved.tex
+# We recommend using tectonic
+cd latex
+tectonic pandrosion_analog.tex
 ```
 
 ### Generate Figures
-
 ```bash
 pip install numpy matplotlib
-python3 figures.py
+python3 figures_analog.py
 ```
 
-### Run Verification Suite (309 tests)
-
+### Run Verification Suites
+The repository contains Python scripts mathematically verifying every claim across the 5 papers:
 ```bash
-python3 verification_article_complet.py   # 143 tests — §1–§7
-python3 verification_new_sections.py      # 166 tests — §8–§13
+python3 verification_article_complet.py   # Paper I tests
+python3 verification_complex.py           # Paper II tests
+python3 verification_optimality.py        # Paper III tests
+python3 verification_higher_order.py      # Paper IV tests
+python3 verification_analog.py            # Paper V Monte Carlo tests
 ```
-
-All 309 numerical assertions verify every formula, table value, and convergence claim in the paper against independent Python computation.
-
-## Mathematical Highlights
-
-### The contraction ratio is a "convergence signature"
-
-For any target α = x^{1/p}, the ratio λ_{p,x} is entirely determined by α — the target itself dictates how fast Pandrosion's method approaches it. Different methods (Pandrosion, bisection, Newton) produce different residual profiles for the same number, illustrating the paper's thesis:
-
-> *"The residual profile is a property of the method, not of the number."*
-
-### Scaling optimization
-
-For large *x*, direct Pandrosion is impractical (λ → 1). By writing x^{1/p} = ⌊x^{1/p}⌋ · (x/A)^{1/p} with A = ⌊x^{1/p}⌋^p, we reduce to x' ≈ 1 where λ ≈ 0:
-
-| x | λ (direct) | λ (scaled) | Reduction | Iterations |
-|---:|:---:|:---:|:---:|:---:|
-| 10 | 0.615 | 0.073 | 8× | 49 → 8 |
-| 100 | 0.890 | 0.145 | 6× | 213 → 11 |
-| 1,000 | 0.973 | 0.103 | 9× | >500 → 9 |
-| 10,000 | 0.994 | 0.025 | **39×** | >500 → 5 |
-
-Combined with Steffensen: **2–3 steps** for any x, any p.
 
 ## Citation
 
 ```bibtex
-@article{besevic2026pandrosion,
-  title     = {Generalized Pandrosion Residuals: Residual Profile of an
-               Iterative Geometric Construction for $p$-th Roots},
+@article{besevic2026pandrosion_suite,
+  title     = {The Pandrosion Pentalogy: From geometry to analog hardware computation},
   author    = {Besevic, Ivan},
   year      = {2026},
-  note      = {Preprint, HAL},
+  note      = {Preprint series, HAL},
   doi       = {10.5281/zenodo.19598498}
 }
 ```
 
 ## License
 
-This work is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative Commons Attribution-ShareAlike 4.0 International).
+This work is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 
 ## Author
 
