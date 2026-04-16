@@ -89,8 +89,8 @@ All assets are cleanly organized by type:
 │   └── pandrosion_analog.pdf        # Paper V: Analog Hardware Architecture
 ├── latex/                           # LaTeX source files for all 5 papers
 ├── figures/                         # High-res output figures (.png and .pdf)
-├── verification_*.py                # 309+ numerical Monte Carlo/Assertions
-└── figures_*.py                     # Python scripts generating all plots
+├── verification/                    # 300+ Monte Carlo assertions and unit tests
+└── scripts/                         # Python scripts generating all plots
 ```
 
 ## Building
@@ -105,12 +105,14 @@ tectonic pandrosion_analog.tex
 ### Generate Figures
 ```bash
 pip install numpy matplotlib
+cd scripts
 python3 figures_analog.py
 ```
 
 ### Run Verification Suites
 The repository contains Python scripts mathematically verifying every claim across the 5 papers:
 ```bash
+cd verification
 python3 verification_article_complet.py   # Paper I tests
 python3 verification_complex.py           # Paper II tests
 python3 verification_optimality.py        # Paper III tests
