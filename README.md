@@ -57,19 +57,22 @@ The paper's central applied result: Steffensen's acceleration transforms Pandros
   <br><em>Steffensen–Pandrosion reaches machine precision in 3 steps (K_S/K_N ≈ 1/61)</em>
 </p>
 
-## Repository Structure
+## Repository Structure (The Pandrosion Pentalogy)
 
-```
-├── pandrosion_en_improved.tex    # Main article (English, latest version)
-├── pandrosion.tex                # Article (French)
-├── pandrosion_en.tex             # Article (English, earlier version)
-├── figures.py                    # Figure generation (matplotlib)
-├── verification_article_complet.py  # 143 tests — core article (§1–§7)
-├── verification_new_sections.py     # 166 tests — new sections (§8–§13)
-├── pandrosion_geometry.{pdf,png}    # Figure 1: geometric construction
-├── pandrosion_figures.{pdf,png}     # Figure 2: cobweb + residual profiles
-├── pandrosion_steffensen.{pdf,png}  # Figure 3: Steffensen vs Newton
-└── pandrosion_en_improved.pdf       # Compiled PDF
+The research has expanded into a five-part series covering pure geometry to physical hardware realization. All assets are organized by type:
+
+```text
+├── articles/                        # Compiled PDFs
+│   ├── pandrosion_en_improved.pdf   # Paper I: Generalized Pandrosion Residuals
+│   ├── pandrosion_complex.pdf       # Paper II: Complex Plane & Basins
+│   ├── pandrosion_optimality.pdf    # Paper III: Steffensen-Pandrosion & Optimality
+│   ├── pandrosion_higher_order.pdf  # Paper IV: Higher-Order KT-Optimal Methods
+│   └── pandrosion_analog.pdf        # Paper V: Analog Hardware Architecture
+├── latex/                           # LaTeX source files for all 5 papers
+│   ├── pandrosion_en_improved.tex   # ... and others
+├── figures/                         # High-res output figures (.png and .pdf)
+├── verification_*.py                # 300+ Monte Carlo assertions and unit tests
+└── figures_*.py                     # Python scripts generating all plots
 ```
 
 ## Building
