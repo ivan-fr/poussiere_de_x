@@ -297,6 +297,10 @@ The pipeline has 3 identical stages, each computing $h(s)$:
 \end{enumerate}
 \end{definition}
 
+\begin{remark}[Continuous input vs.\ discrete topology]
+In this pipeline, the value $x \geq 1$ is simply the continuous \textbf{input voltage}. The chip requires no clock or parameter tuning to react to changing inputs: if $x(t)$ varies, the output $v(t) \approx \prt{p}{x(t)}$ tracks it continuously, delayed only by the propagation time ($\sim 120$~ns). Conversely, the root order $p$ is permanently encoded in the \textbf{hardware topology} (the physical wiring of the $S_p$ summation block). A single universal layout handles any $x$; changing $p$ requires activating different physical traces.
+\end{remark}
+
 \begin{table}[H]
 \centering
 \begin{tabular}{cccccc}
