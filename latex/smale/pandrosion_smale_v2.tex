@@ -377,27 +377,57 @@ More precisely, Newton fails when $z_n$ approaches a point $z_c$ with $P'(z_c) =
 \subsection{Higher-order methods and scaling at high degree}
 \label{sec:higher_order_smale}
 
-The adaptive Pandrosion--Steffensen method of Definition~\ref{def:adaptive} uses the order-$2$ Steffensen acceleration $T_2$.  In~\cite{besevic2026ho}, we developed a hierarchy of higher-order methods $T_n$ that achieve convergence order $n$ using $n$ evaluations of $h$ per step.  Combining these with the scaling optimization (aggressive anchor update, $K = 1$) and \emph{root-based evaluation} ($P(z) = \prod_{k=1}^d (z - \zeta_k)$, which is exact in the BSS model), we test whether the pre-lock-in time $n_\star$ grows polynomially in the degree $d$.
+The adaptive Pandrosion--Steffensen method of Definition~\ref{def:adaptive} uses the order-$2$ Steffensen acceleration $T_2$.  In~\cite{besevic2026ho}, we developed a hierarchy of higher-order methods $T_n$ that achieve convergence order $n$ using $n$ evaluations per step.  We now apply this hierarchy to the \emph{universal} Pandrosion operator $\mathcal{P}_{P,z_0}$ of Section~\ref{sec:universal_poly}, combined with aggressive anchor update ($K = 1$) and root-based evaluation (BSS model).
+
+\begin{definition}[Higher-order Pandrosion--$T_n$ for general polynomials]
+\label{def:higher_order_universal}
+Given a polynomial $P \in \CC[z]$, an anchor $z_0$, and a current iterate $z$, define the base map $h(w) := \mathcal{P}_{P,z_0}(w) = z_0 - P(z_0)/Q(z_0, w)$.  The higher-order methods are:
 
 \medskip
 
-\textbf{Experimental setup.}  For each degree $d \in \{3, 5, 10, 20, 30, 50, 75, 100, 150, 200\}$, we generate $8$ random polynomials with roots in $|z| \leq 4$ and test convergence from $O(d)$ random starting points on the Cauchy circle.  The methods $T_2$ (Steffensen, order~$2$), $T_3$ (order~$3$), $T_4$ (order~$4$), and Newton are compared.  All evaluations use root-based arithmetic (the BSS model).
+\emph{$T_2$ (Steffensen, order~$2$, $2$ evaluations of $h$):}
+\begin{equation}
+  \label{eq:T2_universal}
+  s_1 = h(z), \quad s_2 = h(s_1), \quad
+  T_2(z) \;=\; z - \frac{(s_1 - z)^2}{s_2 - 2s_1 + z},
+  \qquad
+  \hat{\lambda} \;:=\; \frac{s_2 - s_1}{s_1 - z}.
+\end{equation}
+
+\emph{$T_3$ (order~$3$, $3$ evaluations of $h$):}  one Richardson extrapolation step beyond $T_2$:
+\begin{equation}
+  \label{eq:T3_universal}
+  s_3 = h\bigl(T_2(z)\bigr), \qquad
+  T_3(z) \;=\; T_2(z) - \frac{s_3 - T_2(z)}{\hat{\lambda} - 1}.
+\end{equation}
+
+\emph{$T_4$ (order~$4$, $4$ evaluations of $h$):}  one further Richardson step:
+\begin{equation}
+  \label{eq:T4_universal}
+  s_4 = h\bigl(T_3(z)\bigr), \qquad
+  T_4(z) \;=\; T_3(z) - \frac{s_4 - T_3(z)}{\hat{\lambda} - 1}.
+\end{equation}
+Each method $T_n$ uses exactly $n$ evaluations of the base map $h$ --- and hence $n$ evaluations of $Q(z_0, \cdot)$ --- per step.  When combined with anchor update $z_0 \leftarrow z$ at every step ($K = 1$), this provides a derivative-free, order-$n$, fully adaptive rootfinding algorithm for any polynomial.
+\end{definition}
+
+\medskip
+
+\textbf{Experimental setup.}  For each degree $d \in \{3, 5, 10, 20, 30, 50, 75, 100, 150, 200\}$, we generate $8$ random polynomials with roots in $|z| \leq 4$ and test convergence from $O(d)$ random starting points on the Cauchy circle.  The methods $T_2$, $T_3$, $T_4$, and Newton are compared.  All evaluations use root-based arithmetic (the BSS model).
 
 \begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{r|cccc|cccc}
+\begin{tabular}{r|cccc|c}
 \toprule
-\multirow{2}{*}{$d$} & \multicolumn{4}{c|}{Median $n_\star$ (steps to $|P(z)| < 10^{-10}$)} & \multicolumn{4}{c}{Convergence rate} \\
-& $T_2$ & $T_3$ & $T_4$ & Newton & $T_2$ & $T_3$ & $T_4$ & Newton \\
+$d$ & $n_\star^{T_2}$ & $n_\star^{T_3}$ & $n_\star^{T_4}$ & $n_\star^{\mathrm{Newton}}$ & Ratio \\
 \midrule
-$3$ & $4$ & $3$ & $3$ & $8$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
-$10$ & $10$ & $8$ & $7$ & $21$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
-$30$ & $16$ & $14$ & $12$ & $38$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
-$50$ & $29$ & $26$ & $26$ & $79$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
-$100$ & $62$ & $40$ & $44$ & $138$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
-$150$ & $78$ & $64$ & $66$ & $204$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
-$200$ & $108$ & $102$ & $88$ & $260$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
+$3$ & $4$ & $3$ & $3$ & $8$ & $2.7\times$ \\
+$10$ & $10$ & $8$ & $7$ & $21$ & $2.6\times$ \\
+$30$ & $16$ & $14$ & $12$ & $38$ & $2.7\times$ \\
+$50$ & $29$ & $26$ & $26$ & $79$ & $3.0\times$ \\
+$100$ & $62$ & $40$ & $44$ & $138$ & $3.5\times$ \\
+$150$ & $78$ & $64$ & $66$ & $204$ & $3.2\times$ \\
+$200$ & $108$ & $102$ & $88$ & $260$ & $2.5\times$ \\
 \bottomrule
 \end{tabular}
 \caption{Pre-lock-in time $n_\star$ and convergence rate for random and adversarial polynomials of degree $d$, using root-based evaluation (BSS model).  All methods achieve $100\%$ convergence up to $d = 200$.  The Pandrosion hierarchy consistently achieves $n_\star$ that is $2$--$3\times$ smaller than Newton.}
@@ -424,6 +454,27 @@ Roots of unity $z^d - 1$ & $100$ & $25$ & $74$ & $3.0\times$ & $100\%$ \\
 \caption{Adversarial polynomial families.  Wilkinson's polynomial has exponentially large coefficients; clustered roots have separation $\delta = O(1/d)$; roots of unity form a maximally symmetric configuration.  In all cases, $T_3$ converges with $100\%$ success rate and achieves $n_\star$ approximately $3\times$ smaller than Newton.}
 \label{tab:adversarial}
 \end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{adversarial_wilkinson20.png}
+  \caption{Basins of attraction for the Wilkinson polynomial $W_{20}(z) = \prod_{k=1}^{20}(z-k)$, $d = 20$.  Left: Newton ($100\%$).  Right: Pandrosion $T_3$ with $K = 1$ ($100\%$).  Both methods achieve full convergence, but the basin geometries differ significantly: Newton's basins follow the real axis, while Pandrosion's are more uniformly distributed.}
+  \label{fig:adversarial_wilkinson}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{adversarial_clustered20.png}
+  \caption{Clustered roots $\zeta_k = k/20$ with separation $\delta = 0.05$, $d = 20$.  Left: Newton ($100\%$).  Right: Pandrosion $T_3$ ($100\%$).  Despite the tight clustering, both methods converge to all roots.}
+  \label{fig:adversarial_clustered}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{adversarial_unity20.png}
+  \caption{Roots of unity $z^{20} - 1 = 0$, $d = 20$.  Left: Newton ($83.9\%$) --- the black non-converging regions near basin boundaries are clearly visible.  Right: Pandrosion $T_3$ with $K = 1$ ($96.8\%$) --- significantly fewer non-converging pixels.  This is the first adversarial case where Pandrosion \emph{visibly} outperforms Newton.}
+  \label{fig:adversarial_unity}
+\end{figure}
 
 \begin{proposition}[Empirical scaling law]
 \label{prop:empirical_scaling}
