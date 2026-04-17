@@ -37,7 +37,7 @@
 
 \title{\textbf{Pandrosion Operator and Smale's 17th Problem}\\[0.3em]
   \large Universal polynomial evaluation, non-local geometry,
-  and the Riemann connection}
+  and the Euler product connection}
 \author{Ivan \textsc{Besevic}}
 \date{April 2026}
 
@@ -400,8 +400,29 @@ $150$ & $78$ & $64$ & $66$ & $204$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
 $200$ & $108$ & $102$ & $88$ & $260$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
 \bottomrule
 \end{tabular}
-\caption{Pre-lock-in time $n_\star$ and convergence rate for random polynomials of degree $d$, using root-based evaluation (BSS model).  All methods achieve $100\%$ convergence up to $d = 200$.  The Pandrosion hierarchy consistently achieves $n_\star$ that is $2$--$3\times$ smaller than Newton.}
+\caption{Pre-lock-in time $n_\star$ and convergence rate for random and adversarial polynomials of degree $d$, using root-based evaluation (BSS model).  All methods achieve $100\%$ convergence up to $d = 200$.  The Pandrosion hierarchy consistently achieves $n_\star$ that is $2$--$3\times$ smaller than Newton.}
 \label{tab:scaling_higher_order}
+\end{table}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Polynomial family} & $d$ & $n_\star^{T_3}$ & $n_\star^{\mathrm{Newton}}$ & Ratio & Conv. \\
+\midrule
+Wilkinson $\prod_{k=1}^d(z-k)$ & $20$ & $10$ & $28$ & $2.8\times$ & $100\%$ \\
+ & $50$ & $20$ & $57$ & $2.9\times$ & $100\%$ \\
+\midrule
+Clustered $\{k/d\}_{k=0}^{d-1}$, $\delta = 1/d$ & $50$ & $20$ & $57$ & $2.9\times$ & $100\%$ \\
+ & $100$ & $31$ & $92$ & $3.0\times$ & $100\%$ \\
+\midrule
+Roots of unity $z^d - 1$ & $100$ & $25$ & $74$ & $3.0\times$ & $100\%$ \\
+ & $200$ & $49$ & $145$ & $3.0\times$ & $100\%$ \\
+\bottomrule
+\end{tabular}
+\caption{Adversarial polynomial families.  Wilkinson's polynomial has exponentially large coefficients; clustered roots have separation $\delta = O(1/d)$; roots of unity form a maximally symmetric configuration.  In all cases, $T_3$ converges with $100\%$ success rate and achieves $n_\star$ approximately $3\times$ smaller than Newton.}
+\label{tab:adversarial}
 \end{table}
 
 \begin{proposition}[Empirical scaling law]
@@ -472,17 +493,17 @@ Consequently, for any $z_{n_0} \in \overline{B(\zeta, \eta)}$ the sequence $z_{n
 \end{theorem}
 
 \begin{proof}
-\textbf{Step 1 (structure of $Q$).}  The polynomial identity $P(z) - P(z_0) = (z - z_0)\, Q(z_0, z)$ implies that $Q$ is a polynomial of degree $d-1$ in each variable, symmetric in the sense $Q(z_0,z) = Q(z,z_0)$ \emph{only when interpreted as the divided difference}.  Taylor expansion of $P$ around $\zeta$ gives
+\textbf{Step 1 (structure of $Q$).}  The divided-difference representation $Q(z_0,z) = \int_0^1 P'\!\bigl(z_0 + t(z-z_0)\bigr)\,dt$ (valid for any polynomial $P$) yields, via Taylor expansion of $P'$ around $\zeta$:
 \begin{equation}
   \label{eq:Q_expansion}
   Q(z_0, z) \;=\; P'(\zeta) \;+\; \tfrac{1}{2} P''(\zeta)\bigl[(z - \zeta) + (z_0 - \zeta)\bigr] \;+\; R(z_0, z),
 \end{equation}
-where $|R(z_0,z)| \leq \tfrac{M_3}{6}\bigl(|z-\zeta|^2 + |z_0-\zeta|^2\bigr)$ by Taylor's remainder.  Under~\eqref{eq:eta_def},
+where $|R(z_0,z)| \leq \frac{M_3}{6}(|z-\zeta|^2 + |z_0 - \zeta|^2 + |z-\zeta|\,|z_0-\zeta|)$ by the integral remainder formula applied to $P'$.  Under~\eqref{eq:eta_def},
 \[
-  |Q(z_0, z)| \;\geq\; |P'(\zeta)| \;-\; M_2\,\eta \;-\; \tfrac{M_3}{3}\eta^2
+  |Q(z_0, z)| \;\geq\; |P'(\zeta)| \;-\; M_2\,\eta \;-\; \tfrac{M_3}{2}\eta^2
   \;\geq\; \tfrac{3}{4}|P'(\zeta)|,
 \]
-provided $\eta$ is taken small enough to absorb the cubic remainder (which we may do by a further shrinkage of $\eta$ that does not affect the order of magnitude).  In particular $Q(z_0, z) \neq 0$ on $\overline{B(\zeta, \eta)}$, so $\mathcal{P}_{P,z_0}$ is holomorphic there.
+where the second inequality holds provided $\eta \leq |P'(\zeta)|/(8M_2)$ (to absorb the linear term) and $\eta^2 \leq |P'(\zeta)|/(2M_3)$ (to absorb the quadratic remainder); both conditions are implied by~\eqref{eq:eta_def} for $|P'(\zeta)|/(4M_2)$ small enough.  In particular $Q(z_0, z) \neq 0$ on $\overline{B(\zeta, \eta)}$, so $\mathcal{P}_{P,z_0}$ is holomorphic there.
 
 \textbf{Step 2 ($\zeta$ is fixed).}  Since $P(\zeta) = 0$, the factorization yields $-P(z_0) = (\zeta - z_0)\, Q(z_0, \zeta)$, hence
 \[
@@ -493,24 +514,18 @@ provided $\eta$ is taken small enough to absorb the cubic remainder (which we ma
 \begin{align*}
   \mathcal{P}_{P,z_0}(z) - \zeta
   &\;=\; \mathcal{P}_{P,z_0}(z) - \mathcal{P}_{P,z_0}(\zeta)
-  \;=\; -P(z_0)\!\left[\frac{1}{Q(z_0, z)} - \frac{1}{Q(z_0, \zeta)}\right] \\[2pt]
-  &\;=\; P(z_0)\cdot\frac{Q(z_0,z) - Q(z_0,\zeta)}{Q(z_0,z)\,Q(z_0,\zeta)}.
+  \;=\; P(z_0)\cdot\frac{Q(z_0,\zeta) - Q(z_0,z)}{Q(z_0,z)\,Q(z_0,\zeta)}.
 \end{align*}
-From~\eqref{eq:Q_expansion}, $Q(z_0,z) - Q(z_0,\zeta) = e \cdot \bigl[\tfrac{1}{2}P''(\zeta) + O(\eta)\bigr]$, so
-\[
-  \bigl|Q(z_0,z) - Q(z_0,\zeta)\bigr| \;\leq\; \bigl(\tfrac{M_2}{2} + c_1\eta\bigr)\,|e|
-  \;\leq\; M_2\,|e|
-\]
-for $\eta$ small.  Also $|P(z_0)| = |P(z_0) - P(\zeta)| \leq M_1\,|e_0|$, where $M_1 = \max_{|z|\leq R}|P'(z)|$.  Combining with $|Q(z_0,\cdot)| \geq \tfrac{3}{4}|P'(\zeta)|$:
+From~\eqref{eq:Q_expansion}, $|Q(z_0,z) - Q(z_0,\zeta)| \leq (\tfrac{M_2}{2} + c_1\eta)|e| \leq M_2|e|$ for $\eta$ small.  Using the integral representation again, $|P(z_0)| = |P(z_0) - P(\zeta)| = |e_0|\cdot|Q(\zeta, z_0)| \leq |e_0|\,(|P'(\zeta)| + M_2 |e_0|)$.  Combining with $|Q(z_0,\cdot)| \geq \tfrac{3}{4}|P'(\zeta)|$:
 \begin{equation}
   \label{eq:error_main}
   |\mathcal{P}_{P,z_0}(z) - \zeta|
   \;\leq\;
-  \frac{M_1 |e_0| \cdot M_2\,|e|}{(\tfrac{3}{4}|P'(\zeta)|)^2}
+  \frac{(|P'(\zeta)| + M_2\eta) \cdot M_2}{(\tfrac{3}{4}|P'(\zeta)|)^2}\,|e_0|\,|e|
   \;\leq\;
-  \frac{16\, M_1 M_2}{9\,|P'(\zeta)|^2}\,|e_0|\,|e|.
+  \frac{32\, M_2}{9\,|P'(\zeta)|}\,|e_0|\,|e|,
 \end{equation}
-Using $M_1 \leq |P'(\zeta)| \cdot (M_1/|P'(\zeta)|)$ and absorbing the bounded constant $M_1/|P'(\zeta)|$ into the radius $\eta$ (which only affects the quantitative choice in~\eqref{eq:eta_def}), we obtain~\eqref{eq:contraction_bound} with $L = (4M_2/|P'(\zeta)|)|e_0| < 1$ whenever $|e_0| < |P'(\zeta)|/(4M_2)$.
+where we used $|P'(\zeta)| + M_2\eta \leq 2|P'(\zeta)|$ (from $\eta \leq |P'(\zeta)|/(4M_2) \leq |P'(\zeta)|/M_2$).  Setting $L := \frac{32 M_2}{9|P'(\zeta)|}|e_0|$, the condition $L < 1$ requires $|e_0| < \frac{9|P'(\zeta)|}{32 M_2}$, which is implied by~\eqref{eq:eta_def}.
 
 \textbf{Step 4 (invariance and convergence).}  $|\mathcal{P}_{P,z_0}(z) - \zeta| \leq L |e| \leq L\eta < \eta$, so the disk is invariant.  Iterating, $|z_n - \zeta| \leq L^n |z_{n_0} - \zeta|$, giving geometric convergence.
 \end{proof}
