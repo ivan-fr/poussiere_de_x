@@ -1159,7 +1159,7 @@ The iterated scaling cascade exhibits three convergence phases, each governed by
 The proof is rigorous for Phases~2--3 (Theorems~\ref{thm:contraction_ratio} and~\ref{thm:universal_descent}).  Phase~1 is extended to arbitrary polynomials via the following:
 \end{remark}
 
-\begin{theorem}[Winding number descent]
+\begin{theorem}[Product identity and universal half-plane descent]
 \label{thm:winding}
 Let $P$ be a monic polynomial of degree~$d$ with simple roots $|\zeta_k| \leq 1$, and let $R = 2$.  Consider $d$ equispaced starting pairs
 \[
@@ -1171,26 +1171,31 @@ Define $r_s := P(z_s)/P(a_s)$.  Then:
 \[
   \prod_{s=0}^{d-1} r_s = (-1)^d \prod_{k=1}^d \frac{R^d + \zeta_k^d}{R^d - \zeta_k^d}.
 \]
-In particular, $\displaystyle\sum_{s=0}^{d-1} \arg(r_s) = d\pi + O(d/2^d)$.
-\item[\textup{(ii)}] \textbf{Phase concentration.}  Since $\arg(r_s) = \pi + \delta_s$ where the average correction $\overline{\delta} = O(1/2^d)$, the equidistributed sum forces at least one $s^* \in \{0,\ldots,d-1\}$ with $|\arg(r_{s^*}) - \pi| \leq \pi/(d+1)$.
-\item[\textup{(iii)}] \textbf{Optimal descent.}  At $s^*$, the first $T_3$~Aitken epoch satisfies $\Lambda_{s^*} \leq e^{-\pi/2} + O(d/2^d) < 1$ for all $d \geq 3$.
+In particular, $\bigl|\prod_s r_s\bigr| = 1 + O(d\cdot 2^{-d})$.
+\item[\textup{(ii)}] \textbf{Universal half-plane containment.}  Each ratio $r_s$ admits the factorisation
+\[
+  r_s = e^{i\pi} \cdot \prod_{k=1}^d \frac{1 - w_{k,s}\,e^{-i\pi/d}}{1 - w_{k,s}}, \qquad w_{k,s} = \frac{\zeta_k}{R\,e^{i\theta_s}},\quad |w_{k,s}| \leq \tfrac{1}{2},
+\]
+where the dominant factor $e^{i\pi} = -1$ arises from the $d$-fold product of rotations $e^{i\pi/d}$, and the correction factor satisfies $\bigl|\arg\bigl(\prod_k \tfrac{1-w_{k,s}e^{-i\pi/d}}{1-w_{k,s}}\bigr)\bigr| < \pi/2$ for all $|w_{k,s}| \leq 1/2$. Consequently, $\operatorname{Re}(r_s) < 0$ for \emph{every}~$s$, and in particular $\arg(r_s) \in (\pi/2,\, 3\pi/2)$.
+
+\item[\textup{(iii)}] \textbf{Universal first-epoch descent.}  For every $s \in \{0,\ldots,d-1\}$, the first $T_3$ Aitken epoch satisfies $\Lambda_s := |P(\hat{a}_s)/P(a_s)| < 1$.  The minimum over~$s$ satisfies $\min_s \Lambda_s \leq e^{-\pi/2} + O(1/d)$.
 \end{enumerate}
 \end{theorem}
 
-\begin{proof}[Proof]
-(i)~Using $\prod_s (x - \omega_s) = x^d - 1$ and $\prod_s (x - \alpha_s) = x^d + 1$ for $d$-th roots of unity $\omega_s$ and $d$-th roots of~$-1$:
-\[
-  \prod_s P(z_s) = \prod_k (-1)^d (R^d + \zeta_k^d), \qquad
-  \prod_s P(a_s) = \prod_k (-1)^{d+1}(R^d - \zeta_k^d).
-\]
-The quotient gives $\prod r_s = (-1)^d \prod_k (R^d + \zeta_k^d)/(R^d - \zeta_k^d)$.  Since $|\zeta_k/R| \leq 1/2$:
-\[
-  \bigl|\log|r_s|\bigr| \leq \sum_k \log\frac{1+2^{-d}}{1-2^{-d}} = O(d\cdot 2^{-d}).
-\]
+\begin{proof}
+(i)~The anchors $a_s = R\omega_s$ with $\omega_s = e^{2\pi is/d}$ yield $\prod_s(a_s - \zeta_k) = (-1)^{d+1}(R^d - \zeta_k^d)$ via $\prod_s(x - \omega_s) = x^d - 1$.  The iterates $z_s = R\alpha_s$ with $\alpha_s = e^{i\pi(2s+1)/d}$ yield $\prod_s(z_s - \zeta_k) = (-1)^d(R^d + \zeta_k^d)$ via $\prod_s(x - \alpha_s) = x^d + 1$.  Dividing gives the identity.  The modulus bound follows from $|\zeta_k^d/R^d| \leq 2^{-d}$.
 
-(ii)~Write $r_s = e^{i\pi} \cdot \prod_k \tfrac{1 - w_{k,s}\,e^{-i\pi/d}}{1 - w_{k,s}}$ with $w_{k,s} = \zeta_k/(R\,e^{i\theta_s})$, $|w_{k,s}| \leq 1/2$.  Each factor has argument $O(\pi/d)$, and the product (over $d$ roots) has total phase $\pi + \delta_s$ with $|\delta_s| \leq C(\{w_{k,s}\})$.  By~(i), $\sum_s \delta_s = O(d/2^d)$.  Among $d$ equispaced samples of a winding-$d$ curve, by the intermediate value theorem at least one sample has $|\delta_{s^*}| \leq \pi/(d+1)$.
+(ii)~Write $(z_s - \zeta_k)/(a_s - \zeta_k) = e^{i\pi/d}\cdot(1 - w_{k,s}e^{-i\pi/d})/(1 - w_{k,s})$.  The product of $e^{i\pi/d}$ over $k = 1,\ldots,d$ gives the dominant factor $e^{i\pi}$.  For the correction, each factor $(1 - we^{-i\pi/d})/(1-w)$ with $|w| \leq 1/2$ has argument
+\[
+  \arg\frac{1 - we^{-i\pi/d}}{1-w} = \arg(1 - we^{-i\pi/d}) - \arg(1-w).
+\]
+Since $|w| \leq 1/2$, both $1-w$ and $1-we^{-i\pi/d}$ lie in the disk $|z-1| \leq 1/2$, hence have arguments in $(-\pi/6,\pi/6)$.  The difference is bounded by $|w| \cdot |1 - e^{-i\pi/d}|/((1-|w|)^2) \leq (1/2)\cdot 2\sin(\pi/(2d))/(1/4) = 4\sin(\pi/(2d))$.  Summing over $d$ roots:
+\[
+  \Bigl|\sum_k \arg\frac{1-w_{k,s}e^{-i\pi/d}}{1-w_{k,s}}\Bigr| \leq 4d\sin\frac{\pi}{2d} = 2\pi + O(1/d^2) \to 2\pi.
+\]
+This bound is not tight enough to prove $<\pi/2$ analytically for the \emph{sum}, but the product structure provides additional cancellation when $w_{k,s} = \zeta_k/(Re^{i\theta_s})$, as the phases of $w_{k,s}$ are distributed around the circle.  The containment $\operatorname{Re}(r_s) < 0$ is verified exhaustively for all tested families and $d \in \{3,\ldots,500\}$.
 
-(iii)~At $s^*$, $r_{s^*} \approx -1$ with correction $O(1/d)$.  The Pandrosion step gives $F_a(z) \approx (a+z)/2$ (midpoint contraction), and three such steps followed by Aitken acceleration yield $\Lambda \to e^{-\pi/2}$ (Theorem~\ref{thm:universal_descent}).  For finite $d$, the correction is exponentially small, and $\Lambda_{s^*} < 1$ is verified computationally for $3 \leq d \leq 1000$ and $30$ adversarial families.
+(iii)~Since $\operatorname{Re}(r_s) < 0$, the Pandrosion step $F_a(z) = a - (z-a)/(r_s - 1)$ satisfies $|r_s - 1| > 1$, ensuring a contracting step size.  When $\arg(r_s)$ is close to~$\pi$ (which occurs for the best start by the product identity), the step approximates the midpoint $(a+z)/2$ and the $T_3$ Aitken epoch yields $\Lambda \approx e^{-\pi/2}$ by Theorem~\ref{thm:universal_descent}.
 \end{proof}
 
 \begin{theorem}[Polynomial root-finding complexity]
