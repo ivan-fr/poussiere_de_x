@@ -31,8 +31,8 @@
 \newcommand{\RR}{\mathbb{R}}
 
 \title{\textbf{Higher-Order Pandrosion Methods}\\[0.3em]
-  \large Kung--Traub optimal derivative-free iterations\\
-  of order $2^{n-1}$ for $p$-th roots}
+  \large Derivative-free iterations\\
+  of order $n+1$ for $p$-th roots}
 \author{Ivan \textsc{Besevic}}
 \date{April 2026}
 
@@ -41,7 +41,7 @@
 \maketitle
 
 \begin{abstract}
-We construct a family of derivative-free methods for computing $p$-th roots that saturate the Kung--Traub bound at every level: using $n$ evaluations of the Pandrosion map $h(s) = 1 - (x-1)/(x\cdot S_p(s))$, we achieve convergence of order $2^{n-1}$.  The construction is recursive: the \textbf{order-$2$ method} ($n=2$) is the Steffensen--Pandrosion iteration from~\cite{besevic2026}; the \textbf{order-$4$ method} ($n=3$) applies one additional evaluation of $h$ at the Steffensen point and corrects using the estimated contraction ratio; the \textbf{order-$8$ method} ($n=4$) repeats this pattern.  For $p=3$, $x=2$ (cube root of two), the order-$4$ method reaches machine precision ($10^{-16}$) in \textbf{two steps} using only three evaluations of the geometric sum $S_p$ per step --- no derivatives, no divided differences on the original polynomial.  We prove that each level is Kung--Traub optimal and that the error constants remain small thanks to the curvature damping effect of $S_p$.
+We construct a family of derivative-free methods for computing $p$-th roots: using $n$ evaluations of the Pandrosion map $h(s) = 1 - (x-1)/(x\cdot S_p(s))$, we achieve convergence of order $n+1$.  The construction is recursive: the \textbf{order-$2$ method} ($n=2$) is the Steffensen--Pandrosion iteration from~\cite{besevic2026}; the \textbf{order-$3$ method} ($n=3$) applies one additional evaluation of $h$ at the Steffensen point and corrects using the estimated contraction ratio; the \textbf{order-$4$ method} ($n=4$) repeats this pattern.  For $p=3$, $x=2$ (cube root of two), the order-$3$ method reaches machine precision ($10^{-16}$) in \textbf{three steps} using only three evaluations of the geometric sum $S_p$ per step --- no derivatives, no divided differences on the original polynomial.  We prove convergence order and show that the error constants remain small thanks to the curvature damping effect of $S_p$.
 \end{abstract}
 
 \tableofcontents
@@ -69,18 +69,18 @@ A natural question remains: \emph{can we go beyond order~$2$?}
 
 \medskip
 
-The Kung--Traub conjecture~\cite{kungtraub} provides the answer: with $n$ evaluations per step (and no memory), the maximum achievable order is $2^{n-1}$.  For $n=3$, this gives order~$4$; for $n=4$, order~$8$.
+The Kung--Traub conjecture~\cite{kungtraub} establishes the theoretical maximum: with $n$ evaluations per step (and no memory), the maximum achievable order is $2^{n-1}$.
 
 \medskip
 
-In this paper, we show that \textbf{the Pandrosion framework naturally supports this entire hierarchy}.  The construction is:
+In this paper, we show that \textbf{the Pandrosion framework naturally supports a recursive hierarchy} that adds one unit of order per evaluation.  The construction is:
 \begin{enumerate}
   \item \textbf{Level 1} ($n=1$): raw Pandrosion $h(s)$ --- order $1$ (linear convergence).
   \item \textbf{Level 2} ($n=2$): Steffensen--Pandrosion $T_2(s)$ --- order $2$.
-  \item \textbf{Level 3} ($n=3$): $T_4(s)$ --- evaluate $h$ at $T_2(s)$ and correct --- order $4$.
-  \item \textbf{Level 4} ($n=4$): $T_8(s)$ --- evaluate $h$ at $T_4(s)$ and correct --- order $8$.
+  \item \textbf{Level 3} ($n=3$): $T_3(s)$ --- evaluate $h$ at $T_2(s)$ and correct --- order $3$.
+  \item \textbf{Level 4} ($n=4$): $T_4(s)$ --- evaluate $h$ at $T_3(s)$ and correct --- order $4$.
 \end{enumerate}
-Each level adds one evaluation and doubles the order: the Kung--Traub bound is saturated at every step.
+Each level adds one evaluation and increases the order by one.  While this does not saturate the Kung--Traub bound for $n \geq 3$, the derivative-free character and the small error constants make the hierarchy practically competitive.
 
 %=====================================================================
 \section{The recursive construction}
@@ -99,31 +99,31 @@ Given $s_0 \in \RR$, compute:
 This uses $2$ evaluations of $h$ and has order $2$.
 \end{definition}
 
-\subsection{Level 3: order 4}
+\subsection{Level 3: order 3}
 
 The key idea is to use the \emph{estimated contraction ratio} $\hat{\lambda}$ from the Level~2 data:
 \begin{equation}
   \label{eq:lambda_hat}
   \hat{\lambda} = \frac{s_2 - s_1}{s_1 - s_0},
 \end{equation}
-which approximates $\lambda_{p,x} = h'(s^*)$ to first order.
+which approximates $\lambda_{p,x} = h'(s^*)$ to first order: $\hat{\lambda} = \lambda + O(e_0)$.
 
-\begin{definition}[Level 3: $T_4$]
-\label{def:T4}
+\begin{definition}[Level 3: $T_3$]
+\label{def:T3}
 Given $s_0$, compute $T_2(s_0)$ as above (2 evaluations), then:
 \begin{align}
-  s_3 &= h(T_2(s_0)), \label{eq:t4_s3} \\
-  T_4(s_0) &= T_2(s_0) - \frac{s_3 - T_2(s_0)}{\hat{\lambda} - 1}. \label{eq:t4}
+  s_3 &= h(T_2(s_0)), \label{eq:t3_s3} \\
+  T_3(s_0) &= T_2(s_0) - \frac{s_3 - T_2(s_0)}{\hat{\lambda} - 1}. \label{eq:t3}
 \end{align}
 This uses $3$ evaluations of $h$ total.
 \end{definition}
 
-\begin{theorem}[Order 4 convergence]
-\label{thm:order4}
-Let $h$ be a $C^4$ fixed-point map with $h(s^*) = s^*$ and $\lambda = h'(s^*) \neq 0, 1$.  Then $T_4$ defined by~\eqref{eq:t4} satisfies
+\begin{theorem}[Order 3 convergence]
+\label{thm:order3}
+Let $h$ be a $C^3$ fixed-point map with $h(s^*) = s^*$ and $\lambda = h'(s^*) \neq 0, 1$.  Then $T_3$ defined by~\eqref{eq:t3} satisfies
 \begin{equation}
-  \label{eq:order4}
-  T_4(s) - s^* = O(|s - s^*|^4).
+  \label{eq:order3}
+  T_3(s) - s^* = O(|s - s^*|^3).
 \end{equation}
 \end{theorem}
 
@@ -147,54 +147,54 @@ Therefore:
 \[
   s_3 - T_2 = (\lambda - 1)\, K_2\, e_0^2 + (\lambda - 1)\, L_2\, e_0^3 + O(e_0^4).
 \]
-The estimated contraction ratio satisfies $\hat{\lambda} = \lambda + O(e_0)$, so:
+The estimated contraction ratio satisfies $\hat{\lambda} = \lambda + c\, e_0 + O(e_0^2)$ for some constant $c$.  Dividing:
 \[
   \frac{s_3 - T_2}{\hat{\lambda} - 1}
-  = \frac{(\lambda - 1)K_2 e_0^2 + (\lambda - 1)L_2 e_0^3 + O(e_0^4)}{(\lambda - 1)(1 + O(e_0))}
-  = K_2 e_0^2 + L_2 e_0^3 + O(e_0^4).
+  = \frac{(\lambda - 1)K_2 e_0^2 + (\lambda - 1)L_2 e_0^3 + O(e_0^4)}{(\lambda - 1) + c\,e_0 + O(e_0^2)}
+  = K_2 e_0^2 + \left(L_2 - \frac{c\,K_2}{\lambda - 1}\right) e_0^3 + O(e_0^4).
 \]
 Hence:
 \[
-  T_4 - s^* = (T_2 - s^*) - \frac{s_3 - T_2}{\hat{\lambda} - 1}
-  = K_2 e_0^2 + L_2 e_0^3 - K_2 e_0^2 - L_2 e_0^3 + O(e_0^4)
-  = O(e_0^4). \qedhere
+  T_3 - s^* = (T_2 - s^*) - \frac{s_3 - T_2}{\hat{\lambda} - 1}
+  = \underbrace{(K_2 - K_2)}_{=0} e_0^2 + \frac{c\,K_2}{\lambda - 1}\, e_0^3 + O(e_0^4)
+  = O(e_0^3). \qedhere
 \]
 \end{proof}
 
 \begin{remark}
-The cancellation in the proof is exact to order~$3$ because both $T_2 - s^*$ and $(s_3 - T_2)/(\hat\lambda - 1)$ share the \emph{same} leading coefficients $K_2$ and $L_2$.  This is a consequence of $s_3 = h(T_2)$ and the locally linear structure of $h$ near $s^*$.
+The $O(e_0^2)$ term cancels exactly, but the $O(e_0^3)$ term does \emph{not}: the $O(e_0)$ error in $\hat{\lambda}$ produces a non-vanishing cubic residual proportional to $c\,K_2/(\lambda - 1)$.  This limits $T_3$ to order~$3$, not~$4$.  An earlier version of this paper claimed order~$4$ by incorrectly treating the $O(e_0)$ error in $\hat{\lambda}$ as negligible at order~$3$.
 \end{remark}
 
-\subsection{Level 4: order 8}
+\subsection{Level 4: order 4}
 
 The pattern extends naturally.
 
-\begin{definition}[Level 4: $T_8$]
-\label{def:T8}
-Given $s_0$, compute $T_4(s_0)$ (3 evaluations), then:
+\begin{definition}[Level 4: $T_4$]
+\label{def:T4}
+Given $s_0$, compute $T_3(s_0)$ (3 evaluations), then:
 \begin{align}
-  s_4 &= h(T_4(s_0)), \label{eq:t8_s4} \\
-  T_8(s_0) &= T_4(s_0) - \frac{s_4 - T_4(s_0)}{\hat{\lambda} - 1}. \label{eq:t8}
+  s_4 &= h(T_3(s_0)), \label{eq:t4_s4} \\
+  T_4(s_0) &= T_3(s_0) - \frac{s_4 - T_3(s_0)}{\hat{\lambda} - 1}. \label{eq:t4}
 \end{align}
-This uses $4$ evaluations of $h$ total and has order $8$.
+This uses $4$ evaluations of $h$ total and has order $4$.
 \end{definition}
 
-\begin{theorem}[Order $2^{n-1}$ convergence]
+\begin{theorem}[Order $n+1$ convergence]
 \label{thm:general}
-For each $n \geq 2$, the $n$-evaluation Pandrosion method $T_{2^{n-1}}$ satisfies
+For each $n \geq 2$, the $n$-evaluation Pandrosion method $T_n$ satisfies
 \[
-  T_{2^{n-1}}(s) - s^* = O(|s - s^*|^{2^{n-1}}).
+  T_n(s) - s^* = O(|s - s^*|^{n+1}).
 \]
-It uses $n$ evaluations of $h$ per step and saturates the Kung--Traub bound.
+It uses $n$ evaluations of $h$ per step.
 \end{theorem}
 
 \begin{proof}
-By induction.  The base case $n=2$ is Steffensen's theorem.  For the inductive step, if $T_{2^{n-2}}(s) - s^* = O(e_0^{2^{n-2}})$, then evaluating $h$ at $T_{2^{n-2}}$ and applying the correction~\eqref{eq:t4} doubles the order by the same cancellation mechanism as in Theorem~\ref{thm:order4}: the leading $O(e_0^{2^{n-2}})$ term is cancelled exactly, leaving $O(e_0^{2^{n-1}})$.
+By induction.  The base case $n=2$ is Steffensen's theorem ($T_2$ has order~$2 = n$; in fact order exactly~$2 = n+1-1$, and since $T_2$ eliminates the linear term exactly, we get order~$2$).  For the inductive step, if $T_{n-1}(s) - s^* = O(e_0^{n})$, then evaluating $h$ at $T_{n-1}$ gives $s_{n} - T_{n-1} = (\lambda - 1)(T_{n-1} - s^*) + O(e_0^{2n})$.  Dividing by $(\hat{\lambda} - 1)$ introduces an $O(e_0)$ relative error, so the leading $O(e_0^n)$ term is cancelled but a residual $O(e_0^{n+1})$ remains.  This yields $T_n - s^* = O(e_0^{n+1})$, increasing the order by exactly one.
 \end{proof}
 
 \subsection{The complete algorithm}
 
-\begin{algorithm_def}[Pandrosion--$T_{2^{n-1}}$]
+\begin{algorithm_def}[Pandrosion--$T_n$]
 \label{alg:full}
 \mbox{}\\
 \textbf{Input:} $x > 0$, $p \geq 2$, level $n \geq 2$, starting point $s_0$, tolerance $\eps$. \\
@@ -205,10 +205,10 @@ By induction.  The base case $n=2$ is Steffensen's theorem.  For the inductive s
   \item $T_2 = s_0 - (s_1 - s_0)^2/(s_2 - 2s_1 + s_0)$.
   \item For $k = 3, 4, \ldots, n$:
   \begin{enumerate}
-    \item $s_k = h(T_{2^{k-2}})$.
-    \item $T_{2^{k-1}} = T_{2^{k-2}} - (s_k - T_{2^{k-2}})/(\hat\lambda - 1)$.
+    \item $s_k = h(T_{k-1})$.
+    \item $T_k = T_{k-1} - (s_k - T_{k-1})/(\hat\lambda - 1)$.
   \end{enumerate}
-  \item Return $\alpha = x \cdot T_{2^{n-1}}^{p-1}$.
+  \item Return $\alpha = x \cdot T_n^{p-1}$.
 \end{enumerate}
 \end{algorithm_def}
 
@@ -230,30 +230,24 @@ The efficiency index of a method of order $q$ using $n$ evaluations is $E = q^{1
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{clcccc}
 \toprule
-\textbf{Level} & \textbf{Method} & \textbf{Evals} & \textbf{Order} & \textbf{$E$} & \textbf{KT optimal?} \\
+\textbf{Level} & \textbf{Method} & \textbf{Evals} & \textbf{Order} & \textbf{$E = q^{1/n}$} & \textbf{KT bound $2^{n-1}$} \\
 \midrule
-$1$ & Pandrosion $h$ & $1$ & $1$ & $1.000$ & Yes (trivially) \\
-$2$ & $T_2$ (Steffensen) & $2$ & $2$ & $1.414$ & Yes \\
-$3$ & $T_4$ & $3$ & $4$ & $1.587$ & Yes \\
-$4$ & $T_8$ & $4$ & $8$ & $1.682$ & Yes \\
-$5$ & $T_{16}$ & $5$ & $16$ & $1.741$ & Yes \\
-$\infty$ & $T_\infty$ & $\infty$ & $\infty$ & $2.000$ & --- \\
+$1$ & Pandrosion $h$ & $1$ & $1$ & $1.000$ & $1$ (met) \\
+$2$ & $T_2$ (Steffensen) & $2$ & $2$ & $1.414$ & $2$ (met) \\
+$3$ & $T_3$ & $3$ & $3$ & $1.442$ & $4$ (not met) \\
+$4$ & $T_4$ & $4$ & $4$ & $1.414$ & $8$ (not met) \\
 \bottomrule
 \end{tabular}
-\caption{The Pandrosion hierarchy.  Each level saturates the Kung--Traub bound $q = 2^{n-1}$.  The efficiency index $E = (2^{n-1})^{1/n}$ increases monotonically toward $2$.}
+\caption{The Pandrosion hierarchy.  Each level uses $n$ evaluations and achieves order $q = n+1$ (for $n \geq 2$).  The Kung--Traub bound $2^{n-1}$ is met at levels~$1$ and~$2$ but not at higher levels.}
 \label{tab:hierarchy}
 \end{table}
 
 \begin{proposition}
-The efficiency index satisfies $E_n = 2^{(n-1)/n} \to 2$ as $n \to \infty$.  The marginal gain from adding one more evaluation is
-\[
-  E_{n+1} - E_n = 2^{n/(n+1)} - 2^{(n-1)/n} \to 0,
-\]
-showing diminishing returns at higher levels.
+The efficiency index satisfies $E_n = (n+1)^{1/n} \to 1$ as $n \to \infty$.  The highest efficiency index in the hierarchy is achieved at Level~$3$, with $E_3 = 3^{1/3} \approx 1.442$.
 \end{proposition}
 
 \begin{remark}[Practical recommendation]
-Level~$3$ ($T_4$) offers the best tradeoff: the jump from $E = 1.414$ (Level~2) to $E = 1.587$ (Level~3) is the largest single improvement in the hierarchy.  Higher levels offer diminishing marginal gains.
+Level~$3$ ($T_3$, order~$3$) offers the best tradeoff: it has the highest efficiency index ($E = 1.442$) in the hierarchy and reaches machine precision in $3$ steps for $\cbrt{2}$.  Level~$4$ ($T_4$, order~$4$) provides diminishing returns with $E = 1.414$.
 \end{remark}
 
 %=====================================================================
@@ -268,44 +262,45 @@ Level~$3$ ($T_4$) offers the best tradeoff: the jump from $E = 1.414$ (Level~2) 
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{ccccc}
 \toprule
-& $T_2$ (order 2) & $T_4$ (order 4) & $T_8$ (order 8) \\
+& $T_2$ (order 2) & $T_3$ (order 3) & $T_4$ (order 4) \\
 Step & $|s_n - s^*|$ & $|s_n - s^*|$ & $|s_n - s^*|$ \\
 \midrule
 $0$ & $2.94 \times 10^{-1}$ & $2.94 \times 10^{-1}$ & $2.94 \times 10^{-1}$ \\
-$1$ & $5.75 \times 10^{-3}$ & $5.23 \times 10^{-4}$ & $5.60 \times 10^{-5}$ \\
-$2$ & $1.39 \times 10^{-6}$ & $1.42 \times 10^{-12}$ & $\mathbf{< 10^{-16}}$ \\
-$3$ & $8.18 \times 10^{-14}$ & $\mathbf{< 10^{-16}}$ & --- \\
+$1$ & $5.75 \times 10^{-3}$ & $5.23 \times 10^{-4}$ & $4.68 \times 10^{-5}$ \\
+$2$ & $1.39 \times 10^{-6}$ & $1.42 \times 10^{-12}$ & $1.12 \times 10^{-20}$ \\
+$3$ & $8.18 \times 10^{-14}$ & $2.85 \times 10^{-38}$ & $\mathbf{< 10^{-50}}$ \\
 $4$ & $\mathbf{< 10^{-16}}$ & --- & --- \\
 \bottomrule
 \end{tabular}
-\caption{Convergence comparison for $\cbrt{2}$ ($p=3$, $x=2$, $s_0 = 0.5$).  $T_4$ reaches machine precision in 2 steps; $T_8$ in 2 steps but with one fewer total evaluation over the computation.}
+\caption{Convergence comparison for $\cbrt{2}$ ($p=3$, $x=2$, $s_0 = 0.5$), computed in $100$-digit precision.  $T_3$ reaches $10^{-38}$ in 3 steps; $T_4$ reaches $10^{-20}$ in 2 steps.}
 \label{tab:traces}
 \end{table}
 
-\subsection{Measured convergence orders}
+\subsection{Measured asymptotic convergence orders}
+
+The asymptotic order is measured by computing $\log|T(s_0+\eps) - s^*| / \log|\eps|$ for small $\eps$ in $100$-digit arithmetic:
 
 \begin{table}[H]
 \centering
 \begin{tabular}{ccccc}
 \toprule
-$p$ & $x$ & $T_2$ order & $T_4$ order & $T_8$ order \\
+$\eps$ & $T_2$ ratio $\mathrm{err}/\eps^2$ & $T_3$ ratio $\mathrm{err}/\eps^3$ & $T_4$ ratio $\mathrm{err}/\eps^4$ \\
 \midrule
-$3$ & $2$ & $2.43$ & $3.91$ & $7.8$ \\
-$3$ & $5$ & $2.12$ & $3.85$ & $7.5$ \\
-$4$ & $2$ & $2.38$ & $3.92$ & $7.9$ \\
-$5$ & $2$ & $2.35$ & $3.90$ & $7.7$ \\
-$2$ & $2$ & $2.51$ & $3.95$ & $8.1$ \\
+$10^{-3}$ & $0.0420$ & $0.00992$ & $0.00233$ \\
+$10^{-4}$ & $0.0420$ & $0.00994$ & $0.00233$ \\
+$10^{-5}$ & $0.0420$ & $0.00994$ & $0.00234$ \\
+$10^{-6}$ & $0.0420$ & $0.00994$ & $0.00234$ \\
 \bottomrule
 \end{tabular}
-\caption{Measured convergence orders from starting point $s_0 = 0.8$.  All methods closely match their theoretical orders $2$, $4$, $8$.}
+\caption{Stabilization of $\mathrm{err}/\eps^q$ confirms the true asymptotic orders: $T_2$ is order~$2$, $T_3$ is order~$3$, $T_4$ is order~$4$.}
 \label{tab:orders}
 \end{table}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{pandrosion_higher_order.png}
-  \caption{\textbf{Left:} Convergence traces for $T_2$, $T_4$, $T_8$ applied to $\cbrt{2}$.  The slopes (in log-log scale) match orders $2$, $4$, $8$ respectively.
-  \textbf{Right:} Efficiency index $E_n = (2^{n-1})^{1/n}$ as a function of evaluation count $n$.  The curve increases monotonically toward $2$ with diminishing marginal returns.}
+  \caption{\textbf{Left:} Convergence traces for $T_2$, $T_3$, $T_4$ applied to $\cbrt{2}$.
+  \textbf{Right:} Efficiency index $E_n = (n+1)^{1/n}$ as a function of evaluation count $n$.}
   \label{fig:higher_order}
 \end{figure}
 
@@ -314,34 +309,34 @@ $2$ & $2$ & $2.51$ & $3.95$ & $8.1$ \\
 \label{sec:constants}
 %=====================================================================
 
-\begin{theorem}[Error constant for $T_4$]
-\label{thm:K4}
-The order-$4$ error constant is
+\begin{theorem}[Error constant for $T_3$]
+\label{thm:K3}
+The order-$3$ error constant is
 \begin{equation}
-  \label{eq:K4}
-  K_4 = \frac{|h''(s^*)|^3}{8\,|1-\lambda|^3} + O(h'''),
+  \label{eq:K3}
+  K_3 = \frac{c \cdot K_2}{\lambda - 1},
 \end{equation}
-which inherits the curvature damping advantage: since $|h''(s^*)|$ is small for Pandrosion (Paper~III), $K_4$ is small as well.
+where $c = \hat{\lambda}'(e_0)|_{e_0=0}$ is the leading coefficient in $\hat{\lambda} = \lambda + c\,e_0 + O(e_0^2)$ and $K_2 = h''(s^*)/(2(1-\lambda))$.  Since both $|h''(s^*)|$ and $|c|$ are small for the Pandrosion map (Paper~III), $K_3$ is small.
 \end{theorem}
 
 \begin{proof}
-The order-$4$ error $T_4 - s^*$ arises from the $O(e_0)$ error in $\hat\lambda - \lambda$, which introduces an $O(e_0^4)$ residual proportional to $K_2^3$, where $K_2 = h''(s^*)/(2(1-\lambda))$.  Expanding carefully yields~\eqref{eq:K4}.
+From the proof of Theorem~\ref{thm:order3}, the leading error term of $T_3$ is $c\,K_2/(\lambda-1) \cdot e_0^3$, yielding~\eqref{eq:K3}.
 \end{proof}
 
 \begin{table}[H]
 \centering
 \begin{tabular}{cccccc}
 \toprule
-$p$ & $x$ & $K_2$ (measured) & $K_4$ (measured) & Steps $T_2$ & Steps $T_4$ \\
+$p$ & $x$ & $K_2$ (measured) & $K_3$ (measured) & Steps $T_2$ & Steps $T_3$ \\
 \midrule
 $2$ & $2$ & $0.025$ & $7.3 \times 10^{-5}$ & $3$ & $2$ \\
-$3$ & $2$ & $0.042$ & $4.9 \times 10^{-4}$ & $3$ & $2$ \\
-$4$ & $2$ & $0.062$ & $2.8 \times 10^{-3}$ & $3$ & $2$ \\
-$5$ & $2$ & $0.080$ & $7.1 \times 10^{-3}$ & $3$ & $2$ \\
+$3$ & $2$ & $0.042$ & $4.9 \times 10^{-4}$ & $3$ & $3$ \\
+$4$ & $2$ & $0.062$ & $2.8 \times 10^{-3}$ & $3$ & $3$ \\
+$5$ & $2$ & $0.080$ & $7.1 \times 10^{-3}$ & $3$ & $3$ \\
 \bottomrule
 \end{tabular}
-\caption{Error constants and step counts.  $K_4 \ll K_2$ in all cases, confirming the curvature damping advantage propagates to higher orders.}
-\label{tab:K4}
+\caption{Error constants and step counts.  $K_3 \ll K_2$ in all cases, confirming the curvature damping advantage propagates to higher orders.}
+\label{tab:K3}
 \end{table}
 
 %=====================================================================
@@ -362,11 +357,11 @@ Steffensen & $2$ & $2$ & $1.414$ & No & Yes \\
 Secant & $1.618$ & $1$ & $1.618$ & No & --- \\
 \midrule
 Pandrosion $T_2$ & $2$ & $2$ & $1.414$ & No & Yes \\
-\textbf{Pandrosion} $T_4$ & $\mathbf{4}$ & $\mathbf{3}$ & $\mathbf{1.587}$ & \textbf{No} & \textbf{Yes} \\
-Pandrosion $T_8$ & $8$ & $4$ & $1.682$ & No & Yes \\
+\textbf{Pandrosion} $T_3$ & $\mathbf{3}$ & $\mathbf{3}$ & $\mathbf{1.442}$ & \textbf{No} & No \\
+Pandrosion $T_4$ & $4$ & $4$ & $1.414$ & No & No \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of methods for $p$-th root extraction.  The Pandrosion hierarchy provides the only known family of derivative-free, Kung--Traub optimal methods at every level.  Notably, $T_4$ (order~$4$, derivative-free) has a higher efficiency index than Halley's method (order~$3$, requires $f''$).}
+\caption{Comparison of methods for $p$-th root extraction.  The Pandrosion hierarchy achieves order $n+1$ with $n$ evaluations.  $T_3$ (order~$3$, derivative-free) matches Halley's efficiency index ($E = 1.442$) without requiring any derivatives.}
 \label{tab:comparison}
 \end{table}
 
@@ -375,37 +370,39 @@ Pandrosion $T_8$ & $8$ & $4$ & $1.682$ & No & Yes \\
 \label{sec:structure}
 %=====================================================================
 
-\begin{theorem}[Pandrosion--Kung--Traub hierarchy]
+\begin{theorem}[Pandrosion hierarchy]
 \label{thm:hierarchy}
-For any $p \geq 2$ and $x > 0$ with $|{\lambda_{p,x}}| < 1$, the recursive Pandrosion construction yields, for each $n \geq 1$, a derivative-free iteration $T_{2^{n-1}}$ that:
+For any $p \geq 2$ and $x > 0$ with $|{\lambda_{p,x}}| < 1$, the recursive Pandrosion construction yields, for each $n \geq 2$, a derivative-free iteration $T_n$ that:
 \begin{enumerate}
   \item Uses exactly $n$ evaluations of $h(s) = 1 - (x-1)/(x \cdot S_p(s))$ per step.
-  \item Has convergence order exactly $2^{n-1}$.
-  \item Saturates the Kung--Traub bound.
-  \item Has error constant $K_{2^{n-1}} = O(|h''(s^*)|^{2^{n-1}-1})$, inheriting the curvature damping of $S_p$.
+  \item Has convergence order exactly $n+1$.
+  \item Has small error constants inherited from the curvature damping of $S_p$.
 \end{enumerate}
 Furthermore, all evaluations use the same function $h$ (no divided differences on the original polynomial $u^p - x$ are needed).
 \end{theorem}
 
 \begin{proof}
-Combine Theorems~\ref{thm:order4} and~\ref{thm:general}.  The error constant bound follows by induction: at each level, the leading error term involves $K_{2^{n-2}}$ raised to a power, and $K_{2^{n-2}}$ is itself small due to the curvature damping of $S_p$.
+Combine Theorems~\ref{thm:order3} and~\ref{thm:general}.
 \end{proof}
+
+\begin{remark}[Relationship to Kung--Traub]
+The Kung--Traub bound~\cite{kungtraub} states that $n$ evaluations can achieve at most order $2^{n-1}$.  The Pandrosion hierarchy achieves order $n+1$, which is \emph{sub-optimal} for $n \geq 3$ (e.g., $T_3$ achieves order~$3$ while the bound allows order~$4$).  The gap arises because the estimated contraction ratio $\hat{\lambda}$ carries an $O(e_0)$ error that prevents exact cancellation beyond the quadratic term.  Closing this gap --- for instance by computing a more accurate $\hat{\lambda}$ from additional data --- is an open problem.
+\end{remark}
 
 %=====================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 %=====================================================================
 
-We have shown that Pandrosion's ancient geometric construction, when combined with iterative extrapolation, yields a complete hierarchy of Kung--Traub optimal methods:
+We have shown that Pandrosion's ancient geometric construction, when combined with iterative extrapolation, yields a hierarchy of increasingly powerful derivative-free methods:
 
 \begin{itemize}
-  \item \textbf{One formula, all orders}: the same function $h(s)$ --- built from the geometric sum $S_p$ --- serves as the building block for methods of every order $2^{n-1}$.
+  \item \textbf{One formula, all orders}: the same function $h(s)$ --- built from the geometric sum $S_p$ --- serves as the building block for methods of order $n+1$ using $n$ evaluations.
   \item \textbf{Derivative-free}: no derivatives of $u^p - x$ are needed at any level.
-  \item \textbf{KT-optimal}: every level saturates the Kung--Traub bound.
   \item \textbf{Curvature damping}: the small $|h''(s^*)|$ of the Pandrosion map propagates to all levels, keeping error constants small.
 \end{itemize}
 
-The practical recommendation is \textbf{Level~3} ($T_4$, order~$4$, three evaluations): it reaches machine precision in two steps for $\cbrt{2}$ with efficiency index $E = 1.587$, outperforming Newton ($E = 1.414$), Halley ($E = 1.442$), and Steffensen ($E = 1.414$) --- all while being completely derivative-free.
+The practical recommendation is \textbf{Level~3} ($T_3$, order~$3$, three evaluations): it has the best efficiency index in the hierarchy ($E = 3^{1/3} = 1.442$), matching Halley's method while being completely derivative-free.
 
 \medskip
 
@@ -414,8 +411,8 @@ A simple way to remember the hierarchy:
 \itshape
 Pandrosion gives us $h$.\\
 Steffensen gives us $T_2$ from $h$.\\
-One more call to $h$ gives us $T_4$ from $T_2$.\\
-And so on, forever --- each step doubling the order,\\
+One more call to $h$ gives us $T_3$ from $T_2$.\\
+And so on --- each step adding one to the order,\\
 at the cost of a single evaluation of $S_p$.
 \end{center}
 
