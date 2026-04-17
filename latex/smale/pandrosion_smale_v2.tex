@@ -933,44 +933,28 @@ Substituting the identity $1 - P(z_n)/P(z_0) = (z_n - z_0)/(z_{n+1} - z_0)$ into
 As $N \to \infty$, if the orbit converges to a root $\zeta_k$, then $z_N \to \zeta_k$. Taking the modulus on both sides yields the exact infinite geometric bound.
 \end{proof}
 
-\begin{lemma}[Pandrosion Dichotomy of Progress]
-\label{lem:progress_dichotomy}
+\begin{conjecture}[Pandrosion Dichotomy of Progress]
+\label{conj:progress_dichotomy}
 There exist universal constants $c, C > 0$ such that for any normalized polynomial $P \in \CC[z]$ of degree $d$, any anchor $z_0$ on the Cauchy circle, and every pre-lock-in iterate $z_n$ of the Pandrosion base map, the progress satisfies a strict dichotomy:
 \[
   \max\!\left( \log\frac{|P(z_n)|}{|P(z_{n+1})|},\; \frac{d\,|z_{n+1}-z_n|}{|z_{n+1}-z_0|} \right) \;\geq\; c.
 \]
-\end{lemma}
+\end{conjecture}
 
-\begin{proof}
-By the exact kinematic identity (Theorem~\ref{thm:kinematic_identity}), we established that:
-\[
-  r_n \;:=\; \frac{P(z_n)}{P(z_0)} \;=\; \frac{z_{n+1} - z_n}{z_{n+1} - z_0}.
-\]
-Taking the modulus yields exactly the relative geometric step size:
-\[
-  |r_n| \;=\; \frac{|z_{n+1} - z_n|}{|z_{n+1} - z_0|}.
-\]
-Fix a threshold $\tau = c/d$. 
-\textbf{Case 1 (Geometric progress):} If $|r_n| \geq \tau$, then immediately $\frac{d\,|z_{n+1} - z_n|}{|z_{n+1} - z_0|} \geq c$. This implies the step traverses a macroscopically significant geometric distance in the complex plane.
-\textbf{Case 2 (Algebraic progress):} If $|r_n| < \tau$, then $|P(z_n)| < \frac{c}{d} |P(z_0)|$. Under the exact Pandrosion product bounds (Theorem~\ref{thm:pandrosion_product}), such a small ratio means $z_n$ is deeply decoupled from the anchor and strongly dominated by the local root cluster. Expanding the product scaling forces $|P(z_{n+1})/P(z_n)| \leq e^{-c/d}$, yielding $\log(|P(z_n)|/|P(z_{n+1})|) \geq c/d \geq c$. Thus the dichotomy ensures progression at every discrete step.
-\end{proof}
+\begin{remark}[The algebraic descent branch gap]
+The exact kinematic identity (Theorem~\ref{thm:kinematic_identity}) guarantees that $|r_n| = |z_{n+1} - z_n| / |z_{n+1} - z_0|$. Setting a threshold $\tau = c/d$, the geometric branch is unconditionally satisfied whenever $|r_n| \geq \tau$.
 
-\begin{corollary}[Universal Basin Entry]
+The core difficulty, and the reason this remains a conjecture, lies in the algebraic branch $|r_n| < \tau$. While such a heavily suppressed ratio implies $z_n$ is locally dominated by a root cluster, extracting a uniform worst-case contractive bound $|P(z_{n+1})/P(z_n)| \leq e^{-c/d}$ strictly from the Pandrosion product identity (Theorem~\ref{thm:pandrosion_product}) requires controlling the rational factors $Q_k/Q^d$. Without a separate uniform estimate bounding these algebraic deviations, adversarial microscopic sequences cannot yet be definitively ruled out.
+\end{remark}
+
+\begin{corollary}[Hypothetical Basin Entry]
 \label{cor:basin_entry_final}
-After at most $C d \log d$ steps, one of the $d$ iterates in the multi-start scheme originating from the Cauchy circle unconditionally enters a universal basin $B(\zeta_k, \eta_P)$.
+If Conjecture~\ref{conj:progress_dichotomy} holds, then because iterates are rigidly confined to the bounded annulus $1 \leq |z_n - z_0| \leq 1+2\rho$, the orbit cannot take more than $O(d \log d)$ steps of large geometric size $\gtrsim 1/d$ without forcing the total radial variation mapping to explode beyond the exact macroscopic limits imposed by Theorem~\ref{thm:global_conservation}. The remaining steps would satisfy the algebraic contraction branch, ensuring entry into a universal basin $B(\zeta_k, \eta_P)$ after at most $O(d \log d)$ total steps.
 \end{corollary}
 
-\begin{proof}
-Because the iterates are rigidly confined to the bounded annulus $1 \leq |z_n - z_0| \leq 1+2\rho$, the orbit cannot take more than $O(d \log d)$ steps of large geometric size $\gtrsim 1/d$ without forcing the total radial variation mapping to explode beyond the exact macroscopic limits imposed by Theorem~\ref{thm:global_conservation}. The remaining steps must therefore satisfy the algebraic contraction branch $|P(z_{n+1})| \leq e^{-c/d}|P(z_n)|$. After accumulating $N = O(d \log d)$ non-geometric steps, the contraction forces $|P(z_N)| \leq \eta_P^d = e^{-O(d)}$, ensuring permanent lock-in.
-\end{proof}
-
-\begin{theorem}[Resolution of Smale's 17th Problem]
-\label{thm:smale_resolution_final}
-The multi-start Pandrosion--$T_3$ scheme finds a root of any polynomial $P$ with a deterministic bounded worst-case BSS cost of:
-\[
-   C(d, \varepsilon) \;=\; O(d^2 \log d) + O(d \log\log \varepsilon^{-1}),
-\]
-establishing a rigorously polynomial, definitively derivative-free resolution to Smale's 17th problem.
+\begin{theorem}[Conditional Smale-Type Boundary]
+\label{thm:smale_conditional}
+Assuming the uniform discrete progress bound of Conjecture~\ref{conj:progress_dichotomy}, the multi-start Pandrosion--$T_3$ scheme finds a root of any polynomial $P$ with a deterministic polynomial worst-case BSS cost of $O(d^2 \log d) + O(d \log\log \varepsilon^{-1})$ operations, representing a uniquely structured, derivative-free framework targeting Smale's 17th problem.
 \end{theorem}
 
 \begin{table}[H]
