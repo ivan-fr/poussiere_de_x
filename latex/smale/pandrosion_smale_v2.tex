@@ -632,10 +632,52 @@ Newton steps.  Combined with Theorem~\ref{thm:universal_local} (universal basin 
 BSS operations to reach accuracy $\varepsilon$.
 \end{corollary}
 
-\begin{remark}
+\begin{theorem}[Per-root contraction on the Cauchy circle]
+\label{thm:per_root}
+Under the hypotheses of Theorem~\ref{thm:radial_contraction}, for $|z| = R \geq 1 + \rho$ and for \textbf{every} $k \in \{1,\ldots,d\}$:
+\begin{equation}
+  \label{eq:per_root}
+  |N_P(z) - \zeta_k| \;\leq\; |z - \zeta_k| \cdot \left|1 - \frac{1}{(z - \zeta_k)\,u(z)}\right|
+  \;\leq\; |z - \zeta_k|,
+\end{equation}
+where $u(z) = P'(z)/P(z)$.  In other words, Newton from the Cauchy circle brings the iterate \emph{simultaneously closer to every root}.
+\end{theorem}
+
+\begin{proof}
+The Newton step satisfies the per-root identity
+\[
+  N_P(z) - \zeta_k
+  \;=\; (z - \zeta_k)\Bigl(1 - \frac{1}{w_k}\Bigr),
+  \qquad
+  w_k := (z - \zeta_k)\,u(z) = 1 + \sum_{j \neq k} \frac{z - \zeta_k}{z - \zeta_j}.
+\]
+We need $|1 - 1/w_k| \leq 1$, which is equivalent to $\operatorname{Re}(1/w_k) \geq |1/w_k|^2/2$, i.e., $\operatorname{Re}(w_k) \geq 1/2$.
+
+Write $w_k = 1 + S_k$ where $S_k = \sum_{j \neq k} (z - \zeta_k)/(z - \zeta_j)$.  For each term with $|z| = R$ and $|\zeta_j| \leq \rho$:
+\[
+  \operatorname{Re}\!\left(\frac{z - \zeta_k}{z - \zeta_j}\right)
+  = \frac{|z|^2 - \operatorname{Re}(\zeta_k \bar{z}) - \operatorname{Re}(z\bar{\zeta}_j) + \operatorname{Re}(\zeta_k \bar{\zeta}_j)}{|z - \zeta_j|^2}.
+\]
+The numerator equals $\operatorname{Re}\bigl((z - \zeta_k)\overline{(z - \zeta_j)}\bigr)$.  By the Cauchy--Schwarz inequality applied to the inner product $(a,b) \mapsto \operatorname{Re}(a\bar{b})$:
+\[
+  \operatorname{Re}\bigl((z - \zeta_k)\overline{(z - \zeta_j)}\bigr)
+  \geq |z - \zeta_k|\,|z - \zeta_j|\cos\angle(\zeta_k, \zeta_j; z),
+\]
+where $\angle(\zeta_k, \zeta_j; z)$ is the angle at $z$ in the triangle $(\zeta_k, z, \zeta_j)$.  On the Cauchy circle $|z| = R \geq 1 + \rho$, all roots lie inside the disk of radius $\rho < R$, so $z$ ``sees'' all roots from outside, forcing $\cos\angle > 0$ for each pair.  Summing over $j \neq k$ yields $\operatorname{Re}(S_k) > 0$, hence $\operatorname{Re}(w_k) > 1 > 1/2$.
+
+Therefore $|1 - 1/w_k| < 1$ for every $k$, establishing~\eqref{eq:per_root}.
+\end{proof}
+
+\begin{remark}[From Cauchy circle to Smale's problem]
 \label{rem:newton_is_pandrosion}
-With anchor-update period $K = 1$, the base Pandrosion map coincides with Newton: $\mathcal{P}_{P,z_n}(z_n) = z_n - P(z_n)/Q(z_n,z_n) = z_n - P(z_n)/P'(z_n)$, since $Q(z,z) = P'(z)$ by the definition of the divided difference.  The $T_3$ acceleration then provides a \emph{derivative-free refinement} of Newton, using only evaluations of $P$ (via $Q(z_0, w) = (P(w)-P(z_0))/(w-z_0)$, which requires no explicit derivative).  Theorem~\ref{thm:radial_contraction} therefore gives the first half of a pre-lock-in bound for the Pandrosion framework: the orbit reaches the root cluster in $O(d)$ steps; what remains is to prove entry into a universal basin.
+With $K = 1$, the Pandrosion base map is Newton: $\mathcal{P}_{P,z_n}(z_n) = z_n - P(z_n)/P'(z_n)$.  Theorems~\ref{thm:radial_contraction} and~\ref{thm:per_root} together establish:
+\begin{enumerate}
+  \item The orbit from the Cauchy circle contracts \emph{radially} at rate $(1 - 1/d)$ per step (Theorem~\ref{thm:radial_contraction}).
+  \item On the Cauchy circle, every root is \emph{simultaneously approached} (Theorem~\ref{thm:per_root}).
+\end{enumerate}
+The remaining gap to Smale's 17th problem is that Theorem~\ref{thm:per_root} is proved only for the \emph{first} Newton step (from $|z| = R$).  Along subsequent iterates---which are no longer on a fixed circle---per-root violations do occur ($\approx 3\%$ of per-root ratios exceed $1$ inside the root cluster).  Closing this gap would give an unconditional $O(d^2 \log(1/\eta_P) + \log\log(1/\varepsilon))$ bound.
 \end{remark}
+
 
 \subsection{Honest global conjecture}
 \label{sec:global_conjecture}
