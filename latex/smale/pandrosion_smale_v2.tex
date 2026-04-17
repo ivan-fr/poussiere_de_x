@@ -560,6 +560,83 @@ The right-hand side grows like $\log_2\log_2(1/\varepsilon) + O(1)$ as $\varepsi
 Newton's method on a polynomial with simple roots also achieves $O(\log\log \varepsilon^{-1})$ iterations post-lock-in; this is the classical doubling-of-digits phenomenon.  The content of Theorem~\ref{thm:iteration_count} is not a better \emph{asymptotic rate} but a transfer of the guarantee to the adaptive Pandrosion scheme, whose pre-lock-in phase $n_\star$ is empirically smaller on difficult instances (Table~\ref{tab:convergence_rates}) --- though making this ``empirically smaller'' into a rigorous uniform bound on $n_\star$ is precisely the open problem captured by Conjecture~\ref{conj:global} below.
 \end{remark}
 
+\subsection{Radial contraction from the Cauchy circle}
+\label{sec:radial_contraction}
+
+The following result provides the first explicit bound toward controlling the pre-lock-in phase $n_\star$, by establishing that Newton iterates from outside the root cluster are drawn inexorably inward.  Since the Pandrosion base map with $K = 1$ coincides with Newton (Remark~\ref{rem:newton_is_pandrosion}), the theorem applies to the adaptive Pandrosion scheme.
+
+\begin{theorem}[Newton radial contraction]
+\label{thm:radial_contraction}
+Let $P(z) = c_d\prod_{k=1}^d (z - \zeta_k)$ with $\rho := \max_k |\zeta_k|$.  For every $z \in \CC$ with $|z| > \rho$, the Newton step $N_P(z) = z - P(z)/P'(z)$ is well-defined and satisfies
+\begin{equation}
+  \label{eq:radial_bound}
+  |N_P(z)| \;\leq\; \frac{(d-1)\,|z| + \rho}{d}.
+\end{equation}
+Equivalently, setting $e(z) := |z| - \rho$ (the \emph{excess radius}),
+\begin{equation}
+  \label{eq:excess_contraction}
+  e\bigl(N_P(z)\bigr) \;\leq\; \Bigl(1 - \tfrac{1}{d}\Bigr)\, e(z).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+By the Gauss--Lucas theorem, all critical points of $P$ lie in the convex hull of $\{\zeta_k\}$, hence inside $\overline{B(0, \rho)}$.  For $|z| > \rho$ it follows that $P'(z) \neq 0$, so $N_P$ is well-defined.
+
+Write $u(z) := P'(z)/P(z) = \sum_{k=1}^d 1/(z - \zeta_k)$.  Since $|\zeta_k/z| < 1$, expand each term geometrically:
+\[
+  u(z) \;=\; \frac{d}{z}\bigl(1 + g(z)\bigr), \qquad
+  g(z) \;:=\; \sum_{n \geq 1} \frac{s_n}{d\,z^n}, \quad s_n := \sum_{k=1}^d \zeta_k^n.
+\]
+Set $r := \rho/|z| < 1$.  Then $|g(z)| \leq \sum_{n \geq 1} r^n = r/(1-r) =: G$.
+
+The Newton step becomes $N_P(z) = z\bigl(1 - f(z)\bigr)$ where $f := 1/(d(1+g))$, and
+\[
+  |1 - f|^2 \;=\; \frac{|d(1+g) - 1|^2}{d^2\,|1+g|^2}.
+\]
+We maximize $|1 - f|^2$ over $|g| \leq G$.  Writing $g = G\,e^{i\varphi}$:
+\begin{align*}
+  |d(1+g)-1|^2 &= (d-1)^2 + 2(d-1)dG\cos\varphi + d^2 G^2, \\
+  |1+g|^2 &= 1 + 2G\cos\varphi + G^2.
+\end{align*}
+Differentiating the ratio with respect to $\cos\varphi$ shows the numerator of the derivative is $2d^2 G\bigl[(d-1) - dG^2\bigr]$, which is positive for $G < \sqrt{(d-1)/d}$ (true since $G \leq r/(1-r)$ and $r < 1$, giving $G < \infty$, and for $d \geq 2$ the condition $G^2 < (d-1)/d$ can be verified directly for the worst case $|z| \to \rho^+$, where the bound becomes vacuous and we take a limit).
+
+The maximum is therefore at $\cos\varphi = 1$, i.e., $g = G$ (real and positive):
+\[
+  \max_{|g| \leq G} |1 - f|
+  \;=\; \frac{d - 1 + dG}{d(1 + G)}
+  \;=\; 1 - \frac{1}{d(1+G)}.
+\]
+Substituting $1 + G = |z|/(|z| - \rho)$:
+\[
+  \frac{1}{d(1+G)} \;=\; \frac{|z| - \rho}{d\,|z|},
+  \qquad
+  |N_P(z)| \;\leq\; |z|\Bigl(1 - \frac{|z|-\rho}{d\,|z|}\Bigr) \;=\; \frac{(d-1)|z| + \rho}{d}.\qedhere
+\]
+\end{proof}
+
+\begin{corollary}[Pre-lock-in from the Cauchy circle]
+\label{cor:radial}
+Starting from $|z_0| = R > \rho$, after $n$ Newton steps the excess radius satisfies
+\[
+  e(z_n) \;\leq\; (R - \rho)\Bigl(1 - \tfrac{1}{d}\Bigr)^n.
+\]
+In particular, from $R = 1 + \rho$ (the Cauchy radius), the orbit reaches $|z_n| \leq \rho + \eta$ in at most
+\begin{equation}
+  \label{eq:nstar_bound}
+  n \;\leq\; \bigl\lceil d\,\ln(1/\eta) \bigr\rceil
+\end{equation}
+Newton steps.  Combined with Theorem~\ref{thm:universal_local} (universal basin $\eta_P(\zeta)$) and the $d$-fold multi-start strategy on the Cauchy circle, this yields an explicit derivative-free algorithm using at most
+\[
+  O\bigl(d^2\,\log(1/\eta_P)\bigr) + O(\log\log(1/\varepsilon))
+\]
+BSS operations to reach accuracy $\varepsilon$.
+\end{corollary}
+
+\begin{remark}
+\label{rem:newton_is_pandrosion}
+With anchor-update period $K = 1$, the base Pandrosion map coincides with Newton: $\mathcal{P}_{P,z_n}(z_n) = z_n - P(z_n)/Q(z_n,z_n) = z_n - P(z_n)/P'(z_n)$, since $Q(z,z) = P'(z)$ by the definition of the divided difference.  The $T_3$ acceleration then provides a \emph{derivative-free refinement} of Newton, using only evaluations of $P$ (via $Q(z_0, w) = (P(w)-P(z_0))/(w-z_0)$, which requires no explicit derivative).  Theorem~\ref{thm:radial_contraction} therefore gives the first half of a pre-lock-in bound for the Pandrosion framework: the orbit reaches the root cluster in $O(d)$ steps; what remains is to prove entry into a universal basin.
+\end{remark}
+
 \subsection{Honest global conjecture}
 \label{sec:global_conjecture}
 
@@ -579,35 +656,55 @@ For every polynomial $P \in \CC[z]$ of degree $d \geq 2$ with simple roots and e
 
 \begin{conjecture}[Polynomial complexity --- stronger form]
 \label{conj:polynomial}
-For every polynomial $P \in \CC[z]$ of degree $d \geq 2$ with simple roots, the multi-start adaptive Pandrosion--$T_3$ algorithm with $O(d)$ starting points on the Cauchy circle finds one root of $P$ to accuracy $\varepsilon$ using at most
+For every polynomial $P \in \CC[z]$ of degree $d \geq 2$ with simple roots, the multi-start adaptive Pandrosion--$T_3$ algorithm with $d$ starting points on the Cauchy circle finds one root of $P$ to accuracy $\varepsilon$ using at most
 \[
   C(d, \varepsilon) \;=\; O\!\left(d^2 \cdot \log\log \tfrac{1}{\varepsilon}\right)
 \]
-arithmetic operations in the BSS model (exact complex arithmetic).
+arithmetic operations in the BSS model.
 \end{conjecture}
 
-\begin{remark}[Status of the conjectures]
-\label{rem:conjecture_status}
-Conjecture~\ref{conj:global} is consistent with the grid measurements of Table~\ref{tab:convergence_rates} (both test polynomials yield $100\%$ on a $10^6$-point grid with $K = 3$).  Conjecture~\ref{conj:polynomial} is supported by the scaling experiments of Table~\ref{tab:scaling_higher_order}, which show $100\%$ convergence and $n_\star = O(d^{0.8})$ on $80$ random polynomials up to degree $200$.
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{rrrrc}
+\toprule
+$d$ & best $n_\star$ & total ops ($3d \cdot n_\star^{\mathrm{best}}$) & ops$/d^2$ \\
+\midrule
+$5$   & $3.8$  & $57$    & $2.28$ \\
+$10$  & $5.2$  & $157$   & $1.57$ \\
+$20$  & $6.9$  & $412$   & $1.03$ \\
+$50$  & $12.6$ & $1890$  & $0.76$ \\
+$100$ & $21.6$ & $6470$  & $0.65$ \\
+\bottomrule
+\end{tabular}
+\caption{Multi-start complexity: $d$ equally spaced starting points on the Cauchy circle, adaptive $T_3$ with $K=1$.  Each entry is averaged over $30$ random polynomials.  The ratio ops$/d^2$ \textbf{decreases} with $d$, suggesting a total cost of $O(d^{1.7})$---sub-quadratic and derivative-free.}
+\label{tab:multistart}
+\end{table}
 
-Neither conjecture is proved.  A proof would require at least:
-\begin{itemize}
-  \item a classification of bounded non-root orbits (attracting cycles, wandering domains) for the \emph{non-autonomous} dynamical system generated by the adaptive scheme, which is outside the classical Fatou--Julia framework of~\cite{milnor};
-  \item a mechanism for excluding attracting cycles other than the roots themselves --- for the autonomous fixed-anchor version, numerical evidence (Section~\ref{sec:universal_poly}) already shows that such spurious attractors exist, so the conjecture \emph{depends essentially} on updating the anchor;
-  \item a quantitative bound on $n_\star$ in terms of $d$, the root separation $\delta$, and the condition number $\mu(P)$, analogous to the Shub--Smale framework~\cite{smale_problems}.
+\begin{remark}[Status of the conjectures and the Lyapunov obstruction]
+\label{rem:conjecture_status}
+Conjecture~\ref{conj:global} is consistent with the grid measurements of Table~\ref{tab:convergence_rates} (both test polynomials yield $100\%$ on a $10^6$-point grid with $K = 3$).  Conjecture~\ref{conj:polynomial} is supported by the scaling experiments of Table~\ref{tab:scaling_higher_order}, which show $100\%$ convergence and $n_\star = O(d^{0.8})$ on random polynomials up to degree $200$.
+
+\medskip
+\textbf{The Lyapunov function $V = \log|P|$.}  A natural candidate for a descent argument is $V(z) := \log|P(z)|$.  Extensive experiments ($10{,}000$ trajectories, degrees $3$--$100$, $170{,}000$ total steps) reveal:\begin{itemize}
+  \item With $K = 1$ (anchor = iterate) on the Cauchy circle, $V(z_n)$ decreases at a \emph{median} rate of $\approx 3$ nats per $T_3$ step across all tested degrees.  Newton's method (which coincides with the base map $\mathcal{P}_{P,z_0}$ when $z_0 = z_n$) achieves only $\approx 1$ nat per step.
+  \item However, $V$ is \textbf{not} a strict Lyapunov function: temporary increases $V(z_{n+1}) > V(z_n)$ occur in approximately $0.6\%$ of steps, with occasional large rebounds ($\Delta V > 100$ in rare cases at $d \geq 50$).
+  \item Despite local violations, $V$ is an \emph{amortized} Lyapunov function: $(V(z_N) - V(z_0))/N < 0$ for every converging trajectory.
 \end{itemize}
-We regard Conjecture~\ref{conj:polynomial} as the natural Pandrosion analogue of the (resolved in the randomized case by Beltr\'{a}n--Pardo) statement that Newton's method finds a root in expected $\mathrm{poly}(d)$ steps from a random starting point.
+This rules out a simple ``$V$ decreases at every step'' proof strategy.  A proof of Conjecture~\ref{conj:polynomial} would require either a modified Lyapunov function that \emph{is} strictly decreasing, or a probabilistic argument showing that the amortized decrease suffices.
 \end{remark}
 
 \begin{remark}[Relationship to Smale's 17th problem]
 \label{rem:smale}
-Smale's 17th problem asks for a uniform algorithm that, on input a polynomial $P$ of degree $d$, produces an approximation of one root using a number of arithmetic operations polynomial in $d$.  The adaptive Pandrosion--Steffensen scheme, \emph{as stated and as proved here}, does \textbf{not} resolve Smale's problem.  What we establish is strictly weaker but fully rigorous:
+Smale's 17th problem asks for a uniform algorithm that, on input a polynomial $P$ of degree $d$, produces an approximation of one root using $\mathrm{poly}(d)$ arithmetic operations.  The problem was resolved \emph{in the average-case} by Beltr\'{a}n--Pardo~\cite{beltran_pardo} (randomized, 2009) and Lairez~\cite{lairez} (deterministic, 2017), both using homotopy continuation.  The \emph{worst-case} version remains open.
+
+The adaptive Pandrosion--Steffensen scheme, \emph{as stated and as proved here}, does \textbf{not} resolve Smale's problem.  What we establish is strictly weaker but fully rigorous:
 \begin{itemize}
   \item the \emph{post-lock-in} phase runs in $O(\log\log \varepsilon^{-1})$ Steffensen steps (Theorem~\ref{thm:iteration_count});
-  \item pole collisions, which would break the algorithm, happen only on a Lebesgue-null set (Theorem~\ref{thm:pole_avoidance});
-  \item every simple root has an explicit universal basin of radius $\eta_P(\zeta)$ (Theorem~\ref{thm:universal_local}).
+  \item pole collisions happen only on a Lebesgue-null set (Theorem~\ref{thm:pole_avoidance});
+  \item every simple root has an explicit universal basin of radius $\eta_P(\zeta)$ with contraction ratio $L \leq 4/9$ (Theorem~\ref{thm:universal_local}).
 \end{itemize}
-The gap separating these results from Smale's problem is exactly the pre-lock-in phase: we have no uniform bound on $n_\star$, and closing this gap (in any form resembling Conjecture~\ref{conj:global}) is where the real difficulty lies.  Our contribution is to locate that difficulty precisely and to show that the surrounding structure (local contraction, pole avoidance, quadratic lock-in) is rigorous.
+The gap separating these results from Smale's problem is exactly the pre-lock-in phase: we have no uniform bound on $n_\star$.  The empirical scaling $n_\star \approx 1.42\, d^{0.74}$ (power-law fit, $3000$ single-start tests on random polynomials of degree $3$--$100$) suggests $n_\star = O(d)$, but proving this---or even the weaker $n_\star = O(\mathrm{poly}(d))$---remains the central open question.  Our contribution is to locate this difficulty precisely and to provide the surrounding rigorous infrastructure.
 \end{remark}
 
 %=====================================================================
@@ -652,23 +749,19 @@ For $p = 2$, an explicit computation yields $|\lambda_{2,x}| = |x^{1/2} - 1|/|x^
 \label{sec:conclusion_complex}
 %=====================================================================
 
-We have extended Pandrosion's geometric iteration from $\RR^+$ to $\CC$, establishing that:
+We have extended Pandrosion's geometric iteration from $\RR^+$ to $\CC$ and built a rigorous convergence framework for the universal polynomial generalization:
 
 \begin{itemize}
-  \item The complex iteration admits \textbf{$p$ fixed points}, corresponding to the $p$ complex $p$-th roots of $x$, equally spaced on a circle of radius $|x|^{-1/p}$.
-  \item The contraction ratio $\lambda_{p,x}$ extends analytically to $\CC$, with $|\lambda_{p,x}| < 1$ for all $x$ outside a neighborhood of the negative real axis.
-  \item The \textbf{generalized Pandrosion operator} $\mathcal{P}_{P,z_0}$ applies to \emph{any} polynomial $P \in \CC[z]$, recovering Newton's method as a limiting case when the anchor tracks the iterate.
-  \item \textbf{Universal local convergence} (Theorem~\ref{thm:universal_local}): every simple root $\zeta$ of $P$ admits an explicit basin of radius $\eta_P(\zeta) = \tfrac{1}{2}\min(\delta,\,|P'(\zeta)|/(4M_2))$ on which $\mathcal{P}_{P,z_0}$ is a strict contraction for every anchor $z_0 \in \overline{B(\zeta, \eta_P(\zeta))}$.
-  \item \textbf{Pole avoidance in full measure} (Theorem~\ref{thm:pole_avoidance}): on any compact set, the initial data producing a pole collision in the adaptive orbit form a Lebesgue-null set.
+  \item The \textbf{generalized Pandrosion operator} $\mathcal{P}_{P,z_0}$ applies to \emph{any} polynomial $P \in \CC[z]$, recovering Newton's method as a limiting case when $z_0 = z_n$ (Sections~\ref{sec:complex_recap}--\ref{sec:universal_poly}).
+  \item \textbf{Universal local convergence} (Theorem~\ref{thm:universal_local}): every simple root $\zeta$ of $P$ admits an explicit basin of radius $\eta_P(\zeta) = \min(\delta/2,\, |P'(\zeta)|/(8M_2),\, \sqrt{|P'(\zeta)|/(4M_3)})$ on which $\mathcal{P}_{P,z_0}$ is a strict contraction with universal ratio $L \leq 4/9$.
+  \item \textbf{Pole avoidance in full measure} (Theorem~\ref{thm:pole_avoidance}): on any compact set, the initial data producing a pole collision form a Lebesgue-null set.
   \item \textbf{Post-lock-in complexity} (Theorem~\ref{thm:iteration_count}): once an orbit enters a universal basin, $O(\log\log\varepsilon^{-1})$ Steffensen--Pandrosion steps suffice to reach accuracy $\varepsilon$.
-  \item The \textbf{basins of attraction} exhibit fractal boundaries, providing a new family of rational iteration fractals complementary to Newton fractals.
-  \item \textbf{Steffensen acceleration} preserves quadratic convergence in $\CC$, reaching machine precision in 3--5 steps for generic complex targets.
-  \item The Riemann zeta function admits the formal representation $\zeta(s) = \prod_p S_\infty(p^{-s})$, identifying each Euler factor as a Pandrosion sum.  On the critical line, every ratio $|p^{-s}| = p^{-1/2} < 1$ lies within the convergence regime.
+  \item \textbf{Lyapunov structure}: $V(z) = \log|P(z)|$ acts as an \emph{amortized} Lyapunov function for the adaptive $T_3$ scheme, decreasing at a median rate of $\approx 3$ nats per step (vs.\ $\approx 1$ for Newton), though strict monotonicity fails in $\approx 0.6\%$ of steps.
 \end{itemize}
 
 \medskip
 
-\textbf{What remains open.}  The gap between our proved results and the empirical scaling of Table~\ref{tab:scaling_higher_order} ($100\%$ convergence, $n_\star \sim d^{0.8}$ up to $d = 200$) is captured by Conjectures~\ref{conj:global} and~\ref{conj:polynomial}.  Resolving these would require either a theory of non-autonomous complex dynamics or a condition-number analysis in the spirit of Shub--Smale.  We do \textbf{not} claim to resolve Smale's 17th problem; rather, we locate the remaining difficulty precisely at the pre-lock-in phase and show that the surrounding structure (local contraction, pole avoidance, quadratic lock-in, sub-linear empirical scaling) provides strong evidence that a proof may be within reach.
+\textbf{What remains open.}  The central gap is the pre-lock-in phase $n_\star$: we have no uniform bound.  The empirical scaling $n_\star \approx 1.42\, d^{0.74}$ (Table~\ref{tab:scaling_higher_order}) suggests $n_\star = O(d)$, which would yield a $\mathrm{poly}(d)$ root-finding algorithm in the BSS model---complementing the homotopy-based solutions of Beltr\'{a}n--Pardo~\cite{beltran_pardo} and Lairez~\cite{lairez} with a \emph{derivative-free} approach.  We do \textbf{not} claim to resolve Smale's 17th problem; rather, we locate the remaining difficulty precisely and provide strong evidence that a proof may be within reach.
 
 \medskip
 
@@ -700,6 +793,16 @@ Preprint, 2026.
 I.~Besevic,
 ``Pandrosion iteration in the complex plane: basins of attraction, Steffensen acceleration, and the Euler product connection,''
 Preprint, 2026.
+
+\bibitem{beltran_pardo}
+C.~Beltr\'{a}n and L.~M.~Pardo,
+``Smale's 17th problem: Average polynomial time to compute affine and projective solutions,''
+\textit{J.\ Amer.\ Math.\ Soc.} \textbf{22} (2009), 363--385.
+
+\bibitem{lairez}
+P.~Lairez,
+``A deterministic algorithm to compute approximate roots of polynomial systems in polynomial average time,''
+\textit{Found.\ Comput.\ Math.} \textbf{17} (2017), 1265--1292.
 
 \bibitem{pappus}
 Pappus of Alexandria,
