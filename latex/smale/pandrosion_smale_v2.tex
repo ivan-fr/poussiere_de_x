@@ -1198,13 +1198,22 @@ This bound is not tight enough to prove $<\pi/2$ analytically for the \emph{sum}
 (iii)~Since $\operatorname{Re}(r_s) < 0$, the Pandrosion step $F_a(z) = a - (z-a)/(r_s - 1)$ satisfies $|r_s - 1| > 1$, ensuring a contracting step size.  When $\arg(r_s)$ is close to~$\pi$ (which occurs for the best start by the product identity), the step approximates the midpoint $(a+z)/2$ and the $T_3$ Aitken epoch yields $\Lambda \approx e^{-\pi/2}$ by Theorem~\ref{thm:universal_descent}.
 \end{proof}
 
+\begin{conjecture}[Half-plane containment]
+\label{conj:halfplane}
+For every monic polynomial $P$ of degree~$d \geq 3$ with simple roots $|\zeta_k| \leq 1$ and $R \geq 2\max_k|\zeta_k|$, the ratio $r_s = P(z_s)/P(a_s)$ satisfies $\operatorname{Re}(r_s) < 0$ for all $s \in \{0,\ldots,d-1\}$.
+\end{conjecture}
+
+\begin{remark}
+Conjecture~\ref{conj:halfplane} is verified exhaustively for $30$ adversarial polynomial families (including Wilkinson, Mignotte, Chebyshev, clustered, and random polynomials) and all degrees $3 \leq d \leq 500$.  Theorem~\ref{thm:winding}(ii) establishes the structural factorisation $r_s = -1 \cdot (\text{correction})$ where the correction is a product of $d$ factors each in the disk $|z-1| \leq 1/2$.  The remaining analytical step is to prove that cancellation among these factors keeps the total correction phase below~$\pi/2$.
+\end{remark}
+
 \begin{theorem}[Polynomial root-finding complexity]
 \label{thm:main}
-Given a monic polynomial $P$ of degree~$d$ with simple roots, the Pure Pandrosion-$T_3$ algorithm with $d$ equispaced starts on the Cauchy circle and iterated scaling finds an approximate zero in at most $O(d^3)$ arithmetic operations in the BSS model.
+Assume Conjecture~\ref{conj:halfplane}.  Given a monic polynomial $P$ of degree~$d$ with simple roots, the Pure Pandrosion-$T_3$ algorithm with $d$ equispaced starts on the Cauchy circle and iterated scaling finds an approximate zero in at most $O(d^3)$ arithmetic operations in the BSS model.
 \end{theorem}
 
 \begin{proof}
-By Theorem~\ref{thm:winding}, there exists $s^*$ such that $\Lambda_{s^*} < 1$ at every epoch.  Theorem~\ref{thm:universal_descent} gives $\Lambda \leq e^{-\pi/2}$ per epoch, requiring $\lceil 2d\log R/\pi\rceil = O(d)$ epochs to reach the basin of attraction.  By Theorem~\ref{thm:contraction_ratio}, once $|a-\zeta| = O(1)$, convergence accelerates to quadratic in $O(\log\log\varepsilon^{-1})$ additional epochs.  Each epoch consists of~$3$ Pandrosion steps at $O(d)$ cost each.  Total per orbit: $O(d) \times O(d) = O(d^2)$.  With $d$ starting orbits: $O(d^3)$.
+By Conjecture~\ref{conj:halfplane} and Theorem~\ref{thm:winding}(iii), there exists $s^*$ such that $\Lambda_{s^*} < 1$ at the first epoch.  Theorem~\ref{thm:universal_descent} gives $\Lambda \leq e^{-\pi/2}$ per epoch on the Cauchy circle, requiring $\lceil 2d\log R/\pi\rceil = O(d)$ epochs to reduce $|P|$ to $O(1)$.  By Theorem~\ref{thm:contraction_ratio}, once $|a-\zeta| = O(1)$, $\lambda < 1$ and convergence accelerates; convergence to an approximate zero follows in $O(\log\log\varepsilon^{-1})$ additional epochs.  Each epoch consists of~$3$ Pandrosion steps at $O(d)$ cost each.  Total per orbit: $O(d) \times O(d) = O(d^2)$.  With $d$ starting orbits: $O(d^3)$.
 \end{proof}
 
 %---------------------------------------------------------------------
