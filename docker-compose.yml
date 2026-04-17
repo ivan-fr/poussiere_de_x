@@ -1,0 +1,14 @@
+
+
+services:
+  lean:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lean_workspace
+    volumes:
+      - .:/workspace
+    tty: true
+    stdin_open: true
+    # Working inside the test project by default
+    working_dir: /workspace/lean_project_test
