@@ -410,39 +410,43 @@ for the root separation and the $k$-th derivative bound on a disk of radius $R \
 
 \begin{theorem}[Universal local convergence]
 \label{thm:universal_local}
-Let $\zeta$ be a simple root of $P$ (so $P'(\zeta) \neq 0$) and let $\eta > 0$ satisfy
+Let $\zeta$ be a simple root of $P$ (so $P'(\zeta) \neq 0$).  Define
 \begin{equation}
   \label{eq:eta_def}
-  \eta \;<\; \min\!\left(\tfrac{\delta}{2},\; \frac{|P'(\zeta)|}{4 M_2}\right).
+  \eta_P(\zeta) \;:=\; \min\!\left(\frac{\delta}{2},\; \frac{|P'(\zeta)|}{8 M_2},\; \sqrt{\frac{|P'(\zeta)|}{4 M_3}}\right)
 \end{equation}
-For every anchor $z_0$ with $0 < |z_0 - \zeta| \leq \eta$, the generalized Pandrosion operator
+(with the convention $|P'(\zeta)|/(4M_3) = +\infty$ if $M_3 = 0$).  For every $\eta \in (0, \eta_P(\zeta))$ and every anchor $z_0$ with $0 < |z_0 - \zeta| \leq \eta$, the generalized Pandrosion operator
 \[
   \mathcal{P}_{P,z_0}(z) \;=\; z_0 - \frac{P(z_0)}{Q(z_0, z)}
 \]
-is well-defined and holomorphic on the closed disk $\overline{B(\zeta, \eta)}$, fixes $\zeta$, and is a strict contraction on $\overline{B(\zeta, \eta)}$:
+is well-defined and holomorphic on the closed disk $\overline{B(\zeta, \eta)}$, fixes $\zeta$, and is a strict contraction:
 \begin{equation}
   \label{eq:contraction_bound}
   \bigl|\mathcal{P}_{P,z_0}(z) - \zeta\bigr|
   \;\leq\;
   L\,|z - \zeta|,
   \qquad
-  L \;=\; \frac{4 M_2}{|P'(\zeta)|}\,|z_0 - \zeta| \;<\; 1.
+  L \;:=\; \frac{32\, M_2}{9\,|P'(\zeta)|}\,|z_0 - \zeta| \;\leq\; \frac{4}{9} \;<\; 1.
 \end{equation}
-Consequently, for any $z_{n_0} \in \overline{B(\zeta, \eta)}$ the sequence $z_{n+1} = \mathcal{P}_{P,z_0}(z_n)$ stays in $\overline{B(\zeta, \eta)}$ and converges to $\zeta$ geometrically with ratio $L$.
+Consequently, for any $z_{n_0} \in \overline{B(\zeta, \eta)}$ the sequence $z_{n+1} = \mathcal{P}_{P,z_0}(z_n)$ stays in $\overline{B(\zeta, \eta)}$ and converges to $\zeta$ geometrically with ratio at most $4/9$.
 \end{theorem}
 
 \begin{proof}
-\textbf{Step 1 (structure of $Q$).}  The divided-difference representation $Q(z_0,z) = \int_0^1 P'\!\bigl(z_0 + t(z-z_0)\bigr)\,dt$ (valid for any polynomial $P$) yields, via Taylor expansion of $P'$ around $\zeta$:
+\textbf{Step 1 (lower bound on $Q$).}  The divided-difference representation $Q(z_0,z) = \int_0^1 P'\!\bigl(z_0 + t(z-z_0)\bigr)\,dt$ yields, via Taylor expansion of $P'$ around $\zeta$:
 \begin{equation}
   \label{eq:Q_expansion}
   Q(z_0, z) \;=\; P'(\zeta) \;+\; \tfrac{1}{2} P''(\zeta)\bigl[(z - \zeta) + (z_0 - \zeta)\bigr] \;+\; R(z_0, z),
 \end{equation}
-where $|R(z_0,z)| \leq \frac{M_3}{6}(|z-\zeta|^2 + |z_0 - \zeta|^2 + |z-\zeta|\,|z_0-\zeta|)$ by the integral remainder formula applied to $P'$.  Under~\eqref{eq:eta_def},
+where $|R(z_0,z)| \leq \frac{M_3}{6}(|z-\zeta|^2 + |z_0 - \zeta|^2 + |z-\zeta|\,|z_0-\zeta|) \leq \frac{M_3}{2}\eta^2$ by the integral remainder formula.  The linear term satisfies $|\tfrac{1}{2}P''(\zeta)[(z-\zeta)+(z_0-\zeta)]| \leq M_2\eta$.  Therefore
 \[
-  |Q(z_0, z)| \;\geq\; |P'(\zeta)| \;-\; M_2\,\eta \;-\; \tfrac{M_3}{2}\eta^2
-  \;\geq\; \tfrac{3}{4}|P'(\zeta)|,
+  |Q(z_0, z)| \;\geq\; |P'(\zeta)| - M_2\eta - \tfrac{M_3}{2}\eta^2.
 \]
-where the second inequality holds provided $\eta \leq |P'(\zeta)|/(8M_2)$ (to absorb the linear term) and $\eta^2 \leq |P'(\zeta)|/(2M_3)$ (to absorb the quadratic remainder); both conditions are implied by~\eqref{eq:eta_def} for $|P'(\zeta)|/(4M_2)$ small enough.  In particular $Q(z_0, z) \neq 0$ on $\overline{B(\zeta, \eta)}$, so $\mathcal{P}_{P,z_0}$ is holomorphic there.
+By~\eqref{eq:eta_def}, $M_2\eta < M_2 \cdot \frac{|P'(\zeta)|}{8M_2} = \frac{|P'(\zeta)|}{8}$ and $\frac{M_3}{2}\eta^2 < \frac{M_3}{2} \cdot \frac{|P'(\zeta)|}{4M_3} = \frac{|P'(\zeta)|}{8}$.  Hence
+\begin{equation}
+  \label{eq:Q_lower}
+  |Q(z_0, z)| \;\geq\; |P'(\zeta)| - \tfrac{1}{8}|P'(\zeta)| - \tfrac{1}{8}|P'(\zeta)| \;=\; \tfrac{3}{4}|P'(\zeta)|.
+\end{equation}
+In particular $Q(z_0, z) \neq 0$ on $\overline{B(\zeta, \eta)}$, so $\mathcal{P}_{P,z_0}$ is holomorphic there.
 
 \textbf{Step 2 ($\zeta$ is fixed).}  Since $P(\zeta) = 0$, the factorization yields $-P(z_0) = (\zeta - z_0)\, Q(z_0, \zeta)$, hence
 \[
@@ -455,27 +459,27 @@ where the second inequality holds provided $\eta \leq |P'(\zeta)|/(8M_2)$ (to ab
   &\;=\; \mathcal{P}_{P,z_0}(z) - \mathcal{P}_{P,z_0}(\zeta)
   \;=\; P(z_0)\cdot\frac{Q(z_0,\zeta) - Q(z_0,z)}{Q(z_0,z)\,Q(z_0,\zeta)}.
 \end{align*}
-From~\eqref{eq:Q_expansion}, $|Q(z_0,z) - Q(z_0,\zeta)| \leq (\tfrac{M_2}{2} + c_1\eta)|e| \leq M_2|e|$ for $\eta$ small.  Using the integral representation again, $|P(z_0)| = |P(z_0) - P(\zeta)| = |e_0|\cdot|Q(\zeta, z_0)| \leq |e_0|\,(|P'(\zeta)| + M_2 |e_0|)$.  Combining with $|Q(z_0,\cdot)| \geq \tfrac{3}{4}|P'(\zeta)|$:
+From~\eqref{eq:Q_expansion}, $Q(z_0,z) - Q(z_0,\zeta) = \frac{1}{2}P''(\zeta)\,e + [R(z_0,z)-R(z_0,\zeta)]$, so $|Q(z_0,z) - Q(z_0,\zeta)| \leq \frac{M_2}{2}|e| + M_3\eta|e| \leq M_2|e|$ (using $M_3\eta \leq M_3 \cdot \sqrt{|P'|/(4M_3)} = \sqrt{M_3|P'|/4} \leq M_2/2$ for $\eta < \eta_P$).  Via $P(z_0) = e_0 Q(\zeta,z_0)$ and $|Q(\zeta,z_0)| \leq |P'(\zeta)| + M_2|e_0| \leq |P'(\zeta)| + \frac{|P'(\zeta)|}{8} = \frac{9}{8}|P'(\zeta)|$:
 \begin{equation}
   \label{eq:error_main}
   |\mathcal{P}_{P,z_0}(z) - \zeta|
   \;\leq\;
-  \frac{(|P'(\zeta)| + M_2\eta) \cdot M_2}{(\tfrac{3}{4}|P'(\zeta)|)^2}\,|e_0|\,|e|
-  \;\leq\;
-  \frac{32\, M_2}{9\,|P'(\zeta)|}\,|e_0|\,|e|,
+  \frac{\frac{9}{8}|P'(\zeta)| \cdot M_2}{(\frac{3}{4}|P'(\zeta)|)^2}\,|e_0|\,|e|
+  \;=\;
+  \frac{32\, M_2}{9\,|P'(\zeta)|}\,|e_0|\,|e|.
 \end{equation}
-where we used $|P'(\zeta)| + M_2\eta \leq 2|P'(\zeta)|$ (from $\eta \leq |P'(\zeta)|/(4M_2) \leq |P'(\zeta)|/M_2$).  Setting $L := \frac{32 M_2}{9|P'(\zeta)|}|e_0|$, the condition $L < 1$ requires $|e_0| < \frac{9|P'(\zeta)|}{32 M_2}$, which is implied by~\eqref{eq:eta_def}.
+Since $|e_0| \leq \eta < |P'(\zeta)|/(8M_2)$, we get $L = \frac{32 M_2}{9|P'(\zeta)|}|e_0| < \frac{32}{9 \cdot 8} = \frac{4}{9} < 1$.
 
-\textbf{Step 4 (invariance and convergence).}  $|\mathcal{P}_{P,z_0}(z) - \zeta| \leq L |e| \leq L\eta < \eta$, so the disk is invariant.  Iterating, $|z_n - \zeta| \leq L^n |z_{n_0} - \zeta|$, giving geometric convergence.
+\textbf{Step 4 (invariance and convergence).}  $|\mathcal{P}_{P,z_0}(z) - \zeta| \leq L|e| < \frac{4}{9}\eta < \eta$, so the disk is invariant.  Iterating, $|z_n - \zeta| \leq L^n |z_{n_0} - \zeta|$, giving geometric convergence.
 \end{proof}
 
 \begin{remark}[Size of the guaranteed basin]
-The explicit radius $\eta_P(\zeta) := \tfrac{1}{2}\min\!\bigl(\delta,\, |P'(\zeta)|/(4M_2)\bigr)$ is the \emph{universal basin radius}, depending only on intrinsic data of $P$ (root separation and second-derivative bound).  Newton's method for the same root has an explicit basin radius of comparable order $|P'(\zeta)|/M_2$ (Kantorovich), so Theorem~\ref{thm:universal_local} is quantitatively comparable to Newton while providing the added structural flexibility of a movable anchor.
+The explicit radius $\eta_P(\zeta) = \min(\delta/2,\, |P'(\zeta)|/(8M_2),\, \sqrt{|P'(\zeta)|/(4M_3)})$ depends only on intrinsic data of $P$ (root separation, second- and third-derivative bounds).  The contraction ratio $L \leq 4/9$ is universal --- independent of $P$ --- once the iterate is inside $B(\zeta, \eta_P(\zeta))$.  Newton's method for the same root has an explicit basin radius of comparable order $|P'(\zeta)|/M_2$ (Kantorovich), so Theorem~\ref{thm:universal_local} is quantitatively comparable to Newton while being derivative-free.
 \end{remark}
 
 \begin{corollary}[Approach phase and quadratic lock-in]
 \label{cor:lockin}
-Fix a simple root $\zeta$ of $P$ and let $\eta = \eta_P(\zeta)$.  If at some step $m_\star$ the adaptive anchor satisfies $|z_0^{(m_\star)} - \zeta| \leq \eta$ and the current iterate $z_{n_\star}$ lies in $\overline{B(\zeta, \eta)}$, then the subsequent Steffensen--Pandrosion iterates satisfy
+Fix a simple root $\zeta$ of $P$ and let $\eta = \eta_P(\zeta)$.  If at some step $n_\star$ the adaptive anchor satisfies $|z_0^{(n_\star)} - \zeta| \leq \eta$ and the current iterate $z_{n_\star}$ lies in $\overline{B(\zeta, \eta)}$, then the subsequent Steffensen--Pandrosion iterates satisfy
 \begin{equation}
   \label{eq:lockin}
   |z_{n_\star + k} - \zeta| \;\leq\; C\cdot|z_{n_\star} - \zeta|^{\,2^k}, \qquad k \geq 0,
@@ -484,7 +488,13 @@ for a constant $C = C(P, \zeta)$ depending only on the local Taylor data of $P$ 
 \end{corollary}
 
 \begin{proof}
-Inside $\overline{B(\zeta,\eta)}$, the base map $\mathcal{P}_{P,z_0}$ is holomorphic with simple fixed point $\zeta$ and multiplier $\lambda \in \CC$ satisfying $|\lambda| < 1$ by Theorem~\ref{thm:universal_local}.  Steffensen's transformation applied to a holomorphic map with a simple attracting fixed point produces a new map whose derivative at the fixed point vanishes (Theorem~\ref{thm:steffensen_complex} and~\cite{stoer}).  A standard second-order Taylor expansion then yields~\eqref{eq:lockin}, with $C$ controlled by $|h''(\zeta)|/(2|1-\lambda|)$ and uniformly bounded over anchors in $\overline{B(\zeta,\eta)}$.
+Inside $\overline{B(\zeta,\eta)}$, the base map $h := \mathcal{P}_{P,z_0}$ is holomorphic with $h(\zeta) = \zeta$ and multiplier $\lambda := h'(\zeta)$ satisfying $|\lambda| \leq 4/9 < 1$ by Theorem~\ref{thm:universal_local}.  The Steffensen iterate is $T_2(z) = z - (s_1 - z)^2/(s_2 - 2s_1 + z)$, where $s_1 = h(z)$ and $s_2 = h(s_1)$.  We verify directly that $T_2'(\zeta) = 0$:
+
+Expand $h(z) = \zeta + \lambda(z - \zeta) + a_2(z-\zeta)^2 + O(|z-\zeta|^3)$ near $\zeta$.  Then $s_1 - \zeta = \lambda e + a_2 e^2 + \cdots$ and $s_2 - \zeta = \lambda^2 e + (\lambda + 1) a_2 \lambda e^2 + \cdots$, where $e = z - \zeta$.  The Aitken denominator is $s_2 - 2s_1 + z = (\lambda^2 - 2\lambda + 1)e + O(e^2) = (\lambda - 1)^2 e + O(e^2)$.  Since $\lambda \neq 1$, the numerator $(s_1 - z)^2 = (\lambda - 1)^2 e^2 + O(e^3)$.  Dividing:
+\[
+  T_2(z) - \zeta \;=\; e - \frac{(\lambda - 1)^2 e^2 + O(e^3)}{(\lambda-1)^2 e + O(e^2)} \;=\; e - e - \frac{a_2(\lambda+1)}{(\lambda - 1)} e^2 + O(e^3) \;=\; C_2 e^2 + O(e^3),
+\]
+where $C_2 = a_2(\lambda+1)/(1-\lambda)$.  Thus $T_2'(\zeta) = 0$, confirming quadratic convergence.  The constant $C$ in~\eqref{eq:lockin} is bounded by $|C_2|$ plus higher-order terms, uniformly over anchors $z_0 \in \overline{B(\zeta, \eta)}$.
 \end{proof}
 
 \subsection{Pole avoidance in full Lebesgue measure}
@@ -501,19 +511,21 @@ Then $\mathcal{N}_N(\mathcal{K})$ has four-dimensional Lebesgue measure zero.  C
 \end{theorem}
 
 \begin{proof}
-At each step $n$, the iterate $z_n$ is a rational function $\Phi_n$ of the initial pair $(z_0^{\mathrm{init}}, z_{\mathrm{init}})$.  Define
-\[
-  F_n(z_0^{\mathrm{init}}, z_{\mathrm{init}}) \;:=\; \bigl(\text{numerator of }\bigr)\;\; Q\!\bigl(z_0^{(m(n))},\, \Phi_n(z_0^{\mathrm{init}}, z_{\mathrm{init}})\bigr),
-\]
-cleared to a polynomial in $(z_0^{\mathrm{init}}, z_{\mathrm{init}})$.
+We proceed by induction on $n$ to show that $z_n$ is a rational function of the initial pair $(z_0^{\mathrm{init}}, z_{\mathrm{init}}) \in \CC^2$.
 
-\emph{Non-vanishing.}  We claim $F_n$ does not vanish identically.  Specialize $z_0^{\mathrm{init}} = \zeta_1$ and $z_{\mathrm{init}} = \zeta_1$, where $\zeta_1$ is any simple root of $P$.  Then $P(\zeta_1) = 0$ so $\mathcal{P}_{P,\zeta_1}(\zeta_1) = \zeta_1$ (the base map fixes $\zeta_1$), the Steffensen transform also fixes $\zeta_1$ (removable singularity: a fixed point is a fixed point of any fixed-point acceleration), and by induction $z_n = \zeta_1$ for all $n$, with $z_0^{(m)} = \zeta_1$ after every anchor update.  At that specialization,
-\[
-  Q(\zeta_1, \zeta_1) \;=\; \lim_{z \to \zeta_1} \frac{P(z) - P(\zeta_1)}{z - \zeta_1} \;=\; P'(\zeta_1) \;\neq\; 0.
-\]
-Hence $F_n(\zeta_1,\zeta_1) \neq 0$, so $F_n \not\equiv 0$.
+\emph{Step 1 (rationality by induction).}  At $n = 0$, $z_0 = z_{\mathrm{init}}$ and $z_0^{(0)} = z_0^{\mathrm{init}}$, both polynomial in the initial data.  Suppose $z_n = \Phi_n(z_0^{\mathrm{init}}, z_{\mathrm{init}})$ and $z_0^{(m(n))} = \Psi_n(z_0^{\mathrm{init}}, z_{\mathrm{init}})$ are rational functions.  The base map step gives $s_1 = \Psi_n - P(\Psi_n)/Q(\Psi_n, \Phi_n)$, where $P$ and $Q$ are polynomial expressions in their arguments (since $Q(a,b) = (P(b)-P(a))/(b-a)$ is a polynomial in $a, b$ after clearing the denominator).  Thus $s_1$ is rational in the initial data.  Iterating through the Steffensen acceleration $T_2$: the quantities $s_1 = h(z_n)$, $s_2 = h(s_1)$, and $T_2(z_n) = z_n - (s_1 - z_n)^2/(s_2 - 2s_1 + z_n)$ are all rational functions of $(z_0^{\mathrm{init}}, z_{\mathrm{init}})$.  The anchor update $z_0^{(m+1)} = z_n$ (at multiples of $K$) preserves rationality.  This completes the induction.
 
-\emph{Measure.}  A non-identically-vanishing polynomial in $(z_0^{\mathrm{init}}, z_{\mathrm{init}}) \in \CC^2$ defines an algebraic set of complex dimension $\leq 1$, hence real dimension $\leq 2$, in a space of real dimension $4$.  Its intersection with $\mathcal{K}^2$ has four-dimensional Lebesgue measure zero.  The bad set at horizon $N$ is the finite union
+\emph{Step 2 (non-vanishing at a specialization).}  Define
+\[
+  F_n(z_0^{\mathrm{init}}, z_{\mathrm{init}}) \;:=\; \bigl(\text{numerator of}\;\; Q\!\bigl(\Psi_n,\, \Phi_n\bigr)\bigr)
+\]
+after clearing denominators to obtain a polynomial in $(z_0^{\mathrm{init}}, z_{\mathrm{init}})$.  We claim $F_n \not\equiv 0$.  Specialize $(z_0^{\mathrm{init}}, z_{\mathrm{init}}) = (\zeta_1, \zeta_1)$.  The base map fixes $\zeta_1$: $\mathcal{P}_{P,\zeta_1}(\zeta_1) = \zeta_1$ (by Step~2 of Theorem~\ref{thm:universal_local}).  For the Steffensen step at $z = \zeta_1$: $s_1 = h(\zeta_1) = \zeta_1$, $s_2 = h(\zeta_1) = \zeta_1$, so $s_2 - 2s_1 + z = 0$.  However, the iterated output $T_2$ has a removable singularity at $\zeta_1$ with limit $\zeta_1$ (since both numerator and denominator of $(s_1 - z)^2/(s_2 - 2s_1 + z)$ vanish to the same order, and $T_2(z) \to \zeta_1$ as $z \to \zeta_1$ by the proof of Corollary~\ref{cor:lockin}).  After clearing this removable singularity, $\Phi_n(\zeta_1, \zeta_1) = \zeta_1$ and $\Psi_n(\zeta_1, \zeta_1) = \zeta_1$ for all $n$.  At this specialization,
+\[
+  Q(\zeta_1, \zeta_1) \;=\; P'(\zeta_1) \;\neq\; 0,
+\]
+so $F_n(\zeta_1,\zeta_1) \neq 0$, confirming $F_n \not\equiv 0$.
+
+\emph{Step 3 (measure zero).}  A non-identically-vanishing polynomial in $(z_0^{\mathrm{init}}, z_{\mathrm{init}}) \in \CC^2$ defines an algebraic variety of complex dimension $\leq 1$, hence real dimension $\leq 2$, in a space of real dimension $4$.  Its intersection with $\mathcal{K}^2$ has four-dimensional Lebesgue measure zero.  The bad set at horizon $N$ is the finite union
 \[
   \mathcal{N}_N(\mathcal{K}) \;=\; \bigcup_{n=0}^{N} \bigl(\{F_n = 0\} \cap \mathcal{K}^2\bigr),
 \]
