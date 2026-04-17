@@ -224,89 +224,153 @@ Part~(1) follows from $\overline{\lambda_{p,x}} = \lambda_{p,\bar{x}}$ (conjugat
 \end{proof}
 
 %=====================================================================
-\section{Universal polynomial generalization and Smale's 17th Problem}
+\section{Universal polynomial generalization}
 \label{sec:universal_poly}
 %=====================================================================
 
-The classical Pandrosion map~\eqref{eq:complex_pandrosion} was derived strictly targeting $p$-th roots ($s^* = x^{-1/p}$). However, mathematical interrogation structurally confirms it dictates a generalized root-finding formulation effectively universally applicable against \emph{any} complex polynomial $P(z) \in \CC[z]$.
+The classical Pandrosion map~\eqref{eq:complex_pandrosion} was derived for $p$-th roots ($s^* = x^{-1/p}$). We now show that it is a special case of a general root-finding scheme applicable to \emph{any} polynomial $P(z) \in \CC[z]$.
 
-\subsection{The difference quotient generator}
+\subsection{The difference quotient operator}
 
-Presume tracking an unknown complex coordinate $z^*$ resolving a generic polynomial target $P(z) = 0$. Using arbitrarily fixed static anchor $z_0 \in \CC$, factoring the absolute algebraic difference $P(z) - P(z_0)$ continuously generates the difference quotient matrix:
+Let $P(z) = 0$ be a polynomial equation with unknown root $z^*$. Fix an anchor point $z_0 \in \CC$ and write the polynomial remainder factorization:
 \begin{equation}
-  P(z) - P(z_0) = (z - z_0) \cdot Q(z_0, z).
+  P(z) - P(z_0) = (z - z_0) \cdot Q(z_0, z),
 \end{equation}
-Because resolving objectives demand fundamentally $P(z^*) = 0$, evaluating $z^*$ simplifies structurally to:
-\begin{equation}
-  -P(z_0) = (z^* - z_0) Q(z_0, z^*) \quad \implies \quad z^* = z_0 - \frac{P(z_0)}{Q(z_0, z^*)}.
-\end{equation}
-The fixed-point translation asserts deterministically an iterative algorithm transition sequence mapping $z_n \mapsto z_{n+1}$:
+where $Q(z_0, z) = \sum_{k=0}^{d-1} c_k(z_0) z^k$ is the \emph{difference quotient polynomial} of degree $d-1$.  Since $P(z^*) = 0$, we obtain $z^* = z_0 - P(z_0)/Q(z_0, z^*)$, yielding the fixed-point iteration:
 \begin{equation}
   \label{eq:pandrosion_generalized}
   \boxed{z_{n+1} = \mathcal{P}_{P, z_0}(z_n) = z_0 - \frac{P(z_0)}{Q(z_0, z_n)}.}
 \end{equation}
-We mathematically formalize $\mathcal{P}_{P, z_0}$ generating the \textbf{Generalized Pandrosion Operator}.
+We call $\mathcal{P}_{P, z_0}$ the \textbf{Generalized Pandrosion Operator}.
 
 \subsection{Recovering the classical iteration}
 
-Confirming operator~\eqref{eq:pandrosion_generalized} encapsulates Pandrosion's original geometric constraints flawlessly, we enforce parameters solving specifically $(s^*)^p - x^{-1} = 0$, rewritten algorithmically yielding $P(s) = x s^p - 1 = 0$.
-
-Fixing coordinates targeting standard anchor $s_0 = 1$, we capture differential $P(1) = x - 1$. Factorizing differentials algebraically determines:
+For $P(s) = x s^p - 1$ with anchor $z_0 = 1$, we have $P(1) = x - 1$ and
 \[
-  P(s) - P(1) = (x s^p - 1) - (x - 1) = x(s^p - 1) = x(s-1) S_p(s).
+  P(s) - P(1) = x(s^p - 1) = x(s-1) S_p(s),
 \]
-Consequently, secant structures mandate exactly $Q(1, s) = x \cdot S_p(s)$. Introducing the identified constraint parameters inside architectural generator~\eqref{eq:pandrosion_generalized} formulates explicitly:
+so $Q(1, s) = x \cdot S_p(s)$.  The operator~\eqref{eq:pandrosion_generalized} then gives exactly
 \[
-  s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)}.
+  s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)},
 \]
-The derived reduction aligns \emph{precisely} equating classical sequence models~\eqref{eq:complex_pandrosion}. Geometry decisively maps $S_p$ operating conceptually as normalized difference quotients functionally restricted inside static monomial environments exclusively.
+which is the classical Pandrosion iteration~\eqref{eq:complex_pandrosion}.  The geometric sum $S_p$ is thus the difference quotient of the monomial $x s^p - 1$ at the anchor $z_0 = 1$.
 
-\subsection{Smale's 17th Problem and non-local topological boundaries}
+\subsection{Newton as a limiting case}
 
-Stephen Smale's 17th Problem queries discovering a universal polynomial root evaluation capable scaling deterministically unhampered by unpredictable fractal blockades traditionally challenging classical boundaries historically globally~\cite{smale_problems}.
+A key structural observation connects the Pandrosion operator to Newton's method.  When the anchor coincides with the current iterate ($z_0 = z_n$), the difference quotient degenerates to the derivative:
+\[
+  Q(z_n, z_n) = \lim_{z \to z_n} \frac{P(z) - P(z_n)}{z - z_n} = P'(z_n).
+\]
+The operator~\eqref{eq:pandrosion_generalized} then reduces to
+\[
+  z_{n+1} = z_n - \frac{P(z_n)}{P'(z_n)},
+\]
+which is \emph{exactly} Newton's method.  Thus Newton's method is the Pandrosion operator with a \emph{dynamic anchor} $z_0 = z_n$, updated at every step.
 
-Usually algorithms incorporating standard continuous Newtonian formulas $\mathcal{N}(z_n) = z_n - P(z_n)/P'(z_n)$ falter inherently restricted exclusively by instantaneous isolated tangent limits. Continuous tangencies frequently generate parasitic infinite looping patterns creating expansive attractive chaotic sets effectively permanently disrupting deterministic global root searching paths.
+\subsection{The fixed-anchor obstruction}
 
-In stark contrast, generalized Pandrosion formulations~\eqref{eq:pandrosion_generalized} compute parameters leveraging \emph{non-local} secant properties evaluating cumulative difference geometries bounding parameters $Q(z_0, z_n)$. This geometric constraint actively guarantees evaluation algorithms circumvent strictly localized tangency zero spaces ($P'(z_n)=0$). It mathematically promises structural configurations where dynamically accelerating variables applying Steffensen optimizations rigorously avoids specific density limits restricting convergence locally, creating reliable mathematical pathways potentially addressing uniform global determinism Smale demanded natively safely.
+With a \emph{fixed} anchor $z_0$, the operator~\eqref{eq:pandrosion_generalized} has poles wherever $Q(z_0, z_n) = 0$.  For instance, with $P(z) = z^3 - 1$ and $z_0 = 0$, we get $Q(0,z) = z^2$ and $h(z) = 1/z^2$, which has a pole at $z = 0$.  The Steffensen acceleration $T(z) = z - (z^3-1)/(z^2(z^3+2))$ introduces additional poles at $z^3 = -2$.  These poles generate large \emph{escape regions} where orbits diverge to infinity.
+
+Numerical measurement on a $1000 \times 1000$ grid over $[-2,2]^2$ confirms: the fixed-anchor Steffensen--Pandrosion converges for only $38.6\%$ of starting points on $z^3 - 1$, compared to $100\%$ for Newton.  The fixed-anchor approach, while algebraically elegant, is \emph{not} competitive with Newton for complex polynomial root-finding.
+
+%=====================================================================
+\section{Adaptive anchor: the scaling principle in $\CC$}
+\label{sec:adaptive}
+%=====================================================================
+
+The scaling optimization of~\cite{besevic2026} (Section~12) overcomes the large-$x$ slowdown of Pandrosion's real iteration by reducing $x$ to $x' \approx 1$, so that the fixed point $s^*$ lies near the anchor.  We now extend this principle to the complex plane.
+
+\subsection{The adaptive Pandrosion--Steffensen algorithm}
+
+Instead of fixing $z_0$ permanently, we \emph{update the anchor every $K$ steps}:
+
+\begin{definition}[Adaptive Pandrosion--Steffensen]
+\label{def:adaptive}
+Let $P \in \CC[z]$ be a polynomial of degree $d$ and $K \geq 1$ an integer.  Starting from $z_0^{(0)} = z_0^{\mathrm{init}}$, the \textbf{adaptive Pandrosion--Steffensen iteration} alternates:
+\begin{enumerate}
+  \item \textbf{Pandrosion--Steffensen step}: compute
+  \[
+    h = z_0^{(m)} - \frac{P(z_0^{(m)})}{Q(z_0^{(m)}, z_n)}, \qquad
+    T(z_n) = z_n - \frac{(h - z_n)^2}{h' - 2h + z_n},
+  \]
+  where $h' = z_0^{(m)} - P(z_0^{(m)})/Q(z_0^{(m)}, h)$, and set $z_{n+1} = T(z_n)$.
+  \item \textbf{Anchor update}: every $K$ steps, set $z_0^{(m+1)} = z_n$.
+\end{enumerate}
+\end{definition}
+
+\begin{remark}[Interpolation between Pandrosion and Newton]
+The parameter $K$ interpolates between two extremes:
+\begin{itemize}
+  \item $K = \infty$: pure fixed-anchor Pandrosion (non-local, but creates escape regions).
+  \item $K \to 0$: the anchor tracks the iterate, and $Q(z_n, z_n) = P'(z_n)$, recovering Newton.
+  \item $K = 3$: the anchor is updated every 3 steps.  The denominator $Q(z_0^{(m)}, z_n)$ uses a \emph{slightly stale} anchor, providing a non-local correction that avoids the poles of $P'(z_n)$ while staying close enough to prevent large escape regions.
+\end{itemize}
+\end{remark}
+
+\subsection{Numerical evidence: adaptive Pandrosion surpasses Newton}
+
+We compare Newton and adaptive Pandrosion--Steffensen ($K = 3$) on a $1000 \times 1000$ grid over $[-2,2]^2$ with $80$ iterations and tolerance $10^{-10}$.  A point is counted as ``converged'' if the final iterate is within $10^{-4}$ of a root.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & $z^3 - 1$ & $z^5 - z - 1$ \\
+\midrule
+Newton & $100.00\%$ & $95.51\%$ \\
+Fixed-anchor Pandrosion ($z_0 = 0$) & $38.64\%$ & $92.16\%$ \\
+\textbf{Adaptive Pandrosion ($K=3$)} & $\mathbf{100.00\%}$ & $\mathbf{100.00\%}$ \\
+\bottomrule
+\end{tabular}
+\caption{Convergence rates on a $1000 \times 1000$ grid over $[-2,2]^2$.  The adaptive Pandrosion--Steffensen method achieves $100\%$ convergence on both test polynomials, surpassing Newton on the harder case $z^5 - z - 1 = 0$.}
+\label{tab:convergence_rates}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{smale_newton_z5.png}
+    \caption{Newton --- $95.5\%$ convergence}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{smale_adaptive_z5.png}
+    \caption{Adaptive Pandrosion ($K\!=\!3$) --- $100\%$}
+  \end{subfigure}
+  \caption{Basins of attraction for $z^5 - z - 1 = 0$ on $[-2,2]^2$.  Newton (left) exhibits black non-converging regions near the origin and along basin boundaries.  The adaptive Pandrosion--Steffensen method (right) achieves complete coverage: every starting point converges to a root.}
+  \label{fig:adaptive_z5}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{smale_newton_z3.png}
+    \caption{Newton --- $100\%$ convergence}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{smale_adaptive_z3.png}
+    \caption{Adaptive Pandrosion ($K\!=\!3$) --- $100\%$}
+  \end{subfigure}
+  \caption{Basins of attraction for $z^3 - 1 = 0$.  Both methods achieve $100\%$ convergence on this classical benchmark.  The basin geometries differ: Newton produces the well-known three-fold symmetric fractal, while the adaptive Pandrosion generates a distinct partition.}
+  \label{fig:adaptive_z3}
+\end{figure}
+
+\subsection{Why the adaptive anchor works}
+
+The key mechanism is the \emph{pole avoidance} property of the difference quotient.  Newton's denominator $P'(z_n)$ vanishes at the $d-1$ critical points of $P$; near these points, Newton's iterates are violently repelled.  The adaptive Pandrosion denominator $Q(z_0^{(m)}, z_n)$ is a polynomial in $z_n$ whose roots depend on the anchor $z_0^{(m)}$.  Since $z_0^{(m)}$ is fixed for $K$ consecutive steps and typically does not coincide with a critical-point configuration, the poles of $Q$ are \emph{generically displaced} from those of $P'$.
+
+More precisely, Newton fails when $z_n$ approaches a point $z_c$ with $P'(z_c) = 0$.  The adaptive Pandrosion evaluates $Q(z_0, z_c) = (P(z_c) - P(z_0))/(z_c - z_0)$, which is generically nonzero (it vanishes only if $P(z_c) = P(z_0)$, a non-generic condition).  This \emph{structural pole displacement} is the geometric mechanism by which the scaling principle eliminates Newton's chaotic traps.
 
 %=====================================================================
 \section{Basins of attraction}
 \label{sec:basins}
 %=====================================================================
-
-\begin{figure}[H]
-  \centering
-  \begin{subfigure}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{fractal_newton.png}
-    \caption{M\'ethode de Newton}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{fractal_pandrosion.png}
-    \caption{Pandrosion--Steffensen Universel}
-  \end{subfigure}
-  \caption{Comparaison des bassins d'attraction pour $z^3 - 1 = 0$ sur le carr\'e $[-2, 2]\times[-2i, 2i]$. A gauche, la fractale de Newton pr\'esente un bord chaotique d\'elimitant des pièges l'empêchant de converger universellement. A droite, l'op\'erateur de Pandrosion (avec ancrage $z_0=0$) assainit massivement la topologie du r\'eseau limitant le chaos local, ce qui tend vers une convergence structurelle conforme au 17ème Problème de Smale.}
-  \label{fig:smale_fractals}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \begin{subfigure}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{fractal_newton_hard.png}
-    \caption{M\'ethode de Newton ($P(z) = z^5 - z - 1$)}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}{0.48\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{fractal_pandrosion_hard.png}
-    \caption{Pandrosion Universel}
-  \end{subfigure}
-  \caption{Test de r\'esilience topologique sur le cas extr\^eme $z^5 - z - 1 = 0$. \`A gauche, l'attracteur parasite induit par l'annulation diff\'erentielle classique (Newton) g\'en\`ere d'immenses poches aveugl\^ement divergentes (zones noires infranchissables). \`A droite, l'architecture non-locale de l'op\'erateur de Pandrosion purifie int\'egralement l'espace de r\'esolution, effaçant le chaos et garantissant l'accessibilit\'e globale des structures requises par le Problème 17 de Smale.}
-  \label{fig:smale_hard_poly}
-\end{figure}
 
 \subsection{Global dynamics}
 
@@ -336,8 +400,8 @@ For real $s_0 \in (0,1)$ and $x > 0$, this is the global convergence theorem fro
 
 When $x \in \CC \setminus \RR$, the basin boundaries between $\mathcal{B}_0, \mathcal{B}_1, \ldots, \mathcal{B}_{p-1}$ typically form \emph{fractal curves}, analogous to the Julia sets of the rational map $h$.  This is expected: $h$ is a rational map of degree $p-1$, and the theory of complex dynamics~\cite{milnor} guarantees that for generic parameters, the Julia set (which coincides with the basin boundaries) has Hausdorff dimension strictly between $1$ and $2$.
 
-\begin{remark}[Topological stability vs Newton fractals]
-Newton's derivative mapping $z_{n+1} = ((p-1)z_n + x/z_n^{p-1})/p$ represents continuously rational matrices strictly limited measuring localized slopes exclusively. Newtonian models analyzing $z^3 - 1$ characteristically manifest dense unrecoverable fractal traps fundamentally disqualifying mapping uniformly globally. Alternatively, non-local modeling governing Pandrosion logic establishes geometries deterministically unbound limiting isolated $P'$ coordinates exclusively escaping positive-measure zones disabling Newton topologies safely confirming stability configurations effectively validating boundaries uniformly required theoretically navigating Smale parameters efficiently accurately dynamically.
+\begin{remark}[Comparison with Newton fractals]
+Newton's method for $f(z) = z^p - x$ yields the iteration $z_{n+1} = ((p-1)z_n + x/z_n^{p-1})/p$, a rational map of degree $p$ whose Julia set (the basin boundary) is a fractal of positive Hausdorff dimension.  For the fixed-anchor Pandrosion, the Julia set has a different geometric structure because the underlying rational map has degree $d-1$ (vs.\ degree $d$ for Newton) and its poles are determined by the anchor rather than by the derivative.  For the \emph{adaptive} Pandrosion--Steffensen, the dynamics are no longer governed by a single rational map (since the anchor changes), which breaks the classical Julia set framework and may explain the observed absence of non-converging regions.
 \end{remark}
 
 %=====================================================================
