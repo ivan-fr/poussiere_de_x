@@ -538,9 +538,8 @@ Monotonicity in $p$ has a geometric interpretation: inserting more proportional 
   \item \textbf{Large $\alpha$} (i.e.\ $x \to \infty$): $\lambda_{p,x} \to 1^-$.
   \item \textbf{Large $p$} (fixed $x > 1$): $\lambda_{p,x}$ is increasing and bounded, with
   \[
-    \lim_{p \to \infty} \lambda_{p,x} = L(x) < 1.
+    \lim_{p \to \infty} \lambda_{p,x} = 1 - \frac{\ln x}{x - 1}.
   \]
-  For example, $L(2) \approx 0.3069$ (computed numerically).
 \end{enumerate}
 \end{proposition}
 
@@ -549,7 +548,25 @@ For (1): as $\alpha \to 1$, $N_p(\alpha) \to \sum_{k=1}^{p-1}k = p(p-1)/2$ and $
 
 For (2): the dominant term in $N_p$ is $1 \cdot \alpha^{p-2}$ and in $D_p$ is $\alpha^{p-1}$, so $\lambda \sim (\alpha-1)/\alpha \to 1$.
 
-For (3): as $p \to \infty$ with $x$ fixed, $\alpha = x^{1/p} \to 1^+$ with $\alpha - 1 \sim (\ln x)/p$.  Monotonicity in $p$ (part~(2) of Theorem~\ref{thm:monotonicity}) and the bound $\lambda_{p,x} < 1$ guarantee the existence of $L(x) = \lim_{p \to \infty} \lambda_{p,x}$.  Numerically, for $x = 2$, computing $\lambda_{p,2}$ in $50$-digit precision shows convergence: $\lambda_{100,2} = 0.3044$, $\lambda_{1000,2} = 0.3066$, $\lambda_{10000,2} = 0.3068$, consistent with $L(2) \approx 0.3069$.  A naive expansion $\alpha^k \approx 1 + k(\ln x)/p$ suggests $L(x) = (\ln x)/(1 + \ln x)$, but this overestimates the limit (e.g., $\ln 2/(1+\ln 2) = 0.409$ vs.\ $L(2) \approx 0.307$).  The discrepancy arises because the higher-order terms in the expansion $\alpha^k = e^{k \ln x / p}$ contribute non-negligibly to the sums.  A closed-form expression for $L(x)$ remains an open question.
+For (3): set $c = \ln x$ so that $\alpha = x^{1/p} = e^{c/p}$ and $\alpha^k = e^{kc/p}$.  As $p \to \infty$, the sums become Riemann integrals with step $\Delta t = 1/p$ and substitution $t = k/p$:
+\[
+  D_p(\alpha) = \sum_{k=0}^{p-1} e^{kc/p} \;\to\; p \int_0^1 e^{ct}\,dt = \frac{p(e^c - 1)}{c}.
+\]
+For the numerator, $(\alpha - 1) \approx c/p$ and
+\[
+  \sum_{k=1}^{p-1} k\,\alpha^{p-1-k}
+  = \sum_{k=1}^{p-1} k\, e^{(p-1-k)c/p}
+  \;\to\; p^2 \int_0^1 t\, e^{(1-t)c}\,dt
+  = p^2 e^c \int_0^1 t\, e^{-tc}\,dt.
+\]
+Computing the integral: $\int_0^1 t\,e^{-tc}\,dt = \bigl(1 - e^{-c}(1+c)\bigr)/c^2$.  Therefore:
+\[
+  \lambda_{p,x} \to \frac{(c/p) \cdot p^2 e^c \cdot \bigl(1 - e^{-c}(1+c)\bigr)/c^2}{\,p(e^c-1)/c\,}
+  = \frac{e^c - 1 - c}{e^c - 1}
+  = 1 - \frac{c}{e^c - 1}
+  = 1 - \frac{\ln x}{x - 1}.
+\]
+Numerically: $L(2) = 1 - \ln 2 \approx 0.3069$, and $\lambda_{100000,2} = 0.30685$, confirming the formula.
 \end{proof}
 
 \begin{table}[h]

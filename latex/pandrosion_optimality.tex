@@ -353,21 +353,19 @@ $5$ & $1.37 \times 10^{-15}$ & --- & $2.59 \times 10^{-7}$ & $5.39 \times 10^{-4
 
 Our numerical evidence and theoretical analysis suggest:
 
-\begin{conjecture}[Constant optimality of Steffensen--Pandrosion]
+\begin{conjecture}[Near-optimality of Steffensen--Pandrosion]
 \label{conj:optimality}
-Among all Kung--Traub optimal ($n = 2$, order $2$) derivative-free methods for computing $\alpha = x^{1/p}$ with $x \in [1, (1+1/\lfloor\alpha\rfloor)^p]$ (the scaling-reduced range), the Steffensen--Pandrosion method achieves the smallest quadratic constant $K$.
-
-More precisely, for any derivative-free iteration $T$ with $|T(u) - \alpha| \leq K_T |u - \alpha|^2 + O(|u-\alpha|^3)$ using at most $2$ evaluations of $x^k$ or $S_p$ per step, we have $K_T \geq K_{SP}$.
+Among all Kung--Traub optimal ($n = 2$, order $2$) derivative-free methods of the form $T(s) = s - \varphi(s, h(s), h(h(s)))$ for computing $\alpha = x^{1/p}$ with $x$ in the scaling-reduced range $[1, (1+1/\lfloor\alpha\rfloor)^p]$, the Steffensen--Pandrosion method achieves a quadratic constant $K_{SP}$ that is near-minimal.
 \end{conjecture}
 
 \begin{remark}
-This conjecture is supported by:
+This conjecture is deliberately stated as ``near-minimal'' rather than ``minimal'' because:
 \begin{enumerate}
-  \item $K_{SP}$ beats $K_N$ (Newton, with derivative) by a factor $\geq 14\times$ for $x = 2$, across all tested $p$.
-  \item $K_{SP}$ beats $K_{GS}$ (generic Steffensen) by a factor $\geq 10\times$ in 10 out of 12 tested cases.
-  \item The geometric structure of $S_p$ (sum of $p$ terms, smooth averager) appears to be the unique reformulation that simultaneously minimizes both $|h''(s^*)|$ and maximizes $|1 - \lambda|$ in the Steffensen constant formula.
+  \item The comparison class (derivative-free, 2-evaluation methods for $p$-th roots) is broad, and we have not exhaustively searched it.
+  \item The numerical evidence, while compelling ($K_{SP}/K_N \leq 1/14$ for $x = 2$ across all tested $p$, and $K_{SP}/K_{GS} \leq 1/10$ in most cases), covers a finite set of parameters.
+  \item The claim is specific to the scaling-reduced range; for $x \gg 1$ without scaling, $K_{SP}$ can exceed $K_N$ (Table~\ref{tab:constants}, $x = 10$).
 \end{enumerate}
-A proof would require establishing lower bounds on the quadratic constant for derivative-free methods applied to $p$-th root extraction, likely using tools from information-based complexity theory~\cite{traub}.
+A proof would require establishing lower bounds on the quadratic constant for derivative-free methods, likely using tools from information-based complexity theory~\cite{traub}.  A natural first step would be to show that any fixed-point reformulation $g(s) = s$ of $u^p = x$ with $|g'(s^*)| < 1$ necessarily satisfies $|g''(s^*)| \geq |h''(s^*)|$, i.e., that the Pandrosion map minimizes curvature among all contractive reformulations.
 \end{remark}
 
 %=====================================================================

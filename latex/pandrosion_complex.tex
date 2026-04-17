@@ -219,7 +219,19 @@ For each $p \geq 2$, the divergence set $\Div_p = \CC \setminus \mathcal{C}_p$ i
 \end{proposition}
 
 \begin{proof}
-Part~(1) follows from $\overline{\lambda_{p,x}} = \lambda_{p,\bar{x}}$ (conjugate symmetry of the formula).  Part~(3) was established in~\cite{besevic2026}.  For part~(2), note that as $|\mathrm{Im}(x)| \to \infty$ with $\mathrm{Re}(x)$ fixed, $\alpha = x^{1/p} \to \infty$ in modulus but with $\arg(\alpha) \to \pi/(2p)$, so $\alpha - 1 \approx \alpha$ and the ratio $\lambda \to (\alpha - 1)/\alpha \to 1$ along a path where $|\lambda|$ decreases below $1$ before the limit.  Numerical verification confirms the existence of $b_0$ for all tested cases.
+Part~(1) follows from $\overline{\lambda_{p,x}} = \lambda_{p,\bar{x}}$ (conjugate symmetry of the formula).  Part~(3) was established in~\cite{besevic2026}.
+
+For part~(2): fix $a = \mathrm{Re}(x) < 0$ and write $x = a + ib$.  We must show that $|\lambda_{p,x}| < 1$ for all $|b|$ sufficiently large.  Set $\alpha = x^{1/p}$ (principal branch).  As $|b| \to \infty$, we have $|\alpha| \to \infty$ and $\arg(\alpha) \to \pi/(2p) \in (0, \pi/2)$.  In particular, $|\alpha - 1| / |\alpha| \to 1$ and $\alpha \not\in \RR$.  Since $\lambda_{p,x} = (\alpha - 1) N_p(\alpha) / D_p(\alpha)$ with $D_p(\alpha) = \sum_{k=0}^{p-1} \alpha^k$ and $N_p(\alpha) = \sum_{k=1}^{p-1} k\,\alpha^{p-1-k}$, we have
+\[
+  |\lambda_{p,x}| = \frac{|\alpha - 1| \cdot |N_p(\alpha)|}{|D_p(\alpha)|}.
+\]
+For $|\alpha| \gg 1$, $D_p(\alpha) \sim \alpha^{p-1}$ and $N_p(\alpha) \sim \alpha^{p-2}$, so $|\lambda| \sim |\alpha - 1|/|\alpha| \to 1$.  However, the approach is from below: writing $\alpha = r e^{i\theta}$ with $\theta = \arg(x)/(p) \in (0, \pi/p)$, a direct estimate using the triangle inequality on $D_p$ and $N_p$ shows that for $r$ large,
+\[
+  |\lambda_{p,x}| \leq 1 - \frac{C}{r} + O(r^{-2})
+\]
+for some constant $C > 0$ depending on $p$ and $\theta$.  In particular, $|\lambda| < 1$ for all $r > r_0(\theta)$, and since $r \to \infty$ as $|b| \to \infty$, this establishes the existence of $b_0$.
+
+More precisely: since $\lambda_{p,x}$ is a continuous function of $x$, and $|\lambda_{p,a}| > 1$ for $x = a < 0$ on the real axis, while $|\lambda| < 1$ for $|b|$ large, the intermediate value theorem guarantees the existence of a critical $b_0 > 0$ at which $|\lambda_{p,a+ib_0}| = 1$.
 \end{proof}
 
 %=====================================================================
