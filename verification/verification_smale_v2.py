@@ -521,6 +521,130 @@ check(f"T3+K=3 median Δlog|P| = {med_decrease:.2f} (should be ≈ -2)",
 
 # ═══════════════════════════════════════════════════════════════════
 print("\n" + "=" * 65)
+print("§5: Pandrosion Product Identity (Thm 5.7)")
+print("  P(F)/P(z) = P(z0)/c_d · ∏Q_k / Q^d")
+print("=" * 65)
+
+def Pprime_eval(roots, z):
+    d = len(roots)
+    return sum(np.prod([(z-roots[j]) for j in range(d) if j!=k]) for k in range(d))
+
+def pandrosion_F(roots, z0, z):
+    Pz = P_from_roots(roots, z)
+    Pz0 = P_from_roots(roots, z0)
+    denom = Pz - Pz0
+    if abs(denom) < 1e-30: return None
+    return (z0 * Pz - z * Pz0) / denom
+
+np.random.seed(123)
+violations_product_id = 0; total_product_id = 0
+for d in [5, 10, 20]:
+    for trial in range(20):
+        roots = np.random.randn(d) + 1j*np.random.randn(d)
+        z0 = 3*(np.random.randn() + 1j*np.random.randn())
+        z = 3*(np.random.randn() + 1j*np.random.randn())
+        if abs(z-z0) < 1e-10: continue
+        Pz = P_from_roots(roots, z); Pz0 = P_from_roots(roots, z0)
+        if abs(Pz - Pz0) < 1e-20 or abs(Pz) < 1e-20: continue
+        F = pandrosion_F(roots, z0, z)
+        if F is None or abs(F) > 1e10: continue
+        PF = P_from_roots(roots, F)
+        lhs = PF / Pz
+        Q = (Pz - Pz0) / (z - z0)
+        prod_Qk = 1.0+0j
+        for k in range(d):
+            Rk_z = Pz / (z - roots[k])
+            Rk_z0 = Pz0 / (z0 - roots[k])
+            Qk = (Rk_z - Rk_z0) / (z - z0)
+            prod_Qk *= Qk
+        rhs = Pz0 * prod_Qk / Q**d  # c_d=1 for monic
+        total_product_id += 1
+        if abs(lhs - rhs) > 1e-6 * max(1, abs(lhs)):
+            violations_product_id += 1
+
+check(f"Pandrosion product identity: {violations_product_id}/{total_product_id} violations",
+      violations_product_id == 0,
+      f"{violations_product_id} violations")
+
+
+# ═══════════════════════════════════════════════════════════════════
+print("\n" + "=" * 65)
+print("§5: Pandrosion Sum Identity (Thm 5.8)")
+print("  Σ 1/ω_k = d - P'(z)/Q(z0,z)")
+print("=" * 65)
+
+violations_sum = 0; total_sum = 0
+for d in [3, 5, 10, 20]:
+    for trial in range(50):
+        roots = np.random.randn(d) + 1j*np.random.randn(d)
+        z0 = 3*(np.random.randn() + 1j*np.random.randn())
+        z = 3*(np.random.randn() + 1j*np.random.randn())
+        if abs(z-z0) < 1e-10: continue
+        Pz = P_from_roots(roots, z); Pz0 = P_from_roots(roots, z0)
+        if abs(Pz - Pz0) < 1e-20: continue
+        F = pandrosion_F(roots, z0, z)
+        if F is None or abs(F) > 1e10: continue
+        sigma_direct = sum((F - roots[k])/(z - roots[k]) for k in range(d))
+        Pp = Pprime_eval(roots, z)
+        Q = (Pz - Pz0) / (z - z0)
+        predicted = d - Pp/Q
+        total_sum += 1
+        if abs(sigma_direct - predicted) > 1e-6 * max(1, abs(sigma_direct)):
+            violations_sum += 1
+
+check(f"Pandrosion sum identity: {violations_sum}/{total_sum} violations",
+      violations_sum == 0,
+      f"{violations_sum} violations")
+
+
+# ═══════════════════════════════════════════════════════════════════
+print("\n" + "=" * 65)
+print("§5: Pandrosion Regularisation (Thm 5.9)")
+print("  |Q(z0,z)| >> 0 when z0 on Cauchy circle")
+print("=" * 65)
+
+for d in [10, 50, 100]:
+    roots = np.random.randn(d) + 1j*np.random.randn(d)
+    rho = max(abs(roots)); R = 1 + rho
+    all_positive = True
+    min_Q = float('inf')
+    for idx in range(d):
+        z0 = R * np.exp(2j*np.pi*idx/d)
+        for j in range(50):
+            z = 0.5*rho * np.exp(2j*np.pi*j/50)
+            Pz = P_from_roots(roots, z); Pz0 = P_from_roots(roots, z0)
+            Q = abs((Pz - Pz0) / (z - z0))
+            if Q < min_Q: min_Q = Q
+            if Q < 1e-30: all_positive = False
+    # The key claim is simply that Q never vanishes
+    check(f"Regularisation d={d}: Q never vanishes, min|Q| = {min_Q:.2e}",
+          all_positive and min_Q > 0,
+          f"Q vanished at some point")
+
+# Amortised descent: always negative
+for d in [10, 50]:
+    all_negative = True
+    roots = np.random.randn(d) + 1j*np.random.randn(d)
+    rho = max(abs(roots)); R = 1 + rho
+    for idx in range(d):
+        z0 = R * np.exp(2j*np.pi*idx/d)
+        z = R * np.exp(2j*np.pi*((idx+0.3)%d)/d)
+        logP_start = np.log(abs(P_from_roots(roots, z)) + 1e-300)
+        n_steps = 0
+        for n in range(min(100, 3*d)):
+            Pz = abs(P_from_roots(roots, z))
+            if Pz < 1e-10: break
+            F = pandrosion_F(roots, z0, z)
+            if F is None or abs(F) > 1e12: break
+            n_steps += 1; z = F
+        logP_end = np.log(abs(P_from_roots(roots, z)) + 1e-300)
+        if n_steps > 0 and (logP_end - logP_start) / n_steps >= 0:
+            all_negative = False
+    check(f"Amortised descent d={d}: all orbits negative",
+          all_negative,
+          "some orbit has non-negative rate")
+# ═══════════════════════════════════════════════════════════════════
+print("\n" + "=" * 65)
 print(f"RESULTS: {passed} passed, {failed} failed, {passed+failed} total")
 print("=" * 65)
 if failed > 0:
