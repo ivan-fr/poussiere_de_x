@@ -927,29 +927,20 @@ If the orbit converges to a root $\zeta_k$, this infinite product evaluates to a
 \begin{proof}
 Substituting the identity $1 - P(z_n)/P(z_0) = (z_n - z_0)/(z_{n+1} - z_0)$ into the finite product yields a perfect telescopic collapse:
 \[
-  \prod_{n=0}^{N-1} \frac{z_n - z_0}{z_{n+1} - z_0} \;=\; \frac{z_{\mathrm{init}} - z_0}{z_1 - z_0} \times \frac{z_1 - z_0}{z_2 - z_0} \times \dots \times \frac{z_{N-1} - z_0}{z_N - z_0} \;=\; \frac{z_{\mathrm{init}} - z_0}{z_N - z_0}.
+  \prod_{n=0}^{N-1} \frac{z_{\mathrm{init}} - z_0}{z_1 - z_0} \times \frac{z_1 - z_0}{z_2 - z_0} \times \dots \times \frac{z_{N-1} - z_0}{z_N - z_0} \;=\; \frac{z_{\mathrm{init}} - z_0}{z_N - z_0}.
 \]
-As $N \to \infty$, convergence to $\zeta_k$ implies $z_N \to \zeta_k$. Taking the modulus on both sides yields the exact infinite geometric bound.
+As $N \to \infty$, if the orbit converges to a root $\zeta_k$, then $z_N \to \zeta_k$. Taking the modulus on both sides yields the exact infinite geometric bound.
 \end{proof}
 
-\begin{theorem}[Resolution of Smale's 17th Problem]
-\label{thm:resolution_smale}
-The Pandrosion operator $\mathcal{P}_{P,z_0}$ admits an algorithm achieving basin entry in $O(d \log d)$ steps, calculating a root with a total arithmetic complexity of $O(d^2 \log d)$, solving Smale's 17th problem via a derivative-free method.
-\end{theorem}
+\begin{conjecture}[Amortised Contraction and Smale 17]
+\label{conj:amortised_smale}
+The Pandrosion operator $\mathcal{P}_{P,z_0}$ admits an algorithm achieving basin entry uniformly in $O(d \log d)$ steps, calculating a root with a total arithmetic complexity of $O(d^2 \log d)$, providing a derivative-free resolution to Smale's 17th problem.
+\end{conjecture}
 
-\begin{proof}
+\begin{remark}[The missing link for the worst-case bound]
 Theorem~\ref{thm:global_conservation} maps the local algebraic complexity of Smale's 17th problem directly to a bounded macroscopic domain. Because the anchor $z_0$ remains strictly on the Cauchy circle (radius $R = 1+\rho$), the distance from $z_0$ to any root $\zeta_k$ in the basin (radius $\leq \rho$) is securely bounded: $1 \leq |\zeta_k - z_0| \leq 1+2\rho$. 
 
-The total accumulated product $\prod \left| 1 - P(z_n)/P(z_0) \right|$ is therefore geometrically constrained by $\frac{|z_{\mathrm{init}} - z_0|}{|\zeta_k - z_0|}$, a finite, non-zero constant $C$. This conservation law forces the algebraic sums $\sum |P(z_n)/P(z_0)|$ to be uniformly bounded, unconditionally absorbing any transient local increases in $|P(z)|$. Since the total continuous log-increase is structurally capped globally, the amortised exponential descent dictated by the Pandrosion product identity (Theorem~\ref{thm:pandrosion_product}) forces the orbit to rapidly enter the universal basin $B(\zeta_k, \eta_P)$ after $O(d \log d)$ steps. Each base step requires $O(d)$ operations. Subsequently, the $T_3$ operator reaches accuracy $\varepsilon$ in $O(\log_3 \log \varepsilon^{-1})$ steps.
-\end{proof}
-
-\begin{remark}[Polynomial complexity --- final bound]
-\label{rem:polynomial}
-For every polynomial $P \in \CC[z]$ of degree $d \geq 2$ with simple roots, the multi-start adaptive Pandrosion--$T_3$ algorithm finds one root to accuracy $\varepsilon$ with probability 1 using optimal multi-starts. In the BSS computational model, this requires strictly:
-\[
-  C(d, \varepsilon) \;=\; O\!\left(d^2 \log d + d \log\log \tfrac{1}{\varepsilon}\right)
-\]
-arithmetic operations, entirely devoid of symbolic derivatives.
+The total accumulated product $\prod \left| 1 - P(z_n)/P(z_0) \right|$ is therefore geometrically constrained by $\frac{|z_{\mathrm{init}} - z_0|}{|\zeta_k - z_0|}$, a finite, non-zero constant $C$. This conservation law forces the sum of the algebraic ratio $\sum |P(z_n)/P(z_0)|$ to be uniformly bounded, absorbing any transient local increases in $|P(z)|$. However, translating this bounded continuous log-increase into a strict worst-case bound of $O(d\log d)$ iterations prior to lock-in requires preventing adversarial sequences of geometrically small steps that never escape the locus $|P(z_n)| \approx |P(z_0)|$. While empirically we observe rapid exponential descent governed by the Pandrosion product identity (Theorem~\ref{thm:pandrosion_product}), the formal proof of this bounded step count remains open.
 \end{remark}
 
 \begin{table}[H]
@@ -972,28 +963,19 @@ $100$ & $21.6$ & $6470$  & $0.65$ \\
 
 \begin{remark}[Status of the conjectures and the Lyapunov obstruction]
 \label{rem:conjecture_status}
-Conjecture~\ref{conj:global} is consistent with the grid measurements of Table~\ref{tab:convergence_rates} (both test polynomials yield $100\%$ on a $10^6$-point grid with $K = 3$).  Conjecture~\ref{conj:polynomial} is supported by the scaling experiments of Table~\ref{tab:scaling_higher_order}, which show $100\%$ convergence and $n_\star = O(d^{0.8})$ on random polynomials up to degree $200$.
+Conjecture~\ref{conj:amortised_smale} is consistent with the empirical grid measurements and scaling experiments, which show $100\%$ convergence and $O(d^{0.8})$ active starts on random polynomials up to degree $200$.
 
 \medskip
-\textbf{The Lyapunov function $V = \log|P|$.}  A natural candidate for a descent argument is $V(z) := \log|P(z)|$.  Extensive experiments ($10{,}000$ trajectories, degrees $3$--$100$, $170{,}000$ total steps) reveal:\begin{itemize}
-  \item With $K = 1$ (anchor = iterate) on the Cauchy circle, $V(z_n)$ decreases at a \emph{median} rate of $\approx 3$ nats per $T_3$ step across all tested degrees.  Newton's method (which coincides with the base map $\mathcal{P}_{P,z_0}$ when $z_0 = z_n$) achieves only $\approx 1$ nat per step.
-  \item However, $V$ is \textbf{not} a strict Lyapunov function: temporary increases $V(z_{n+1}) > V(z_n)$ occur in approximately $0.6\%$ of steps, with occasional large rebounds ($\Delta V > 100$ in rare cases at $d \geq 50$).
-  \item Despite local violations, $V$ is an \emph{amortized} Lyapunov function: $(V(z_N) - V(z_0))/N < 0$ for every converging trajectory.
-\end{itemize}
-This rules out a simple ``$V$ decreases at every step'' proof strategy.  A proof of Conjecture~\ref{conj:polynomial} would require either a modified Lyapunov function that \emph{is} strictly decreasing, or a probabilistic argument showing that the amortized decrease suffices.
+\textbf{The limits of the Lyapunov argument.}  A natural candidate for a descent strategy is the continuous formulation of Theorem~\ref{thm:global_conservation}. While the macroscopic distance ratio $|w_0|/|w_N|$ perfectly bounds the total relative product $\prod |1 - P(z_n)/P(z_0)|$, translating this exact limit into a strict worst-case bound on the \emph{number of steps} requires ruling out adversarial sequences of microscopic steps that cycle near the locus $|P(z)| \approx |P(z_0)|$. Extensive experiments ($170{,}000$ total steps) confirm that the descent is heavily amortised: local rebounds occur (in $\approx 0.6\%$ of steps), but are fully absorbed by the global geometric budget. A complete worst-case polynomial proof of Conjecture~\ref{conj:amortised_smale} requires explicitly lower-bounding the per-step progression using the kinematic identity, bridging the gap between total product conservation and discrete time.
 \end{remark}
 
 \begin{remark}[Relationship to Smale's 17th problem]
 \label{rem:smale}
 Smale's 17th problem asks for a uniform algorithm that, on input a polynomial $P$ of degree $d$, produces an approximation of one root using $\mathrm{poly}(d)$ arithmetic operations in the BSS model.  The problem was resolved \emph{in the average-case} by Beltr\'{a}n--Pardo~\cite{beltran_pardo} (randomized, 2009) and Lairez~\cite{lairez} (deterministic, 2017), both using homotopy continuation.  The \emph{worst-case} version remains open.
 
-The multi-start Pandrosion--$T_3$ scheme provides a definitive \textbf{derivative-free} solution.  The key ingredient is Theorem~\ref{thm:resolution_smale} (Resolution of Smale's 17th Problem), relying on the exact Pandrosion Kinematic Conservation Law. This bypasses the local derivative singularities of Newton's method entirely, ensuring basin entry in $O(d\log d)$ base steps. Combined with the $O(\log\log(1/\varepsilon))$ post-lock-in phase, this gives:
-\[
-  O(d^2\log d) + O(\log\log(1/\varepsilon))
-\]
-\textbf{derivative-free} BSS operations per starting point, yielding $O(d^3\log d)$ total operations over $d$ multi-start points. This is rigorously $\mathrm{poly}(d)$ in the worst-case.
+The multi-start Pandrosion--$T_3$ scheme framework introduces exact local algebraic theorems and macroscopic geometric bounds that strongly support a \textbf{derivative-free} polynomial algorithm, but the complete global worst-case proof remains to be established. If confirmed, ensuring continuous basin entry in $O(d\log d)$ base steps and combining with the $O(\log\log(1/\varepsilon))$ post-lock-in phase yields $O(d^2\log d)$ derivative-free BSS operations per starting point, or $O(d^3\log d)$ total.
 
-The empirical performance is substantially better ($O(d^2)$ total, see table below), and $T_3$ acceleration reduces the constant by a factor of $\approx 3$.
+The empirical average-case performance is substantially better ($O(d^2)$ total, see table below), and $T_3$ acceleration reduces the constant by a factor of $\approx 3$.
 \begin{center}
 \begin{tabular}{rrrr}
 \toprule
