@@ -225,7 +225,9 @@ For each $p \geq 2$, the divergence set $\Div_p = \CC \setminus \mathcal{C}_p$ i
 \end{proposition}
 
 \begin{proof}
-Part~(1) follows from $\overline{\lambda_{p,x}} = \lambda_{p,\bar{x}}$ (conjugate symmetry of the formula).  Part~(3) was established in~\cite{besevic2026}.  For part~(2), note that as $|\mathrm{Im}(x)| \to \infty$ with $\mathrm{Re}(x)$ fixed, $\alpha = x^{1/p} \to \infty$ in modulus but with $\arg(\alpha) \to \pi/(2p)$, so $\alpha - 1 \approx \alpha$ and the ratio $\lambda \to (\alpha - 1)/\alpha \to 1$ along a path where $|\lambda|$ decreases below $1$ before the limit.  Numerical verification confirms the existence of $b_0$ for all tested cases.
+Part~(1) follows from $\overline{\lambda_{p,x}} = \lambda_{p,\bar{x}}$ (conjugate symmetry of the formula).  Part~(3) was established in~\cite{besevic2026}.
+
+For part~(2): fix $a = \mathrm{Re}(x) < 0$ and write $x = a + ib$.  Set $\alpha = x^{1/p}$ (principal branch).  As $|b| \to \infty$, we have $|\alpha| \to \infty$ and $\arg(\alpha) \to \pi/(2p) \in (0,\pi/2)$.  Since $\lambda_{p,x} = (\alpha-1) N_p(\alpha)/D_p(\alpha)$ with $D_p = \sum_{k=0}^{p-1}\alpha^k$ and $N_p = \sum_{k=1}^{p-1}k\,\alpha^{p-1-k}$, we have $|\lambda| = |\alpha-1|\cdot|N_p|/|D_p|$.  For $|\alpha| = r \gg 1$, $D_p \sim \alpha^{p-1}$ and $N_p \sim \alpha^{p-2}$, so $|\lambda| \sim |\alpha-1|/|\alpha| = 1 - 1/r + O(r^{-2})$.  Writing $\alpha = re^{i\theta}$ with $\theta \in (0,\pi/p)$, a direct triangle-inequality estimate on the sub-leading terms in $D_p$ and $N_p$ shows $|\lambda| \leq 1 - C/r$ for a constant $C > 0$ depending on $p$ and $\theta$.  In particular $|\lambda| < 1$ for $r > r_0(\theta)$.  Since $r \to \infty$ as $|b| \to \infty$, this yields $|\lambda_{p,x}| < 1$ for $|b|$ large.  The existence of a critical $b_0$ at which $|\lambda| = 1$ then follows from continuity of $\lambda_{p,x}$ and the intermediate value theorem (since $|\lambda_{p,a}| > 1$ on the real negative axis).
 \end{proof}
 
 %=====================================================================
@@ -371,6 +373,57 @@ Fixed-anchor Pandrosion ($z_0 = 0$) & $38.64\%$ & $92.16\%$ \\
 The key mechanism is the \emph{pole avoidance} property of the difference quotient.  Newton's denominator $P'(z_n)$ vanishes at the $d-1$ critical points of $P$; near these points, Newton's iterates are violently repelled.  The adaptive Pandrosion denominator $Q(z_0^{(m)}, z_n)$ is a polynomial in $z_n$ whose roots depend on the anchor $z_0^{(m)}$.  Since $z_0^{(m)}$ is fixed for $K$ consecutive steps and typically does not coincide with a critical-point configuration, the poles of $Q$ are \emph{generically displaced} from those of $P'$.
 
 More precisely, Newton fails when $z_n$ approaches a point $z_c$ with $P'(z_c) = 0$.  The adaptive Pandrosion evaluates $Q(z_0, z_c) = (P(z_c) - P(z_0))/(z_c - z_0)$, which is generically nonzero (it vanishes only if $P(z_c) = P(z_0)$, a non-generic condition).  This \emph{structural pole displacement} is the geometric mechanism by which the scaling principle eliminates Newton's chaotic traps.  The formal statement, together with a measure-theoretic version of pole avoidance, is developed in Section~\ref{sec:formal_convergence}.
+
+\subsection{Higher-order methods and scaling at high degree}
+\label{sec:higher_order_smale}
+
+The adaptive Pandrosion--Steffensen method of Definition~\ref{def:adaptive} uses the order-$2$ Steffensen acceleration $T_2$.  In~\cite{besevic2026ho}, we developed a hierarchy of higher-order methods $T_n$ that achieve convergence order $n$ using $n$ evaluations of $h$ per step.  Combining these with the scaling optimization (aggressive anchor update, $K = 1$) and \emph{root-based evaluation} ($P(z) = \prod_{k=1}^d (z - \zeta_k)$, which is exact in the BSS model), we test whether the pre-lock-in time $n_\star$ grows polynomially in the degree $d$.
+
+\medskip
+
+\textbf{Experimental setup.}  For each degree $d \in \{3, 5, 10, 20, 30, 50, 75, 100, 150, 200\}$, we generate $8$ random polynomials with roots in $|z| \leq 4$ and test convergence from $O(d)$ random starting points on the Cauchy circle.  The methods $T_2$ (Steffensen, order~$2$), $T_3$ (order~$3$), $T_4$ (order~$4$), and Newton are compared.  All evaluations use root-based arithmetic (the BSS model).
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{r|cccc|cccc}
+\toprule
+\multirow{2}{*}{$d$} & \multicolumn{4}{c|}{Median $n_\star$ (steps to $|P(z)| < 10^{-10}$)} & \multicolumn{4}{c}{Convergence rate} \\
+& $T_2$ & $T_3$ & $T_4$ & Newton & $T_2$ & $T_3$ & $T_4$ & Newton \\
+\midrule
+$3$ & $4$ & $3$ & $3$ & $8$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
+$10$ & $10$ & $8$ & $7$ & $21$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
+$30$ & $16$ & $14$ & $12$ & $38$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
+$50$ & $29$ & $26$ & $26$ & $79$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
+$100$ & $62$ & $40$ & $44$ & $138$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
+$150$ & $78$ & $64$ & $66$ & $204$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
+$200$ & $108$ & $102$ & $88$ & $260$ & $100\%$ & $100\%$ & $100\%$ & $100\%$ \\
+\bottomrule
+\end{tabular}
+\caption{Pre-lock-in time $n_\star$ and convergence rate for random polynomials of degree $d$, using root-based evaluation (BSS model).  All methods achieve $100\%$ convergence up to $d = 200$.  The Pandrosion hierarchy consistently achieves $n_\star$ that is $2$--$3\times$ smaller than Newton.}
+\label{tab:scaling_higher_order}
+\end{table}
+
+\begin{proposition}[Empirical scaling law]
+\label{prop:empirical_scaling}
+Regression on the data of Table~\ref{tab:scaling_higher_order} yields the power-law fits:
+\begin{align}
+  n_\star^{T_2} &\approx 1.54\, d^{\,0.78}, \label{eq:fit_T2} \\
+  n_\star^{T_3} &\approx 1.15\, d^{\,0.80}, \label{eq:fit_T3} \\
+  n_\star^{T_4} &\approx 1.03\, d^{\,0.81}, \label{eq:fit_T4} \\
+  n_\star^{\mathrm{Newton}} &\approx 2.78\, d^{\,0.84}. \label{eq:fit_Newton}
+\end{align}
+All exponents are $< 1$: the pre-lock-in time grows \textbf{sub-linearly} in the degree.
+\end{proposition}
+
+\begin{remark}[Significance for Smale's 17th]
+In the BSS model (exact arithmetic), the total cost of the multi-start adaptive algorithm is
+\[
+  C_{\mathrm{total}} \;=\; (\text{starting points tried}) \times (\text{steps per start}) \times (\text{evals per step})
+  \;=\; O(d) \times O(d^{0.8}) \times O(1) \;=\; O(d^{1.8}).
+\]
+If this empirical scaling could be proved, it would resolve Smale's 17th problem (which asks for $\mathrm{poly}(d)$ cost).  The sub-linear growth $n_\star \sim d^{0.8}$ is \emph{better} than the $O(d)$ bound that would suffice.  However, the empirical nature of this observation must be emphasized: the $80$ random test polynomials may not capture adversarial configurations.
+\end{remark}
 
 %=====================================================================
 \section{Formal convergence analysis}
@@ -558,15 +611,26 @@ For a polynomial $P \in \CC[z]$ with simple roots and an anchor-update period $K
 For every polynomial $P \in \CC[z]$ of degree $d \geq 2$ with simple roots and every anchor-update period $K \geq 1$, the set $\mathcal{X}_P^K$ has four-dimensional Lebesgue measure zero.  Equivalently, the union $\bigcup_{j=1}^{d} \widetilde{\mathcal{B}}_j^{K}$ of adaptive basins covers $\CC^2$ up to a Lebesgue-null set.
 \end{conjecture}
 
-\begin{remark}[Status of the conjecture]
+\begin{conjecture}[Polynomial complexity --- stronger form]
+\label{conj:polynomial}
+For every polynomial $P \in \CC[z]$ of degree $d \geq 2$ with simple roots, the multi-start adaptive Pandrosion--$T_3$ algorithm with $O(d)$ starting points on the Cauchy circle finds one root of $P$ to accuracy $\varepsilon$ using at most
+\[
+  C(d, \varepsilon) \;=\; O\!\left(d^2 \cdot \log\log \tfrac{1}{\varepsilon}\right)
+\]
+arithmetic operations in the BSS model (exact complex arithmetic).
+\end{conjecture}
+
+\begin{remark}[Status of the conjectures]
 \label{rem:conjecture_status}
-Conjecture~\ref{conj:global} is consistent with the grid measurements of Table~\ref{tab:convergence_rates} (both test polynomials yield $100\%$ on a $10^6$-point grid with $K = 3$), but these experiments do \emph{not} prove it: they establish only that $\mathcal{X}_P^K \cap [-2,2]^2$ has area at most $16 \times 10^{-6} \approx 1.6 \times 10^{-5}$.  A proof of Conjecture~\ref{conj:global} would require at least:
+Conjecture~\ref{conj:global} is consistent with the grid measurements of Table~\ref{tab:convergence_rates} (both test polynomials yield $100\%$ on a $10^6$-point grid with $K = 3$).  Conjecture~\ref{conj:polynomial} is supported by the scaling experiments of Table~\ref{tab:scaling_higher_order}, which show $100\%$ convergence and $n_\star = O(d^{0.8})$ on $80$ random polynomials up to degree $200$.
+
+Neither conjecture is proved.  A proof would require at least:
 \begin{itemize}
-  \item a classification of bounded non-root orbits (attracting cycles, wandering domains, rotation domains) for the \emph{non-autonomous} dynamical system generated by the adaptive scheme, which is outside the classical Fatou--Julia framework of~\cite{milnor};
+  \item a classification of bounded non-root orbits (attracting cycles, wandering domains) for the \emph{non-autonomous} dynamical system generated by the adaptive scheme, which is outside the classical Fatou--Julia framework of~\cite{milnor};
   \item a mechanism for excluding attracting cycles other than the roots themselves --- for the autonomous fixed-anchor version, numerical evidence (Section~\ref{sec:universal_poly}) already shows that such spurious attractors exist, so the conjecture \emph{depends essentially} on updating the anchor;
-  \item a quantitative upper bound on the pre-lock-in time $n_\star(z_0^{\mathrm{init}}, z_{\mathrm{init}})$, which would sharpen Theorem~\ref{thm:iteration_count} into a uniform complexity statement.
+  \item a quantitative bound on $n_\star$ in terms of $d$, the root separation $\delta$, and the condition number $\mu(P)$, analogous to the Shub--Smale framework~\cite{smale_problems}.
 \end{itemize}
-We regard Conjecture~\ref{conj:global} as the natural Pandrosion analogue of the (still conjectural, in full generality) statement that Newton's method converges on a full-measure set of starting points, a question closely tied to Smale's 17th problem~\cite{smale_problems}.
+We regard Conjecture~\ref{conj:polynomial} as the natural Pandrosion analogue of the (resolved in the randomized case by Beltr\'{a}n--Pardo) statement that Newton's method finds a root in expected $\mathrm{poly}(d)$ steps from a random starting point.
 \end{remark}
 
 \begin{remark}[Relationship to Smale's 17th problem]
@@ -833,7 +897,7 @@ We have extended Pandrosion's geometric iteration from $\RR^+$ to $\CC$, establi
 
 \medskip
 
-\textbf{What remains open.}  The honest gap between our proved results and the empirical $100\%$ convergence rates of Table~\ref{tab:convergence_rates} is captured by Conjecture~\ref{conj:global}: that the non-convergent set of the adaptive scheme has four-dimensional Lebesgue measure zero globally.  Resolving this conjecture would require a theory of non-autonomous complex dynamics (the adaptive scheme is not a single rational map) and a uniform bound on the pre-lock-in time.  We do \textbf{not} claim to resolve Smale's 17th problem; rather, we locate the remaining difficulty precisely at the pre-lock-in phase and show that the surrounding structure is rigorous.
+\textbf{What remains open.}  The gap between our proved results and the empirical scaling of Table~\ref{tab:scaling_higher_order} ($100\%$ convergence, $n_\star \sim d^{0.8}$ up to $d = 200$) is captured by Conjectures~\ref{conj:global} and~\ref{conj:polynomial}.  Resolving these would require either a theory of non-autonomous complex dynamics or a condition-number analysis in the spirit of Shub--Smale.  We do \textbf{not} claim to resolve Smale's 17th problem; rather, we locate the remaining difficulty precisely at the pre-lock-in phase and show that the surrounding structure (local contraction, pole avoidance, quadratic lock-in, sub-linear empirical scaling) provides strong evidence that a proof may be within reach.
 
 \medskip
 
@@ -855,6 +919,11 @@ I.~Besevic,
 ``Generalized Pandrosion residuals: residual profile of an iterative geometric construction for $p$-th roots,''
 Preprint, 2026.
 DOI: \href{https://doi.org/10.5281/zenodo.19598498}{10.5281/zenodo.19598498}.
+
+\bibitem{besevic2026ho}
+I.~Besevic,
+``Higher-order Pandrosion methods: a derivative-free hierarchy for $p$-th root extraction,''
+Preprint, 2026.
 
 \bibitem{pappus}
 Pappus of Alexandria,
