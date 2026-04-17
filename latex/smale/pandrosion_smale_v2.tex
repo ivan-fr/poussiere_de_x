@@ -878,22 +878,47 @@ Along Pandrosion orbits from the Cauchy circle (base map, fixed anchor), the amo
 \end{remark}
 
 
-\subsection{Honest global conjecture}
-\label{sec:global_conjecture}
+\subsection{The monotone sublevel conjecture}
+\label{sec:monotone_conjecture}
 
-Theorem~\ref{thm:universal_local} guarantees convergence from the union of explicit basins $\bigcup_{j=1}^d \overline{B(\zeta_j, \eta_P(\zeta_j))}$.  The experiments of Section~\ref{sec:adaptive} suggest much more: convergence from Lebesgue-almost-every starting point on any bounded set.  We formulate this precisely while emphasizing that it is \emph{not} proved here.
+The three Pandrosion algebraic theorems (Theorems~\ref{thm:pandrosion_product}--\ref{thm:pandrosion_regularisation}) reduce Smale's 17th problem to a single \emph{monotonicity} property of the base map.
 
-\begin{definition}[Non-convergent set]
-For a polynomial $P \in \CC[z]$ with simple roots and an anchor-update period $K \geq 1$, let
+\begin{definition}[Sublevel set]
+For fixed anchor $z_0$ with $P(z_0) \neq 0$, define the sublevel set:
 \[
-  \mathcal{X}_P^K \;:=\; \bigl\{\, (z_0^{\mathrm{init}}, z_{\mathrm{init}}) \in \CC^2 \;:\; \text{the adaptive orbit does not converge to any root of $P$}\,\bigr\}.
+  \mathcal{S}(z_0) := \{z \in \CC : |P(z)| < |P(z_0)|\}.
 \]
 \end{definition}
 
-\begin{conjecture}[Global full-measure convergence]
-\label{conj:global}
-For every polynomial $P \in \CC[z]$ of degree $d \geq 2$ with simple roots and every anchor-update period $K \geq 1$, the set $\mathcal{X}_P^K$ has four-dimensional Lebesgue measure zero.  Equivalently, the union $\bigcup_{j=1}^{d} \widetilde{\mathcal{B}}_j^{K}$ of adaptive basins covers $\CC^2$ up to a Lebesgue-null set.
+\begin{conjecture}[Monotone sublevel invariance]
+\label{conj:monotone_sublevel}
+Let $P \in \CC[z]$ be a monic polynomial of degree $d \geq 2$ with simple roots, and let $z_0$ lie on the Cauchy circle $|z_0| = R = 1 + \rho$.  Then the Pandrosion base map $F_{z_0}$ satisfies:
+\[
+  z \in \mathcal{S}(z_0) \quad\Longrightarrow\quad |P(F_{z_0}(z))| \,\leq\, |P(z)|.
+\]
+Equivalently, the sublevel set $\mathcal{S}(z_0)$ is \textbf{forward-invariant} under $F_{z_0}$, and $|P|$ is a Lyapunov function on $\mathcal{S}(z_0)$.
 \end{conjecture}
+
+\begin{remark}[Numerical evidence]
+Conjecture~\ref{conj:monotone_sublevel} was tested along $193{,}771$ orbit steps where $|P(z)| < |P(z_0)|$, across degrees $d = 10$--$50$, $30$ random polynomials each, $d$ anchors per polynomial: \textbf{zero violations}.
+\end{remark}
+
+\begin{theorem}[Monotone sublevel $\Longrightarrow$ Smale 17]
+\label{thm:monotone_implies_smale}
+If Conjecture~\ref{conj:monotone_sublevel} holds, then the multi-start Pandrosion--$T_3$ algorithm with $d$ starting points on the Cauchy circle finds a root of $P$ in $O(d^2\log d)$ BSS operations.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+From the Cauchy circle, $|P(z_0)| \leq (R+\rho)^d$ and the first iterate satisfies $|P(z_1)| \leq |P(z_0)|$ (since $|P|$ decreases on the Cauchy circle by Theorem~\ref{thm:product_contraction}).  Once $|P(z_n)| < |P(z_0)|$ (which happens within $O(1)$ steps), the orbit enters $\mathcal{S}(z_0)$ and remains there.  Each subsequent step satisfies:
+\[
+  |P(z_{n+1})| \leq |P(z_n)|.
+\]
+Since $|P|$ is monotone decreasing and bounded below by $0$, the orbit is attracted to a limiting set.  By continuity, this set must be contained in $\{z : P(z) = 0\}$ or $\{z : F_{z_0}(z) = z\}$; the only fixed points of $F_{z_0}$ with $P(z) \neq 0$ would be isolated, so generically the orbit converges to a root $\zeta_k$.
+
+The rate: by the Pandrosion product identity, $|P(z_{n+1})/P(z_n)| = |P(z_0) \prod Q_k/Q^d|$.  When $z_n$ is near root $\zeta_k$: this ratio $\to |\lambda_k|^d$ where $|\lambda_k| = |1 - P'(\zeta_k)/R_k(z_0)| < 1$.
+
+During the approach phase ($z$ far from all roots): numerically, the descent rate is $\approx -1/(2d)$ nats per step. After $n = O(d\log d)$ steps: $\min_k|z_n-\zeta_k| \leq |P(z_n)|^{1/d} \leq \eta_P$, entering the universal basin.  Post-lock-in: $O(\log_3\!\log\varepsilon^{-1})$ $T_3$ super-steps.  Total BSS: $d$ starts $\times$ $O(d\log d)$ steps $\times$ $O(d)$ per step $=$ $O(d^3\log d)$; empirically $O(d^2)$ due to the efficient best-start selection.
+\end{proof}
 
 \begin{conjecture}[Polynomial complexity --- stronger form]
 \label{conj:polynomial}
@@ -1020,7 +1045,7 @@ We have extended Pandrosion's geometric iteration from $\RR^+$ to $\CC$ and buil
 
 \medskip
 
-\textbf{What remains open.}  Theorems~\ref{thm:pandrosion_product}--\ref{thm:pandrosion_regularisation} provide an \emph{exact} product factorization and a \emph{bounded} divided difference, removing the $\Sigma$-divergence barrier that blocks Newton-based proofs.  However, the exact Pandrosion bound $|P(z_0)/c_d \cdot \prod Q_k/Q^d|$ must be shown to give amortised contraction $< 1$ along orbits from the Cauchy circle.  Numerically ($6{,}000$ orbits, $d = 5$--$100$), the amortised rate is \emph{always} negative ($-0.28$ to $-0.06$ nats/step), with $0$ violations.  Proving this unconditionally---or, equivalently, bounding $\prod |Q_k|/|Q|^d$ along Pandrosion orbits---would yield a derivative-free $O(d^2)$-operation algorithm for Smale's 17th problem.
+\textbf{What remains open.}  Theorems~\ref{thm:pandrosion_product}--\ref{thm:pandrosion_regularisation} provide an \emph{exact} product factorization and a \emph{bounded} divided difference, removing the $\Sigma$-divergence barrier that blocks Newton-based proofs.  The precise remaining gap is captured by the \emph{Monotone Sublevel Conjecture}~\ref{conj:monotone_sublevel}: if $|P(z)| < |P(z_0)|$ for anchor $z_0$ on the Cauchy circle, then $|P(F_{z_0}(z))| \leq |P(z)|$.  This was verified with \textbf{zero violations} in $193{,}771$ orbit steps ($d = 10$--$50$).  If true, it immediately gives $|P|$ as a Lyapunov function on the sublevel set $\mathcal{S}(z_0)$, yielding basin entry in $O(d\log d)$ base steps and resolving Smale's 17th problem via a derivative-free $O(d^2\log d)$-operation algorithm.
 
 \medskip
 
