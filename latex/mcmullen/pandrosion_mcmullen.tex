@@ -98,16 +98,57 @@ a = z + h \cdot e^{i\pi/d}, \qquad h = \max(|z| \cdot 0.01,\; 0.01),
 \]
 performs a T3+Aitken epoch, and updates $z \leftarrow \hat{a}$.  This is a single-variable algorithm --- the anchor is a deterministic function of~$z$ --- but it is \emph{not} a rational map of $z$ alone (because it involves 3~intermediate evaluations and Aitken extrapolation with a conditional).
 
-\subsection{Pandrosion multi-start}
+\subsection{Pandrosion multi-start (complete algorithm)}
 \label{sec:multistart}
 
-Given a target point~$z_0$, the algorithm:
-\begin{enumerate}[nosep]
-\item Sets $R = 2$ and launches $d$ orbits from $(a_s, z_s) = (Re^{2\pi i s/d}, Re^{i(2\pi s/d + \pi/d)})$.
-\item Runs each orbit for up to $30$ epochs with T3+Aitken+reanchoring.
-\item Returns the root $\zeta^*$ found by the orbit whose final anchor is closest to~$z_0$.
-\end{enumerate}
-The ``basin'' of root~$\zeta_k$ is $\{z_0 \in \mathbb{C} : \text{algorithm returns } \zeta_k\}$.
+We give the full self-contained algorithm.  Let $P$ be a monic polynomial of degree~$d$ with all roots inside the disk $|\zeta_k| \leq \rho$.
+
+\medskip
+\noindent\textbf{Step 0: Cauchy radius and starting pairs.}  Set $R = \max(2\rho,\, 2)$.  Define $d$ equispaced starting pairs on the circle of radius~$R$:
+\[
+  a_s = R\,e^{2\pi i s/d}, \qquad
+  z_s = R\,e^{i(2\pi s/d \;+\; \pi/d)},
+  \qquad s = 0, 1, \ldots, d-1.
+\]
+The offset $\theta = \pi/d$ is the \emph{optimal entry point} (from~\cite{Besevic2026a}): it guarantees that the ratio $r_s = P(z_s)/P(a_s)$ satisfies $r_s \approx -1$, which is the unique value producing maximal contraction under the Pandrosion map.
+
+\medskip
+\noindent\textbf{Step 1: Pandrosion map.}  For a fixed anchor~$a$, the \emph{Pandrosion step} is:
+\[
+  F_a(z) = a - \frac{P(a)}{Q(a, z)}, \qquad
+  Q(a, z) = \frac{P(z) - P(a)}{z - a}.
+\]
+This is derivative-free: $Q(a, z)$ is a polynomial of degree~$d-1$ in~$z$ computed from $P(z)$ and $P(a)$ alone.
+
+\medskip
+\noindent\textbf{Step 2: T3 epoch (cascade scaling).}  From anchor~$a$ and iterate~$z$, compute three successive Pandrosion steps:
+\[
+  z_1 = F_a(z), \qquad z_2 = F_a(z_1), \qquad z_3 = F_a(z_2).
+\]
+Apply \emph{Aitken $\Delta^2$ acceleration} to the trajectory $(z, z_1, z_2)$:
+\[
+  \hat{a} = z - \frac{(z_1 - z)^2}{z_2 - 2z_1 + z}.
+\]
+The accelerated point $\hat{a}$ converges at rate $\Lambda \leq e^{-\pi/2} \approx 0.208$ per epoch (Theorem~5.13 of~\cite{Besevic2026g}).
+
+\medskip
+\noindent\textbf{Step 3: Reanchoring.}  Update:
+\[
+  a \leftarrow \hat{a}, \qquad z \leftarrow z_3.
+\]
+This is the key non-holomorphic step that breaks self-similarity.  Repeat Steps~1--3 until $|P(a)| < \varepsilon$.
+
+\medskip
+\noindent\textbf{Step 4: Multi-start selection.}  Run Steps~1--3 independently for each starting pair $s = 0, \ldots, d-1$.  Each orbit converges to some root~$\zeta_{\sigma(s)}$.  The algorithm returns, for a given query point~$z_0$, the root $\zeta^*$ found by the orbit whose final anchor is closest to~$z_0$:
+\[
+  \zeta^* = \zeta_{\sigma(s^*)}, \qquad
+  s^* = \operatorname*{argmin}_{s}\, |a_s^{(\text{final})} - z_0|.
+\]
+The ``basin'' of root~$\zeta_k$ is $\mathcal{B}_k = \{z_0 \in \mathbb{C} : \zeta^* = \zeta_k\}$.
+
+\begin{remark}[Cost]
+Each epoch requires $3$ evaluations of~$P$ (at cost $O(d)$ each) plus the Aitken formula ($O(1)$).  With $O(d)$ epochs per orbit and $d$ orbits: total cost $O(d^3)$.
+\end{remark}
 
 %---------------------------------------------------------------------
 \section{Results}
@@ -213,6 +254,34 @@ To exclude rotational symmetry as a trivial explanation, we test the Wilkinson-t
 \begin{remark}[Non-triviality]
 For $z^d - 1$, connected basins could be attributed to rotational symmetry: each orbit~$s$ converges to root~$\omega^s$ by symmetry, and the nearest-root selection trivially produces a Vorono\"i partition.  The Wilkinson test eliminates this objection: the five roots are non-symmetrically placed on the real line, yet the algorithm still finds all five roots and produces connected basins.  This confirms that basin connectivity is a property of the \emph{algorithm} (guaranteed convergence of all $d$ orbits), not of the \emph{polynomial}.
 \end{remark}
+
+\subsection{Newton multi-start fails from the same starting points}
+
+A natural objection is: ``any multi-start method would give connected basins.''  To refute this, we run \emph{Newton's method} from the \emph{same} $d$ equispaced Cauchy-circle starting points $a_s = Re^{2\pi is/d}$ and check whether all $d$ roots are found.
+
+\begin{table}[h]
+\centering
+\caption{Distinct roots found by Newton vs.\ Pandrosion multi-start from the same $d$ equispaced Cauchy-circle starting points.  Newton converges from each start, but multiple starts collapse to the \emph{same} root for non-symmetric polynomials.}
+\label{tab:multistart_comparison}
+\begin{tabular}{l c cc}
+\toprule
+Polynomial & $d$ & Newton multi-start & Pandrosion multi-start \\
+\midrule
+$z^5 - 1$ & 5 & 5/5 & \textbf{5/5} \\
+$z^{10} - 1$ & 10 & 10/10 & \textbf{10/10} \\
+\midrule
+$(z-1)(z-2)\cdots(z-5)$ & 5 & 3/5 \textcolor{red}{$\times$} & \textbf{5/5} \\
+Clustered $(1.00, \ldots, 1.04)$ & 5 & 3/5 \textcolor{red}{$\times$} & \textbf{5/5} \\
+Complex $(1, i, -1, -i, 2{+}i)$ & 5 & 4/5 \textcolor{red}{$\times$} & \textbf{5/5} \\
+Mignotte $z^5 - 2z + 1$ & 5 & 4/5 \textcolor{red}{$\times$} & \textbf{5/5} \\
+Random $d=7$ & 7 & 7/7 & \textbf{7/7} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Newton multi-start \emph{misses roots} for 4 out of 7 tested families: multiple Newton orbits converge to the \emph{same} root, leaving others undiscovered.  By contrast, Pandrosion multi-start finds \emph{all} roots in every case.
+
+The reason is structural: Newton's orbit from a far starting point is governed by the global dynamics of $z \mapsto z - P(z)/P'(z)$, which has no mechanism to distribute orbits across distinct roots.  The Pandrosion algorithm, through the interplay of three design elements~--- the optimal offset $\theta = \pi/d$, the Aitken cascade scaling, and the product identity ensuring $r_s \approx -1$~--- creates a \emph{covering property} where each orbit is attracted to a distinct root.
 
 %---------------------------------------------------------------------
 \section{Analysis: why McMullen does not apply}
