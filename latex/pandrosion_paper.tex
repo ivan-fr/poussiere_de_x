@@ -61,9 +61,9 @@
 \DeclareMathOperator{\Spec}{Spec}
 \DeclareMathOperator{\Tr}{Tr}
 
-\title{\Huge \textbf{Universitas Pandrosion}\\[0.4cm]
-\Large From Geometric Root Finding to Formal Algebraic Invariants\\[0.2cm]
-\normalsize \textit{Certified by Lean 4 --- Zero Unproven Assertions}}
+\title{\Huge \textbf{The Pandrosion Iteration}\\[0.4cm]
+\Large An Original Rational Cube-Root Map with Exact Algebraic Factorisations,\\Formally Verified in Lean~4\\[0.2cm]
+\normalsize \textit{All theorems machine-checked --- Zero \texttt{sorry} declarations}}
 \author{Ivan Besevic \\
 \small \textit{Independent Mathematical Research} \\
 \small \texttt{github.com/ivan-fr/poussiere\_de\_x}}
@@ -74,7 +74,7 @@
 \maketitle
 
 \begin{abstract}
-We present the \emph{Universitas Pandrosion}, a unified algebraic framework built on top of a single cubic-root iteration originally inspired by classical Greek geometrical constructions. By encoding its algebraic structure entirely inside the formal theorem prover \textbf{Lean 4} (with zero \texttt{sorry} declarations), we establish a chain of exact identities that connect iterative root-finding to several major problems in modern mathematics: (i) a deterministic kinematic conservation law bounding worst-case complexity (\emph{Smale's 17th problem}), (ii)~Diophantine generator identities over $\mathbb{Z}$ producing cubic Pell--Thue sequences (\emph{Hilbert's 10th problem}), (iii)~coprimality isolation theorems constraining radical density growth (\emph{ABC conjecture}), (iv)~topological sterility of the iteration on $\mathbb{C}$ with zero parasitic attractors (\emph{Julia set theory}), (v)~phase-locked commutativity for $n \times n$ matrix operators (\emph{BBP spectral theory}), (vi)~Hermitian self-adjointness preserving the real spectral line (\emph{Hilbert--P\'olya conjecture} for Riemann), and (vii)~a Lipschitz factorization proving monotone computational entropy (\emph{P vs NP / BSS model}). Every theorem stated in this paper is a machine-verified algebraic identity.
+We introduce a rational iteration $s \mapsto s(s^3+4X)/(3s^3+2X)$ for computing $\sqrt[3]{X}$ that is derivative-free and achieves cubic convergence. We develop a systematic corpus of \emph{exact algebraic identities} governing this map across several algebraic structures: real scalars ($\mathbb{R}$), integers ($\mathbb{Z}$), the complex plane ($\mathbb{C}$), arbitrary rings, commutative rings, and $n\times n$ complex matrices. The identities include: (i)~a residual factorisation establishing self-correcting error decay, (ii)~a multiplicative Thue--Pell generator over $\mathbb{Z}$, (iii)~coprimality isolation identities bounding prime factor invasion, (iv)~a proof that the fixed points on $\mathbb{C}$ are exactly $\{0\}\cup\{z:z^3=X\}$ (no parasitic attractors), (v)~commutativity preservation for matrix operators, (vi)~Hermitian preservation under self-adjoint inputs, and (vii)~a Lipschitz-type factorisation of the cross-state difference. Every theorem is formally verified in \textbf{Lean~4} with zero \texttt{sorry} declarations. We discuss how these structural properties relate thematically to classical problems (Smale~17, Thue--Siegel--Roth, ABC, Julia dynamics, Hilbert--P\'olya), while carefully distinguishing the proven identities from the open problems themselves.
 \end{abstract}
 
 \tableofcontents
@@ -126,7 +126,7 @@ where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. Unlike Newton's
 \end{figure}
 
 \subsection{The Formal Certification Principle}
-Every claim in this paper has been encoded as a Lean~4 theorem over abstract algebraic structures (\texttt{CommRing}, \texttt{Ring}, $\mathbb{Z}$, $\mathbb{R}$, $\mathbb{C}$, \texttt{Matrix}). The Lean kernel has verified each proof with zero axiom extensions and zero \texttt{sorry} declarations. A summary of the formal corpus appears in Table~\ref{tab:corpus}.
+Every algebraic identity in this paper has been encoded as a Lean~4 theorem over abstract algebraic structures (\texttt{CommRing}, \texttt{Ring}, $\mathbb{Z}$, $\mathbb{R}$, $\mathbb{C}$, \texttt{Matrix}). The Lean kernel has verified each proof with zero axiom extensions and zero \texttt{sorry} declarations. We emphasise that Lean certifies the \emph{identities as stated}; any interpretive claims connecting them to classical open problems are discussed separately and should be evaluated on their own merits. A summary of the formal corpus appears in Table~\ref{tab:corpus}.
 
 \begin{table}[H]
 \centering
@@ -147,21 +147,25 @@ Deep 32 & \texttt{turing\_entropy\_lipschitz\_bound} & \texttt{CommRing} & P vs 
 Deep 33 & \texttt{mordell\_abc\_delta\_shift} & \texttt{CommRing} & ABC conjecture \\
 \bottomrule
 \end{tabular}
-\caption{The Formal Verification Corpus (10 key theorems, zero \texttt{sorry}).}
+\caption{The Formal Verification Corpus (10 key identities, zero \texttt{sorry}). The ``Thematic connection'' column indicates the classical area to which the identity \emph{relates structurally}; it does \emph{not} claim resolution of the corresponding open problem.}
 \label{tab:corpus}
 \end{table}
 
 %===========================================================
-\section{Kinematic Conservation (Smale's 17th Problem)}
-\label{sec:smale}
+\section{Residual Factorisation and Convergence}
+\label{sec:residual}
 %===========================================================
 
-\subsection{The Conservation Law}
-The central algebraic identity governing the iteration is the \emph{kinematic conservation law}: if $G = \mathcal{P}_X(s)$, then
+\subsection{The Conservation Identity}
+The central algebraic identity governing the iteration is the following \emph{residual factorisation}: if $G = \mathcal{P}_X(s)$, then
 \begin{equation}\label{eq:conservation}
   \boxed{G^3 - X \;=\; \frac{(s^3 - X)\,(s^9 - 14\,s^6 X - 20\,s^3 X^2 + 8X^3)}{(3s^3 + 2X)^3}\,.}
 \end{equation}
-This factorization proves that every residual $G^3 - X$ is an \emph{exact algebraic multiple} of the previous residual $s^3 - X$, establishing deterministic error decay.
+This factorisation shows that every residual $G^3 - X$ is an \emph{exact algebraic multiple} of the previous residual $s^3 - X$. Near the root ($s \approx \sqrt[3]{X}$), the contraction ratio is approximately cubic, explaining the fast convergence observed numerically.
+
+\begin{remark}[Relation to Smale's 17th Problem]
+Smale's 17th problem asks whether there exists a deterministic algorithm that finds approximate roots of degree-$d$ polynomials in polynomial time. The factorisation~\eqref{eq:conservation} provides an exact, closed-form expression for the error decay of one specific iteration on a specific family of polynomials ($s^3 - X$). While this is a useful structural property, it does not constitute a resolution of Smale's general problem, which concerns arbitrary-degree polynomials and requires probabilistic/complexity-theoretic analysis far beyond what a single algebraic identity can provide.
+\end{remark}
 
 \begin{lstlisting}[caption={Deep 25: Kinematic Error Conservation (Lean 4, zero sorry)}]
 theorem pandrosion_kinematic_conservation (X s : R) (hs : 3 * s^3 + 2 * X /= 0) :
@@ -229,7 +233,7 @@ This is proved by showing $\mathcal{P}_X(s) = s \iff 2s(X - s^3) = 0$ (Deep~25, 
 \label{sec:diophantine}
 %===========================================================
 
-\subsection{The Thue--Pandrosion Generator (Hilbert's 10th)}
+\subsection{The Thue--Pandrosion Generator}
 When $(A,B) \in \mathbb{Z}^2$ and $X \in \mathbb{Z}$, the iteration produces integer sequences:
 \[
   A' = A(A^3 + 4XB^3), \qquad B' = B(3A^3 + 2XB^3).
@@ -241,6 +245,10 @@ The fundamental \emph{multiplicative} structure of the cubic Pell error $M = A^3
   \boxed{(A')^3 - X(B')^3 \;=\; (A^3 - XB^3) \cdot (A^9 - 14\,A^6 X B^3 - 20\,A^3 X^2 B^6 + 8X^3 B^9).}
 \end{equation}
 \end{theorem}
+
+\begin{remark}[Relation to Diophantine theory]
+This identity shows that the Pandrosion map preserves the cubic Thue form $A^3 - XB^3$ multiplicatively: the new error is always an exact algebraic multiple of the old one. This creates an \emph{explicit} generator of integer solutions to equations of the form $A^3 - XB^3 = M\cdot\Phi$. While the structure is reminiscent of classical Thue--Pell theory, our result is an algebraic identity about one specific recurrence, not a general decidability result for Diophantine equations.
+\end{remark}
 
 \begin{figure}[H]
 \centering
@@ -276,8 +284,8 @@ The fundamental \emph{multiplicative} structure of the cubic Pell error $M = A^3
 \label{fig:abc_growth}
 \end{figure}
 
-\subsection{The ABC Coprimality Isolators}
-The ABC conjecture concerns the relationship between the prime factorizations of integers $a + b = c$. A critical question is whether an iterative algorithm can \emph{control} the growth of $\rad(A' B')$ relative to $\rad(AB)$.
+\subsection{Coprimality Isolation Identities}
+The ABC conjecture concerns the relationship between the prime factorisations of integers $a + b = c$ and in particular the growth of the radical $\rad(abc)$. The following identities show how the Pandrosion iteration constrains prime factor propagation through explicit algebraic relations.
 
 \begin{theorem}[Deep 33: ABC Isolation Identities]
 Over any commutative ring $\alpha$:
@@ -289,8 +297,12 @@ Over any commutative ring $\alpha$:
 \end{theorem}
 
 \begin{corollary}[Prime Isolation Bound]
-If a prime $p$ divides both $A'$ and $B'$, then by \eqref{eq:abc2} and \eqref{eq:abc3}, $p$ must simultaneously divide $5A^4B$ and $10XAB^4$. When $\gcd(A,B) = 1$, this forces $p \mid 5A^3$ and $p \mid 10XB^3$, drastically limiting the set of possible new prime factors.
+If a prime $p$ divides both $A'$ and $B'$, then by \eqref{eq:abc2} and \eqref{eq:abc3}, $p$ must simultaneously divide $5A^4B$ and $10XAB^4$. When $\gcd(A,B) = 1$, this forces $p \mid 5A^3$ and $p \mid 10XB^3$, limiting the set of possible new prime factors.
 \end{corollary}
+
+\begin{remark}[Relation to the ABC conjecture]
+These isolation identities provide explicit algebraic constraints on how prime factors propagate through the iteration. This is a concrete structural property of the Pandrosion map, not a proof or even a partial result toward the ABC conjecture itself. The ABC conjecture requires universal bounds on $\rad(abc)$ for \emph{all} triples $a+b=c$, far beyond what a single recurrence identity can establish. The identities are, however, an interesting case study in controlled radical growth within a specific algebraic framework.
+\end{remark}
 
 \begin{figure}[H]
 \centering
@@ -423,12 +435,14 @@ For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \over
 \label{sec:quantum}
 %===========================================================
 
-\subsection{Phase-Locked Commutativity}
-When $S$ and $X$ are $n \times n$ complex matrices with $[S, X] = 0$, the Pandrosion components $U = S(S^3 + 4X)$ and $V = 3S^3 + 2X$ define tensor operators. Their commutativity is essential for well-defined spectral extraction $U V^{-1}$.
+\subsection{Commutativity Preservation}
+When $S$ and $X$ are $n \times n$ complex matrices with $[S, X] = 0$, the Pandrosion components $U = S(S^3 + 4X)$ and $V = 3S^3 + 2X$ define matrix operators. Their mutual commutativity is essential for the fraction $U V^{-1}$ to be well-defined as a matrix operation.
 
-\begin{theorem}[Deep 30: BBP Spectral Phase Lock]\label{thm:bbp}
+\begin{theorem}[Deep 30: Commutativity Propagation]\label{thm:bbp}
 If $\mathrm{Commute}(S, X)$, then $\mathrm{Commute}(U, V)$.
 \end{theorem}
+
+This means that the iteration is well-posed in any simultaneously diagonalisable matrix algebra: if $S$ and $X$ are co-diagonalisable, so are $U$ and $V$, and the iteration acts independently on each eigenvalue.
 
 \begin{figure}[H]
 \centering
@@ -481,9 +495,7 @@ If $\mathrm{Commute}(S, X)$, then $\mathrm{Commute}(U, V)$.
 \label{fig:eigenvalue_numerical}
 \end{figure}
 
-\subsection{The Hilbert--P\'olya Hermitian Invariant}
-
-The Hilbert--P\'olya conjecture posits the existence of a self-adjoint operator whose eigenvalues correspond to the non-trivial zeros of the Riemann zeta function. Hermitian preservation ($T^* = T$) guarantees purely real eigenvalues.
+\subsection{Hermitian Preservation}
 
 \begin{theorem}[Deep 31: Hermitian Invariance]\label{thm:hermitian}
 If $S^* = S$, $X^* = X$, and $[S,X] = 0$, then
@@ -492,6 +504,12 @@ If $S^* = S$, $X^* = X$, and $[S,X] = 0$, then
 \]
 That is, the composed Pandrosion operator $UV$ is self-adjoint (Hermitian).
 \end{theorem}
+
+This is a natural algebraic consequence: the product of commuting Hermitian polynomial expressions in Hermitian variables remains Hermitian.
+
+\begin{remark}[Relation to the Hilbert--P\'olya conjecture]
+The Hilbert--P\'olya conjecture posits the existence of a self-adjoint operator whose eigenvalues encode the non-trivial zeros of $\zeta(s)$. Deep~31 shows that the Pandrosion operators preserve Hermitian structure, which is a necessary (but far from sufficient) condition for any spectral interpretation. Our result is an algebraic identity about a specific polynomial construction, not a construction of an operator whose spectrum has any demonstrated connection to the Riemann zeta function. The gap between ``$UV$ is Hermitian'' and ``$UV$ encodes zeta zeros'' is immense.
+\end{remark}
 
 \begin{lstlisting}[caption={Deep 31: Hilbert--P\'olya Hermitian Invariant (Lean 4)}]
 theorem hilbert_polya_invariant {n : Type*} [Fintype n] [DecidableEq n]
@@ -532,17 +550,17 @@ theorem hilbert_polya_invariant {n : Type*} [Fintype n] [DecidableEq n]
   
   % Hermitian guarantee box
   \node[draw, rounded corners, fill=white, font=\footnotesize, text width=4.5cm, align=center] at (4, 2.5) {
-    \textbf{Deep 31 guarantees:}\\
+    \textbf{Deep 31 proves:}\\
     $\text{star}(UV) = UV$\\
     $\Rightarrow \lambda \in \mathbb{R}$\\
-    $\Rightarrow$ Eigenvalues stay on\\the \textcolor{red!70!black}{\textbf{Critical Line}}
+    (necessary condition for\\ any spectral interpretation)
   };
   \draw[->, thick, dashed] (3, 1.5) -- (0.8, 0.5);
   
   % Title
-  \node[font=\bfseries, anchor=west] at (-0.5, 4.5) {Riemann Zeta Zeros \& Pandrosion Spectrum};
+  \node[font=\bfseries, anchor=west] at (-0.5, 4.5) {Hermitian Spectrum \& the Critical Line (Analogy)};
 \end{tikzpicture}
-\caption{\textbf{The Hilbert--P\'olya connection.} The Riemann Hypothesis asserts that non-trivial zeros of $\zeta(s)$ lie on the critical line $\Re(s) = \tfrac{1}{2}$. Deep~31 proves that the Pandrosion operator $UV$ is Hermitian, forcing all its eigenvalues onto $\mathbb{R}$ --- a concrete realization of the Hilbert--P\'olya postulate.}
+\caption{\textbf{Thematic analogy with the critical line.} The Riemann Hypothesis asserts that non-trivial zeros of $\zeta(s)$ lie on the critical line $\Re(s) = \tfrac{1}{2}$, which would follow from the existence of a suitable Hermitian operator (Hilbert--P\'olya). Deep~31 proves that the Pandrosion product $UV$ is Hermitian, forcing its eigenvalues onto $\mathbb{R}$. This is a \emph{structural analogy}, not a proof of the Riemann Hypothesis: no connection between the spectrum of $UV$ and the zeros of $\zeta$ has been established.}
 \label{fig:riemann}
 \end{figure}
 
@@ -596,20 +614,26 @@ Over any ring $\alpha$ with $R^3 = X$ and $[S, R] = 0$:
 \end{figure}
 
 %===========================================================
-\section{Computational Entropy: The Turing Lipschitz Bound}
-\label{sec:turing}
+\section{Lipschitz-Type Cross-State Factorisation}
+\label{sec:lipschitz}
 %===========================================================
 
-\subsection{The Butterfly Effect and Algorithmic Stability}
-In BBS (Blum--Shub--Smale) and classical Turing complexity models, a critical concern is \emph{sensitivity to initial conditions}: an infinitesimal perturbation in input can cause exponential divergence in the output trajectory (the ``butterfly effect''). Deep~32 proves that the Pandrosion iteration is inherently immune to this phenomenon.
+\subsection{Algebraic Stability Under Perturbation}
+A natural question for any iteration is: how does the output change when the input is perturbed? If $A$ and $B$ are two initial states, we can study the ``cross-difference'' $U(A)V(B) - U(B)V(A)$ to understand how the iteration separates or contracts nearby trajectories.
 
-\begin{theorem}[Deep 32: Lipschitz Factorization]
+\begin{theorem}[Deep 32: Cross-State Factorisation]
 Over any commutative ring:
 \begin{equation}\label{eq:lipschitz}
   \boxed{U(A) \cdot V(B) - U(B) \cdot V(A) \;=\; (A - B) \cdot \Phi(A, B, X),}
 \end{equation}
 where $\Phi(A,B,X) = 3A^3B^3 + 2X(A^3 + A^2B + AB^2 + B^3) - 12XAB(A+B) + 8X^2$.
 \end{theorem}
+
+This identity shows that the cross-difference is always divisible by $(A-B)$, with the quotient being an explicit polynomial. When specialised to $\mathbb{R}$ (with $V$ non-vanishing), it implies that the rational map $s \mapsto U(s)/V(s)$ is locally Lipschitz.
+
+\begin{remark}[Relation to P vs NP / BSS]
+In the Blum--Shub--Smale (BSS) complexity model, sensitivity to initial conditions is a relevant consideration for real-number algorithms. The factorisation~\eqref{eq:lipschitz} is a local algebraic stability property of one specific iteration. It does not constitute a complexity class separation or a result about the P vs NP problem, which requires entirely different tools (circuit complexity, diagonalisation, etc.). The identity is best understood as a \emph{regularity property} of the Pandrosion map.
+\end{remark}
 
 \begin{figure}[H]
 \centering
@@ -667,11 +691,11 @@ where $\Phi(A,B,X) = 3A^3B^3 + 2X(A^3 + A^2B + AB^2 + B^3) - 12XAB(A+B) + 8X^2$.
 \end{figure}
 
 %===========================================================
-\section{Effective Irrationality Measures}
+\section{Effective Contraction for Rational Approximations}
 \label{sec:irrationality}
 %===========================================================
 
-The Thue--Siegel--Roth theorem establishes that for any algebraic $\alpha$ of degree $\geq 2$, $|A/B - \alpha| > B^{-(2+\epsilon)}$ for all but finitely many $(A,B)$. However, the theorem is \emph{ineffective}: no explicit bound is provided. Deep~28 bridges the gap:
+The Thue--Siegel--Roth theorem establishes that for any algebraic $\alpha$ of degree $\geq 2$, $|A/B - \alpha| > B^{-(2+\epsilon)}$ for all but finitely many $(A,B)$. However, the theorem is \emph{ineffective}: no explicit bound is provided. Deep~28 gives an explicit contraction factor for the Pandrosion iteration applied to rational approximants:
 
 \begin{theorem}[Deep 28: Effective Irrationality Proximity]
 For $(A,B) \in \mathbb{R}^2$ with the Pandrosion iteration step:
@@ -680,7 +704,7 @@ For $(A,B) \in \mathbb{R}^2$ with the Pandrosion iteration step:
 \end{equation}
 \end{theorem}
 
-This provides an \emph{explicit} contraction factor for each iteration step, making the irrationality measure constructive.
+This provides an \emph{explicit} contraction factor for each iteration step within the Pandrosion sequence. Note that this is an identity about the behaviour of one specific recurrence, not a general effective irrationality measure for arbitrary Diophantine approximations. The effectivity here is limited to approximations generated by the Pandrosion map itself.
 
 \begin{figure}[H]
 \centering
@@ -715,7 +739,16 @@ This provides an \emph{explicit} contraction factor for each iteration step, mak
 \label{sec:conclusion}
 %===========================================================
 
-The Universitas Pandrosion demonstrates that a single algebraic iteration formula, when systematically projected across the hierarchy of mathematical structures --- real numbers, integers, complex fields, arbitrary rings, matrix algebras --- generates a web of exact algebraic identities with deep connections to major open problems. The key innovation is the \emph{formal verification methodology}: by encoding every theorem as a machine-checked Lean~4 proof, we eliminate the possibility of hidden gaps or unjustified approximations.
+We have introduced the Pandrosion iteration, an original rational map for computing cube roots, and established a systematic corpus of exact algebraic identities governing its behaviour across multiple algebraic structures. The key contribution is methodological: by formalising every identity in Lean~4, we provide a fully machine-verified foundation with zero unproven assertions.
+
+\subsection*{What has been proven}
+The identities themselves are exact and unconditional: residual factorisation over $\mathbb{R}$ (Deep~25), multiplicative Thue progression over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), effective contraction for rational approximants (Deep~28), topological sterility on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), Lipschitz-type cross-state factorisation (Deep~32), and coprimality isolation identities (Deep~33). Each of these is a \emph{certified algebraic fact}.
+
+\subsection*{What has not been proven}
+We do \emph{not} claim to have resolved any of the classical open problems to which these identities thematically relate. The gap between an algebraic identity about a specific iteration and a resolution of problems such as the Riemann Hypothesis, P vs NP, or the ABC conjecture is immense. Our identities provide interesting structural constraints on the Pandrosion map. Whether these constraints can be leveraged toward progress on the classical problems remains an open --- and ambitious --- question.
+
+\subsection*{The value of the work}
+The genuine contribution lies in: (1)~an original, derivative-free iteration with cubic convergence; (2)~a rich algebraic structure that propagates cleanly across multiple domains; (3)~the complete absence of parasitic attractors in the complex plane, a distinctive property compared to Newton's method; and (4)~a methodology of formal verification applied to iterative numerical analysis.
 
 \begin{figure}[H]
 \centering
@@ -741,7 +774,7 @@ The Universitas Pandrosion demonstrates that a single algebraic iteration formul
     \draw[->, thick] (center) -- (T\angle);
   }
 \end{tikzpicture}
-\caption{\textbf{The Universitas Pandrosion:} a single iteration formula connecting eight major mathematical domains, each formally verified in Lean~4 with zero unproven assertions.}
+\caption{\textbf{The Pandrosion Iteration:} a single rational map whose algebraic structure has been formally verified across eight mathematical domains. Arrows indicate \emph{thematic connections}, not claimed resolutions of the corresponding open problems.}
 \label{fig:universitas}
 \end{figure}
 
