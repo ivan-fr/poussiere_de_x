@@ -25,6 +25,214 @@ namespace Pandrosion
 noncomputable def P3_complex (X : ℂ) (s : ℂ) : ℂ :=
   (s ^ 4 + 4 * X * s) / (3 * s ^ 3 + 2 * X)
 
+/-- The induced one-variable map on the normalized cubic coordinate `y = s^3 / X`. -/
+noncomputable def H3_complex (y : ℂ) : ℂ :=
+  y * (y + 4) ^ 3 / (3 * y + 2) ^ 3
+
+/-- Zero is a fixed point of the cubic-coordinate map. -/
+theorem H3_zero_fixed : H3_complex 0 = 0 := by
+  simp [H3_complex]
+
+/-- The target cubic coordinate `1` is fixed. -/
+theorem H3_one_fixed : H3_complex 1 = 1 := by
+  norm_num [H3_complex]
+
+/-- Algebraic factorization of the fixed-point equation for `H3_complex`. -/
+theorem H3_fixed_sub_factor (y : ℂ) :
+    y * (y + 4) ^ 3 - y * (3 * y + 2) ^ 3 =
+      2 * y * (1 - y) * (13 * y ^ 2 + 34 * y + 28) := by
+  ring
+
+/-- Away from the pole, the normalized map has exactly the listed fixed points. -/
+theorem H3_fixed_iff (y : ℂ) (hden : (3 * y + 2) ^ 3 ≠ 0) :
+    H3_complex y = y ↔ y = 0 ∨ y = 1 ∨ 13 * y ^ 2 + 34 * y + 28 = 0 := by
+  unfold H3_complex
+  rw [div_eq_iff hden]
+  constructor
+  · intro h
+    have hsub : y * (y + 4) ^ 3 - y * (3 * y + 2) ^ 3 = 0 := by
+      rw [h]
+      ring
+    have hfac : 2 * y * (1 - y) * (13 * y ^ 2 + 34 * y + 28) = 0 := by
+      rw [← H3_fixed_sub_factor y]
+      exact hsub
+    have hcases :
+        y = 0 ∨ 1 - y = 0 ∨ 13 * y ^ 2 + 34 * y + 28 = 0 := by
+      have hmul₁ :
+          2 * y * (1 - y) = 0 ∨ 13 * y ^ 2 + 34 * y + 28 = 0 :=
+        mul_eq_zero.mp hfac
+      cases hmul₁ with
+      | inl hleft =>
+          have hmul₂ : 2 * y = 0 ∨ 1 - y = 0 := mul_eq_zero.mp hleft
+          cases hmul₂ with
+          | inl hy =>
+              left
+              cases mul_eq_zero.mp hy with
+              | inl htwo =>
+                  norm_num at htwo
+              | inr hy0 =>
+                  exact hy0
+          | inr hy =>
+              right
+              left
+              exact hy
+      | inr hq =>
+          right
+          right
+          exact hq
+    cases hcases with
+    | inl hy =>
+        exact Or.inl hy
+    | inr hrest =>
+        cases hrest with
+        | inl hy =>
+            right
+            left
+            rw [sub_eq_zero] at hy
+            exact hy.symm
+        | inr hq =>
+            right
+            right
+            exact hq
+  · intro h
+    rw [← sub_eq_zero]
+    rw [H3_fixed_sub_factor y]
+    cases h with
+    | inl hy =>
+        rw [hy]
+        ring
+    | inr hrest =>
+        cases hrest with
+        | inl hy =>
+            rw [hy]
+            ring
+        | inr hq =>
+            rw [hq]
+            ring
+
+/-- Algebraic numerator of the derivative of `H3_complex`. -/
+theorem H3_derivative_numerator (y : ℂ) :
+    let u := y * (y + 4) ^ 3
+    let v := (3 * y + 2) ^ 3
+    let u' := (y + 4) ^ 3 + y * (3 * (y + 4) ^ 2)
+    let v' := 9 * (3 * y + 2) ^ 2
+    u' * v - u * v' =
+      (y + 4) ^ 2 * (3 * y + 2) ^ 2 * (3 * y ^ 2 - 16 * y + 8) := by
+  intros
+  ring
+
+/-- The formal multiplier obtained from the quotient-rule numerator. -/
+noncomputable def H3_formal_multiplier (y : ℂ) : ℂ :=
+  ((y + 4) ^ 2 * (3 * y ^ 2 - 16 * y + 8)) / (3 * y + 2) ^ 4
+
+/-- The normalized target fixed point is attracting with multiplier `-1/5`. -/
+theorem H3_formal_multiplier_at_one : H3_formal_multiplier 1 = -(1 : ℂ) / 5 := by
+  norm_num [H3_formal_multiplier]
+
+/-- At the two non-target fixed points, the formal multiplier satisfies
+    `25 m² + 235 m + 559 = 0`.
+
+Over `ℂ`, these two multipliers are `-47/10 ± i * sqrt(27) / 10`, hence
+repelling. The polynomial relation is the algebraic part needed before the
+metric `Complex.normSq` statement.
+-/
+theorem H3_formal_multiplier_extra_fixed_poly (y : ℂ)
+    (hden : 3 * y + 2 ≠ 0)
+    (hq : 13 * y ^ 2 + 34 * y + 28 = 0) :
+    25 * (H3_formal_multiplier y) ^ 2 + 235 * H3_formal_multiplier y + 559 = 0 := by
+  unfold H3_formal_multiplier
+  field_simp [hden]
+  have hcert :
+      25 * ((y + 4) ^ 2 * (3 * y ^ 2 - 16 * y + 8)) ^ 2 * (3 * y + 2) ^ 4 +
+            235 * ((y + 4) ^ 2 * (3 * y ^ 2 - 16 * y + 8)) * ((3 * y + 2) ^ 4) ^ 2 +
+          559 * (((3 * y + 2) ^ 4) ^ 2 * (3 * y + 2) ^ 4) =
+      (13 * y ^ 2 + 34 * y + 28) *
+        (36928 + 49952 * y + 328320 * y ^ 2 + 397640 * y ^ 3 +
+          793720 * y ^ 4 + 778782 * y ^ 5 + 286533 * y ^ 6) * (3 * y + 2) ^ 4 := by
+    ring
+  rw [hcert, hq]
+  ring
+
+/-- The origin is a fixed point of the totalized complex Pandrosion map. -/
+theorem P3_complex_zero_fixed (X : ℂ) : P3_complex X 0 = 0 := by
+  simp [P3_complex]
+
+/-- Every cubic root of `X` is a fixed point of `P3_complex`. -/
+theorem P3_complex_root_fixed (X r : ℂ) (hX : X ≠ 0) (hr : r ^ 3 = X) :
+    P3_complex X r = r := by
+  have hr_ne : r ≠ 0 := by
+    intro hr0
+    apply hX
+    rw [← hr, hr0]
+    norm_num
+  unfold P3_complex
+  rw [← hr]
+  have hden : 3 * r ^ 3 + 2 * r ^ 3 = 5 * r ^ 3 := by ring
+  have hnum : r ^ 4 + 4 * r ^ 3 * r = 5 * r ^ 4 := by ring
+  rw [hden, hnum]
+  field_simp [hr_ne]
+  ring
+
+/-- Away from the pole, the only finite fixed points are `0` and the cubic roots. -/
+theorem P3_complex_fixed_iff (X z : ℂ) (hden : 3 * z ^ 3 + 2 * X ≠ 0) :
+    P3_complex X z = z ↔ z = 0 ∨ z ^ 3 = X := by
+  unfold P3_complex
+  rw [div_eq_iff hden]
+  constructor
+  · intro h
+    have hsub : z ^ 4 + 4 * X * z - z * (3 * z ^ 3 + 2 * X) = 0 := by
+      rw [h]
+      ring
+    have hfac : 2 * z * (X - z ^ 3) = 0 := by
+      rw [← hsub]
+      ring
+    have hcases : z = 0 ∨ X - z ^ 3 = 0 := by
+      have hmul : 2 * z = 0 ∨ X - z ^ 3 = 0 := mul_eq_zero.mp hfac
+      cases hmul with
+      | inl hz =>
+          left
+          cases mul_eq_zero.mp hz with
+          | inl htwo =>
+              norm_num at htwo
+          | inr hz0 =>
+              exact hz0
+      | inr hx =>
+          right
+          exact hx
+    cases hcases with
+    | inl hz => exact Or.inl hz
+    | inr hx =>
+        right
+        rw [sub_eq_zero] at hx
+        exact hx.symm
+  · intro h
+    cases h with
+    | inl hz =>
+        rw [hz]
+        ring
+    | inr hroot =>
+        rw [← hroot]
+        ring
+
+/-- Away from the pole, the normalized cubic coordinate is semi-conjugate to `H3_complex`.
+
+If `y = s^3 / X`, then the next normalized coordinate is `H3_complex y`.
+This is the algebraic reduction that turns the complex-plane conjecture into
+the study of a single rational map on the Riemann sphere.
+-/
+theorem P3_complex_cubic_coordinate (X s : ℂ) (hX : X ≠ 0)
+    (hden : 3 * s ^ 3 + 2 * X ≠ 0) :
+    (P3_complex X s) ^ 3 / X = H3_complex (s ^ 3 / X) := by
+  have hyden : 3 * (s ^ 3 / X) + 2 ≠ 0 := by
+    intro h
+    apply hden
+    have hmul : (3 * (s ^ 3 / X) + 2) * X = 0 := by rw [h, zero_mul]
+    field_simp [hX] at hmul
+    simpa [mul_comm, mul_left_comm, mul_assoc] using hmul
+  unfold P3_complex H3_complex
+  field_simp [hX, hden, hyden]
+  ring
+
 /-! ## §301. Critical Points Identity -/
 
 /-- **Derivative Algebraic Form.**
@@ -48,6 +256,28 @@ theorem P3_derivative_numerator (X s : ℂ) :
 /-- Definition of convergence to a target root of X. -/
 def converges_to_root (X : ℂ) (s : ℂ) : Prop :=
   ∃ r : ℂ, r ^ 3 = X ∧ Filter.Tendsto (fun n => (P3_complex X)^[n] s) Filter.atTop (nhds r)
+
+/-- For `X ≠ 0`, the exceptional set is genuinely nonempty: `0` is fixed,
+    so it cannot converge to a nonzero cubic root. -/
+theorem not_converges_to_root_zero (X : ℂ) (hX : X ≠ 0) :
+    ¬ converges_to_root X 0 := by
+  rintro ⟨r, hr, ht⟩
+  have hconst_orbit :
+      (fun n : ℕ => (P3_complex X)^[n] (0 : ℂ)) = fun _ : ℕ => (0 : ℂ) := by
+    funext n
+    exact Function.iterate_fixed (P3_complex_zero_fixed X) n
+  have ht0 : Filter.Tendsto (fun _ : ℕ => (0 : ℂ)) Filter.atTop (nhds r) := by
+    simpa [hconst_orbit] using ht
+  have h0 : Filter.Tendsto (fun _ : ℕ => (0 : ℂ)) Filter.atTop (nhds (0 : ℂ)) :=
+    tendsto_const_nhds
+  have hr0 : r = 0 := tendsto_nhds_unique ht0 h0
+  apply hX
+  rw [← hr, hr0]
+  norm_num
+
+/-- The fixed exceptional point `0` has zero Lebesgue measure. -/
+theorem volume_singleton_zero_complex : MeasureTheory.volume ({0} : Set ℂ) = 0 := by
+  simp
 
 /-- **Open Problem: Absence of Chaos (McMullen Exemption)**
     It is conjectured that the Fatou set of P_X has full measure in ℂ.
