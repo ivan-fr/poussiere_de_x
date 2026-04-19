@@ -85,11 +85,15 @@ We introduce a rational iteration $s \mapsto s(s^3+4X)/(3s^3+2X)$ for computing 
 %===========================================================
 
 \subsection{The Pandrosion Iteration}
-Consider the cubic root iteration mapping $\mathcal{P}_X : s \mapsto s'$ defined by
+The Pandrosion iteration for $p$-th roots is defined via the geometric sum $S_p(s) = \sum_{k=0}^{p-1} s^k$ and the map
+\begin{equation}\label{eq:pandrosion_general}
+  h(s) \;=\; 1 \;-\; \frac{x - 1}{x \cdot S_p(s)}\,,
+\end{equation}
+whose fixed points satisfy $h(s) = s \iff s^p = 1/x$ (formally verified in Lean~4, see Theorem~\ref{thm:general_fp} below). For the cubic case $p = 3$, setting $X = 1/x$ and rewriting in terms of $s \mapsto s'$ yields the equivalent form
 \begin{equation}\label{eq:pandrosion}
   s' \;=\; \frac{U(s)}{V(s)} \;=\; s\,\frac{s^3 + 4X}{3s^3 + 2X}\,,
 \end{equation}
-where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. Unlike Newton's method, which requires the symbolic derivative $f'(s) = 3s^2$, and Halley's method, which further needs the second derivative, the Pandrosion formula operates as a pure \emph{ratio oracle}.
+where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. Unlike Newton's method, which requires the symbolic derivative $f'(s) = 3s^2$, and Halley's method, which further needs the second derivative, the Pandrosion formula operates as a pure \emph{ratio oracle}. The remainder of this paper focuses on the cubic specialisation~\eqref{eq:pandrosion}, where the algebraic structure is richest.
 
 \begin{figure}[H]
 \centering
@@ -125,31 +129,49 @@ where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. Unlike Newton's
 \label{fig:cobweb}
 \end{figure}
 
-\subsection{The Formal Certification Principle}
-Every algebraic identity in this paper has been encoded as a Lean~4 theorem over abstract algebraic structures (\texttt{CommRing}, \texttt{Ring}, $\mathbb{Z}$, $\mathbb{R}$, $\mathbb{C}$, \texttt{Matrix}). The Lean kernel has verified each proof with zero axiom extensions and zero \texttt{sorry} declarations. We emphasise that Lean certifies the \emph{identities as stated}; any interpretive claims connecting them to classical open problems are discussed separately and should be evaluated on their own merits. A summary of the formal corpus appears in Table~\ref{tab:corpus}.
+\subsection{The General Fixed Point Theorem}
+The foundational result of the Pandrosion framework, formally verified in \texttt{Deep.lean}, characterises the fixed points of the general $p$-th root iteration~\eqref{eq:pandrosion_general}:
 
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{clll}
-\toprule
-\textbf{Module} & \textbf{Lean identifier} & \textbf{Domain} & \textbf{Content} \\
-\midrule
-Deep 24 & \texttt{matrix\_pandrosion\_oscillation} & \texttt{Ring} & Matrilinear error factorisation \\
-Deep 25 & \texttt{pandrosion\_kinematic\_conservation} & $\mathbb{R}$ & Residual conservation identity \\
-Deep 26 & \texttt{thue\_pandrosion\_progression} & $\mathbb{Z}$ & Integer Thue progression \\
-Deep 27 & \texttt{quantum\_spectral\_pandrosion\_oscillation} & $M_{n}(\mathbb{C})$ & Matrix error factorisation \\
-Deep 28 & \texttt{effective\_irrationality\_proximity} & $\mathbb{R}$ & Effective contraction rate \\
-Deep 29 & \texttt{complex\_no\_parasitic\_attractors} & $\mathbb{C}$ & Fixed point characterisation \\
-Deep 30 & \texttt{quantum\_phase\_lock\_temporal} & $M_n(\mathbb{C})$ & Commutativity propagation \\
-Deep 31 & \texttt{hilbert\_polya\_invariant} & $M_n(\mathbb{C})$ & Hermitian preservation \\
-Deep 32 & \texttt{turing\_entropy\_lipschitz\_bound} & \texttt{CommRing} & Cross-state factorisation \\
-Deep 33 & \texttt{mordell\_abc\_delta\_shift} & \texttt{CommRing} & Coprimality isolation \\
-\bottomrule
-\end{tabular}
-\caption{The Formal Verification Corpus (10 key identities, zero \texttt{sorry}). The Lean identifiers in Column~2 are internal module names inherited from the development history and do not represent claims about the corresponding classical problems.}
-\label{tab:corpus}
-\end{table}
+\begin{theorem}[General Fixed Point, \texttt{Deep.lean}]\label{thm:general_fp}
+For $x > 0$, $p \geq 1$, $s \geq 0$, $s \neq 1$:
+\[
+  h(s) = s \;\;\Longleftrightarrow\;\; s^p = \frac{1}{x}\,.
+\]
+\end{theorem}
+
+\begin{proof}[Proof sketch (full proof machine-checked in Lean~4)]
+$h(s) = s \iff (x-1)/(x \cdot S_p(s)) = 1-s \iff x-1 = x \cdot S_p(s) \cdot (1-s)$. By the geometric sum identity $S_p(s) \cdot (1-s) = 1-s^p$, this becomes $x-1 = x(1-s^p)$, i.e.\ $x \cdot s^p = 1$.
+\end{proof}
+
+Additional results in \texttt{Deep.lean} include:
+\begin{itemize}
+  \item $S_p(s) > 0$ for $s \geq 0$ and $p \geq 1$ (positivity of the geometric sum),
+  \item $h(s) < 1$ for $s \geq 0$ and $x > 1$ (the image stays below~1),
+  \item $h(s) > 0$ for $s \in [0,1]$, $x > 1$, $p \geq 2$ (the image stays above~0),
+\end{itemize}
+establishing that $h$ maps $[0,1]$ into itself for $x > 1$, $p \geq 2$.
+
+\begin{lstlisting}[caption={Deep.lean: General Fixed Point Theorem (Lean 4, zero sorry)}]
+theorem fixed_point_iff (x : R) (hx : x > 0) (p : N) (hp : p >= 1)
+    (s : R) (hs : 0 <= s) (_hs1 : s != 1) :
+    pandrosion_h x p s = s <-> s ^ p = 1 / x := by
+  have hS : Sp p s > 0 := Sp_pos p hp s hs
+  have hxS : x * Sp p s > 0 := mul_pos hx hS
+  have hxS_ne : x * Sp p s != 0 := ne_of_gt hxS
+  unfold pandrosion_h
+  constructor
+  . intro heq   -- Forward: h(s) = s -> s^p = 1/x
+    have h1 : (x - 1) / (x * Sp p s) = 1 - s := by linarith
+    have h2 : x - 1 = (1 - s) * (x * Sp p s) := by
+      rw [<- h1]; exact (div_mul_cancel (x - 1) hxS_ne).symm
+    rw [Sp_mul_one_sub] at h2
+    have h5 : x * s ^ p = 1 := by linarith
+    rw [eq_div_iff (ne_of_gt hx)]; linarith
+  . intro heq   -- Backward: s^p = 1/x -> h(s) = s
+    have h1 : x * s ^ p = 1 := by rw [heq]; field_simp
+    suffices (x - 1) / (x * Sp p s) = 1 - s by linarith
+    rw [div_eq_iff hxS_ne, Sp_mul_one_sub]; linarith
+\end{lstlisting}
 
 %===========================================================
 \section{Residual Factorisation and Convergence}
@@ -254,7 +276,7 @@ This identity shows that the Pandrosion map preserves the cubic Thue form $A^3 -
 \centering
 \begin{tikzpicture}[>=Stealth, scale=0.85]
   % Title
-  \node[font=\bfseries] at (6, 5.5) {Diophantine Amplification Tower};
+  \node[font=\bfseries] at (6, 5.5) {Integer Iteration Tower};
   
   % Levels
   \foreach \i/\lab/\val in {0/{$(A_0, B_0)$}/{$M_0 = A_0^3 - XB_0^3$}, 1/{$(A_1, B_1)$}/{$M_1 = M_0 \cdot \Phi_0$}, 2/{$(A_2, B_2)$}/{$M_2 = M_1 \cdot \Phi_1$}, 3/{$(A_3, B_3)$}/{$M_3 = M_2 \cdot \Phi_2$}} {
