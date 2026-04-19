@@ -134,7 +134,7 @@ def julia_classic(resolution=1000):
     ax.set_xlabel(r'$\Re(z)$', fontsize=14)
     ax.set_ylabel(r'$\Im(z)$', fontsize=14)
     ax.set_title(r"Classical Julia Set: $z \mapsto z^2 + c$,  $c = -0.7 + 0.27i$" + "\n" +
-                 r"The quintessential fractal chaos that Pandrosion eliminates",
+                 r"Fractal complexity in iterative dynamics on $\mathbb{C}$",
                  fontsize=13)
     plt.colorbar(im, ax=ax, shrink=0.75, label='Escape iterations')
     plt.tight_layout()
@@ -240,14 +240,14 @@ def side_by_side_comparison(resolution=800):
         ax1.plot(root.real, root.imag, 'w*', markersize=10, markeredgecolor='k', markeredgewidth=0.5)
     
     ax2.imshow(img_p, extent=[-2, 2, -2, 2], origin='lower')
-    ax2.set_title(r"Pandrosion: $z\frac{z^3+4}{3z^3+2}$" + "\nSmooth sterile boundaries", fontsize=14)
+    ax2.set_title(r"Pandrosion: $z\frac{z^3+4}{3z^3+2}$" + "\nVisually smooth boundaries", fontsize=14)
     ax2.set_xlabel(r'$\Re(z)$', fontsize=13)
     ax2.set_ylabel(r'$\Im(z)$', fontsize=13)
     for root in roots:
         ax2.plot(root.real, root.imag, 'w*', markersize=10, markeredgecolor='k', markeredgewidth=0.5)
     ax2.plot(0, 0, 'wo', markersize=6, markeredgecolor='k', markeredgewidth=0.5)
     
-    plt.suptitle(r'Basin Boundaries: Newton (Chaotic Fractals) vs Pandrosion (Topological Sterility)',
+    plt.suptitle(r'Basin Boundaries: Newton (fractal) vs Pandrosion (apparently smooth)',
                  fontsize=15, fontweight='bold', y=1.02)
     plt.tight_layout()
     plt.savefig('/Users/ivanbesevic/Documents/poussiere/latex/fig_julia_sidebyside.pdf', dpi=DPI, bbox_inches='tight')

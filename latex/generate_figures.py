@@ -78,7 +78,7 @@ def newton_fractal(resolution=800):
     ax.imshow(img, extent=[-2, 2, -2, 2], origin='lower')
     ax.set_xlabel(r'$\Re(z)$', fontsize=14)
     ax.set_ylabel(r'$\Im(z)$', fontsize=14)
-    ax.set_title(r"Newton's Method: $z^3 - 1$" + "\n" + r"Fractal basin boundaries $\longrightarrow$ chaotic attractors", fontsize=13)
+    ax.set_title(r"Newton's Method: $z^3 - 1$" + "\n" + r"Fractal basin boundaries", fontsize=13)
     plt.tight_layout()
     plt.savefig('/Users/ivanbesevic/Documents/poussiere/latex/fig_newton_fractal.pdf', dpi=DPI, bbox_inches='tight')
     plt.close()
@@ -152,7 +152,7 @@ def pandrosion_fractal(resolution=800):
     ax.imshow(img, extent=[-2, 2, -2, 2], origin='lower')
     ax.set_xlabel(r'$\Re(z)$', fontsize=14)
     ax.set_ylabel(r'$\Im(z)$', fontsize=14)
-    ax.set_title(r"Pandrosion Iteration: $z^3 - 1$" + "\n" + r"Smooth basin boundaries $\longrightarrow$ zero parasitic attractors", fontsize=13)
+    ax.set_title(r"Pandrosion Iteration: $z^3 - 1$" + "\n" + r"Basin boundaries appear smooth (numerical observation)", fontsize=13)
     plt.tight_layout()
     plt.savefig('/Users/ivanbesevic/Documents/poussiere/latex/fig_pandrosion_fractal.pdf', dpi=DPI, bbox_inches='tight')
     plt.close()
@@ -264,7 +264,7 @@ def eigenvalue_spectrum():
     ax2.axvline(x=0, color='gray', linewidth=0.5, linestyle='--')
     ax2.set_xlabel(r'$\Re(\lambda)$', fontsize=13)
     ax2.set_ylabel(r'$\Im(\lambda)$', fontsize=13)
-    ax2.set_title('Pandrosion $UV$ (Hermitian inputs)\nEigenvalues locked on $\\mathbb{R}$', fontsize=13)
+    ax2.set_title('Pandrosion $UV$ (Hermitian inputs)\nEigenvalues confined to $\\mathbb{R}$', fontsize=13)
     ax2.set_aspect('equal')
     ax2.grid(True, alpha=0.2)
     ax2.legend(fontsize=11, loc='upper right')
@@ -365,8 +365,8 @@ def abc_radical_growth():
     
     ax.set_xlabel('Iteration $n$', fontsize=13)
     ax.set_ylabel('Number of digits', fontsize=13)
-    ax.set_title(r'Diophantine Explosion: digit growth of $(A_n, B_n)$ for $X=2$' + '\n' +
-                 r'Each step cubes the digit count $\longrightarrow$ ABC density controlled by Deep 33',
+    ax.set_title(r'Digit growth of $(A_n, B_n)$ for $X=2$' + '\n' +
+                 r'Each step approximately cubes the digit count',
                  fontsize=12)
     ax.legend(fontsize=11)
     ax.grid(True, alpha=0.2)
@@ -436,8 +436,8 @@ def lipschitz_entropy():
     
     ax.set_xlabel(r'State $A$', fontsize=13)
     ax.set_ylabel(r'State $B$', fontsize=13)
-    ax.set_title(r'Lipschitz Entropy Map: $U(A)V(B) - U(B)V(A) = (A-B)\cdot\Phi$' + '\n' +
-                 r'Deep 32 proves exact linear factorization $\longrightarrow$ zero butterfly effect',
+    ax.set_title(r'Cross-State Factor: $U(A)V(B) - U(B)V(A) = (A-B)\cdot\Phi$' + '\n' +
+                 r'Identity (8) proves exact factorisation through $(A-B)$',
                  fontsize=12)
     ax.legend(fontsize=11, loc='upper left')
     
