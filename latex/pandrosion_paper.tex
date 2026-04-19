@@ -221,15 +221,15 @@ theorem pandrosion_kinematic_conservation (X s : R) (hs : 3 * s^3 + 2 * X /= 0) 
 \label{fig:kinematic3d}
 \end{figure}
 
-\subsection{Topological Sterility}
-\begin{theorem}[Zero Parasitic Attractors]\label{thm:sterility}
-For any $X$ and any $s$ with $3s^3 + 2X \neq 0$, the fixed points of $\mathcal{P}_X$ are exactly $\{0\} \cup \{s : s^3 = X\}$. No periodic orbits exist.
+\subsection{Fixed Point Characterisation}
+\begin{theorem}[Fixed Points of $\mathcal{P}_X$]\label{thm:sterility}
+For any $X$ and any $s$ with $3s^3 + 2X \neq 0$, the fixed points of $\mathcal{P}_X$ are exactly $\{0\} \cup \{s : s^3 = X\}$.
 \end{theorem}
 
-This is proved by showing $\mathcal{P}_X(s) = s \iff 2s(X - s^3) = 0$ (Deep~25, Deep~29).
+This is proved by showing $\mathcal{P}_X(s) = s \iff 2s(X - s^3) = 0$ (Deep~25, Deep~29). Note that this characterises the \emph{fixed points} (period-1 orbits). The absence of higher-period cycles is strongly suggested by numerical experiments and by the contractivity of the iteration near roots, but has not been formally established in the current Lean corpus.
 
 %===========================================================
-\section{Diophantine Theory: Thue Sequences and ABC Isolation}
+\section{Integer Specialisation: Thue Sequences and Coprimality}
 \label{sec:diophantine}
 %===========================================================
 
@@ -336,18 +336,20 @@ These isolation identities provide explicit algebraic constraints on how prime f
 \end{figure}
 
 %===========================================================
-\section{Complex Topology: The Julia Void}
+\section{Complex Plane Dynamics}
 \label{sec:julia}
 %===========================================================
 
-When extended to $\mathbb{C}$, classical root-finding iterations (Newton, Halley) produce intricate fractal basin boundaries --- the Julia sets. These chaotic frontiers generate parasitic computational attractors that trap numerical sequences in infinite non-convergent orbits.
+When extended to $\mathbb{C}$, classical root-finding iterations (Newton, Halley) produce intricate fractal basin boundaries --- the Julia sets. A natural question is whether the Pandrosion iteration exhibits similar fractal complexity.
 
-\begin{theorem}[Deep 29: Complex Sterility]\label{thm:julia}
+\begin{theorem}[Deep 29: Fixed Point Characterisation on $\mathbb{C}$]\label{thm:julia}
 For any $X, z \in \mathbb{C}$ with $3z^3 + 2X \neq 0$:
 \[
   \mathcal{P}_X(z) = z \;\;\Longleftrightarrow\;\; z = 0 \;\;\lor\;\; z^3 = X.
 \]
 \end{theorem}
+
+This result proves there are no \emph{spurious fixed points}: the only period-1 attractors are the true roots and the origin. The numerical basin plots (Figures~\ref{fig:newton_fractal}--\ref{fig:heatmap}) provide strong empirical evidence that the basins of attraction have smooth boundaries, in contrast to the fractal Julia boundaries of Newton's method. However, a complete proof that the iteration has no higher-period cycles or fractal basin boundaries would require additional dynamical-systems analysis beyond the algebraic identities presented here.
 
 \begin{theorem}[Deep 29: Conjugate Symmetry]\label{thm:conjugate}
 For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \overline{\mathcal{P}_X(z)}$.
@@ -363,7 +365,7 @@ For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \over
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{fig_pandrosion_fractal.pdf}
-\caption{\textbf{Pandrosion iteration basins} for $z^3 - 1$ on $\mathbb{C}$. In stark contrast to Figure~\ref{fig:newton_fractal}, the attraction basins are separated by \emph{smooth, straight rays} emanating from the origin. There are no fractal boundaries, no chaotic mixing zones, and no parasitic attractors. This topological sterility is a direct consequence of Theorem~\ref{thm:julia}: the only fixed points are $\{0\} \cup \{z : z^3 = X\}$.}
+\caption{\textbf{Pandrosion iteration basins} for $z^3 - 1$ on $\mathbb{C}$ (numerical). The basins appear separated by smooth, straight rays emanating from the origin, with no visible fractal structure. Theorem~\ref{thm:julia} certifies the absence of spurious fixed points; the smoothness of basin boundaries is a \emph{numerical observation}, not yet a formal theorem.}
 \label{fig:pandrosion_fractal}
 \end{figure}
 
@@ -426,13 +428,13 @@ For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \over
   % Symmetry arrows
   \draw[<->, thick, dashed, purple!60!black] (2.5, 1.3) -- (2.5, -1.3) node[midway, right, font=\footnotesize] {$\overline{\mathcal{P}_X(z)} = \mathcal{P}_X(\bar{z})$};
 \end{tikzpicture}
-\caption{\textbf{Conjugate symmetry} (Deep~29). Every trajectory $z_0 \to z_n$ in the upper half-plane is mirrored perfectly by $\bar{z}_0 \to \bar{z}_n$ in the lower half-plane. This topological congruence eliminates asymmetric fractal boundary formation.}
+\caption{\textbf{Conjugate symmetry} (Deep~29). Every trajectory $z_0 \to z_n$ in the upper half-plane is mirrored perfectly by $\bar{z}_0 \to \bar{z}_n$ in the lower half-plane. This symmetry is consistent with the observed smooth basin boundaries, though it does not by itself prove their smoothness.}
 \label{fig:conjugate}
 \end{figure}
 
 %===========================================================
-\section{Quantum Tensor Theory: BBP Spectral Operators}
-\label{sec:quantum}
+\section{Matrix Algebra: Commutativity and Hermitian Invariance}
+\label{sec:matrix_algebra}
 %===========================================================
 
 \subsection{Commutativity Preservation}
@@ -462,7 +464,7 @@ This means that the iteration is well-posed in any simultaneously diagonalisable
     \draw[->, gray] (-2.5,0) -- (2.5,0) node[right, font=\scriptsize] {$\Re(\lambda)$};
     \draw[->, gray] (0,-2.5) -- (0,2.5) node[above, font=\scriptsize] {$\Im(\lambda)$};
     
-    \node[font=\footnotesize, red!60!black, text width=3cm, align=center] at (0,-3.3) {Eigenvalues scatter\\across $\mathbb{C}$\\--- \textbf{Phase Torsion}};
+    \node[font=\footnotesize, red!60!black, text width=3cm, align=center] at (0,-3.3) {Eigenvalues scatter\\across $\mathbb{C}$};
   \end{scope}
   
   % Right: Pandrosion locked
@@ -479,12 +481,12 @@ This means that the iteration is well-posed in any simultaneously diagonalisable
     \draw[very thick, orange!80!black] (-2.5,0) -- (2.5,0) node[right, font=\scriptsize] {$\Re(\lambda)$};
     \draw[->, gray] (0,-2.5) -- (0,2.5) node[above, font=\scriptsize] {$\Im(\lambda)$};
     
-    \node[font=\footnotesize, blue!60!black, text width=3cm, align=center] at (0,-3.3) {Eigenvalues locked\\on $\mathbb{R}$\\--- \textbf{Zero Torsion}};
+    \node[font=\footnotesize, blue!60!black, text width=3cm, align=center] at (0,-3.3) {Eigenvalues confined\\to $\mathbb{R}$};
   \end{scope}
   
   \node[font=\Huge\bfseries, gray] at (0,0) {vs};
 \end{tikzpicture}
-\caption{\textbf{Spectral Phase Locking (schematic).} \emph{Left:} Generic non-commuting operators scatter eigenvalues chaotically across $\mathbb{C}$. \emph{Right:} The Pandrosion operators $U, V$ are proven to commute (Deep~30), locking their shared eigenvalues onto structured spectral lines.}
+\caption{\textbf{Commutativity and spectral structure (schematic).} \emph{Left:} For generic non-commuting operators, eigenvalues of $UV$ are distributed across $\mathbb{C}$. \emph{Right:} When $U, V$ commute (as proven in Deep~30), they share an eigenbasis; combined with Hermitian inputs, this confines eigenvalues to $\mathbb{R}$.}
 \label{fig:phaselocking}
 \end{figure}
 
@@ -748,7 +750,7 @@ The identities themselves are exact and unconditional: residual factorisation ov
 We do \emph{not} claim to have resolved any of the classical open problems to which these identities thematically relate. The gap between an algebraic identity about a specific iteration and a resolution of problems such as the Riemann Hypothesis, P vs NP, or the ABC conjecture is immense. Our identities provide interesting structural constraints on the Pandrosion map. Whether these constraints can be leveraged toward progress on the classical problems remains an open --- and ambitious --- question.
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~an original, derivative-free iteration with cubic convergence; (2)~a rich algebraic structure that propagates cleanly across multiple domains; (3)~the complete absence of parasitic attractors in the complex plane, a distinctive property compared to Newton's method; and (4)~a methodology of formal verification applied to iterative numerical analysis.
+The genuine contribution lies in: (1)~an original, derivative-free iteration with cubic convergence; (2)~a rich algebraic structure that propagates cleanly across multiple domains; (3)~the numerical observation that the complex-plane basins appear free of fractal boundaries, combined with the formal proof that no spurious fixed points exist; and (4)~a methodology of formal verification applied to iterative numerical analysis.
 
 \begin{figure}[H]
 \centering
@@ -759,14 +761,14 @@ The genuine contribution lies in: (1)~an original, derivative-free iteration wit
   % Surrounding theorems
   \def\radius{5}
   \foreach \angle/\label/\col/\deep in {
-    90/{Hilbert--P\'olya\\(Riemann)}/red!15/31,
-    45/{BBP Spectral\\(Quantum)}/purple!15/30,
-    0/{Lipschitz\\(P vs NP)}/blue!15/32,
-    -45/{ABC\\(Mordell)}/green!15/33,
-    -90/{Thue--Pell\\(Hilbert 10)}/yellow!15/26,
-    -135/{Irrationality\\(Roth)}/orange!15/28,
-    180/{Julia Void\\(Topology)}/cyan!15/29,
-    135/{Cayley--Hamilton\\(Matrix)}/pink!15/24%
+    90/{Hermitian\\Preservation}/red!15/31,
+    45/{Commutativity\\Propagation}/purple!15/30,
+    0/{Cross-State\\Factorisation}/blue!15/32,
+    -45/{Coprimality\\Isolation}/green!15/33,
+    -90/{Integer Thue\\Progression}/yellow!15/26,
+    -135/{Effective\\Contraction}/orange!15/28,
+    180/{Complex Fixed\\Points}/cyan!15/29,
+    135/{Matrilinear\\Error}/pink!15/24%
   } {
     \node[draw, rounded corners, fill=\col, minimum width=2.5cm, minimum height=1cm, 
           text width=2.3cm, align=center, font=\footnotesize]
