@@ -74,7 +74,7 @@
 \maketitle
 
 \begin{abstract}
-We introduce a rational iteration $s \mapsto s(s^3+4X)/(3s^3+2X)$ for computing $\sqrt[3]{X}$ that is derivative-free and achieves cubic convergence. We develop a systematic corpus of \emph{exact algebraic identities} governing this map across several algebraic structures: real scalars ($\mathbb{R}$), integers ($\mathbb{Z}$), the complex plane ($\mathbb{C}$), arbitrary rings, commutative rings, and $n\times n$ complex matrices. The identities include: (i)~a residual factorisation establishing self-correcting error decay, (ii)~a multiplicative Thue--Pell generator over $\mathbb{Z}$, (iii)~coprimality isolation identities bounding prime factor invasion, (iv)~a proof that the fixed points on $\mathbb{C}$ are exactly $\{0\}\cup\{z:z^3=X\}$ (no parasitic attractors), (v)~commutativity preservation for matrix operators, (vi)~Hermitian preservation under self-adjoint inputs, and (vii)~a Lipschitz-type factorisation of the cross-state difference. Every theorem is formally verified in \textbf{Lean~4} with zero \texttt{sorry} declarations. We discuss how these structural properties relate thematically to classical problems (Smale~17, Thue--Siegel--Roth, ABC, Julia dynamics, Hilbert--P\'olya), while carefully distinguishing the proven identities from the open problems themselves.
+We introduce a rational iteration $s \mapsto s(s^3+4X)/(3s^3+2X)$ for computing $\sqrt[3]{X}$ that is derivative-free and achieves cubic convergence. We develop a systematic corpus of \emph{exact algebraic identities} governing this map across several algebraic structures: real scalars ($\mathbb{R}$), integers ($\mathbb{Z}$), the complex plane ($\mathbb{C}$), arbitrary rings, commutative rings, and $n\times n$ complex matrices. The identities include: (i)~a residual factorisation establishing self-correcting error decay, (ii)~a multiplicative Thue--Pell generator over $\mathbb{Z}$, (iii)~coprimality isolation identities bounding prime factor invasion, (iv)~a proof that the fixed points on $\mathbb{C}$ are exactly $\{0\}\cup\{z:z^3=X\}$ (no spurious fixed points), (v)~commutativity preservation for matrix operators, (vi)~Hermitian preservation under self-adjoint inputs, and (vii)~a Lipschitz-type factorisation of the cross-state difference. Every theorem is formally verified in \textbf{Lean~4} with zero \texttt{sorry} declarations. We discuss how these structural properties relate thematically to classical problems (Smale~17, Thue--Siegel--Roth, ABC, Julia dynamics, Hilbert--P\'olya), while carefully distinguishing the proven identities from the open problems themselves.
 \end{abstract}
 
 \tableofcontents
@@ -331,7 +331,7 @@ These isolation identities provide explicit algebraic constraints on how prime f
   \draw[->, thick, dashed] (R1.south) -- (0,-4.2);
   \draw[->, thick, dashed] (R3.south) -- (0,-4.2);
 \end{tikzpicture}
-\caption{\textbf{The ABC Prime Isolation Funnel.} Any prime $p$ invading both $A'$ and $B'$ is forced through three independent modular constraints, each proven by Lean~4. When $\gcd(A,B)=1$, the set of admissible primes collapses to a finite, bounded collection.}
+\caption{\textbf{The ABC Prime Isolation Funnel (schematic).} The identities of Deep~33 show that any prime $p$ dividing both $A'$ and $B'$ must satisfy three explicit algebraic constraints. When $\gcd(A,B)=1$, these constraints restrict $p$ to dividing specific bounded expressions ($5A^3$, $10XB^3$), limiting the set of possible new prime factors for each iteration step.}
 \label{fig:abc}
 \end{figure}
 
