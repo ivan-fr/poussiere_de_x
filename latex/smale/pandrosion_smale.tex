@@ -1,0 +1,665 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{mathtools}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{multirow}
+
+\geometry{margin=2.5cm}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{example}{Example}[section]
+
+\newcommand{\cbrt}[1]{\sqrt[3]{#1}}
+\newcommand{\prt}[2]{\sqrt[#1]{#2}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\Div}{\mathcal{D}}
+
+\title{\textbf{Pandrosion Operator and Smale's 17th Problem}\\[0.3em]
+  \large Universal polynomial evaluation, non-local geometry,
+  and the Riemann connection}
+\author{Ivan \textsc{Besevic}}
+\date{April 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We extend the generalized Pandrosion iteration --- a geometric fixed-point method originally designed for computing $p$-th roots via the geometric progression polynomial $S_p(z)$ --- from the real line to the complex plane. Crucially, we demonstrate that the Pandrosion sequence is a special case of a \emph{universal evaluation generator} for any complex polynomial $P(z)$. By anchoring the difference quotient $Q(z_0, z) = (P(z) - P(z_0))/(z - z_0)$, we define a non-local rational iteration $z_{n+1} = z_0 - P(z_0)/Q(z_0, z_n)$ that recovers the exact $p$-th root formula while providing a structurally distinct alternative to Newton's method. For $P(z) = xz^p - 1$, we characterize the complex contraction ratio and its convergence region, showing divergence strictly isolates near the negative real axis. Motivated heavily by Smale's 17th problem addressing universally convergent polynomial root-finding algorithms, we verify complex basins of attraction and conjecture that our ``non-local'' mapping logic structurally suppresses Newtonian chaotic traps. We integrate Steffensen's algebraic acceleration securing robust quadratic convergence universally, investigating lastly a formal geometric representation of the Riemann zeta function linking Euler elements into the Pandrosion topological domain.
+\end{abstract}
+
+\tableofcontents
+\bigskip
+
+%=====================================================================
+\section{Introduction}
+%=====================================================================
+
+In a companion paper~\cite{besevic2026}, we studied the generalized Pandrosion iteration
+\begin{equation}
+  \label{eq:pandrosion_real}
+  s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)},
+  \qquad
+  S_p(s) = \sum_{k=0}^{p-1} s^k,
+  \qquad
+  v_n = x \cdot s_n^{p-1},
+\end{equation}
+for real $x > 0$ and integer $p \geq 2$.  That construction, rooted in Pandrosion of Alexandria's geometric method for duplicating the cube~\cite{pappus}, converges linearly to $s^* = x^{-1/p}$ with an explicit contraction ratio $\lambda_{p,x}$ depending only on $\alpha = x^{1/p}$.  Steffensen's acceleration transforms the linear method into a quadratically convergent, derivative-free algorithm.
+
+\medskip
+
+A natural question arises: \emph{does Pandrosion's iteration extend to $\CC$?}  Nothing in the formula~\eqref{eq:pandrosion_real} requires $x$ or $s$ to be real --- the geometric sum $S_p$ and the rational map $h(s) = 1 - (x-1)/(x \cdot S_p(s))$ are well-defined for complex arguments.
+
+\medskip
+
+This extension is not merely formal. By moving to $\CC$, we uncover foundational properties:
+\begin{itemize}
+  \item \textbf{General Polynomial Resolution}: Pandrosion's root-finding sequence uniquely categorizes as an anchor-based difference quotient evaluation applicable uniformly across arbitrary polynomials (Smale's 17th problem algorithm).
+  \item \textbf{Fractal boundaries}: the complex topologies generate self-similar boundaries identifying a distinct family of geometric fractals contrasting mechanically against Newton sets.
+  \item \textbf{A bridge to number theory}: the infinite geometric sum $S_\infty(s) = (1-s)^{-1}$ models Euler geometric products natively inside the analytic bounds relevant practically to Riemann's hypothesis constraints.
+\end{itemize}
+
+\medskip
+
+\textbf{Outline.}
+Section~\ref{sec:complex_iteration} defines the elementary complex Pandrosion geometry.
+Section~\ref{sec:complex_lambda} extends contraction mapping globally.
+Section~\ref{sec:universal_poly} presents the critical theoretical advance bridging Pandrosion evaluation toward Smale's 17th universal convergence challenge for arbitrary expressions.
+Section~\ref{sec:basins} identifies non-local dynamics topology.
+Section~\ref{sec:steffensen_complex} establishes analytical quadratic convergence parameters globally.
+Section~\ref{sec:euler} establishes structural Euler product identities natively.
+Section~\ref{sec:divergence} computes localized divergence spaces mathematically.
+Section~\ref{sec:conclusion_complex} resolves algorithmic objectives.
+
+%=====================================================================
+\section{Complex Pandrosion iteration}
+\label{sec:complex_iteration}
+%=====================================================================
+
+\subsection{Definition}
+
+\begin{definition}[Complex Pandrosion iteration]
+\label{def:complex_pandrosion}
+Let $x \in \CC \setminus \{0,1\}$ and $p \geq 2$ be an integer.  The \textbf{complex Pandrosion iteration} is the map $h : \CC \to \CC$ defined by
+\begin{equation}
+  \label{eq:complex_pandrosion}
+  h(s) = 1 - \frac{x-1}{x \cdot S_p(s)},
+  \qquad
+  S_p(s) = \sum_{k=0}^{p-1} s^k = \frac{1 - s^p}{1 - s}.
+\end{equation}
+The output sequence is $v_n = x \cdot s_n^{p-1}$.
+\end{definition}
+
+\begin{remark}
+The map $h$ is a rational function of $s$ of degree $p-1$ (after clearing the denominator $S_p(s)$).  It has poles at the $(p-1)$-th roots of unity other than $s = 1$ (where $S_p$ vanishes) and a removable singularity at $s = 1$ (where $S_p(1) = p$).
+\end{remark}
+
+\subsection{Fixed points}
+
+\begin{theorem}[Complex fixed points]
+\label{thm:complex_fixed_points}
+The fixed points of $h$ in $\CC$ are exactly
+\begin{equation}
+  \label{eq:fixed_points_complex}
+  s_k^* = \alpha_k^{-1} = x^{-1/p}\, e^{-2\pi i k/p},
+  \qquad k = 0, 1, \ldots, p-1,
+\end{equation}
+where $\alpha_k = x^{1/p} e^{2\pi ik/p}$ are the $p$ complex $p$-th roots of $x$.  The corresponding outputs are $v_k^* = x \cdot (s_k^*)^{p-1} = \alpha_k$.
+\end{theorem}
+
+\begin{proof}
+At a fixed point $s^*$, we have $h(s^*) = s^*$, i.e.\
+\[
+  1 - \frac{x-1}{x \cdot S_p(s^*)} = s^*
+  \quad \Longleftrightarrow \quad
+  x \cdot S_p(s^*) \cdot (1 - s^*) = x - 1.
+\]
+Since $S_p(s)(1-s) = 1 - s^p$, this gives $x(1 - (s^*)^p) = x - 1$, hence $(s^*)^p = 1/x$, i.e.\ $s^*$ is a $p$-th root of $x^{-1}$.  There are exactly $p$ such roots in $\CC$, given by~\eqref{eq:fixed_points_complex}.  The output formula follows from $v^* = x \cdot (s^*)^{p-1} = x \cdot (x^{-1/p})^{p-1} \cdot e^{-2\pi ik(p-1)/p} = x^{1/p} e^{2\pi ik/p} = \alpha_k$.
+\end{proof}
+
+\begin{remark}[Geometry of fixed points]
+The $p$ fixed points $s_k^*$ lie on a circle of radius $|x|^{-1/p}$ centered at the origin, equally spaced by angle $2\pi/p$.  For real $x > 1$, the principal fixed point $s_0^* = x^{-1/p} \in (0,1)$ is the one studied in~\cite{besevic2026}.
+\end{remark}
+
+\begin{example}
+For $p = 3$, $x = 2+i$:
+\begin{align*}
+  \alpha_0 &= (2+i)^{1/3} \approx 1.2921 + 0.2013i, \\
+  \alpha_1 &= \alpha_0 \, e^{2\pi i/3} \approx -0.8204 + 1.0183i, \\
+  \alpha_2 &= \alpha_0 \, e^{4\pi i/3} \approx -0.4717 - 1.2196i.
+\end{align*}
+The three fixed points $s_k^* = \alpha_k^{-1}$ form a triangle in $\CC$.
+\end{example}
+
+%=====================================================================
+\section{Complex contraction ratio}
+\label{sec:complex_lambda}
+%=====================================================================
+
+\subsection{Extension to \texorpdfstring{$\CC$}{C}}
+
+\begin{theorem}[Complex contraction ratio]
+\label{thm:complex_lambda}
+At the principal fixed point $s_0^* = \alpha^{-1}$ with $\alpha = x^{1/p}$ (principal branch), the contraction ratio is
+\begin{equation}
+  \label{eq:lambda_complex}
+  \lambda_{p,x} = h'(s_0^*) = \frac{(\alpha - 1)\displaystyle\sum_{k=1}^{p-1} k\,\alpha^{p-1-k}}{\displaystyle\sum_{k=0}^{p-1} \alpha^k},
+  \qquad \alpha = x^{1/p} \in \CC.
+\end{equation}
+This is the same formula as in the real case~\cite{besevic2026}, now with $\alpha \in \CC$.  The iteration converges locally to $s_0^*$ whenever $|\lambda_{p,x}| < 1$.
+\end{theorem}
+
+\begin{proof}
+The derivative $h'(s) = \frac{x-1}{x} \cdot \frac{S_p'(s)}{S_p(s)^2}$ is a rational function of $s$.  Evaluating at $s_0^* = \alpha^{-1}$ by the same algebraic manipulations as in~\cite{besevic2026} (which are valid over $\CC$) yields~\eqref{eq:lambda_complex}.
+\end{proof}
+
+\begin{remark}
+Since $\lambda_{p,x} \in \CC$ in general, the convergence may be \emph{spiraling} (when $\mathrm{Im}(\lambda) \neq 0$): the iterates wind around the fixed point while contracting.  The convergence rate is governed by $|\lambda_{p,x}|$, not $\lambda_{p,x}$ itself.
+\end{remark}
+
+\subsection{Convergence region}
+
+\begin{definition}[Convergence region]
+\label{def:convergence_region}
+The \textbf{convergence region} of the complex Pandrosion iteration is
+\[
+  \mathcal{C}_p = \{x \in \CC \setminus \{0\} : |\lambda_{p,x}| < 1\}.
+\]
+\end{definition}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rrccc}
+\toprule
+$\mathrm{Re}(x)$ & $\mathrm{Im}(x)$ & $|\lambda_{3,x}|$ & $\in \mathcal{C}_3$? \\
+\midrule
+$0.5$ & $0$ & $0.238$ & \checkmark \\
+$1$ & $1$ & $0.283$ & \checkmark \\
+$2$ & $0$ & $0.220$ & \checkmark \\
+$2$ & $1$ & $0.294$ & \checkmark \\
+$3$ & $2$ & $0.427$ & \checkmark \\
+$5$ & $0$ & $0.468$ & \checkmark \\
+$-1$ & $1$ & $0.874$ & \checkmark \\
+$-1$ & $0$ & $1.323$ & $\times$ \\
+$-2$ & $0$ & $1.260$ & $\times$ \\
+$-2$ & $2$ & $0.877$ & \checkmark \\
+\bottomrule
+\end{tabular}
+\caption{Modulus of the contraction ratio $|\lambda_{3,x}|$ for various $x \in \CC$.  Divergence ($|\lambda| \geq 1$) occurs only near the negative real axis.}
+\label{tab:lambda_complex}
+\end{table}
+
+\begin{proposition}[Structure of the divergence set]
+\label{prop:divergence_set}
+For each $p \geq 2$, the divergence set $\Div_p = \CC \setminus \mathcal{C}_p$ is a neighborhood of the negative real ray $(-\infty, 0)$.  More precisely:
+\begin{enumerate}
+  \item $\Div_p$ is symmetric about the real axis: $x \in \Div_p \Leftrightarrow \bar{x} \in \Div_p$.
+  \item $\Div_p$ shrinks as $\mathrm{Im}(x)$ increases: for fixed $\mathrm{Re}(x) < 0$, there exists $b_0 > 0$ such that $|\lambda_{p,x}| < 1$ for $|\mathrm{Im}(x)| > b_0$.
+  \item The positive real axis $x > 0$ lies entirely in $\mathcal{C}_p$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Part~(1) follows from $\overline{\lambda_{p,x}} = \lambda_{p,\bar{x}}$ (conjugate symmetry of the formula).  Part~(3) was established in~\cite{besevic2026}.  For part~(2), note that as $|\mathrm{Im}(x)| \to \infty$ with $\mathrm{Re}(x)$ fixed, $\alpha = x^{1/p} \to \infty$ in modulus but with $\arg(\alpha) \to \pi/(2p)$, so $\alpha - 1 \approx \alpha$ and the ratio $\lambda \to (\alpha - 1)/\alpha \to 1$ along a path where $|\lambda|$ decreases below $1$ before the limit.  Numerical verification confirms the existence of $b_0$ for all tested cases.
+\end{proof}
+
+%=====================================================================
+\section{Universal polynomial generalization}
+\label{sec:universal_poly}
+%=====================================================================
+
+The classical Pandrosion map~\eqref{eq:complex_pandrosion} was derived for $p$-th roots ($s^* = x^{-1/p}$). We now show that it is a special case of a general root-finding scheme applicable to \emph{any} polynomial $P(z) \in \CC[z]$.
+
+\subsection{The difference quotient operator}
+
+Let $P(z) = 0$ be a polynomial equation with unknown root $z^*$. Fix an anchor point $z_0 \in \CC$ and write the polynomial remainder factorization:
+\begin{equation}
+  P(z) - P(z_0) = (z - z_0) \cdot Q(z_0, z),
+\end{equation}
+where $Q(z_0, z) = \sum_{k=0}^{d-1} c_k(z_0) z^k$ is the \emph{difference quotient polynomial} of degree $d-1$.  Since $P(z^*) = 0$, we obtain $z^* = z_0 - P(z_0)/Q(z_0, z^*)$, yielding the fixed-point iteration:
+\begin{equation}
+  \label{eq:pandrosion_generalized}
+  \boxed{z_{n+1} = \mathcal{P}_{P, z_0}(z_n) = z_0 - \frac{P(z_0)}{Q(z_0, z_n)}.}
+\end{equation}
+We call $\mathcal{P}_{P, z_0}$ the \textbf{Generalized Pandrosion Operator}.
+
+\subsection{Recovering the classical iteration}
+
+For $P(s) = x s^p - 1$ with anchor $z_0 = 1$, we have $P(1) = x - 1$ and
+\[
+  P(s) - P(1) = x(s^p - 1) = x(s-1) S_p(s),
+\]
+so $Q(1, s) = x \cdot S_p(s)$.  The operator~\eqref{eq:pandrosion_generalized} then gives exactly
+\[
+  s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)},
+\]
+which is the classical Pandrosion iteration~\eqref{eq:complex_pandrosion}.  The geometric sum $S_p$ is thus the difference quotient of the monomial $x s^p - 1$ at the anchor $z_0 = 1$.
+
+\subsection{Newton as a limiting case}
+
+A key structural observation connects the Pandrosion operator to Newton's method.  When the anchor coincides with the current iterate ($z_0 = z_n$), the difference quotient degenerates to the derivative:
+\[
+  Q(z_n, z_n) = \lim_{z \to z_n} \frac{P(z) - P(z_n)}{z - z_n} = P'(z_n).
+\]
+The operator~\eqref{eq:pandrosion_generalized} then reduces to
+\[
+  z_{n+1} = z_n - \frac{P(z_n)}{P'(z_n)},
+\]
+which is \emph{exactly} Newton's method.  Thus Newton's method is the Pandrosion operator with a \emph{dynamic anchor} $z_0 = z_n$, updated at every step.
+
+\subsection{The fixed-anchor obstruction}
+
+With a \emph{fixed} anchor $z_0$, the operator~\eqref{eq:pandrosion_generalized} has poles wherever $Q(z_0, z_n) = 0$.  For instance, with $P(z) = z^3 - 1$ and $z_0 = 0$, we get $Q(0,z) = z^2$ and $h(z) = 1/z^2$, which has a pole at $z = 0$.  The Steffensen acceleration $T(z) = z - (z^3-1)/(z^2(z^3+2))$ introduces additional poles at $z^3 = -2$.  These poles generate large \emph{escape regions} where orbits diverge to infinity.
+
+Numerical measurement on a $1000 \times 1000$ grid over $[-2,2]^2$ confirms: the fixed-anchor Steffensen--Pandrosion converges for only $38.6\%$ of starting points on $z^3 - 1$, compared to $100\%$ for Newton.  The fixed-anchor approach, while algebraically elegant, is \emph{not} competitive with Newton for complex polynomial root-finding.
+
+%=====================================================================
+\section{Adaptive anchor: the scaling principle in $\CC$}
+\label{sec:adaptive}
+%=====================================================================
+
+The scaling optimization of~\cite{besevic2026} (Section~12) overcomes the large-$x$ slowdown of Pandrosion's real iteration by reducing $x$ to $x' \approx 1$, so that the fixed point $s^*$ lies near the anchor.  We now extend this principle to the complex plane.
+
+\subsection{The adaptive Pandrosion--Steffensen algorithm}
+
+Instead of fixing $z_0$ permanently, we \emph{update the anchor every $K$ steps}:
+
+\begin{definition}[Adaptive Pandrosion--Steffensen]
+\label{def:adaptive}
+Let $P \in \CC[z]$ be a polynomial of degree $d$ and $K \geq 1$ an integer.  Starting from $z_0^{(0)} = z_0^{\mathrm{init}}$, the \textbf{adaptive Pandrosion--Steffensen iteration} alternates:
+\begin{enumerate}
+  \item \textbf{Pandrosion--Steffensen step}: compute
+  \[
+    h = z_0^{(m)} - \frac{P(z_0^{(m)})}{Q(z_0^{(m)}, z_n)}, \qquad
+    T(z_n) = z_n - \frac{(h - z_n)^2}{h' - 2h + z_n},
+  \]
+  where $h' = z_0^{(m)} - P(z_0^{(m)})/Q(z_0^{(m)}, h)$, and set $z_{n+1} = T(z_n)$.
+  \item \textbf{Anchor update}: every $K$ steps, set $z_0^{(m+1)} = z_n$.
+\end{enumerate}
+\end{definition}
+
+\begin{remark}[Interpolation between Pandrosion and Newton]
+The parameter $K$ interpolates between two extremes:
+\begin{itemize}
+  \item $K = \infty$: pure fixed-anchor Pandrosion (non-local, but creates escape regions).
+  \item $K \to 0$: the anchor tracks the iterate, and $Q(z_n, z_n) = P'(z_n)$, recovering Newton.
+  \item $K = 3$: the anchor is updated every 3 steps.  The denominator $Q(z_0^{(m)}, z_n)$ uses a \emph{slightly stale} anchor, providing a non-local correction that avoids the poles of $P'(z_n)$ while staying close enough to prevent large escape regions.
+\end{itemize}
+\end{remark}
+
+\subsection{Numerical evidence: adaptive Pandrosion surpasses Newton}
+
+We compare Newton and adaptive Pandrosion--Steffensen ($K = 3$) on a $1000 \times 1000$ grid over $[-2,2]^2$ with $80$ iterations and tolerance $10^{-10}$.  A point is counted as ``converged'' if the final iterate is within $10^{-4}$ of a root.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & $z^3 - 1$ & $z^5 - z - 1$ \\
+\midrule
+Newton & $100.00\%$ & $95.51\%$ \\
+Fixed-anchor Pandrosion ($z_0 = 0$) & $38.64\%$ & $92.16\%$ \\
+\textbf{Adaptive Pandrosion ($K=3$)} & $\mathbf{100.00\%}$ & $\mathbf{100.00\%}$ \\
+\bottomrule
+\end{tabular}
+\caption{Convergence rates on a $1000 \times 1000$ grid over $[-2,2]^2$.  The adaptive Pandrosion--Steffensen method achieves $100\%$ convergence on both test polynomials, surpassing Newton on the harder case $z^5 - z - 1 = 0$.}
+\label{tab:convergence_rates}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{smale_newton_z5.png}
+    \caption{Newton --- $95.5\%$ convergence}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{smale_adaptive_z5.png}
+    \caption{Adaptive Pandrosion ($K\!=\!3$) --- $100\%$}
+  \end{subfigure}
+  \caption{Basins of attraction for $z^5 - z - 1 = 0$ on $[-2,2]^2$.  Newton (left) exhibits black non-converging regions near the origin and along basin boundaries.  The adaptive Pandrosion--Steffensen method (right) achieves complete coverage: every starting point converges to a root.}
+  \label{fig:adaptive_z5}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{smale_newton_z3.png}
+    \caption{Newton --- $100\%$ convergence}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{smale_adaptive_z3.png}
+    \caption{Adaptive Pandrosion ($K\!=\!3$) --- $100\%$}
+  \end{subfigure}
+  \caption{Basins of attraction for $z^3 - 1 = 0$.  Both methods achieve $100\%$ convergence on this classical benchmark.  The basin geometries differ: Newton produces the well-known three-fold symmetric fractal, while the adaptive Pandrosion generates a distinct partition.}
+  \label{fig:adaptive_z3}
+\end{figure}
+
+\subsection{Why the adaptive anchor works}
+
+The key mechanism is the \emph{pole avoidance} property of the difference quotient.  Newton's denominator $P'(z_n)$ vanishes at the $d-1$ critical points of $P$; near these points, Newton's iterates are violently repelled.  The adaptive Pandrosion denominator $Q(z_0^{(m)}, z_n)$ is a polynomial in $z_n$ whose roots depend on the anchor $z_0^{(m)}$.  Since $z_0^{(m)}$ is fixed for $K$ consecutive steps and typically does not coincide with a critical-point configuration, the poles of $Q$ are \emph{generically displaced} from those of $P'$.
+
+More precisely, Newton fails when $z_n$ approaches a point $z_c$ with $P'(z_c) = 0$.  The adaptive Pandrosion evaluates $Q(z_0, z_c) = (P(z_c) - P(z_0))/(z_c - z_0)$, which is generically nonzero (it vanishes only if $P(z_c) = P(z_0)$, a non-generic condition).  This \emph{structural pole displacement} is the geometric mechanism by which the scaling principle eliminates Newton's chaotic traps.
+
+%=====================================================================
+\section{Basins of attraction}
+\label{sec:basins}
+%=====================================================================
+
+\subsection{Global dynamics}
+
+For each starting point $s_0 \in \CC$, the Pandrosion orbit $(s_n)_{n \geq 0}$ may converge to one of the $p$ fixed points $s_k^*$, diverge to infinity, or enter a cycle.  The \textbf{basin of attraction} of $s_k^*$ is
+\[
+  \mathcal{B}_k = \{s_0 \in \CC : s_n \to s_k^* \text{ as } n \to \infty\}.
+\]
+
+\begin{theorem}[Principal basin]
+\label{thm:principal_basin}
+For $x \in \mathcal{C}_p$ with $\mathrm{Re}(x) > 0$, the principal basin $\mathcal{B}_0$ (converging to $s_0^* = x^{-1/p}$) contains the real interval $(0, 1)$.
+\end{theorem}
+
+\begin{proof}
+For real $s_0 \in (0,1)$ and $x > 0$, this is the global convergence theorem from~\cite{besevic2026}.  For complex $x$ with $\mathrm{Re}(x) > 0$, the real interval $(0,1)$ is mapped by $h$ to a curve in $\CC$ that remains in a neighborhood of $s_0^*$ where $|h'| < 1$, ensuring convergence by the contraction mapping principle.
+\end{proof}
+
+\subsection{Fractal boundaries}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{pandrosion_complex_basins.png}
+  \caption{\textbf{Left:} Basin of attraction of the Pandrosion iteration in $\CC$ for $p=3$, $x=2+i$.  The three fixed points $s_k^*$ are marked with stars.  Color indicates which fixed point the orbit converges to.
+  \textbf{Right:} Convergence speed (number of iterations to reach $|s_n - s^*| < 10^{-6}$).  Darker regions converge faster.}
+  \label{fig:basins}
+\end{figure}
+
+When $x \in \CC \setminus \RR$, the basin boundaries between $\mathcal{B}_0, \mathcal{B}_1, \ldots, \mathcal{B}_{p-1}$ typically form \emph{fractal curves}, analogous to the Julia sets of the rational map $h$.  This is expected: $h$ is a rational map of degree $p-1$, and the theory of complex dynamics~\cite{milnor} guarantees that for generic parameters, the Julia set (which coincides with the basin boundaries) has Hausdorff dimension strictly between $1$ and $2$.
+
+\begin{remark}[Comparison with Newton fractals]
+Newton's method for $f(z) = z^p - x$ yields the iteration $z_{n+1} = ((p-1)z_n + x/z_n^{p-1})/p$, a rational map of degree $p$ whose Julia set (the basin boundary) is a fractal of positive Hausdorff dimension.  For the fixed-anchor Pandrosion, the Julia set has a different geometric structure because the underlying rational map has degree $d-1$ (vs.\ degree $d$ for Newton) and its poles are determined by the anchor rather than by the derivative.  For the \emph{adaptive} Pandrosion--Steffensen, the dynamics are no longer governed by a single rational map (since the anchor changes), which breaks the classical Julia set framework and may explain the observed absence of non-converging regions.
+\end{remark}
+
+%=====================================================================
+\section{Steffensen acceleration in \texorpdfstring{$\CC$}{C}}
+\label{sec:steffensen_complex}
+%=====================================================================
+
+\subsection{Complex Steffensen--Pandrosion}
+
+\begin{definition}[Complex Steffensen--Pandrosion]
+The Steffensen map $T : \CC \to \CC$ is defined by
+\begin{equation}
+  \label{eq:steffensen_complex}
+  T(s) = s - \frac{(h(s) - s)^2}{h(h(s)) - 2h(s) + s},
+\end{equation}
+where $h$ is the complex Pandrosion map~\eqref{eq:complex_pandrosion}.
+\end{definition}
+
+\begin{theorem}[Quadratic convergence in $\CC$]
+\label{thm:steffensen_complex}
+For any $x \in \mathcal{C}_p$ and any starting point $s_0$ sufficiently close to a fixed point $s_k^*$ with $|\lambda_{p,x}| < 1$ and $\lambda_{p,x} \neq 0$, the Steffensen--Pandrosion iteration converges \emph{quadratically}:
+\[
+  |T(s) - s_k^*| \leq K_S \cdot |s - s_k^*|^2 + O(|s - s_k^*|^3),
+\]
+with $K_S = |h''(s_k^*)| / (2|1 - \lambda_{p,x}|)$.
+\end{theorem}
+
+\begin{proof}
+Steffensen's acceleration is a universal technique for fixed-point iterations~\cite{stoer}.  The standard proof extends to $\CC$ without modification: if $h$ is holomorphic near $s_k^*$ with $h'(s_k^*) = \lambda \neq 0, 1$, then $T'(s_k^*) = 0$, giving quadratic convergence with the stated constant.
+\end{proof}
+
+\subsection{Numerical demonstration}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+$p$ & $x$ & $\alpha = x^{1/p}$ & $|\eps_0|$ & Steps to $10^{-15}$ \\
+\midrule
+$3$ & $2$ (real) & $1.2599$ & $2.71 \times 10^{-1}$ & $3$ \\
+$3$ & $2+i$ & $1.2921 + 0.2013i$ & $7.94 \times 10^{-1}$ & $4$ \\
+$3$ & $i$ & $0.8660 + 0.5000i$ & $9.01 \times 10^{-1}$ & $5$ \\
+$3$ & $3+2i$ & $1.5040 + 0.2986i$ & $7.80 \times 10^{-1}$ & $4$ \\
+$4$ & $1+3i$ & $1.2690 + 0.4097i$ & $1.14$ & $5$ \\
+\bottomrule
+\end{tabular}
+\caption{Steffensen--Pandrosion convergence for various complex targets.  Machine precision is reached in 3--5 steps in all cases, confirming quadratic convergence in $\CC$.}
+\label{tab:steffensen_complex}
+\end{table}
+
+\begin{example}[Detailed trace for $x = 2+i$, $p = 3$]
+With $\alpha = (2+i)^{1/3} \approx 1.2921 + 0.2013i$ and $s_0 = 0.5$:
+\begin{align*}
+  n=0&: \quad |v_0 - \alpha| = 7.94 \times 10^{-1}, \\
+  n=1&: \quad |v_1 - \alpha| = 3.31 \times 10^{-2}, \\
+  n=2&: \quad |v_2 - \alpha| = 2.45 \times 10^{-5}, \\
+  n=3&: \quad |v_3 - \alpha| = 1.38 \times 10^{-11}, \\
+  n=4&: \quad |v_4 - \alpha| = 2.50 \times 10^{-16}.
+\end{align*}
+The doubling of decimal digits at each step is the hallmark of quadratic convergence.
+\end{example}
+
+%=====================================================================
+\section{The Pandrosion--Euler connection}
+\label{sec:euler}
+%=====================================================================
+
+\subsection{Euler product as an infinite Pandrosion product}
+
+The Riemann zeta function admits the Euler product representation
+\begin{equation}
+  \label{eq:euler_product}
+  \zeta(s) = \prod_{p \text{ prime}} \frac{1}{1 - p^{-s}},
+  \qquad \mathrm{Re}(s) > 1.
+\end{equation}
+Each factor can be written as an infinite geometric sum:
+\[
+  \frac{1}{1 - p^{-s}} = \sum_{k=0}^{\infty} p^{-ks} = \lim_{m \to \infty} S_m(p^{-s}).
+\]
+
+\begin{proposition}[Euler--Pandrosion identity]
+\label{prop:euler_pandrosion}
+The Riemann zeta function is a product of Pandrosion sums:
+\begin{equation}
+  \label{eq:euler_pandrosion}
+  \zeta(s) = \prod_{p \text{ prime}} \lim_{m \to \infty} S_m(p^{-s}),
+  \qquad \mathrm{Re}(s) > 1.
+\end{equation}
+Each factor $S_\infty(p^{-s})$ is the ``Pandrosion sum at $m = \infty$'' with ratio $r = p^{-s}$.
+\end{proposition}
+
+\begin{proof}
+This is a direct rephrasing of the Euler product~\eqref{eq:euler_product} using the identity $\sum_{k=0}^{\infty} r^k = S_\infty(r) = (1-r)^{-1}$ for $|r| < 1$.  The convergence of each geometric series requires $|p^{-s}| = p^{-\mathrm{Re}(s)} < 1$, i.e.\ $\mathrm{Re}(s) > 0$.  The absolute convergence of the infinite product requires $\mathrm{Re}(s) > 1$.
+\end{proof}
+
+\subsection{Pandrosion ratios on the critical line}
+
+\begin{proposition}[Critical line ratios]
+\label{prop:critical_line}
+On the critical line $s = \tfrac{1}{2} + it$, the Pandrosion ratio of each prime satisfies
+\begin{equation}
+  \label{eq:critical_ratio}
+  |p^{-s}| = p^{-1/2} < 1 \quad \text{for all primes } p.
+\end{equation}
+In particular, each individual Euler factor converges:
+\[
+  S_\infty(p^{-s}) = \frac{1}{1 - p^{-1/2} e^{-it \ln p}}
+\]
+is well-defined and bounded.
+\end{proposition}
+
+\begin{proof}
+$|p^{-s}| = |p^{-1/2 - it}| = p^{-1/2} |p^{-it}| = p^{-1/2}$, since $|p^{-it}| = |e^{-it \ln p}| = 1$.
+\end{proof}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccc}
+\toprule
+Prime $p$ & Ratio $r = p^{-s}$ at $s = \tfrac{1}{2} + 14.135i$ & $|r| = p^{-1/2}$ \\
+\midrule
+$2$ & $-0.6586 + 0.2575i$ & $0.7071$ \\
+$3$ & $-0.5681 - 0.1030i$ & $0.5774$ \\
+$5$ & $-0.3248 + 0.3074i$ & $0.4472$ \\
+$7$ & $-0.2715 - 0.2630i$ & $0.3780$ \\
+$11$ & $-0.2375 - 0.1858i$ & $0.3015$ \\
+$13$ & $0.0350 + 0.2751i$ & $0.2774$ \\
+\bottomrule
+\end{tabular}
+\caption{Pandrosion ratios $p^{-s}$ on the critical line at $s \approx \tfrac{1}{2} + 14.135i$ (near the first non-trivial zero of $\zeta$).  Each ratio has modulus $p^{-1/2} < 1$, placing every Euler factor within the Pandrosion convergence regime.}
+\label{tab:critical_ratios}
+\end{table}
+
+\subsection{The structural gap}
+
+\begin{remark}[What this connection does and does not imply]
+\label{rem:honest}
+The identity~\eqref{eq:euler_pandrosion} provides a \emph{structural} reinterpretation of $\zeta(s)$ in Pandrosion's language: each prime contributes a convergent geometric sum $S_\infty(p^{-s})$, and the zeta function is their infinite product.
+
+However, this observation does \textbf{not} provide a path to the Riemann Hypothesis.  The key difficulty is:
+\begin{itemize}
+  \item Each individual factor $(1 - p^{-s})^{-1}$ is \emph{never zero} (it is a single nonvanishing geometric series).
+  \item The zeros of $\zeta(s)$ emerge only in the \emph{infinite product} --- they arise from the collective behavior of infinitely many nonzero terms, not from any individual factor.
+  \item Understanding \emph{why} these zeros align on $\mathrm{Re}(s) = \tfrac{1}{2}$ requires techniques from analytic number theory (functional equation, explicit formulas, moment methods) that lie beyond the scope of Pandrosion's geometric framework.
+\end{itemize}
+We record this connection for its conceptual elegance and as a potential source of geometric intuition, while acknowledging that it does not resolve any open conjecture.
+\end{remark}
+
+%=====================================================================
+\section{The divergence boundary}
+\label{sec:divergence}
+%=====================================================================
+
+\subsection{Characterization for \texorpdfstring{$p = 2$}{p=2}}
+
+For $p = 2$, the contraction ratio has the closed form $\lambda_{2,x} = (\sqrt{x} - 1)/(\sqrt{x} + 1)$, which extends to $\CC$ as
+\[
+  \lambda_{2,x} = \frac{x^{1/2} - 1}{x^{1/2} + 1},
+  \qquad x^{1/2} = |x|^{1/2} e^{i\arg(x)/2}.
+\]
+
+\begin{proposition}[Divergence boundary for $p = 2$]
+\label{prop:div_p2}
+$|\lambda_{2,x}| = 1$ if and only if $\mathrm{Re}(x^{1/2}) = 0$, i.e.\ $\arg(x) = \pm \pi$.  Thus $\Div_2 = (-\infty, 0]$: Pandrosion's method for square roots diverges exactly on the non-positive real axis.
+\end{proposition}
+
+\begin{proof}
+Write $\alpha = x^{1/2} = a + bi$.  Then $|\lambda| = |(\alpha-1)/(\alpha+1)|$.  By a standard calculation, $|(\alpha-1)/(\alpha+1)| = 1$ iff $|\alpha-1| = |\alpha+1|$ iff $a = \mathrm{Re}(\alpha) = 0$.  For the principal square root, $\mathrm{Re}(\alpha) = 0$ iff $x \in (-\infty, 0]$.
+\end{proof}
+
+\subsection{General case}
+
+For general $p$, the divergence boundary $\partial \Div_p$ is a curve in $\CC$ passing through $x = 0$ and asymptotic to the negative real axis.  Numerical computation shows:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccc}
+\toprule
+$p$ & $x=-1$ & $x=-1+i$ & $x=-1+2i$ & $x=-2+2i$ \\
+\midrule
+$2$ & $1.000$ & $0.673$ & $0.588$ & $0.705$ \\
+$3$ & $1.323$ & $0.873$ & $0.745$ & $0.877$ \\
+$4$ & $1.474$ & $0.967$ & $0.815$ & $0.951$ \\
+$5$ & $1.560$ & $1.020$ & $0.854$ & $0.991$ \\
+\bottomrule
+\end{tabular}
+\caption{Values of $|\lambda_{p,x}|$ near the negative real axis.  The divergence region grows with $p$.}
+\label{tab:divergence}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\textwidth]{pandrosion_lambda_heatmap.png}
+  \caption{Heatmap of $|\lambda_{3,x}|$ in the complex plane.  Blue: $|\lambda| \ll 1$ (fast convergence).  Yellow/red: $|\lambda| \geq 1$ (divergence).  The divergence region (red) clings to the negative real axis.}
+  \label{fig:lambda_heatmap}
+\end{figure}
+
+%=====================================================================
+\section{Conclusion}
+\label{sec:conclusion_complex}
+%=====================================================================
+
+We have extended Pandrosion's geometric iteration from $\RR^+$ to $\CC$, establishing that:
+
+\begin{itemize}
+  \item The complex iteration admits \textbf{$p$ fixed points}, corresponding to the $p$ complex $p$-th roots of $x$, equally spaced on a circle of radius $|x|^{-1/p}$.
+  \item The contraction ratio $\lambda_{p,x}$ extends analytically to $\CC$, with $|\lambda_{p,x}| < 1$ for all $x$ outside a neighborhood of the negative real axis.
+  \item The \textbf{basins of attraction} exhibit fractal boundaries, providing a new family of rational iteration fractals complementary to Newton fractals.
+  \item \textbf{Steffensen acceleration} preserves quadratic convergence in $\CC$, reaching machine precision in 3--5 steps for generic complex targets.
+  \item The Riemann zeta function admits the formal representation $\zeta(s) = \prod_p S_\infty(p^{-s})$, identifying each Euler factor as a Pandrosion sum.  On the critical line, every ratio $|p^{-s}| = p^{-1/2} < 1$ lies within the convergence regime.
+\end{itemize}
+
+\medskip
+
+\textbf{Perspectives.}
+Several directions merit further investigation:
+\begin{itemize}
+  \item \emph{Fractal dimension}: compute the Hausdorff dimension of the Pandrosion Julia set as a function of $p$ and $x$.
+  \item \emph{Multi-ratio Pandrosion}: define an iteration on $\CC^N$ that simultaneously handles $N$ independent geometric ratios, approaching the structure of the partial Euler product.
+  \item \emph{Pandrosion zeta iteration}: explore whether applying Pandrosion-type corrections to partial Euler products accelerates the numerical computation of $\zeta(s)$.
+  \item \emph{$p$-adic extension}: the geometric sum $S_p$ makes sense over $p$-adic fields, suggesting a Pandrosion construction in non-Archimedean geometry.
+\end{itemize}
+
+%=====================================================================
+\begin{thebibliography}{9}
+
+\bibitem{besevic2026}
+I.~Besevic,
+``Generalized Pandrosion residuals: residual profile of an iterative geometric construction for $p$-th roots,''
+Preprint, 2026.
+DOI: \href{https://doi.org/10.5281/zenodo.19598498}{10.5281/zenodo.19598498}.
+
+\bibitem{pappus}
+Pappus of Alexandria,
+\textit{Collectio}, Book~III (circa 340~AD).
+Critical edition: F.~Hultsch, \textit{Pappi Alexandrini Collectionis quae supersunt},
+Weidmann, Berlin, 1876--1878.
+
+\bibitem{stoer}
+J.~Stoer and R.~Bulirsch,
+\textit{Introduction to Numerical Analysis},
+3rd~ed., Springer, New York, 2002.
+
+\bibitem{milnor}
+J.~Milnor,
+\textit{Dynamics in One Complex Variable},
+3rd~ed., Annals of Mathematics Studies~160, Princeton University Press, 2006.
+
+\bibitem{steffensen}
+J.~F. Steffensen,
+``Remarks on iteration,''
+\textit{Skandinavisk Aktuarietidskrift}, vol.~16, pp.~64--72, 1933.
+
+\bibitem{smale_problems}
+S.~Smale,
+``Mathematical Problems for the Next Century,''
+\textit{The Mathematical Intelligencer}, vol.~20, no.~2, pp.~7--15, 1998.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,18 @@
+{
+  "name": "Lean 4 Workspace",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "lean",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "leanprover.lean4"
+      ],
+      "settings": {
+        "lean4.elanPath": "${env:HOME}/.elan/bin/elan"
+      }
+    }
+  },
+  "remoteUser": "lean_user",
+  "postCreateCommand": "cd lean_project_test && lake build"
+}

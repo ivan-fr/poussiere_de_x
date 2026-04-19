@@ -1,0 +1,43 @@
+# OS metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# LaTeX Build Files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+
+# Lean 4
+.lake/
+build/
+
+# Tectonic cache
+.tectonic/
+
+# Optional: Ignore all PDFs in the latex tree to prevent committing huge binaries (can be commented out if needed)
+# latex/**/*.pdf
