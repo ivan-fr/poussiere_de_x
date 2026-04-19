@@ -78,7 +78,7 @@ The product over all roots gives the total contraction per epoch.
 /-- Theorem 2909: Newton radial contraction.
     For |z - ζ| = r and the Newton map N(z), we have
     |N(z) - ζ| ≤ C · r with C < 1 when |z - ζ| ≫ |z - ζ_other|. -/
-theorem radial_contraction_bound (C : ℝ) (hC : 0 < C) (hC1 : C < 1) (r : ℝ) (hr : r > 0) :
+theorem radial_contraction_bound (C : ℝ) (_hC : 0 < C) (hC1 : C < 1) (r : ℝ) (hr : r > 0) :
     C * r < r := by
   exact mul_lt_of_lt_one_left hr hC1
 
