@@ -36,13 +36,45 @@ theorem matrix_pandrosion_oscillation {α : Type*} [Ring α]
   -- Transform LHS
   have hLeft : S * (S ^ 3 + 4 • R ^ 3) - R * (3 • S ^ 3 + 2 • R ^ 3) = 
                S^4 + 4 • (R^3 * S) - 3 • (R * S^3) - 2 • R^4 := by
-    sorry -- Trivial algebraic expansion in Ring
+    calc S * (S ^ 3 + 4 • R ^ 3) - R * (3 • S ^ 3 + 2 • R ^ 3)
+      _ = S * S^3 + S * (4 • R^3) - (R * (3 • S^3) + R * (2 • R^3)) := by simp only [mul_add]
+      _ = S^4 + 4 • (S * R^3) - 3 • (R * S^3) - 2 • (R * R^3) := by simp only [mul_smul_comm, sub_add_eq_sub_sub, ←pow_succ']
+      _ = S^4 + 4 • (R^3 * S) - 3 • (R * S^3) - 2 • R^4 := by rw [h_SR3, ←pow_succ']
     
   -- Transform RHS
   have hRight : (S - R) * (S^3 - 2 • (R * S^2) - 2 • (R^2 * S) + 2 • R^3) =
                 S^4 + 4 • (R^3 * S) - 3 • (R * S^3) - 2 • R^4 := by
-    sorry -- Commutative matrix variable algebraic expansion
-    
+    have h1 : S * S^3 = S^4 := (pow_succ' S 3).symm
+    have h2 : R * R^3 = R^4 := (pow_succ' R 3).symm
+    have h3 : S * (R * S^2) = R * S^3 := by
+      calc S * (R * S^2) = (S * R) * S^2 := by rw [←mul_assoc]
+        _ = (R * S) * S^2 := by rw [h_SR]
+        _ = R * (S * S^2) := by rw [mul_assoc]
+        _ = R * S^3 := by rw [←pow_succ' S 2]
+    have h4_2 : S * (R^2 * S) = R * (R * S^2) := by
+      calc S * (R^2 * S) = (S * R^2) * S := by rw [←mul_assoc]
+        _ = (R^2 * S) * S := by rw [h_SR2]
+        _ = R^2 * (S * S) := by rw [mul_assoc]
+        _ = (R * R) * (S * S) := by rw [sq R]
+        _ = (R * R) * S^2 := by rw [←sq S]
+        _ = R * (R * S^2) := by rw [mul_assoc]
+    have h6 : R * (R^2 * S) = R^3 * S := by 
+      calc R * (R^2 * S) = (R * R^2) * S := by rw [←mul_assoc]
+        _ = R^3 * S := by rw [←pow_succ' R 2]
+    calc (S - R) * (S^3 - 2 • (R * S^2) - 2 • (R^2 * S) + 2 • R^3)
+      _ = S * (S^3 - 2 • (R * S^2) - 2 • (R^2 * S) + 2 • R^3) - 
+          R * (S^3 - 2 • (R * S^2) - 2 • (R^2 * S) + 2 • R^3) := by rw [sub_mul]
+      _ = S * S^3 - S * (2 • (R * S^2)) - S * (2 • (R^2 * S)) + S * (2 • R^3) - 
+          (R * S^3 - R * (2 • (R * S^2)) - R * (2 • (R^2 * S)) + R * (2 • R^3)) := by
+          simp only [mul_sub, mul_add]
+      _ = S^4 - 2 • (S * (R * S^2)) - 2 • (S * (R^2 * S)) + 2 • (S * R^3) - 
+          (R * S^3 - 2 • (R * (R * S^2)) - 2 • (R * (R^2 * S)) + 2 • (R * R^3)) := by
+          simp only [mul_smul_comm, ←pow_succ']
+      _ = S^4 - 2 • (R * S^3) - 2 • (R * (R * S^2)) + 2 • (R^3 * S) - 
+          (R * S^3 - 2 • (R * (R * S^2)) - 2 • (R^3 * S) + 2 • R^4) := by
+          rw [h3, h4_2, h_SR3, h6, ←pow_succ']
+      _ = S^4 + 4 • (R^3 * S) - 3 • (R * S^3) - 2 • R^4 := by abel
+
   rw [hLeft, hRight]
 
 end Pandrosion
