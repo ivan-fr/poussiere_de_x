@@ -2,6 +2,8 @@
   Universitas Pandrosion — Root module
   Imports all submodules
 -/
+
+-- Foundation modules
 import Pandrosion.Core
 import Pandrosion.Conservation
 import Pandrosion.Descent
@@ -14,36 +16,48 @@ import Pandrosion.Smale
 import Pandrosion.FixedPoint
 import Pandrosion.Fourier
 import Pandrosion.Analog
-import Pandrosion.Deep
-import Pandrosion.Deep12
-import Pandrosion.Deep2
-import Pandrosion.Deep3
-import Pandrosion.Deep4
-import Pandrosion.Deep5
-import Pandrosion.Deep6
-import Pandrosion.Deep7
-import Pandrosion.Deep8
-import Pandrosion.Deep9
-import Pandrosion.Deep10
-import Pandrosion.Deep11
-import Pandrosion.Deep13
-import Pandrosion.Deep14
-import Pandrosion.Deep15
-import Pandrosion.Deep16
-import Pandrosion.Deep17
-import Pandrosion.Deep18
-import Pandrosion.Deep19
-import Pandrosion.Deep20
-import Pandrosion.Deep21
-import Pandrosion.Deep22
-import Pandrosion.Deep23
-import Pandrosion.Deep24
-import Pandrosion.Deep25
-import Pandrosion.Deep26
-import Pandrosion.Deep27
-import Pandrosion.Deep28
-import Pandrosion.Deep29
-import Pandrosion.Deep30
-import Pandrosion.Deep31
-import Pandrosion.Deep32
-import Pandrosion.Deep33
+
+-- General fixed point theorem (p-th roots)
+import Pandrosion.FixedPointGeneral
+
+-- Convergence and contraction
+import Pandrosion.ContractionIdentity
+import Pandrosion.GeneralContraction
+import Pandrosion.HalfPlaneUniversal
+import Pandrosion.DerivativeRate
+import Pandrosion.MonotoneConvergence
+import Pandrosion.CubicContraction
+import Pandrosion.FourthFifthRoot
+import Pandrosion.GeneralContractionAll
+import Pandrosion.DerivativeSp
+
+-- Spectral and complex analysis
+import Pandrosion.SpectralLimit
+import Pandrosion.ComplexSpectralDescent
+import Pandrosion.SmaleComplexity
+import Pandrosion.DFTDecomposition
+
+-- Algorithm and universality
+import Pandrosion.FormalAlgorithm
+import Pandrosion.GlobalConvergence
+import Pandrosion.Universality
+import Pandrosion.ScaledMap
+import Pandrosion.SteffensenAcceleration
+
+-- Oscillation and Diophantine
+import Pandrosion.OscillationIdentity
+import Pandrosion.PellDiophantine
+import Pandrosion.DifferentialAttraction
+import Pandrosion.UniversalDiophantine
+
+-- Algebraic structure corpus (Deep 24-33)
+import Pandrosion.MatrilinearIdentity
+import Pandrosion.ResidualConservation
+import Pandrosion.ThueProgression
+import Pandrosion.MatrixSpectral
+import Pandrosion.EffectiveContraction
+import Pandrosion.ComplexFixedPoints
+import Pandrosion.CommutativityPropagation
+import Pandrosion.HermitianPreservation
+import Pandrosion.CrossStateFactorisation
+import Pandrosion.CoprimalityIsolation
