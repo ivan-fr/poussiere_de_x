@@ -72,7 +72,7 @@ theorem full_circle_coverage (d : ℕ) (hd : d ≥ 1) :
     (d : ℝ) * (2 * π / (d : ℝ)) = 2 * π := by
   have hd_pos : (0 : ℝ) < d := by positivity
   have hd_ne : (d : ℝ) ≠ 0 := ne_of_gt hd_pos
-  field_simp
+  field_simp; ring
 
 /-! ## §214. Steffensen Quadratic Convergence
 
