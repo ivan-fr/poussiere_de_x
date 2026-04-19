@@ -11,9 +11,11 @@ import Mathlib.Data.Complex.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Polynomial
+import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+import Mathlib.Topology.Instances.Complex
 import Mathlib.Tactic
 
-open Complex
+open Complex MeasureTheory
 
 namespace Pandrosion
 
@@ -43,6 +45,10 @@ theorem P3_derivative_numerator (X s : ℂ) :
 
 /-! ## §302. The Formal Conjecture -/
 
+/-- Definition of convergence to a target root of X. -/
+def converges_to_root (X : ℂ) (s : ℂ) : Prop :=
+  ∃ r : ℂ, r ^ 3 = X ∧ Filter.Tendsto (fun n => (P3_complex X)^[n] s) Filter.atTop (nhds r)
+
 /-- **Open Problem: Absence of Chaos (McMullen Exemption)**
     It is conjectured that the Fatou set of P_X has full measure in ℂ.
     In other words, almost all starting points converge to a finite cycle
@@ -51,6 +57,6 @@ theorem P3_derivative_numerator (X s : ℂ) :
     we encode this as a formal axiom serving as an open research question.
 -/
 axiom pandrosion_fatou_full_measure (X : ℂ) (hX : X ≠ 0) :
-  True -- Placeholder for: MeasureTheory.volume {s : ℂ | diverges P3_complex s} = 0
+  MeasureTheory.volume {s : ℂ | ¬ converges_to_root X s} = 0
 
 end Pandrosion
