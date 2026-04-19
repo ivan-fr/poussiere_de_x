@@ -133,21 +133,21 @@ Every algebraic identity in this paper has been encoded as a Lean~4 theorem over
 \small
 \begin{tabular}{clll}
 \toprule
-\textbf{Module} & \textbf{Theorem} & \textbf{Domain} & \textbf{Connection} \\
+\textbf{Module} & \textbf{Lean identifier} & \textbf{Domain} & \textbf{Content} \\
 \midrule
-Deep 24 & \texttt{matrix\_pandrosion\_oscillation} & \texttt{Ring} & Matrilinear error factor \\
-Deep 25 & \texttt{pandrosion\_kinematic\_conservation} & $\mathbb{R}$ & Smale 17 bounds \\
-Deep 26 & \texttt{thue\_pandrosion\_progression} & $\mathbb{Z}$ & Hilbert 10 / Thue \\
-Deep 27 & \texttt{quantum\_spectral\_pandrosion\_oscillation} & $M_{n}(\mathbb{C})$ & Cayley--Hamilton \\
-Deep 28 & \texttt{effective\_irrationality\_proximity} & $\mathbb{R}$ & Thue--Siegel--Roth \\
-Deep 29 & \texttt{complex\_no\_parasitic\_attractors} & $\mathbb{C}$ & Julia topology \\
-Deep 30 & \texttt{quantum\_phase\_lock\_temporal} & $M_n(\mathbb{C})$ & BBP spectral \\
-Deep 31 & \texttt{hilbert\_polya\_invariant} & $M_n(\mathbb{C})$ & Riemann / Hilbert--P\'olya \\
-Deep 32 & \texttt{turing\_entropy\_lipschitz\_bound} & \texttt{CommRing} & P vs NP / BSS \\
-Deep 33 & \texttt{mordell\_abc\_delta\_shift} & \texttt{CommRing} & ABC conjecture \\
+Deep 24 & \texttt{matrix\_pandrosion\_oscillation} & \texttt{Ring} & Matrilinear error factorisation \\
+Deep 25 & \texttt{pandrosion\_kinematic\_conservation} & $\mathbb{R}$ & Residual conservation identity \\
+Deep 26 & \texttt{thue\_pandrosion\_progression} & $\mathbb{Z}$ & Integer Thue progression \\
+Deep 27 & \texttt{quantum\_spectral\_pandrosion\_oscillation} & $M_{n}(\mathbb{C})$ & Matrix error factorisation \\
+Deep 28 & \texttt{effective\_irrationality\_proximity} & $\mathbb{R}$ & Effective contraction rate \\
+Deep 29 & \texttt{complex\_no\_parasitic\_attractors} & $\mathbb{C}$ & Fixed point characterisation \\
+Deep 30 & \texttt{quantum\_phase\_lock\_temporal} & $M_n(\mathbb{C})$ & Commutativity propagation \\
+Deep 31 & \texttt{hilbert\_polya\_invariant} & $M_n(\mathbb{C})$ & Hermitian preservation \\
+Deep 32 & \texttt{turing\_entropy\_lipschitz\_bound} & \texttt{CommRing} & Cross-state factorisation \\
+Deep 33 & \texttt{mordell\_abc\_delta\_shift} & \texttt{CommRing} & Coprimality isolation \\
 \bottomrule
 \end{tabular}
-\caption{The Formal Verification Corpus (10 key identities, zero \texttt{sorry}). The ``Thematic connection'' column indicates the classical area to which the identity \emph{relates structurally}; it does \emph{not} claim resolution of the corresponding open problem.}
+\caption{The Formal Verification Corpus (10 key identities, zero \texttt{sorry}). The Lean identifiers in Column~2 are internal module names inherited from the development history and do not represent claims about the corresponding classical problems.}
 \label{tab:corpus}
 \end{table}
 
@@ -372,28 +372,28 @@ For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \over
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{fig_julia_sidebyside.pdf}
-\caption{\textbf{High-resolution side-by-side comparison.} \emph{Left:} Newton's method for $z^3 - 1$ creates intricate fractal filaments at every basin boundary, where nearby starting points can converge to entirely different roots. \emph{Right:} The Pandrosion iteration for the same polynomial produces clean, smooth boundaries with zero fractal structure. White stars mark the three cube roots of unity.}
+\caption{\textbf{High-resolution side-by-side comparison.} \emph{Left:} Newton's method for $z^3 - 1$ creates intricate fractal filaments at every basin boundary. \emph{Right:} The Pandrosion iteration for the same polynomial produces visually smooth boundaries. This contrast is a numerical observation; the formal result (Theorem~\ref{thm:julia}) establishes the absence of spurious fixed points, not the smoothness of basin boundaries. White stars mark the cube roots of unity.}
 \label{fig:julia_sidebyside}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{fig_julia_zoom.pdf}
-\caption{\textbf{Zoomed Newton fractal boundary.} A close-up of the central region where all three Newton basins meet. The boundary exhibits self-similar fractal complexity at arbitrarily fine scales --- a hallmark of Julia set theory. Each colored filament contains infinitely nested sub-basins. The Pandrosion iteration (Theorem~\ref{thm:julia}) provably contains \emph{none} of this structure: its boundaries are smooth rays.}
+\caption{\textbf{Zoomed Newton fractal boundary.} A close-up of the central region where all three Newton basins meet. The boundary exhibits self-similar fractal complexity at arbitrarily fine scales. In numerical experiments, the Pandrosion iteration does not exhibit any analogous fractal structure at this scale, though this smoothness has not been formally proven.}
 \label{fig:julia_zoom}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{fig_julia_classic.pdf}
-\caption{\textbf{Classical Julia Set} for $z \mapsto z^2 + c$ with $c = -0.7 + 0.27i$. This iconic fractal illustrates the fundamental complexity barrier in iterative dynamics on $\mathbb{C}$: the boundary between convergent and divergent orbits is infinitely intricate. The Universitas Pandrosion framework (Deep~29) proves that the Pandrosion map structurally \emph{cannot} generate such fractal boundaries, making it topologically ``sterile'' by construction.}
+\caption{\textbf{Classical Julia Set} for $z \mapsto z^2 + c$ with $c = -0.7 + 0.27i$. This iconic fractal illustrates the fractal complexity barrier in iterative dynamics on $\mathbb{C}$: the boundary between convergent and divergent orbits is infinitely intricate. Numerical experiments suggest that the Pandrosion map does not produce such boundaries, consistent with its simpler fixed-point structure (Theorem~\ref{thm:julia}).}
 \label{fig:julia_classic}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\textwidth]{fig_convergence_heatmap.pdf}
-\caption{\textbf{Convergence speed landscape} for $\sqrt[3]{2}$ across the complex plane. Color encodes the number of Pandrosion iterations required to reach the real cube root within tolerance $10^{-8}$. The smooth, radially symmetric structure confirms the absence of fractal basin boundaries. The white star marks the target root $\sqrt[3]{2} \approx 1.26$.}
+\caption{\textbf{Convergence speed landscape} for $\sqrt[3]{2}$ across the complex plane (numerical). Colour encodes the number of Pandrosion iterations required to reach the real cube root within tolerance $10^{-8}$. The smooth, radially symmetric structure is consistent with the absence of fractal basin boundaries observed in the other figures. The white star marks the target root $\sqrt[3]{2} \approx 1.26$.}
 \label{fig:heatmap}
 \end{figure}
 
@@ -640,11 +640,11 @@ In the Blum--Shub--Smale (BSS) complexity model, sensitivity to initial conditio
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[scale=0.85]
-  \node[font=\bfseries] at (0, 5) {Computational Entropy: Chaotic vs Deterministic};
+  \node[font=\bfseries] at (0, 5) {Cross-State Divergence: Schematic Comparison};
   
   % LEFT: Chaotic system
   \begin{scope}[xshift=-5cm]
-    \node[font=\small\bfseries] at (0, 4) {Generic Algorithm};
+    \node[font=\small\bfseries] at (0, 4) {Generic iteration};
     \draw[->, thick, gray] (-0.5, -0.5) -- (3.5, -0.5) node[right, font=\scriptsize] {$n$};
     \draw[->, thick, gray] (-0.5, -0.5) -- (-0.5, 3.5) node[above, font=\scriptsize] {$|f(A)-f(B)|$};
     
@@ -658,7 +658,7 @@ In the Blum--Shub--Smale (BSS) complexity model, sensitivity to initial conditio
   
   % RIGHT: Pandrosion deterministic
   \begin{scope}[xshift=5cm]
-    \node[font=\small\bfseries] at (0, 4) {Pandrosion Algorithm};
+    \node[font=\small\bfseries] at (0, 4) {Pandrosion iteration};
     \draw[->, thick, gray] (-0.5, -0.5) -- (3.5, -0.5) node[right, font=\scriptsize] {$n$};
     \draw[->, thick, gray] (-0.5, -0.5) -- (-0.5, 3.5) node[above, font=\scriptsize] {$|f(A)-f(B)|$};
     
@@ -677,18 +677,18 @@ In the Blum--Shub--Smale (BSS) complexity model, sensitivity to initial conditio
   
   % Bottom explanation
   \node[draw, rounded corners, fill=blue!5, font=\footnotesize, text width=10cm, align=center] at (0, -1.5) {
-    \textbf{Deep 32 Guarantee:} The cross-difference $U(A)V(B) - U(B)V(A)$ always factors as $(A-B) \cdot \Phi$.\\
-    No exponential divergence is algebraically possible. \textbf{Zero backtracking entropy.}
+    \textbf{Identity~(\ref{eq:lipschitz}):} The cross-difference $U(A)V(B) - U(B)V(A)$ factors exactly as $(A-B) \cdot \Phi$.\\
+    This algebraic factorisation implies local Lipschitz regularity of the Pandrosion map.
   };
 \end{tikzpicture}
-\caption{\textbf{Entropy stability comparison (schematic).} \emph{Left:} Generic algorithms allow exponential divergence from initial perturbations $\delta = |A - B|$ (the butterfly effect). \emph{Right:} Pandrosion's cross-product difference is \emph{algebraically forced} to factor through $(A-B)$, bounding divergence polynomially.}
+\caption{\textbf{Cross-state divergence comparison (schematic).} \emph{Left:} Some iterations can amplify initial perturbations $\delta = |A - B|$ exponentially. \emph{Right:} Identity~\eqref{eq:lipschitz} shows that for the Pandrosion map, the cross-difference factors through $(A-B)$, implying that divergence between nearby trajectories is bounded by a polynomial in their initial separation.}
 \label{fig:entropy}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{fig_lipschitz_map.pdf}
-\caption{\textbf{Lipschitz entropy map} for $X = 2$. The polynomial factor $\Phi(A,B,X)$ is plotted as a function of states $A$ and $B$. The diagonal $A = B$ (white dashed) is the zero-divergence locus. The smooth, continuous structure of $\Phi$ confirms that the cross-difference $U(A)V(B) - U(B)V(A)$ factors \emph{exactly} through $(A-B)$ with no singularities or chaotic discontinuities. The white star marks the fixed point $\sqrt[3]{2}$.}
+\caption{\textbf{Cross-state polynomial factor} $\Phi(A,B,X)$ for $X = 2$, plotted as a heatmap. The diagonal $A = B$ (white dashed) corresponds to zero cross-difference, consistent with the factorisation through $(A-B)$. The smooth structure of $\Phi$ across the domain illustrates the algebraic regularity established by Identity~\eqref{eq:lipschitz}. The white star marks the fixed point $\sqrt[3]{2}$.}
 \label{fig:lipschitz_map}
 \end{figure}
 
@@ -732,7 +732,7 @@ This provides an \emph{explicit} contraction factor for each iteration step with
   \addlegendentry{Pandrosion trajectory (effective, cubic)}
   \end{axis}
 \end{tikzpicture}
-\caption{\textbf{Effective vs ineffective irrationality bounds.} The classical Roth bound (red dashed) guarantees existence but provides no constructive rate. The Pandrosion trajectory (blue) achieves explicit cubic contraction, making the irrationality measure fully \emph{effective}.}
+\caption{\textbf{Effective vs Roth bound (schematic).} The classical Roth bound (red dashed) guarantees existence but provides no constructive rate. The Pandrosion sequence (blue) achieves explicit cubic contraction \emph{within its own iterates}. This does not constitute a general effective irrationality measure; it is a property of this specific recurrence.}
 \label{fig:irrationality}
 \end{figure}
 
