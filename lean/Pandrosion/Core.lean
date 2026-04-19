@@ -117,14 +117,14 @@ theorem product_containment_decay (ρ R : ℝ) (hρ : ρ > 0) (hR : R > ρ) (d :
 
 The Pandrosion tower of accelerated iterations:
   T₁ = F    (linear, rate (p-1)/p)
-  T₂       (quadratic, rate ((p-1)/p)²)
-  T₃       (cubic, rate ((p-1)/p)³)
-The T₃ iteration achieves cubic convergence using only
+  T₂       (quadratic via Aitken Δ²)
+  T₃       (three base steps + Aitken = quadratic convergence)
+The T₃ iteration achieves quadratic convergence using only
 evaluation oracle calls (no derivatives).
 -/
 
-/-- Theorem 2280: The T₃ rate is the cube of the T₁ rate.
-    This means T₃ converges cubically. -/
+/-- Theorem 2280: Three base steps contract by ((p-1)/p)³.
+    Combined with Aitken Δ², this gives quadratic convergence. -/
 theorem t3_cubic_rate (p : ℕ) (hp : p ≥ 2) :
     (((p : ℝ) - 1) / (p : ℝ)) ^ 3 < 1 := by
   exact pow_lt_one (contraction_ratio_nonneg p hp)

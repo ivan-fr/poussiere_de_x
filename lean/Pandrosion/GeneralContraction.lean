@@ -102,7 +102,7 @@ theorem steffensen_at_fixpoint (x s : ℝ) (hx : x > 0) (p : ℕ) (hp : p ≥ 1)
 
 T₁ (Pandrosion): linear convergence with ratio λ = (p-1)/p
 T₂ (Steffensen): quadratic convergence with ratio λ²
-T₃ (adaptive): cubic convergence
+T₃ (adaptive): quadratic convergence via Steffensen
 -/
 
 /-- **T₁ rate: λ = (p-1)/p < 1.** -/

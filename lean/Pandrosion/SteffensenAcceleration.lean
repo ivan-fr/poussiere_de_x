@@ -5,7 +5,7 @@
   This module formalizes the composite generic architecture
   where the Aitken-Steffensen extrapolation formula perfectly
   annihilates the linear alternating dust produced by the
-  Generalized Pandrosion map, launching the process into cubic domains.
+  Generalized Pandrosion map, achieving quadratic convergence.
 -/
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic

@@ -67,3 +67,4 @@ import Pandrosion.HalleyComparison
 import Pandrosion.HigherDerivatives
 import Pandrosion.ChebyshevHalleyExclusion
 import Pandrosion.ResidualAmplification
+import Pandrosion.MultiStart

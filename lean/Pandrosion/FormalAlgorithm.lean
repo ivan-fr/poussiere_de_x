@@ -115,7 +115,7 @@ theorem error_after_n_steps_p2 (x r s₀ : ℝ)
 
 /-! ## §109. The T3 Acceleration -/
 
-/-- **The T3 (Aitken-Steffensen) step: cubic convergence.** -/
+/-- **The T3 (Aitken-Steffensen) step: quadratic convergence from linear.** -/
 noncomputable def t3_step (p : ℕ) (x s : ℝ) : ℝ :=
   let s1 := pandrosion_map p x s
   let s2 := pandrosion_map p x s1
