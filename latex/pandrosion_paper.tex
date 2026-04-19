@@ -63,7 +63,7 @@
 \DeclareMathOperator{\Tr}{Tr}
 
 \title{\Huge \textbf{The Pandrosion-Steffensen Iteration}\\[0.4cm]
-\Large A Formally Verified Derivative-Free Root-Finding Algebra\\[0.2cm]
+\Large Formal Verification of a Rational Root-Finding Map in Lean 4\\[0.2cm]
 \normalsize \textit{All 377 theorems machine-checked across 51 modules --- Zero \texttt{sorry} declarations}}
 \author{Ivan Besevic \\
 \small \textit{Independent Mathematical Research} \\
@@ -75,7 +75,7 @@
 \maketitle
 
 \begin{abstract}
-We present and formally verify in Lean~4 a rational iteration $s \mapsto s(s^3+4X)/(3s^3+2X)$ for computing $\sqrt[3]{X}$. This base iteration is derivative-free and converges linearly with a universal rate of exactly $1/5$, independently of~$X$ (formally proved). When composed with Steffensen acceleration (Aitken $\Delta^2$) into the \emph{Pandrosion-Steffensen Multi-Start} algorithm, the method achieves stable quadratic convergence without requiring derivatives. We develop a systematic corpus of \emph{exact algebraic identities} governing this base map across several algebraic structures: real scalars ($\mathbb{R}$), integers ($\mathbb{Z}$), the complex plane ($\mathbb{C}$), arbitrary rings, commutative rings, and $n\times n$ complex matrices. These include: (i)~a residual conservation identity with exact polynomial factorisation, (ii)~a multiplicative Thue--Pell generator over $\mathbb{Z}$, (iii)~coprimality isolation identities, (iv)~commutativity and Hermitian preservation for matrix operators, and (v)~a formal proof that the iteration functionally excludes the Chebyshev--Halley and Householder families. Finally, we formally prove that for the complete multi-start algorithmic grid over $\mathbb{R}^2$, the Vorono\"i basins of attraction strictly form connected affine half-planes. The entire theoretical foundation (377 theorems across 51 modules) is machine-checked with zero \texttt{sorry} declarations.
+We present a formally verified case study in Lean~4 of a general rational iteration for computing arbitrary roots $\sqrt[p]{X}$, alongside an exhaustive extraction of structural identities for the cubic specialisation $s \mapsto s(s^3+4X)/(3s^3+2X)$. This cubic base iteration converges linearly with a universal rate of exactly $1/5$, independently of~$X$ (formally proved). When composed with Steffensen acceleration (Aitken $\Delta^2$) into the \emph{Pandrosion-Steffensen} algorithm, the method achieves stable quadratic convergence. Rather than proposing this as an operational substitute for Newton's root extraction, we develop a systematic corpus of \emph{exact algebraic identities} governing this base map across several mathematical structures to illustrate formal verification capacity. The formally certified properties include: (i)~a residual conservation identity with exact polynomial factorisation, (ii)~exact integer sequence amplifications over $\mathbb{Z}$, (iii)~coprimality isolation identities, (iv)~commutativity and Hermitian preservation for matrix operators, and (v)~a formal proof that the iteration functionally excludes the generalized Chebyshev--Halley family. Finally, we formally verify that when evaluating the sequence through a discrete multi-start algorithm over $\mathbb{R}^2$, the Vorono\"i classification geometrically partitions limits using strictly affine bounded constraints. The entire theoretical foundation (377 theorems across 51 modules) serves as a machine-checked pedagogical model for numerical recurrences, containing zero \texttt{sorry} declarations.
 \end{abstract}
 
 \tableofcontents
@@ -206,9 +206,16 @@ These are both \emph{different} from the Pandrosion iteration $\mathcal{P}_X(s) 
 
 Both differences vanish \emph{only} when $s^3 = X$ (or $s = 0$). The three iterations agree at the root and disagree everywhere else.
 
-\begin{remark}
-A common misconception (see e.g.\ some informal discussions) is that the Pandrosion iteration coincides with Halley's method on $s^3 - X = 0$. Theorems~\ref{thm:pn} and~\ref{thm:ph} refute this algebraically. The two iterations have different asymptotic error constants ($-1/5$ vs $0$) and different convergence orders (linear $O(1)$ vs cubic $O(3)$). They yield systematically different trajectories for any starting point $s_0 \neq \sqrt[3]{X}$. Furthermore, module \texttt{ChebyshevHalleyExclusion.lean} formally certifies that the Pandrosion map does not correspond to \emph{any} member of the one-parameter Chebyshev--Halley family nor the discrete Householder sequences.
-\end{remark}
+A common misconception (see e.g.\ some informal discussions) is that the Pandrosion iteration coincides with Halley's method on $s^3 - X = 0$. Theorems~\ref{thm:pn} and~\ref{thm:ph} refute this algebraically. The two iterations have different asymptotic error constants ($-1/5$ vs $0$) and different convergence orders (linear $O(1)$ vs cubic $O(3)$). They yield systematically different trajectories for any starting point $s_0 \neq \sqrt[3]{X}$. Furthermore, module \texttt{ChebyshevHalleyExclusion.lean} formally certifies that the Pandrosion map does not correspond to \emph{any} member of the one-parameter Chebyshev--Halley family ($\alpha \in \mathbb{R}$). To belong to the family, the map would require $\alpha = 1/2$ to match the $s^6$ term and $\alpha = 2/5$ to match the $s^3X$ term simultaneously.
+
+\begin{lstlisting}[caption={ChebyshevHalleyExclusion.lean: Family Evaded}]
+theorem pandrosion_not_in_chebyshev_halley :
+    ~ exists (a : R), 6 * (3 - 2 * a) = 15 - 6 * a /\ 12 * a = 4 + 2 * a := by
+  intro <a, h1, h2>
+  have _ha1 : a = 1 / 2 := chebyshev_halley_coeff_s6 a h1
+  have _ha2 : a = 2 / 5 := chebyshev_halley_coeff_s3X a h2
+  linarith
+\end{lstlisting}
 
 \subsection{The Universal Derivative Identity}
 The convergence order is determined by the derivative at the fixed point. For $\mathcal{P}_X(s) = U(s)/V(s)$ with $U = s^4 + 4sX$, $V = 3s^3 + 2X$:
@@ -385,12 +392,11 @@ The quartic factor $\Psi(s) = s^3 - 2rs^2 - 2r^2 s + 2r^3$ satisfies $\Psi(r) = 
 \label{fig:orbit_oscillation}
 \end{figure}
 
-\subsection{Numerical Considerations}
-To evaluate the basic viability of the map as a numeric algorithm compared against classical equivalents, we summarize several applied outcomes:
+\subsection{Numerical Considerations \& Operational Context}
+To evaluate the basic viability of the map as a numeric algorithm compared against classical equivalents, we summarize its structural profile. Crucially, evaluating the cube-root function $f(s)=s^3-X$ trivially allows the analytical computation of its derivative $f'(s)=3s^2$. Because this derivative is so cheap to compute, standard Newton's method is practically and computationally superior:
 \begin{itemize}
-    \item \textbf{Computational Cost:} The unaccelerated Pandrosion iteration algorithmically requires 5 multiplications, 2 additions, and 1 division per iteration cycle. By comparison, evaluating Newton's cube root equivalent ($f(s)=s^3-X$) algebraically requires 4 multiplications, 1 addition, and 1 division. The slight arithmetic computational penalty per step serves to eliminate entirely the analytic $f'(s)$ requirement from the architecture.
-    \item \textbf{Floating-Point Stability:} The denominator sum $3s^3+2X$ is analytically positive for any domain $X > 0, s > 0$. This ensures optimal floating-point conditioning with no practical risk of catastrophic cancellation. Computational stability is rigorously protected from the singular boundary locus at $s = -\sqrt[3]{2X/3}$.
-    \item \textbf{Convergence Benchmark vs Newton:} While base convergence is purely linear, coupling it with Steffensen exploration (Pandrosion-T3) achieves strict quadratic order. A standard benchmark for $X=2$ shows Pandrosion-T3 reaches $10^{-15}$ machine tolerance in $\sim$5 cycles compared to Newton's $\sim$6 iterations. However, because each T3 cycle evaluates the base map three times plus the Aitken extrapolation, its overall floating-point operation (FLOP) cost is roughly $3\times$ higher than Newton. We explicitly acknowledge this minor computational penalty: Pandrosion sacrifices FLOP efficiency uniquely to analytically bypass any numerical or symbolic evaluation of the system Jacobian $f'(s)$.
+    \item \textbf{Computational Cost vs Newton:} The unaccelerated Pandrosion iteration algebraically requires 5 multiplications, 2 additions, and 1 division per iteration cycle. By comparison, evaluating Newton's cube root equivalent strictly requires only 4 multiplications, 1 addition, and 1 division. 
+    \item \textbf{Convergence Performance:} While Pandrosion base convergence is strictly linear (rate $1/5$), applying a Steffensen envelope (Pandrosion-T3) artificially achieves exact quadratic order. However, each macro-cycle of Pandrosion-T3 evaluates the base mapping three times plus an Aitken extrapolation. As shown in the benchmark mapping $\sqrt[3]{2}$, while Pandrosion matches Newton's required sequence length ($\approx 5$ sequences to $10^{-15}$ precision), its actual underlying floating-point (FLOP) density is computationally $3\times$ heavier.
 \end{itemize}
 
 \begin{table}[H]
@@ -402,29 +408,29 @@ Newton ($f'$) & 6 iter & 10 iter & 12 iter & $\sim$36 FLOPs \\
 Pandrosion-T3 & 5 cycles & 9 cycles & 11 cycles & $\sim$120 FLOPs \\
 \bottomrule
 \end{tabular}
-\caption{Benchmark iterations required to reach $10^{-15}$ machine precision measuring the target root $\sqrt[3]{2}$ using standard IEEE 754 float64 architecture. While Pandrosion-T3 matches pure Newton convergence steps, its overall FLOP density is higher. It offers a mathematically verified, robust alternative strictly for contexts intentionally avoiding derivative evaluations.}
+\caption{Benchmark sequences required to reach $10^{-15}$ machine precision measuring $\sqrt[3]{2}$. Newton is structurally lighter (36 vs 120 FLOPs). The Pandrosion mapping is thus investigated in this document strictly as a verifiable pedagogical invariant object for derivative-free geometries, rather than an operational replacement for highly optimised algebraic root algorithms.}
 \end{table}
 
 %===========================================================
-\section{Integer Specialisation: Thue Sequences and Coprimality}
+\section{Integer Specialisation and Sequence Amplification}
 \label{sec:diophantine}
 %===========================================================
 
-\subsection{The Thue--Pandrosion Generator}
+\subsection{Exact Integer Sequences}
 When $(A,B) \in \mathbb{Z}^2$ and $X \in \mathbb{Z}$, the iteration produces integer sequences:
 \[
   A' = A(A^3 + 4XB^3), \qquad B' = B(3A^3 + 2XB^3).
 \]
 Crucially, the integer residual $M_n = A_n^3 - X B_n^3$ has a \emph{multiplicative} structure:
 
-\begin{theorem}[Pell--Pandrosion Identity, \texttt{PellDiophantine.lean}]\label{thm:pell}
+\begin{theorem}[Integer Amplification Identity, \texttt{PellDiophantine.lean}]\label{thm:pell}
 For all $X, A, B \in \mathbb{Z}$:
 \begin{equation}\label{eq:pell}
   A_{n+1}^3 - X\, B_{n+1}^3 \;=\; (A_n^3 - X B_n^3) \cdot \bigl(A_n^9 - 14X A_n^6 B_n^3 - 20X^2 A_n^3 B_n^6 + 8X^3 B_n^9\bigr).
 \end{equation}
 \end{theorem}
 
-This is the integer counterpart of the real conservation identity~\eqref{eq:conservation}. It shows that the ``error term'' $A^3 - XB^3$ is \emph{multiplicative}: each iteration multiplies it by a degree-9 polynomial factor. In other words, if $A_0^3 - X B_0^3 = M_0$, then $M_n = M_0 \cdot \prod_{k=0}^{n-1} \Phi_k$, where each $\Phi_k$ is an explicit polynomial in the current state.
+This establishes that the integer difference $A^3 - XB^3$ is \emph{multiplicative}. Each iteration multiplies the error mechanically by a degree-9 cross-factor. In other words, if $A_0^3 - X B_0^3 = M_0$, then $M_n = M_0 \cdot \prod_{k=0}^{n-1} \Phi_k$, where each $\Phi_k$ is an explicit polynomial evaluating the current state. This provides an exact tracking sequence for discrete scalar representations.
 
 \begin{figure}[H]
 \centering
@@ -433,14 +439,10 @@ This is the integer counterpart of the real conservation identity~\eqref{eq:cons
 \label{fig:pell}
 \end{figure}
 
-The Thue--Pandrosion progression is then defined by the numerator-denominator evolution:
+The progression is structurally defined by the unified mapping:
 \begin{equation}\label{eq:thue}
   \boxed{(A')^3 - X(B')^3 \;=\; (A^3 - XB^3) \cdot (A^9 - 14\,A^6 X B^3 - 20\,A^3 X^2 B^6 + 8X^3 B^9).}
 \end{equation}
-
-\begin{remark}[Relation to Diophantine theory]
-This identity shows that the Pandrosion map preserves the cubic Thue form $A^3 - XB^3$ multiplicatively: the new error is always an exact algebraic multiple of the old one. This creates an \emph{explicit} generator of integer solutions to equations of the form $A^3 - XB^3 = M\cdot\Phi$. While the structure is reminiscent of classical Thue--Pell theory, our result is an algebraic identity about one specific recurrence, not a general decidability result for Diophantine equations.
-\end{remark}
 
 \begin{figure}[H]
 \centering
@@ -465,7 +467,7 @@ This identity shows that the Pandrosion map preserves the cubic Thue form $A^3 -
   % Explosion note
   \node[draw, dashed, rounded corners, fill=yellow!10, font=\footnotesize, text width=5cm, align=center] at (9.5, -0.8) {Each $\Phi_i$ is a degree-9 polynomial.\\ $|A_n|, |B_n|$ grow as $\sim |A_0|^{4^n}$\\ --- \textbf{quartic amplification!}};
 \end{tikzpicture}
-\caption{\textbf{The Diophantine Amplification Tower.} Each application of the Pandrosion map multiplies the Pell error $M = A^3 - XB^3$ by an explicit degree-9 polynomial $\Phi$, generating an infinite tower of integer solutions to the cubic Thue equation.}
+\caption{\textbf{The Sequence Amplification Tower.} Each application of the Pandrosion map strictly multiplies the integer separation $M = A^3 - XB^3$ by an explicit degree-9 polynomial $\Phi$, creating a cascading infinite tower of nested approximations.}
 \label{fig:thue_tower}
 \end{figure}
 
@@ -515,7 +517,7 @@ For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \over
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{fig_newton_fractal.pdf}
-\caption{\textbf{Newton's method fractal} for $z^3 - 1$ on $\mathbb{C}$. The three attraction basins (red, blue, green) are separated by infinitely intricate fractal boundaries --- the Julia set. Points near these boundaries undergo chaotic, unpredictable iterations, creating parasitic computational traps. This fractal complexity is the hallmark of derivative-based root-finding in the complex plane.}
+\caption{\textbf{Newton's method boundaries} for $z^3 - 1$ on $\mathbb{C}$. The three attraction basins (red, blue, green) are naturally separated by highly intricate analytical boundaries --- the unconstrained Julia set.}
 \label{fig:newton_fractal}
 \end{figure}
 
@@ -558,7 +560,7 @@ $$ 2 \Re(z(\bar{r}_B - \bar{r}_A)) \leq |r_B|^2 - |r_A|^2 $$
 in the complex scalar field.
 \end{theorem}
 
-This theorem formally proves that because the Pandrosion multi-start strategy explicitly leverages geometric distance classification to initialize its rational iteration, the resultant global topological landscape is natively composed of bounded, closed convex Vorono\"i half-planes ($\mathcal{H}_{AB}$). Applying this Euclidean geometric protocol entirely eliminates the chaotic, infinitely intricate boundaries (fractals) that plague unconstrained pure rational methods.
+This theorem formally models that because the multi-start sequence systematically maps classification distance evaluations dynamically, the resultant assignment topology guarantees bounded, closed geometric properties entirely exempting pure-rational disjoint behavior.
 
 \begin{figure}[H]
 \centering
@@ -768,20 +770,20 @@ This identity shows that the cross-difference is always divisible by $(A-B)$, wi
 \end{figure}
 
 %===========================================================
-\section{Effective Rational Contraction}
+\section{Fractional Contraction Identity}
 \label{sec:irrationality}
 %===========================================================
 
-Deep~28 gives an explicit contraction factor for the Pandrosion iteration applied to rational approximants, demonstrating how the error scales predictably:
+Deep~28 gives an explicit contraction factor for the Pandrosion iteration applied to independent real operands:
 
-\begin{theorem}[Deep 28: Effective Irrationality Proximity]
-For $(A,B) \in \mathbb{R}^2$ with the Pandrosion iteration step:
+\begin{theorem}[Deep 28: Fractional Distance Bound]
+For $(A,B) \in \mathbb{R}^2$ with the continuous evaluation step:
 \begin{equation}\label{eq:irrationality}
   \left(\frac{A'}{B'}\right)^{\!3} - X \;=\; \left[\left(\frac{A}{B}\right)^{\!3} - X\right] \cdot \frac{(A/B)^9 - 14(A/B)^6 X - \cdots + 8X^3}{\bigl(3(A/B)^3 + 2X\bigr)^3}\,.
 \end{equation}
 \end{theorem}
 
-This provides an \emph{explicit} contraction factor for each iteration step within the Pandrosion sequence. Note that this is an identity about the behaviour of one specific recurrence, not a general effective irrationality measure for arbitrary Diophantine approximations. The effectivity here is limited to approximations generated by the Pandrosion map itself.
+This states the residual conservation constraint mapped parametrically. Note that this models exclusively the behavior of one specific recurrence, completely disjoint from generic rational convergence problems spanning classical measure boundaries.
 
 \begin{figure}[H]
 \centering
@@ -795,7 +797,7 @@ This provides an \emph{explicit} contraction factor for each iteration step with
     grid=both,
     grid style={gray!15},
     legend pos=south west,
-    title={\textbf{Effective Contraction: Pandrosion Rational Bounds}},
+    title={\textbf{Explicit Rational Bounds}},
   ]
   % Pandrosion effective trajectory
   \addplot[blue!70!black, very thick, mark=*, mark size=1.5pt] coordinates {
