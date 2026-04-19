@@ -437,7 +437,7 @@ def lipschitz_entropy():
     ax.set_xlabel(r'State $A$', fontsize=13)
     ax.set_ylabel(r'State $B$', fontsize=13)
     ax.set_title(r'Cross-State Factor: $U(A)V(B) - U(B)V(A) = (A-B)\cdot\Phi$' + '\n' +
-                 r'Identity (8) proves exact factorisation through $(A-B)$',
+                 r'The Lipschitz identity proves exact factorisation through $(A-B)$',
                  fontsize=12)
     ax.legend(fontsize=11, loc='upper left')
     
