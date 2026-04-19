@@ -9,8 +9,6 @@
 -/
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
-import Pandrosion.Deep
-import Pandrosion.Deep2
 
 open Finset BigOperators
 

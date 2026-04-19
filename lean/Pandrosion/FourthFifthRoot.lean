@@ -11,7 +11,6 @@
 -/
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
-import Pandrosion.Deep
 
 open Finset BigOperators
 

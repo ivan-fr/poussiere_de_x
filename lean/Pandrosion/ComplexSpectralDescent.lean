@@ -14,7 +14,6 @@ import Mathlib.Analysis.SpecialFunctions.Complex.Log
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Algebra.GeomSum
 import Mathlib.Tactic
-import Pandrosion.Deep
 
 open Finset BigOperators Real Complex Filter
 

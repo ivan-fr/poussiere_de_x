@@ -11,7 +11,6 @@
 import Mathlib.Data.Matrix.Basic
 import Mathlib.Data.Complex.Basic
 import Mathlib.Tactic
-import Pandrosion.Deep27
 
 namespace Pandrosion
 

@@ -12,7 +12,6 @@ import Mathlib.Data.Complex.Basic
 import Mathlib.Analysis.SpecialFunctions.Complex.Log
 import Mathlib.Algebra.GeomSum
 import Mathlib.Tactic
-import Pandrosion.Deep12
 
 open Finset BigOperators Complex
 

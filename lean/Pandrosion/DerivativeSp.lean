@@ -13,7 +13,6 @@ import Mathlib.Analysis.Calculus.Deriv.Pow
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Tactic
-import Pandrosion.Deep
 
 open Finset BigOperators
 

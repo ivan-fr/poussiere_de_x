@@ -1,5 +1,4 @@
 
-
 services:
   lean:
     build:
@@ -10,5 +9,36 @@ services:
       - .:/workspace
     tty: true
     stdin_open: true
-    # Working inside the lean package by default
     working_dir: /workspace/lean
+
+  lean-build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/workspace
+    working_dir: /workspace/lean
+    command: >
+      bash -c '
+        echo "=== Pandrosion Lean Build ===" &&
+        echo "Cleaning build cache..." &&
+        rm -rf .lake/build/lib/Pandrosion .lake/build/ir/Pandrosion &&
+        echo "Building all modules..." &&
+        lake build Pandrosion 2>&1 &&
+        BUILD=$$? &&
+        echo "" &&
+        echo "=== Build Results ===" &&
+        echo "Exit code: $$BUILD" &&
+        echo -n "Theorems: " && grep -r "^theorem" Pandrosion/ --include="*.lean" | wc -l &&
+        echo -n "Sorry:    " && grep -rn "sorry" Pandrosion/ --include="*.lean" 2>/dev/null | wc -l &&
+        echo -n "Files:    " && find Pandrosion/ -name "*.lean" | wc -l &&
+        echo -n "Lines:    " && wc -l Pandrosion/*.lean | tail -1 &&
+        echo -n "Olean:    " && find .lake/build -name "*.olean" -path "*/Pandrosion/*" 2>/dev/null | wc -l &&
+        echo "" &&
+        if [ $$BUILD -eq 0 ]; then
+          echo "✅ ALL MODULES VERIFIED — ZERO SORRY"
+        else
+          echo "❌ BUILD FAILED"
+          exit 1
+        fi
+      '

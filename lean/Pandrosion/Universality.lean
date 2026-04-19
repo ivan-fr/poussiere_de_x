@@ -11,9 +11,6 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 import Pandrosion.Core
-import Pandrosion.Deep13
-import Pandrosion.Deep15
-import Pandrosion.Deep16
 
 open Real
 

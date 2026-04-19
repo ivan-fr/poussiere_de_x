@@ -10,7 +10,6 @@ import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Algebra.GeomSum
 import Mathlib.Algebra.BigOperators.Basic
 import Mathlib.Tactic
-import Pandrosion.Deep
 
 open Real Finset BigOperators
 
