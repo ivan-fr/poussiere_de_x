@@ -578,9 +578,13 @@ $$(1 + 2c) \cdot |z - r| < |z - r'|,$$
 then $|f(z) - r| < |f(z) - r'|$; that is, $f(z)$ remains in the Vorono\"i cell of~$r$.
 \end{theorem}
 
-The proof applies the triangle inequality twice: first to bound $|f(z) - z| \leq (1+c)|z - r|$ (the step size), then to lower-bound $|f(z) - r'| \geq |z - r'| - |f(z) - z|$, and finally chains the inequalities via the depth condition. For the Pandrosion iteration with contraction rate $c = (x-1)/x$ (from Theorem~1729), the depth condition becomes $(3x-2)/x \cdot |z-r| < |z-r'|$. Since $(3x-2)/x > 1$ for $x > 1$, the condition is satisfiable whenever $z$ is moderately closer to its target root than to any competing root.
+The proof applies the triangle inequality twice: first to bound $|f(z) - z| \leq (1+c)|z - r|$ (the step size), then to lower-bound $|f(z) - r'| \geq |z - r'| - |f(z) - z|$, and finally chains the inequalities via the depth condition. For the Pandrosion iteration, the formally verified general contraction theorem (\texttt{contraction\_general} in \texttt{GeneralContractionAll.lean}) establishes the rate $c = (x-1)/x$ for \emph{all} $p \geq 2$, not only the cubic case. The depth condition then becomes $(3x-2)/x \cdot |z-r| < |z-r'|$. Since $(3x-2)/x > 1$ for $x > 1$, the condition is satisfiable whenever $z$ is moderately closer to its target root than to any competing root.
 
 This is the key structural advantage of the multi-start Pandrosion architecture over unconstrained Newton iteration: \emph{Newton has no analogous basin stability guarantee}, because its basins have fractal boundaries that can eject iterates arbitrarily close to the target root. The Pandrosion contraction, combined with the convexity of Vorono\"i cells, ensures that sufficiently deep starting points produce convergent orbits that never leave their assigned basin.
+
+\begin{remark}[Sharpness]
+The constant $1 + 2c$ in Theorem~\ref{thm:basin_stability} is sharp: if equality holds (i.e., $(1+2c)|z - r| = |z - r'|$), the iterate $f(z)$ may lie exactly on the Vorono\"i bisector between $r$ and $r'$. Formally, the proof yields only the weak conclusion $|f(z) - r| \leq |f(z) - r'|$ at equality, so strict inequality in the hypothesis is necessary.
+\end{remark}
 
 \begin{figure}[H]
 \centering
@@ -803,7 +807,7 @@ For $(A,B) \in \mathbb{R}^2$ with the continuous evaluation step:
 \end{equation}
 \end{theorem}
 
-This states the residual conservation constraint mapped parametrically. Note that this models exclusively the behavior of one specific recurrence, completely disjoint from generic rational convergence problems spanning classical measure boundaries.
+This is the residual identity~\eqref{eq:residual} rewritten in terms of the ratio $A/B$. It bounds the error of one rational approximant in terms of the previous one within this specific recurrence, and should not be interpreted as an effective irrationality measure in the sense of Diophantine approximation.
 
 \begin{figure}[H]
 \centering
@@ -826,7 +830,7 @@ This states the residual conservation constraint mapped parametrically. Note tha
   \addlegendentry{Pandrosion trajectory (effective)}
   \end{axis}
 \end{tikzpicture}
-\caption{\textbf{Effective contraction bound (schematic).} The Pandrosion sequence (blue) achieves an explicit algebraic recurrence \emph{within its own iterates}, serving as a formally verified metric of scaling contraction for rational bounds. This does not constitute a general effective irrationality measure; it is a property of this specific fractional progression.}
+\caption{\textbf{Effective contraction bound (schematic).} The Pandrosion sequence (blue) achieves an explicit algebraic recurrence governing the decay of $|A/B - \sqrt[3]{X}|$ within its own iterates.}
 \label{fig:irrationality}
 \end{figure}
 
