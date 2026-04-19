@@ -121,7 +121,7 @@ where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. Unlike Newton's
   \node[blue!70!black, anchor=west] at (5,2) {$y = \mathcal{P}_X(s)$};
   \node[gray, anchor=west] at (4,4.5) {$y = s$};
 \end{tikzpicture}
-\caption{\textbf{Cobweb diagram} for $X=2$. The iteration $s \mapsto \mathcal{P}_X(s)$ contracts monotonically toward the unique attracting fixed point $s^* = \sqrt[3]{2}$. No parasitic cycles exist (Theorem~\ref{thm:sterility}).}
+\caption{\textbf{Cobweb diagram} for $X=2$. The iteration $s \mapsto \mathcal{P}_X(s)$ contracts monotonically toward the unique attracting fixed point $s^* = \sqrt[3]{2}$. Theorem~\ref{thm:sterility} proves that the only fixed points are $\{0\} \cup \{s : s^3 = X\}$.}
 \label{fig:cobweb}
 \end{figure}
 
@@ -744,7 +744,7 @@ This provides an \emph{explicit} contraction factor for each iteration step with
 We have introduced the Pandrosion iteration, an original rational map for computing cube roots, and established a systematic corpus of exact algebraic identities governing its behaviour across multiple algebraic structures. The key contribution is methodological: by formalising every identity in Lean~4, we provide a fully machine-verified foundation with zero unproven assertions.
 
 \subsection*{What has been proven}
-The identities themselves are exact and unconditional: residual factorisation over $\mathbb{R}$ (Deep~25), multiplicative Thue progression over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), effective contraction for rational approximants (Deep~28), topological sterility on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), Lipschitz-type cross-state factorisation (Deep~32), and coprimality isolation identities (Deep~33). Each of these is a \emph{certified algebraic fact}.
+The identities themselves are exact and unconditional: residual factorisation over $\mathbb{R}$ (Deep~25), multiplicative Thue progression over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), effective contraction for rational approximants (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), Lipschitz-type cross-state factorisation (Deep~32), and coprimality isolation identities (Deep~33). Each of these is a \emph{certified algebraic fact}.
 
 \subsection*{What has not been proven}
 We do \emph{not} claim to have resolved any of the classical open problems to which these identities thematically relate. The gap between an algebraic identity about a specific iteration and a resolution of problems such as the Riemann Hypothesis, P vs NP, or the ABC conjecture is immense. Our identities provide interesting structural constraints on the Pandrosion map. Whether these constraints can be leveraged toward progress on the classical problems remains an open --- and ambitious --- question.
