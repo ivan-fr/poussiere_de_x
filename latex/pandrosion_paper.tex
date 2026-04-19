@@ -801,20 +801,35 @@ This identity shows that the cross-difference is always divisible by $(A-B)$, wi
 \end{figure}
 
 %===========================================================
-\section{Fractional Contraction Identity}
+\section{Effective Irrationality Measure}
 \label{sec:irrationality}
 %===========================================================
 
-Deep~28 gives an explicit contraction factor for the Pandrosion iteration applied to independent real operands:
+The conservation identity~\eqref{eq:conservation}, when lifted to the integer sequence $(A_n, B_n)$ of Section~4, produces a multiplicative norm propagation over~$\mathbb{Z}$:
 
-\begin{theorem}[Deep 28: Fractional Distance Bound]
-For $(A,B) \in \mathbb{R}^2$ with the continuous evaluation step:
 \begin{equation}\label{eq:irrationality}
-  \left(\frac{A'}{B'}\right)^{\!3} - X \;=\; \left[\left(\frac{A}{B}\right)^{\!3} - X\right] \cdot \frac{(A/B)^9 - 14(A/B)^6 X - \cdots + 8X^3}{\bigl(3(A/B)^3 + 2X\bigr)^3}\,.
+  A_{n+1}^3 - X \cdot B_{n+1}^3 \;=\; (A_n^3 - X \cdot B_n^3) \cdot \Phi_n\,,
 \end{equation}
+where $\Phi_n = A_n^9 - 14X A_n^6 B_n^3 - 20X^2 A_n^3 B_n^6 + 8X^3 B_n^9$ (proved in \texttt{PellDiophantine.lean}). This multiplicative structure, combined with a classical factorization argument, yields a formally verified \emph{effective irrationality measure} for $\sqrt[3]{X}$:
+
+\begin{theorem}[\texttt{EffectiveIrrationality.lean}: Effective Distance Bound]\label{thm:effective}
+Let $A, r, B \in \mathbb{R}$ with $A > 0$, $rB > 0$, and suppose $A^3 - (rB)^3 = d$ for some $d \in \mathbb{Z} \setminus \{0\}$. Then:
+$$|A - rB| \;\geq\; \frac{1}{A^2 + A \cdot rB + (rB)^2}\,.$$
 \end{theorem}
 
-This is the residual identity~\eqref{eq:conservation} rewritten in terms of the ratio $A/B$. It bounds the error of one rational approximant in terms of the previous one within this specific recurrence, and should not be interpreted as an effective irrationality measure in the sense of Diophantine approximation.
+\begin{proof}[Proof (machine-checked)]
+The cubic factorization $A^3 - (rB)^3 = (A - rB)(A^2 + A \cdot rB + (rB)^2)$ is verified by \texttt{ring}. The quadratic form $A^2 + A \cdot rB + (rB)^2 > 0$ follows from \texttt{nlinarith} applied to the squares $A^2$ and $(rB)^2$ and the product $A \cdot rB > 0$. Since $d \in \mathbb{Z} \setminus \{0\}$, the integer non-vanishing lemma gives $|d| \geq 1$. Taking absolute values in the factorization: $|A - rB| \cdot (A^2 + A \cdot rB + (rB)^2) = |d| \geq 1$, and dividing by the positive form yields the bound.
+\end{proof}
+
+Applied to a rational approximation $A/B$ to $r = \sqrt[3]{X}$ (with $r^3 = X$ and $X$ a non-cube integer), this gives the \emph{Liouville-type bound}:
+$$\left|\frac{A}{B} - \sqrt[3]{X}\right| \;\geq\; \frac{1}{B \cdot (A^2 + A \cdot \sqrt[3]{X} \cdot B + X^{2/3} \cdot B^2)}\,.$$
+Near the root (where $A \approx \sqrt[3]{X} \cdot B$), the denominator scales as $3 X^{2/3} B^3$, recovering the Liouville exponent $\mu = 3$ for degree-3 algebraic numbers.
+
+\begin{remark}[Connection to Classical Results]
+The exponent $\mu = 3$ matches the Liouville bound $\mu \leq \deg(\alpha)$ for algebraic $\alpha$ of degree~3. Thue~(1909) improved this to $\mu \leq 5/2$; Roth~\cite{roth} established $\mu = 2 + \varepsilon$ for all algebraic irrationals (Fields Medal, 1958). Our contribution is not an improvement of the exponent, but a \emph{formally verified effective construction}: the Pandrosion integer sequence provides explicit convergents with machine-checked norm tracking at every step.
+\end{remark}
+
+The norm propagation~\eqref{eq:irrationality} ensures that this bound applies at \emph{every} step of the Pandrosion sequence: if $A_0^3 - X B_0^3 \neq 0$ and $\Phi_n \neq 0$, then $A_n^3 - X B_n^3 \neq 0$ for all $n$, so the sequence never reaches $\sqrt[3]{X}$ exactly. For $(A_0, B_0) = (1,1)$ targeting $\sqrt[3]{2}$: the initial norm is $1 - 2 = -1 \neq 0$, the amplification factor is $\Phi_0 = -43 \neq 0$, and the first norm is $(-1) \cdot (-43) = 43$ (all verified by \texttt{norm\_num}).
 
 \begin{figure}[H]
 \centering
