@@ -10,5 +10,5 @@ services:
       - .:/workspace
     tty: true
     stdin_open: true
-    # Working inside the test project by default
-    working_dir: /workspace/lean_project_test
+    # Working inside the lean package by default
+    working_dir: /workspace/lean
