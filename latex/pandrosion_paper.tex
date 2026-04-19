@@ -275,6 +275,13 @@ For $x > 1$, $s^* > 0$ with $(s^*)^2 = 1/x$, and any $s \geq 0$, $s \neq s^*$:
 
 The analogous identity for $p=3$ (the cubic case central to this paper) involves the polynomial $S_3(s) - S_3(t) = (s-t)(1+s+t)$ and produces a similar contraction, establishing the formal convergence of the Pandrosion cube root iteration.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig_contraction.pdf}
+\caption{\textbf{Left:} The contraction factor $\lambda(s) = (x-1)/[x(1+s)(1+s^*)]$ as a function of $s$ for several values of $x$. The factor stays strictly below~1 (green zone), guaranteeing contraction at every step. Dashed lines mark the fixed point $s^*$. \textbf{Right:} Distance decrease for $x=2$ (Theorem~\ref{thm:distance}): the blue curve lies entirely below the diagonal $y=x$, confirming $|h(s)-s^*| < |s-s^*|$.}
+\label{fig:contraction}
+\end{figure}
+
 \subsection{Orbit Invariance}
 A further structural property is that the iteration preserves the unit interval:
 
@@ -296,6 +303,13 @@ For $r^3 = X$ and $3s^3+2X \neq 0$:
 
 The quartic factor $\Psi(s) = s^3 - 2rs^2 - 2r^2 s + 2r^3$ satisfies $\Psi(r) = -r^3$. Near $s = r$, this gives a local contraction ratio $\lambda_3 = -r^3/(3r^3+2r^3) = -1/5$, explaining the observed alternating convergence with rate $\approx 1/5$ per step during the linear approach phase.  The cubic acceleration then takes over as $s \to r$.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig_orbit_oscillation.pdf}
+\caption{\textbf{Left:} Orbit invariance (Theorem~\ref{thm:orbit}). For $p=2$ and several values of $x$, every orbit starting in $[0,1]$ remains in $(0,1)$ and converges to $s^* = x^{-1/2}$ (dashed lines). \textbf{Right:} Oscillation signature for $p=3$, $X=2$ (Theorem~\ref{thm:oscillation}). The signed error $s_n - \sqrt[3]{2}$ alternates in sign, with the initial ratio $\lambda_3 \approx -0.2$, consistent with the predicted $-1/5$.}
+\label{fig:orbit_oscillation}
+\end{figure}
+
 %===========================================================
 \section{Integer Specialisation: Thue Sequences and Coprimality}
 \label{sec:diophantine}
@@ -316,6 +330,13 @@ For all $X, A, B \in \mathbb{Z}$:
 \end{theorem}
 
 This is the integer counterpart of the real conservation identity~\eqref{eq:conservation}. It shows that the ``error term'' $A^3 - XB^3$ is \emph{multiplicative}: each iteration multiplies it by a degree-9 polynomial factor. In other words, if $A_0^3 - X B_0^3 = M_0$, then $M_n = M_0 \cdot \prod_{k=0}^{n-1} \Phi_k$, where each $\Phi_k$ is an explicit polynomial in the current state.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig_pell_identity.pdf}
+\caption{\textbf{Left:} Growth of $|M_n| = |A_n^3 - 2B_n^3|$ on a logarithmic scale. Each iteration approximately cubes the number of digits, consistent with the degree-9 polynomial factor in Theorem~\ref{thm:pell}. \textbf{Right:} The polynomial factor $|\Phi_n|$ at each step, showing that the multiplicative amplification grows explosively while keeping the factorisation exact.}
+\label{fig:pell}
+\end{figure}
 
 The Thue--Pandrosion progression is then defined by the numerator-denominator evolution:
 \begin{equation}\label{eq:thue}
