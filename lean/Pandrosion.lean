@@ -64,3 +64,6 @@ import Pandrosion.CoprimalityIsolation
 
 -- Halley comparison (genuine contribution)
 import Pandrosion.HalleyComparison
+import Pandrosion.HigherDerivatives
+import Pandrosion.ChebyshevHalleyExclusion
+import Pandrosion.ResidualAmplification
