@@ -64,7 +64,7 @@
 
 \title{\Huge \textbf{The Pandrosion-Steffensen Iteration}\\[0.4cm]
 \Large Formal Verification of a Rational Root-Finding Map in Lean 4\\[0.2cm]
-\normalsize \textit{All 377 theorems machine-checked across 51 modules --- Zero \texttt{sorry} declarations}}
+\normalsize \textit{Machine-checked in Lean~4 with zero \texttt{sorry} declarations}}
 \author{Ivan Besevic \\
 \small \textit{Independent Mathematical Research} \\
 \small \texttt{github.com/ivan-fr/poussiere\_de\_x}}
@@ -206,9 +206,11 @@ These are both \emph{different} from the Pandrosion iteration $\mathcal{P}_X(s) 
 
 Both differences vanish \emph{only} when $s^3 = X$ (or $s = 0$). The three iterations agree at the root and disagree everywhere else.
 
-A common misconception (see e.g.\ some informal discussions) is that the Pandrosion iteration coincides with Halley's method on $s^3 - X = 0$. Theorems~\ref{thm:pn} and~\ref{thm:ph} refute this algebraically. The two iterations have different asymptotic error constants ($-1/5$ vs $0$) and different convergence orders (linear $O(1)$ vs cubic $O(3)$). They yield systematically different trajectories for any starting point $s_0 \neq \sqrt[3]{X}$. Furthermore, module \texttt{ChebyshevHalleyExclusion.lean} formally certifies that the Pandrosion map does not correspond to \emph{any} member of the one-parameter Chebyshev--Halley family ($\alpha \in \mathbb{R}$). To belong to the family, the map would require $\alpha = 1/2$ to match the $s^6$ term and $\alpha = 2/5$ to match the $s^3X$ term simultaneously.
+\begin{remark}[Chebyshev--Halley Exclusion]
+Theorems~\ref{thm:pn} and~\ref{thm:ph} show that Pandrosion differs from both Newton and Halley: the asymptotic error constants differ ($-1/5$ vs $0$), the convergence orders differ (linear vs cubic), and the trajectories diverge for any $s_0 \neq \sqrt[3]{X}$. More generally, module \texttt{ChebyshevHalleyExclusion.lean} formally certifies that the Pandrosion map does not correspond to \emph{any} member of the one-parameter Chebyshev--Halley family~\cite{traub} ($\alpha \in \mathbb{R}$). Cross-multiplying the Pandrosion rational form against the generic CH$_\alpha$ form for $f(s)=s^3-X$ yields two matching conditions on $\alpha$: the $s^6$ coefficients require $\alpha = 1/2$, while the $s^3X$ coefficients require $\alpha = 2/5$. Since $1/2 \neq 2/5$, no value of $\alpha$ can match Pandrosion.
+\end{remark}
 
-\begin{lstlisting}[caption={ChebyshevHalleyExclusion.lean: Family Evaded}]
+\begin{lstlisting}[caption={ChebyshevHalleyExclusion.lean: Exclusion Proof}]
 theorem pandrosion_not_in_chebyshev_halley :
     ~ exists (a : R), 6 * (3 - 2 * a) = 15 - 6 * a /\ 12 * a = 4 + 2 * a := by
   intro <a, h1, h2>
@@ -392,11 +394,13 @@ The quartic factor $\Psi(s) = s^3 - 2rs^2 - 2r^2 s + 2r^3$ satisfies $\Psi(r) = 
 \label{fig:orbit_oscillation}
 \end{figure}
 
-\subsection{Numerical Considerations \& Operational Context}
-To evaluate the basic viability of the map as a numeric algorithm compared against classical equivalents, we summarize its structural profile. Crucially, evaluating the cube-root function $f(s)=s^3-X$ trivially allows the analytical computation of its derivative $f'(s)=3s^2$. Because this derivative is so cheap to compute, standard Newton's method is practically and computationally superior:
+\subsection{Numerical Considerations}
+We acknowledge upfront that for the specific problem of computing $\sqrt[3]{X}$, Newton's method is operationally superior: the derivative $f'(s) = 3s^2$ is trivial to evaluate, and standard Newton requires only 4~multiplications, 1~addition, and 1~division per step --- versus 5/2/1 for the unaccelerated Pandrosion map.
+
+The interest of the Pandrosion iteration is therefore not as a practical competitor to Newton for scalar cube roots, but as a structurally distinct object whose algebraic identities are amenable to exhaustive formal verification. In particular:
 \begin{itemize}
-    \item \textbf{Computational Cost vs Newton:} The unaccelerated Pandrosion iteration algebraically requires 5 multiplications, 2 additions, and 1 division per iteration cycle. By comparison, evaluating Newton's cube root equivalent strictly requires only 4 multiplications, 1 addition, and 1 division. 
-    \item \textbf{Convergence Performance:} While Pandrosion base convergence is strictly linear (rate $1/5$), applying a Steffensen envelope (Pandrosion-T3) artificially achieves exact quadratic order. However, each macro-cycle of Pandrosion-T3 evaluates the base mapping three times plus an Aitken extrapolation. As shown in the benchmark mapping $\sqrt[3]{2}$, while Pandrosion matches Newton's required sequence length ($\approx 5$ sequences to $10^{-15}$ precision), its actual underlying floating-point (FLOP) density is computationally $3\times$ heavier.
+    \item \textbf{Convergence:} The base map converges linearly with rate $1/5$. Composing it with Aitken~$\Delta^2$ acceleration~\cite{aitken, steffensen} (the Pandrosion-T3 variant) achieves quadratic convergence. However, each T3 cycle evaluates the base map three times plus the Aitken extrapolation, so the total FLOP cost per cycle is roughly~$3\times$ that of a single Newton step.
+    \item \textbf{Floating-Point Stability:} The denominator $3s^3+2X$ is positive for $X > 0, s > 0$, ensuring no cancellation risk. The singular locus $s = -\sqrt[3]{2X/3}$ lies outside the positive real domain.
 \end{itemize}
 
 \begin{table}[H]
@@ -404,11 +408,11 @@ To evaluate the basic viability of the map as a numeric algorithm compared again
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{Method} & \textbf{$s_0 = 1$} & \textbf{$s_0 = 10$} & \textbf{$s_0 = 0.1$} & \textbf{Est. FLOPs ($s_0=1$)} \\ \midrule
-Newton ($f'$) & 6 iter & 10 iter & 12 iter & $\sim$36 FLOPs \\
-Pandrosion-T3 & 5 cycles & 9 cycles & 11 cycles & $\sim$120 FLOPs \\
+Newton ($f'$) & 6 iter & 10 iter & 12 iter & $\sim$36 \\
+Pandrosion-T3 & 5 cycles & 9 cycles & 11 cycles & $\sim$120 \\
 \bottomrule
 \end{tabular}
-\caption{Benchmark sequences required to reach $10^{-15}$ machine precision measuring $\sqrt[3]{2}$. Newton is structurally lighter (36 vs 120 FLOPs). The Pandrosion mapping is thus investigated in this document strictly as a verifiable pedagogical invariant object for derivative-free geometries, rather than an operational replacement for highly optimised algebraic root algorithms.}
+\caption{Iterations to reach $10^{-15}$ precision for $\sqrt[3]{2}$. Newton is lighter ($\sim$36 vs $\sim$120 FLOPs for $s_0=1$). The Pandrosion map is studied here for its algebraic structure, not as an operational replacement.}
 \end{table}
 
 %===========================================================
@@ -508,7 +512,7 @@ For any $X, z \in \mathbb{C}$ with $3z^3 + 2X \neq 0$:
 \]
 \end{theorem}
 
-This result proves there are no \emph{spurious fixed points}: the only period-1 attractors are the true roots and the origin. The numerical basin plots (Figures~\ref{fig:newton_fractal}--\ref{fig:heatmap}) provide empirical evidence that the base Pandrosion iteration produces smoother boundaries on $\mathbb{C}$ without the catastrophic fractal filaments of Newton's method. However, note carefully that this is a strict numerical observation. Completely smooth (affine half-plane) convex basin boundaries are only formally proven over the $\mathbb{R}^2$ grid when utilizing the multi-start architecture (see \texttt{MultiStart.lean}).
+This result proves there are no \emph{spurious fixed points}: the only period-1 attractors are the true roots and the origin. The numerical basin plots (Figures~\ref{fig:newton_fractal}--\ref{fig:heatmap}) provide empirical evidence that the Pandrosion iteration produces smoother basin boundaries on $\mathbb{C}$ than Newton's method. However, this smoothness is strictly a \emph{numerical observation}, not a formal theorem. Formally proven convex (half-plane) basin boundaries are established only for the multi-start nearest-root assignment over $\mathbb{R}^2$ (see \texttt{MultiStart.lean} and Theorem~5.3 below).
 
 \begin{theorem}[Deep 29: Conjugate Symmetry]\label{thm:conjugate}
 For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \overline{\mathcal{P}_X(z)}$.
@@ -549,18 +553,15 @@ For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \over
 \label{fig:julia_classic}
 \end{figure}
 
-\subsection{Multi-Start Vorono\"i Geometric Partitions}
-While the previous figures explore the strict numerical complex plane boundaries for a single iterating root, the generalized application explicitly configures a discrete grid of parallel initial anchors $\mathcal{A} \subset \mathbb{C}$ to guarantee localized attraction. Lean formally verifies the geometric boundary conditions governing this anchor selection protocol.
+\subsection{Multi-Start Vorono\"i Partitions}
+The multi-start strategy assigns each starting point $z_0$ to the nearest root via Euclidean distance. This nearest-root assignment partitions $\mathbb{C}$ into Vorono\"i cells, whose boundaries are by construction intersections of affine half-planes. Lean formally verifies the canonical bisector equation:
 
-\begin{theorem}[\texttt{MultiStart.lean}: Vorono\"i Affine Topology]
-Let $\mathcal{A} = \{r_1, \dots, r_k\} \subset \mathbb{C}$ be a finite uniform array of algorithmic start states (anchors). We formulate the canonical multi-start algorithm $M: \mathbb{C} \to \mathcal{A}$ such that an initial state $z_0$ evaluates to the anchor $r_i \in \mathcal{A}$ minimizing the Euclidean distance $|z_0 - r_i|$. We dynamically define the attraction basin $\Omega(r_i) = M^{-1}(r_i)$. 
-
-For any two distinct root targets $r_A \neq r_B$ in $\mathcal{A}$, the formal separating locus $\partial\Omega(r_A) \cap \partial\Omega(r_B)$ algebraically resolves precisely into a set constrained by the exact affine hyperplane equation:
-$$ 2 \Re(z(\bar{r}_B - \bar{r}_A)) \leq |r_B|^2 - |r_A|^2 $$
-in the complex scalar field.
+\begin{theorem}[\texttt{MultiStart.lean}: Vorono\"i Bisector Identity]\label{thm:voronoi}
+For any $r_1, r_2, z \in \mathbb{C}$:
+$$|z - r_1|^2 \leq |z - r_2|^2 \;\;\Longleftrightarrow\;\; 2(z_{\mathrm{re}}(r_{2,\mathrm{re}} - r_{1,\mathrm{re}}) + z_{\mathrm{im}}(r_{2,\mathrm{im}} - r_{1,\mathrm{im}})) \leq |r_2|^2 - |r_1|^2.$$
 \end{theorem}
 
-This theorem formally models that because the multi-start sequence systematically maps classification distance evaluations dynamically, the resultant assignment topology guarantees bounded, closed geometric properties entirely exempting pure-rational disjoint behavior.
+This is a standard result in computational geometry: Vorono\"i cells are convex polytopes bounded by affine hyperplanes. The mathematical content is elementary; the contribution here is its machine-checked formalisation in Lean~4, which ensures that the multi-start protocol's basin geometry is rigorously certified. The practical consequence is that the Pandrosion multi-start algorithm avoids the fractal basin boundaries associated with unconstrained Newton iteration on $\mathbb{C}$, not through any intrinsic property of the Pandrosion map, but through the geometric regularity of the nearest-root assignment rule.
 
 \begin{figure}[H]
 \centering
@@ -815,16 +816,16 @@ This states the residual conservation constraint mapped parametrically. Note tha
 \label{sec:conclusion}
 %===========================================================
 
-We have introduced the Pandrosion iteration, an original rational map for computing cube roots, and established a systematic corpus of exact algebraic identities governing its behaviour across multiple algebraic structures. The key contribution is methodological: by formalising every identity in Lean~4, we provide a fully machine-verified foundation with zero unproven assertions.
+We have presented a formally verified study of the Pandrosion iteration, an original rational map for computing $p$-th roots (with detailed analysis for $p=3$). The key contribution is methodological: by formalising every identity in Lean~4, we provide a fully machine-verified foundation with zero unproven assertions.
 
 \subsection*{What has been proven}
-The identities themselves are exact and unconditional: residual factorisation over $\mathbb{R}$ (Deep~25), multiplicative Thue progression over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), effective contraction for rational approximants (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), Lipschitz-type cross-state factorisation (Deep~32), and coprimality isolation identities (Deep~33). Each of these is a \emph{certified algebraic fact}.
+The certified identities include: residual factorisation over $\mathbb{R}$ (Deep~25), integer sequence amplification over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), fractional contraction bounds (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), cross-state factorisation (Deep~32), coprimality isolation (Deep~33), and the general contraction theorem for all $p \geq 2$ (Deep~IX). The fixed-point theorem and contraction bounds are stated and proved for arbitrary $p$, not only $p=3$. Each result is a \emph{certified algebraic fact}.
 
 \subsection*{What has not been proven}
-We do \emph{not} claim to have resolved any generalized theorems to which these identities thematically relate. The gap between an algebraic identity about a specific iteration and a resolution of highly generalized classification problems is immense. Our identities provide interesting structural constraints on the Pandrosion map alone.
+We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. The Vorono\"i convexity result (Theorem~\ref{thm:voronoi}) is a property of the nearest-root assignment, not of the iteration itself. Newton's method remains operationally superior for scalar cube roots (see Section~3.6).
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational cube-root iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family, with a formally proved universal convergence rate of exactly $1/5$; (2)~a rich algebraic structure that propagates cleanly across real, integer, complex, ring, and matrix domains; (3)~the numerical observation that the complex-plane basins appear free of fractal boundaries, combined with the formal geometric proof that the real Multi-Start algorithm generates strictly connected Vorono\"i basins; and (4)~a methodology of formal verification (377~theorems, zero \texttt{sorry}) applied to iterative numerical analysis.
+The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family, with a formally proved universal convergence rate; (2)~a rich algebraic structure that propagates cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$, not only $p = 3$; and (4)~a methodology demonstrating how formal verification tools (Lean~4, Mathlib) can be systematically applied to iterative numerical analysis.
 
 \begin{figure}[H]
 \centering
@@ -835,12 +836,12 @@ The genuine contribution lies in: (1)~a rational cube-root iteration, algebraica
   % Surrounding theorems
   \def\radius{5}
   \foreach \angle/\label/\col/\deep in {
-    90/{Hermitian\\Preservation}/red!15/31,
+     90/{Hermitian\\Preservation}/red!15/31,
     45/{Commutativity\\Propagation}/purple!15/30,
     0/{Cross-State\\Factorisation}/blue!15/32,
     -45/{Coprimality\\Isolation}/green!15/33,
-    -90/{Integer Thue\\Progression}/yellow!15/26,
-    -135/{Effective\\Contraction}/orange!15/28,
+    -90/{Integer Sequence\\Amplification}/yellow!15/26,
+    -135/{Fractional\\Contraction}/orange!15/28,
     180/{Complex Fixed\\Points}/cyan!15/29,
     135/{Matrilinear\\Error}/pink!15/24%
   } {
@@ -850,7 +851,7 @@ The genuine contribution lies in: (1)~a rational cube-root iteration, algebraica
     \draw[->, thick] (center) -- (T\angle);
   }
 \end{tikzpicture}
-\caption{\textbf{The Pandrosion Iteration:} a single rational map whose algebraic structure has been formally verified across eight primary algebraic structures. Arrows indicate \emph{thematic connections}, not claimed resolutions of generalized conjectures.}
+\caption{\textbf{The Pandrosion Iteration:} a single rational map whose algebraic structure has been formally verified across eight domains. Arrows indicate thematic connections, not claimed resolutions of open problems.}
 \label{fig:universitas}
 \end{figure}
 
@@ -860,14 +861,18 @@ The complete Lean~4 corpus comprises \textbf{51~modules}, \textbf{377~theorems},
 \bigskip
 
 \bibliographystyle{plain}
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 \bibitem{leanprover} de Moura, L., Ullrich, S., \textit{The Lean 4 Theorem Prover and Programming Language}, CADE-28, Springer LNCS (2021).
 \bibitem{pappus} Pappus of Alexandria, \textit{Collectio}, Book III, ca.\ 340 CE.
-\bibitem{thue} Thue, A., \textit{\"Uber Ann\"aherungswerte algebraischer Zahlen}, J.\ reine angew.\ Math.\ 135 (1909), 284--305.
 \bibitem{halley} Halley, E., \textit{A New, Exact and Easy Method of Finding Roots of any Equations Generally, and that without any Previous Reduction}, Phil.\ Trans.\ Royal Soc.\ 18 (1694), 136--148.
 \bibitem{traub} Traub, J.F., \textit{Iterative Methods for the Solution of Equations}, Prentice-Hall (1964).
 \bibitem{householder} Householder, A.S., \textit{The Numerical Treatment of a Single Nonlinear Equation}, McGraw-Hill (1970).
 \bibitem{mathlib} The Mathlib Community, \textit{Mathlib: A unified library of mathematics formalized}, available at \url{https://github.com/leanprover-community/mathlib4}.
+\bibitem{aitken} Aitken, A.C., \textit{On Bernoulli's Numerical Solution of Algebraic Equations}, Proc.\ Royal Soc.\ Edinburgh 46 (1926), 289--305.
+\bibitem{steffensen} Steffensen, J.F., \textit{Remarks on Iteration}, Skandinavisk Aktuarietidskrift 16 (1933), 64--72.
+\bibitem{kung_traub} Kung, H.T., Traub, J.F., \textit{Optimal Order of One-Point and Multipoint Iteration}, J.\ ACM 21 (1974), 643--651.
+\bibitem{ostrowski} Ostrowski, A.M., \textit{Solution of Equations in Euclidean and Banach Spaces}, Academic Press (1973).
+\bibitem{boldo_melquiond} Boldo, S., Melquiond, G., \textit{Computer Arithmetic and Formal Proofs}, ISTE Press (2017).
 \end{thebibliography}
 
 \end{document}
