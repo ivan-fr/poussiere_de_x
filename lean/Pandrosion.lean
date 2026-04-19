@@ -61,3 +61,6 @@ import Pandrosion.CommutativityPropagation
 import Pandrosion.HermitianPreservation
 import Pandrosion.CrossStateFactorisation
 import Pandrosion.CoprimalityIsolation
+
+-- Halley comparison (genuine contribution)
+import Pandrosion.HalleyComparison
