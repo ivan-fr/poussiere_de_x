@@ -26,6 +26,7 @@
 \newtheorem{proposition}[theorem]{Proposition}
 \theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 
@@ -635,6 +636,18 @@ The constant $1 + 2c$ in Theorem~\ref{thm:basin_stability} is sharp: if equality
 \label{fig:conjugate}
 \end{figure}
 
+\subsection{The Julia Set Conjecture: Absence of Chaos}
+
+A fundamental result by McMullen~(1987) establishes that any purely rational iteration scheme for finding roots of polynomials of degree $d \geq 4$ (and generic schemes for $d=3$, like Newton's method) must possess a chaotic, fractal Julia set boundary. If a starting point lands on this boundary, it diverges or cycles erratically.
+
+The Pandrosion map $P_X(s)$ is a rational map, but it is deeply specialised for the extraction of $p$-th roots ($z^p - X$). Numerical evaluations (e.g., Figure~\ref{fig:julia_zoom} and~\ref{fig:heatmap}) strongly suggest that the basin boundaries in the complex plane are smooth curves, separating the roots without chaotic intertwining. This leads to the central topological conjecture of this theory:
+
+\begin{conjecture}[\texttt{DynamicsConjecture.lean}: McMullen Exemption]\label{conj:chaos}
+For any $X \in \mathbb{C} \setminus \{0\}$, the Julia set of the Pandrosion iteration $P_X$ has zero Lebesgue measure in $\mathbb{C}$. Equivalently, the Fatou set (the domain of stable convergence) has full measure, meaning almost all starting points converge to a finite cycle.
+\end{conjecture}
+
+As formalisation of complex dynamics (Montel's theorem, normal families) is currently beyond the scope of Mathlib, we encode this in the Lean corpus as an explicit formal \texttt{axiom} acting as an open challenge. We have, however, verified a necessary algebraic condition: the critical points of $P_X$ on $\mathbb{C}$ are given by the roots of $3s^6 - 16Xs^3 + 8X^2 = 0$. Unlike super-attracting Newton maps, the derivative at the root is formally verified to be $P'_X(\sqrt[3]{X}) = -1/5 \neq 0$ (linear contraction). The global topological properties of its Julia set remain a major open problem in algebraic dynamics.
+
 %===========================================================
 \section{Matrix Algebra: Commutativity and Hermitian Invariance}
 \label{sec:matrix_algebra}
@@ -888,10 +901,10 @@ We have presented a formally verified study of the Pandrosion iteration, an orig
 The certified identities include: residual factorisation over $\mathbb{R}$ (Deep~25), integer sequence amplification over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), fractional contraction bounds (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), cross-state factorisation (Deep~32), coprimality isolation (Deep~33), the general contraction theorem for all $p \geq 2$ (Deep~IX), effective irrationality measures (Theorem~\ref{thm:effective}), and formally verified step complexity bounds (Theorem~\ref{thm:complexity}).
 
 \subsection*{What has not been proven}
-We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. Newton's method remains operationally superior for scalar cube roots (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition; it does not establish global basin invariance. The cycle exclusion (Theorem~\ref{thm:nocycles}) applies to the real line; the complex case remains open. The Steffensen acceleration is analytically understood but not yet fully certified in Lean.
+We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. Newton's method remains operationally superior for scalar cube roots (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition; it does not establish global basin invariance. The cycle exclusion (Theorem~\ref{thm:nocycles}) applies to the real line; the complex case remains open. The Steffensen acceleration is analytically understood but not yet fully certified in Lean. Finally, the absence of chaotic dynamics and fractal structures in the Julia set is rigorously formulated as an open challenge (Conjecture~\ref{conj:chaos}), acknowledging the present limits of formalised complex analysis.
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; and (5)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis.
+The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; and (6)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{56-module, zero-sorry} corpus.
 
 \begin{figure}[H]
 \centering
