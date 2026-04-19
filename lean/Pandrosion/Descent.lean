@@ -44,10 +44,12 @@ lemma angle_in_range (d : ℕ) (hd : d ≥ 2) :
     This means the Pandrosion scanner detects non-trivial contraction. -/
 theorem cos_angle_lt_one (d : ℕ) (hd : d ≥ 2) :
     cos (π / (2 * (d : ℝ))) < 1 := by
-  have ⟨h_pos, _⟩ := angle_in_range d hd
-  have : cos (π / (2 * (d : ℝ))) ≤ 1 := cos_le_one _
-  linarith [cos_sq_le_one (π / (2 * (d : ℝ))),
-            sin_pos_of_pos_of_lt_pi h_pos (by linarith [pi_pos])]
+  have ⟨h_pos, h_lt⟩ := angle_in_range d hd
+  have hsin : 0 < sin (π / (2 * (d : ℝ))) :=
+    sin_pos_of_pos_of_lt_pi h_pos (by linarith [pi_pos])
+  have hsc := sin_sq_add_cos_sq (π / (2 * (d : ℝ)))
+  nlinarith [sq_nonneg (sin (π / (2 * (d : ℝ)))),
+             sq_nonneg (cos (π / (2 * (d : ℝ))) - 1)]
 
 /-- cos(π/(2d)) > 0 for d ≥ 2 (the angle is in the first quadrant). -/
 theorem cos_angle_pos (d : ℕ) (hd : d ≥ 2) :
