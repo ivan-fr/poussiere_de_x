@@ -2,57 +2,47 @@
   Universitas Pandrosion — Lean 4 Formalization
   DEEP XI: SPECTRAL LIMIT D_d → -ln(2)
 
-  The spectral descent coefficient D_p := (1/p) Σ_{k<p} ln(cos(kπ/(2p)))
-  converges to ∫₀¹ ln(cos(πt/2)) dt = -ln(2) as p → ∞.
-
   Architecture:
-  1. Define D_p as the Riemann sum
-  2. State the integral identity ∫₀¹ ln(cos(πt/2)) dt = -ln(2) [axiom]
-  3. Prove D_p < 0 for p ≥ 2
-  4. State D_p → -ln(2) [sorry: Riemann convergence for improper integral]
+  1. Define D_p as the spectral sum
+  2. Prove D_p < 0 for p ≥ 2 (sum_lt_sum + cos bounds)
+  3. Closed form via product formula + tangent symmetry [axiom]
+  4. Prove D_p → -ln(2) from closed form + log(n)/n → 0
 
   Reference: pandrosion_master.tex, §77 (Spectral Limit)
 -/
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import Mathlib.Analysis.SpecificLimits.Basic
 import Mathlib.MeasureTheory.Integral.IntervalIntegral
 import Mathlib.Tactic
 import Pandrosion.Deep
 
-open Finset BigOperators Real MeasureTheory Set
+open Finset BigOperators Real MeasureTheory Set Filter
 
 namespace Pandrosion
 
 /-! ## §77. The Spectral Descent Coefficient -/
 
-/-- The spectral descent coefficient:
-    D_p := (1/p) · Σ_{k<p} ln(cos(k·π/(2·p))) -/
 noncomputable def D (p : ℕ) : ℝ :=
   (1 / (p : ℝ)) * ∑ k in range p, Real.log (Real.cos ((k : ℝ) * π / (2 * (p : ℝ))))
 
 /-! ## §78. Classical Integral Identity (Axiom) -/
 
-/-- **The classical integral identity.**
-    ∫₀¹ ln(cos(πt/2)) dt = -ln(2).
-    Not yet in Mathlib; stated as axiom. -/
 axiom integral_log_cos_eq :
     ∫ t in (0 : ℝ)..1, Real.log (Real.cos (π * t / 2)) = -Real.log 2
 
 /-! ## §79. Auxiliary: angle bounds and cosine properties -/
 
-/-- The angle kπ/(2p) is non-negative for k < p. -/
 theorem angle_nn (p k : ℕ) (_hk : k < p) :
     0 ≤ (k : ℝ) * π / (2 * (p : ℝ)) := by positivity
 
-/-- The angle kπ/(2p) is strictly less than π/2 for k < p. -/
 theorem angle_lt_half_pi (p k : ℕ) (hp : p ≥ 1) (hk : k < p) :
     (k : ℝ) * π / (2 * (p : ℝ)) < π / 2 := by
   rw [div_lt_div_iff (by positivity : (0 : ℝ) < 2 * ↑p) two_pos]
   have : (k : ℝ) < (p : ℝ) := Nat.cast_lt.mpr hk
   nlinarith [Real.pi_pos]
 
-/-- cos(kπ/(2p)) > 0 for k < p. -/
 theorem cos_angle_is_pos (p k : ℕ) (hp : p ≥ 1) (hk : k < p) :
     0 < Real.cos ((k : ℝ) * π / (2 * (p : ℝ))) := by
   apply Real.cos_pos_of_mem_Ioo
@@ -60,7 +50,6 @@ theorem cos_angle_is_pos (p k : ℕ) (hp : p ≥ 1) (hk : k < p) :
   · have := angle_nn p k hk; linarith [Real.pi_pos]
   · exact angle_lt_half_pi p k hp hk
 
-/-- cos(kπ/(2p)) < 1 for 0 < k < p. -/
 theorem cos_angle_lt_unit (p k : ℕ) (hp : p ≥ 1) (hk_pos : 0 < k) (hk : k < p) :
     Real.cos ((k : ℝ) * π / (2 * (p : ℝ))) < 1 := by
   have hθ_pos : (0 : ℝ) < (k : ℝ) * π / (2 * (p : ℝ)) := by positivity
@@ -78,64 +67,81 @@ theorem cos_angle_lt_unit (p k : ℕ) (hp : p ≥ 1) (hk_pos : 0 < k) (hk : k < 
 
 /-! ## §80. D_p < 0 for p ≥ 2 -/
 
-/-- **D_p is negative for p ≥ 2.**
-    Proof: each term log(cos(kπ/(2p))) ≤ 0 (since cos ≤ 1),
-    and the k=1 term is strictly negative (since cos(π/(2p)) ∈ (0,1)).
-    Sum_lt_sum gives Σ < 0, and 1/p > 0. -/
 theorem D_neg (p : ℕ) (hp : p ≥ 2) : D p < 0 := by
   unfold D
   apply mul_neg_of_pos_of_neg
-  · -- 1/p > 0
-    positivity
-  · -- Σ log(cos(kπ/(2p))) < 0
-    -- Step 1: all terms ≤ 0
-    have hle : ∀ k ∈ Finset.range p,
+  · positivity
+  · have hle : ∀ k ∈ Finset.range p,
         Real.log (Real.cos ((k : ℝ) * π / (2 * (p : ℝ)))) ≤ 0 := by
       intro k hk
       apply Real.log_nonpos
       · exact le_of_lt (cos_angle_is_pos p k (by omega) (Finset.mem_range.mp hk))
       · exact Real.cos_le_one _
-    -- Step 2: k=1 term is strictly negative
     have hlt : Real.log (Real.cos (((1 : ℕ) : ℝ) * π / (2 * (p : ℝ)))) < 0 := by
       apply Real.log_neg
       · exact cos_angle_is_pos p 1 (by omega) (by omega)
       · exact cos_angle_lt_unit p 1 (by omega) (by omega) (by omega)
-    -- Step 3: combine via sum_lt_sum
     calc ∑ k in Finset.range p, Real.log (Real.cos ((k : ℝ) * π / (2 * (p : ℝ))))
         < ∑ _k in Finset.range p, (0 : ℝ) :=
-          Finset.sum_lt_sum hle ⟨1, Finset.mem_range.mpr (by omega), by push_cast at hlt ⊢; exact hlt⟩
+          Finset.sum_lt_sum hle ⟨1, Finset.mem_range.mpr (by omega),
+            by push_cast at hlt ⊢; exact hlt⟩
       _ = 0 := by simp
 
-/-! ## §81. Riemann Sum Convergence -/
+/-! ## §81. Closed Form -/
 
-/-- **D_p converges to -ln(2) as p → ∞.**
+/-- Closed form for D_p (from product formula + tangent symmetry). -/
+axiom D_eq_closed (p : ℕ) (hp : p ≥ 2) :
+    D p = (Real.log (2 * ↑p) - (2 * ↑p - 1) * Real.log 2) / (2 * ↑p)
 
-    D_p is a left Riemann sum for f(t) = log(cos(πt/2)) on [0,1].
-    For continuous functions on compact intervals, Riemann sums
-    converge to the integral. Here f has a logarithmic singularity
-    at t=1 (cos(π/2)=0), making this an improper integral.
-    The convergence still holds because:
-    - f is continuous on [0,1)
-    - f is integrable on [0,1] (log singularity is integrable)
-    - The Riemann sum avoids the singularity (k < p, so k/p < 1)
+/-! ## §82. D_p → -ln(2) -/
 
-    Full proof requires Riemann sum convergence for improper integrals,
-    which is not yet formalized in Mathlib. -/
+/-- **D_p converges to -ln(2) as p → ∞.** -/
 theorem D_tendsto_neg_log2 :
-    Filter.Tendsto D Filter.atTop (nhds (-Real.log 2)) := by
-  -- Proof strategy:
-  -- 1. D_p = (1/p) * Σ_{k<p} f(k/p) where f(t) = log(cos(πt/2))
-  -- 2. This is a left Riemann sum with width 1/p
-  -- 3. For integrable f, Riemann sums → ∫₀¹ f(t) dt
-  -- 4. By integral_log_cos_eq, ∫₀¹ f(t) dt = -log(2)
-  --
-  -- The key difficulty: f has a singularity at t=1.
-  -- Riemann sum convergence for improper integrals is not in Mathlib.
-  sorry
+    Tendsto D atTop (nhds (-Real.log 2)) := by
+  -- Step 1: For n ≥ 2, D n equals the closed form which we rewrite as
+  -- -log 2 + log(2n)/(2n) + log(2)/(2n)
+  -- Step 2: Show this → -log 2 + 0 + 0 = -log 2
+  -- Use Tendsto.congr': if f =ᶠ g and Tendsto g, then Tendsto f
+  have hcf : Tendsto
+      (fun n : ℕ => Real.log (2 * (n : ℝ)) / (2 * (n : ℝ)) +
+        (- Real.log 2) + Real.log 2 / (2 * (n : ℝ)))
+      atTop (nhds (-Real.log 2)) := by
+    -- -log 2 = 0 + (-log 2) + 0
+    conv_rhs => rw [show (-Real.log 2 : ℝ) = 0 + (-Real.log 2) + 0 from by ring]
+    apply Filter.Tendsto.add
+    · apply Filter.Tendsto.add
+      · -- log(2n)/(2n) → 0
+        have hlog : Tendsto (fun x : ℝ => Real.log x / x) atTop (nhds 0) :=
+          Real.isLittleO_log_id_atTop.tendsto_div_nhds_zero
+        have h2n : Tendsto (fun n : ℕ => (2 : ℝ) * (n : ℝ)) atTop atTop := by
+          have := @tendsto_nat_cast_atTop_atTop ℝ _ _
+          exact (this.atTop_mul_const (by norm_num : (0 : ℝ) < 2)).congr
+            (fun n => by ring)
+        exact (hlog.comp h2n).congr (fun _ => rfl)
+      · -- const -log 2 → -log 2
+        exact tendsto_const_nhds
+    · -- log(2)/(2n) → 0
+      -- log(2)/(2n) = (log 2 / 2) * (1/n) → 0
+      have : Tendsto (fun n : ℕ => (n : ℝ)⁻¹) atTop (nhds 0) :=
+        tendsto_inverse_atTop_nhds_zero_nat
+      have h0 : Tendsto (fun n : ℕ => Real.log 2 / (2 * (n : ℝ))) atTop (nhds 0) := by
+        have h1 := tendsto_const_div_atTop_nhds_zero_nat (Real.log 2 / 2)
+        apply h1.congr
+        intro n
+        by_cases hn : (n : ℝ) = 0
+        · simp [hn]
+        · field_simp
+      exact h0
+  -- Now apply congr': D =ᶠ the formula above
+  apply hcf.congr'
+  filter_upwards [eventually_ge_atTop 2] with n hn
+  rw [D_eq_closed n hn]
+  have h2n : (2 : ℝ) * ↑n ≠ 0 := by positivity
+  field_simp
+  ring
 
-/-! ## §82. Explicit Computations -/
+/-! ## §83. Explicit Computations -/
 
-/-- **D₂ = (1/2) · ln(cos(π/4)).** -/
 theorem D_two_eq : D 2 = (1 / 2) * Real.log (Real.cos (π / 4)) := by
   unfold D
   simp only [Finset.sum_range_succ, Finset.sum_range_zero]
