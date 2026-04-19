@@ -9,3 +9,5 @@ import Pandrosion.Spectral
 import Pandrosion.HalfPlane
 import Pandrosion.Scaling
 import Pandrosion.Complex
+import Pandrosion.Descent2
+import Pandrosion.Smale
