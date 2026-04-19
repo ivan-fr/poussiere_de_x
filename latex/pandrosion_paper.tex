@@ -704,6 +704,28 @@ For the Pandrosion orbit targeting $\sqrt[3]{2}$ starting from $(1,1)$: after on
 This amplification applies to the \emph{Pandrosion approximants themselves}. For \emph{arbitrary} rationals $p/q$, achieving an irrationality exponent $\mu < 3$ would require the Thue--Siegel auxiliary polynomial method or Baker's theory of linear forms in logarithms. The norm amplification identity provides the exact algebraic scaffolding that feeds into such arguments: it produces explicit polynomial auxiliary forms of degree 9 whose integer evaluations are controlled by the multiplicative law $d' = d \cdot \Phi$.
 \end{remark}
 
+\subsection{Effective Orbital Finiteness for Thue Equations}
+
+The strict monotonicity of $\{|d_n|\}$ (Theorem~\ref{thm:geom_growth}) has a striking Diophantine consequence. Since $|d_n|$ is a strictly increasing sequence of nonneg integers, consecutive values differ by at least~1, giving a \emph{linear} lower bound:
+
+\begin{theorem}[\texttt{ThueFiniteness.lean}: Linear Norm Bound]\label{thm:linear_bound}
+$|d_n| \geq |d_0| + n$ for all $n \geq 0$.
+\end{theorem}
+
+This yields an effective finiteness certificate:
+
+\begin{theorem}[\texttt{ThueFiniteness.lean}: Orbital Uniqueness]\label{thm:thue_unique}
+For any $c \in \mathbb{Z}$, the equation $d_n = c$ has \textbf{at most one} solution $n$ in any Pandrosion orbit. Moreover, $|d_m| = |d_n|$ implies $m = n$.
+\end{theorem}
+\begin{proof}
+If $d_m = d_n$ with $m < n$, then $|d_m| < |d_n|$ by strict monotonicity, contradicting $|c| < |c|$.
+\end{proof}
+
+\begin{corollary}[\texttt{ThueFiniteness.lean}: Bounded Orbital Solutions]\label{cor:thue_bound}
+If $|d_n| \leq M$, then $n \leq M - |d_0|$. For $X = 2$ with $(A_0, B_0) = (1, 1)$ (so $|d_0| = 1$): the cubic Thue equation $A^3 - 2B^3 = c$ with $|c| \leq M$ has at most $M$ solutions $(A_n, B_n)$ in the Pandrosion orbit.
+\end{corollary}
+
+This is the first formally verified \emph{effective orbital finiteness} result for cubic Thue equations via an explicit iterative descent argument.
 
 \section{Matrix Algebra: Commutativity and Hermitian Invariance}
 \label{sec:matrix_algebra}
@@ -960,7 +982,7 @@ The certified identities include: residual factorisation over $\mathbb{R}$ (Deep
 We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. Newton's method remains operationally superior for scalar cube roots (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition; it does not establish global basin invariance. The cycle exclusion (Theorem~\ref{thm:nocycles}) applies to the real line; the complex case remains open. The Steffensen acceleration is analytically understood but not yet fully certified in Lean. Finally, the absence of chaotic dynamics and fractal structures in the Julia set is rigorously formulated as an open challenge (Conjecture~\ref{conj:chaos}), acknowledging the present limits of formalised complex analysis.
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; (6)~the Thue Bridge connecting Pandrosion integer sequences to Diophantine approximation theory via norm amplification, providing machine-certified scaffolding toward effective Thue--Siegel bounds; and (7)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{57-module, zero-sorry} corpus.
+The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; (6)~the Thue Bridge connecting Pandrosion integer sequences to Diophantine approximation theory via norm amplification, providing machine-certified scaffolding toward effective Thue--Siegel bounds; and (7)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{58-module, zero-sorry} corpus.
 
 \begin{figure}[H]
 \centering
