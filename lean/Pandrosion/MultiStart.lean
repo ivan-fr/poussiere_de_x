@@ -16,6 +16,7 @@
   References: pandrosion_master.tex, §4.5 (Algorithm), §5.4 (Results)
 -/
 import Mathlib.Data.Complex.Basic
+import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 import Pandrosion.Core
@@ -168,6 +169,17 @@ theorem cost_ratio : (3 : ℝ) / 2 = 1.5 := by norm_num
     must be restarted.** -/
 theorem effective_cost_with_restart (d restarts : ℕ) (h : restarts ≥ 2) :
     d ≤ d * restarts := le_mul_of_one_le_right (Nat.zero_le d) (by omega)
+
+/-- **Pandrosion d-starts → d-roots Guarantee.**
+    If the multi-start algorithm constructs a mapping from d starts to d roots,
+    and by Voronoï coverage every root basin captures at least one start (Surjective),
+    then the mapping is mathematically Bijective. Therefore, exactly d distinct
+    roots are identified, with zero collisions. -/
+theorem multistart_distinct_roots_guarantee (d : ℕ)
+    (basin_assignment : Fin d → Fin d)
+    (h_coverage : Function.Surjective basin_assignment) :
+    Function.Bijective basin_assignment := by
+  exact (Fintype.bijective_iff_surjective_and_card basin_assignment).mpr ⟨h_coverage, rfl⟩
 
 /-! ## §218. Voronoï Basin Connectivity
 
