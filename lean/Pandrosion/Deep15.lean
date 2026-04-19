@@ -45,24 +45,29 @@ noncomputable def error (sₙ r : ℝ) : ℝ := |sₙ - r|
 theorem error_nonneg (sₙ r : ℝ) : error sₙ r ≥ 0 := abs_nonneg _
 
 /-- **The contraction theorem: in the basin, each step reduces error.**
-    Hypothesis: s > 0 and |s-r| ≤ s (i.e. s ≥ r/2, basin of attraction).
-    For p=2 this is exact: |F(s)-r| = (s-r)²/(2s) ≤ (1/2)|s-r|. -/
+    Hypothesis: s > 0, r^p = x, and |s-r| ≤ s (basin of attraction). -/
 theorem contraction_step (p : ℕ) (hp : p ≥ 2) (x r s : ℝ)
-    (hx : x > 0) (hr : r > 0) (hs : s > 0) (h_basin : |s - r| ≤ s) :
+    (hx : x > 0) (hr : r > 0) (hs : s > 0)
+    (h_root : r ^ p = x) (h_basin : |s - r| ≤ s) :
     error (pandrosion_map p x s) r ≤ (((p : ℝ) - 1) / p) * error s r := by
-  -- For the general case, we use the algebraic structure.
-  -- The key: near the fixed point, |F'(s*)| = (p-1)/p
-  -- and the basin condition guarantees we stay in the contractile region.
-  -- Full algebraic proof for general p requires derivative computation;
-  -- here we use the structural bound.
+  unfold error pandrosion_map
+  simp only
+  -- The denominator: p·s^p + (p-1)·x - x = p·s^p + (p-2)·x
+  have hden_ne : (p : ℝ) * s ^ p + ((p : ℝ) - 1) * x - x ≠ 0 := by
+    rw [show (p : ℝ) * s ^ p + ((p : ℝ) - 1) * x - x = (p : ℝ) * s ^ p + ((p : ℝ) - 2) * x
+      from by ring]
+    have hsp : s ^ p > 0 := pow_pos hs p
+    have hp2 : (p : ℝ) ≥ 2 := by exact_mod_cast hp
+    nlinarith
+  rw [if_neg hden_ne]
   sorry
 
 /-! ## §108. Geometric Convergence -/
 
 /-- **After n steps, error ≤ λⁿ · error₀.**
-    Requires all iterates to stay in the basin. -/
+    Requires r^p = x and all iterates to stay in the basin. -/
 theorem error_after_n_steps (p : ℕ) (hp : p ≥ 2) (x r s₀ : ℝ)
-    (hx : x > 0) (hr : r > 0)
+    (hx : x > 0) (hr : r > 0) (h_root : r ^ p = x)
     (h_inv : ∀ n, iterate p x s₀ n > 0 ∧ |iterate p x s₀ n - r| ≤ iterate p x s₀ n) :
     ∀ n : ℕ, error (iterate p x s₀ n) r ≤
     (((p : ℝ) - 1) / p) ^ n * error s₀ r := by
@@ -74,7 +79,7 @@ theorem error_after_n_steps (p : ℕ) (hp : p ≥ 2) (x r s₀ : ℝ)
     calc error (pandrosion_map p x (iterate p x s₀ n)) r
         ≤ (((p : ℝ) - 1) / p) * error (iterate p x s₀ n) r :=
           contraction_step p hp x r (iterate p x s₀ n) hx hr
-            (h_inv n).1 (h_inv n).2
+            (h_inv n).1 h_root (h_inv n).2
       _ ≤ (((p : ℝ) - 1) / p) *
           ((((p : ℝ) - 1) / p) ^ n * error s₀ r) :=
           mul_le_mul_of_nonneg_left ih (contraction_ratio_nonneg p hp)
