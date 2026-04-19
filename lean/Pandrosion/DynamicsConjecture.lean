@@ -8,6 +8,7 @@
   P_X has smooth basins (a non-fractal Julia set).
 -/
 import Mathlib.Data.Complex.Basic
+import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Polynomial
@@ -28,6 +29,161 @@ noncomputable def P3_complex (X : ℂ) (s : ℂ) : ℂ :=
 /-- The induced one-variable map on the normalized cubic coordinate `y = s^3 / X`. -/
 noncomputable def H3_complex (y : ℂ) : ℂ :=
   y * (y + 4) ^ 3 / (3 * y + 2) ^ 3
+
+/-- The real restriction of the normalized cubic-coordinate map. -/
+noncomputable def H3_real (y : ℝ) : ℝ :=
+  y * (y + 4) ^ 3 / (3 * y + 2) ^ 3
+
+/-- The real restriction commutes with the natural embedding into `ℂ`. -/
+theorem H3_real_coe (y : ℝ) :
+    H3_complex (y : ℂ) = (H3_real y : ℂ) := by
+  norm_num [H3_complex, H3_real]
+
+/-- Exact real error identity around the attracting fixed point `1`. -/
+theorem H3_real_error_identity (y : ℝ) (hden : 3 * y + 2 ≠ 0) :
+    H3_real y - 1 =
+      (y - 1) * (y ^ 3 - 14 * y ^ 2 - 20 * y + 8) / (3 * y + 2) ^ 3 := by
+  unfold H3_real
+  field_simp [hden]
+  ring
+
+/-- A real free critical point is not the pole. -/
+theorem H3_real_free_critical_den_ne_zero (y : ℝ)
+    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
+    3 * y + 2 ≠ 0 := by
+  intro hden
+  have hcert : 3 * y ^ 2 - 16 * y + 8 = (3 * y + 2) * (y - 6) + 20 := by
+    ring
+  rw [hcert, hden] at hcrit
+  norm_num at hcrit
+
+/-- Real free critical points are positive. -/
+theorem H3_real_free_critical_pos (y : ℝ)
+    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
+    0 < y := by
+  by_contra h
+  have hy : y ≤ 0 := le_of_not_gt h
+  linarith [sq_nonneg y]
+
+/-- Real free critical points are bounded above by `16/3`. -/
+theorem H3_real_free_critical_le (y : ℝ)
+    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
+    y ≤ 16 / 3 := by
+  by_contra h
+  have hy : 16 / 3 < y := lt_of_not_ge h
+  have hpos : 0 < y * (3 * y - 16) + 8 := by
+    have hypos : 0 < y := by linarith
+    have hfactor : 0 < 3 * y - 16 := by linarith
+    linarith [mul_pos hypos hfactor]
+  have hrewrite : 3 * y ^ 2 - 16 * y + 8 = y * (3 * y - 16) + 8 := by ring
+  rw [hrewrite] at hcrit
+  linarith
+
+/-- Exact image of a real free critical point under `H3_real`. -/
+theorem H3_real_free_critical_image (y : ℝ)
+    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
+    H3_real y = (808 - 56 * y) / 729 := by
+  have hden : 3 * y + 2 ≠ 0 := H3_real_free_critical_den_ne_zero y hcrit
+  unfold H3_real
+  field_simp [hden]
+  nlinarith
+
+/-- After one step, each real free critical point lands in `[1/2, 3/2]`. -/
+theorem H3_real_free_critical_image_mem_interval (y : ℝ)
+    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
+    (1 : ℝ) / 2 ≤ H3_real y ∧ H3_real y ≤ (3 : ℝ) / 2 := by
+  rw [H3_real_free_critical_image y hcrit]
+  have hyle : y ≤ 16 / 3 := H3_real_free_critical_le y hcrit
+  constructor <;> linarith
+
+/-- Complex free critical points of `H3_complex` are real. -/
+theorem H3_complex_free_critical_im_zero (z : ℂ)
+    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
+    z.im = 0 := by
+  let a : ℝ := z.re
+  let b : ℝ := z.im
+  have hpow_re : (z ^ 2).re = a ^ 2 - b ^ 2 := by
+    dsimp [a, b]
+    rw [pow_two, Complex.mul_re]
+    ring
+  have hpow_im : (z ^ 2).im = 2 * a * b := by
+    dsimp [a, b]
+    rw [pow_two, Complex.mul_im]
+    ring
+  have hre : 3 * (a ^ 2 - b ^ 2) - 16 * a + 8 = 0 := by
+    have h := congr_arg Complex.re hcrit
+    norm_num at h
+    rw [hpow_re] at h
+    dsimp [a] at h
+    ring_nf at h ⊢
+    exact h
+  have him : (6 * a - 16) * b = 0 := by
+    have h := congr_arg Complex.im hcrit
+    norm_num at h
+    rw [hpow_im] at h
+    dsimp [b] at h
+    ring_nf at h ⊢
+    exact h
+  by_contra hb
+  have hb_ne : b ≠ 0 := by
+    exact hb
+  have ha : a = 8 / 3 := by
+    have hlin : 6 * a - 16 = 0 := (mul_eq_zero.mp him).resolve_right hb_ne
+    linarith
+  rw [ha] at hre
+  ring_nf at hre
+  linarith [sq_nonneg b]
+
+/-- The real part of a complex free critical point satisfies the real critical equation. -/
+theorem H3_complex_free_critical_re_eq (z : ℂ)
+    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
+    3 * z.re ^ 2 - 16 * z.re + 8 = 0 := by
+  let a : ℝ := z.re
+  let b : ℝ := z.im
+  have him : b = 0 := by
+    dsimp [b]
+    exact H3_complex_free_critical_im_zero z hcrit
+  have hpow_re : (z ^ 2).re = a ^ 2 - b ^ 2 := by
+    dsimp [a, b]
+    rw [pow_two, Complex.mul_re]
+    ring
+  have hre : 3 * (a ^ 2 - b ^ 2) - 16 * a + 8 = 0 := by
+    have h := congr_arg Complex.re hcrit
+    norm_num at h
+    rw [hpow_re] at h
+    dsimp [a] at h
+    ring_nf at h ⊢
+    exact h
+  dsimp [a, b] at hre him
+  rw [him] at hre
+  ring_nf at hre
+  exact hre
+
+/-- A complex free critical point is exactly its real part embedded in `ℂ`. -/
+theorem H3_complex_free_critical_eq_re (z : ℂ)
+    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
+    z = (z.re : ℂ) := by
+  apply Complex.ext
+  · simp
+  · simpa using H3_complex_free_critical_im_zero z hcrit
+
+/-- The image of every complex free critical point is the embedded real image
+    of its real part. -/
+theorem H3_complex_free_critical_image_real (z : ℂ)
+    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
+    H3_complex z = (H3_real z.re : ℂ) := by
+  rw [H3_complex_free_critical_eq_re z hcrit]
+  exact H3_real_coe z.re
+
+/-- Consequently, every complex free critical point maps into the real
+    interval `[1/2, 3/2]` in the normalized coordinate. -/
+theorem H3_complex_free_critical_image_mem_real_interval (z : ℂ)
+    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
+    (1 : ℝ) / 2 ≤ (H3_complex z).re ∧ (H3_complex z).re ≤ (3 : ℝ) / 2 := by
+  rw [H3_complex_free_critical_image_real z hcrit]
+  simp
+  simpa [one_div] using H3_real_free_critical_image_mem_interval z.re
+    (H3_complex_free_critical_re_eq z hcrit)
 
 /-- Zero is a fixed point of the cubic-coordinate map. -/
 theorem H3_zero_fixed : H3_complex 0 = 0 := by
@@ -110,6 +266,70 @@ theorem H3_fixed_iff (y : ℂ) (hden : (3 * y + 2) ^ 3 ≠ 0) :
             rw [hq]
             ring
 
+/-- The two extra fixed points are not poles of `H3_complex`. -/
+theorem H3_extra_fixed_den_ne_zero (y : ℂ)
+    (hq : 13 * y ^ 2 + 34 * y + 28 = 0) :
+    3 * y + 2 ≠ 0 := by
+  intro hden
+  have hcert :
+      9 * (13 * y ^ 2 + 34 * y + 28) = (39 * y + 76) * (3 * y + 2) + 100 := by
+    ring
+  rw [hq, hden] at hcert
+  norm_num at hcert
+
+/-- The extra fixed points are not the attracting target `1`. -/
+theorem H3_extra_fixed_ne_one (y : ℂ)
+    (hq : 13 * y ^ 2 + 34 * y + 28 = 0) :
+    y ≠ 1 := by
+  intro hy
+  rw [hy] at hq
+  norm_num at hq
+
+/-- The extra fixed points are not the fixed exceptional point `0`. -/
+theorem H3_extra_fixed_ne_zero (y : ℂ)
+    (hq : 13 * y ^ 2 + 34 * y + 28 = 0) :
+    y ≠ 0 := by
+  intro hy
+  rw [hy] at hq
+  norm_num at hq
+
+/-- Any root of the extra quadratic is indeed a fixed point of `H3_complex`. -/
+theorem H3_extra_fixed_is_fixed (y : ℂ)
+    (hq : 13 * y ^ 2 + 34 * y + 28 = 0) :
+    H3_complex y = y := by
+  have hden : (3 * y + 2) ^ 3 ≠ 0 := pow_ne_zero _ (H3_extra_fixed_den_ne_zero y hq)
+  exact (H3_fixed_iff y hden).mpr (Or.inr (Or.inr hq))
+
+/-- Convergence in the normalized cubic coordinate. -/
+def H3_converges_to_one (y : ℂ) : Prop :=
+  Filter.Tendsto (fun n => (H3_complex)^[n] y) Filter.atTop (nhds (1 : ℂ))
+
+/-- A fixed point different from `1` cannot converge to `1`. -/
+theorem H3_fixed_not_converges_to_one (y : ℂ)
+    (hyfix : H3_complex y = y) (hyne : y ≠ 1) :
+    ¬ H3_converges_to_one y := by
+  intro ht
+  have hconst_orbit :
+      (fun n : ℕ => (H3_complex)^[n] y) = fun _ : ℕ => y := by
+    funext n
+    exact Function.iterate_fixed hyfix n
+  have ht1 : Filter.Tendsto (fun _ : ℕ => y) Filter.atTop (nhds (1 : ℂ)) := by
+    simpa [H3_converges_to_one, hconst_orbit] using ht
+  have hty : Filter.Tendsto (fun _ : ℕ => y) Filter.atTop (nhds y) := tendsto_const_nhds
+  have hlim : (1 : ℂ) = y := tendsto_nhds_unique ht1 hty
+  exact hyne hlim.symm
+
+/-- The normalized fixed point `0` is exceptional for convergence to `1`. -/
+theorem H3_zero_not_converges_to_one : ¬ H3_converges_to_one 0 :=
+  H3_fixed_not_converges_to_one 0 H3_zero_fixed (by norm_num)
+
+/-- The extra quadratic fixed points are exceptional for convergence to `1`. -/
+theorem H3_extra_fixed_not_converges_to_one (y : ℂ)
+    (hq : 13 * y ^ 2 + 34 * y + 28 = 0) :
+    ¬ H3_converges_to_one y :=
+  H3_fixed_not_converges_to_one y
+    (H3_extra_fixed_is_fixed y hq) (H3_extra_fixed_ne_one y hq)
+
 /-- Algebraic numerator of the derivative of `H3_complex`. -/
 theorem H3_derivative_numerator (y : ℂ) :
     let u := y * (y + 4) ^ 3
@@ -152,6 +372,91 @@ theorem H3_formal_multiplier_extra_fixed_poly (y : ℂ)
     ring
   rw [hcert, hq]
   ring
+
+/-- The quadratic satisfied by the extra fixed-point multipliers forces their
+    squared modulus to be exactly `559 / 25`, hence greater than `1`. -/
+theorem extra_fixed_multiplier_normSq (m : ℂ)
+    (hpoly : 25 * m ^ 2 + 235 * m + 559 = 0) :
+    Complex.normSq m = 559 / 25 := by
+  let a : ℝ := m.re
+  let b : ℝ := m.im
+  have hpow_re : (m ^ 2).re = a ^ 2 - b ^ 2 := by
+    dsimp [a, b]
+    rw [pow_two, Complex.mul_re]
+    ring
+  have hpow_im : (m ^ 2).im = 2 * a * b := by
+    dsimp [a, b]
+    rw [pow_two, Complex.mul_im]
+    ring
+  have hre : 25 * (a ^ 2 - b ^ 2) + 235 * a + 559 = 0 := by
+    have h := congr_arg Complex.re hpoly
+    norm_num at h
+    rw [hpow_re] at h
+    dsimp [a] at h
+    nlinarith
+  have him : (50 * a + 235) * b = 0 := by
+    have h := congr_arg Complex.im hpoly
+    norm_num at h
+    rw [hpow_im] at h
+    dsimp [b] at h
+    nlinarith
+  have hb_ne : b ≠ 0 := by
+    intro hb
+    have hreal : 25 * a ^ 2 + 235 * a + 559 = 0 := by
+      nlinarith
+    have hsquare : (10 * a + 47) ^ 2 + 27 = 0 := by
+      nlinarith
+    nlinarith [sq_nonneg (10 * a + 47)]
+  have ha : a = -47 / 10 := by
+    have hlin : 50 * a + 235 = 0 := by
+      exact mul_eq_zero.mp him |>.resolve_right hb_ne
+    nlinarith
+  have hb_sq : b ^ 2 = 27 / 100 := by
+    rw [ha] at hre
+    norm_num at hre ⊢
+    nlinarith
+  rw [Complex.normSq_apply]
+  change a * a + b * b = 559 / 25
+  rw [ha]
+  rw [show b * b = b ^ 2 by ring, hb_sq]
+  norm_num
+
+/-- The two non-target fixed-point multipliers are repelling in squared norm. -/
+theorem extra_fixed_multiplier_normSq_gt_one (m : ℂ)
+    (hpoly : 25 * m ^ 2 + 235 * m + 559 = 0) :
+    1 < Complex.normSq m := by
+  rw [extra_fixed_multiplier_normSq m hpoly]
+  norm_num
+
+/-- Same repulsion statement in the usual complex norm. -/
+theorem extra_fixed_multiplier_norm_gt_one (m : ℂ)
+    (hpoly : 25 * m ^ 2 + 235 * m + 559 = 0) :
+    1 < ‖m‖ := by
+  have hsq : 1 < ‖m‖ ^ 2 := by
+    rw [← Complex.normSq_eq_norm_sq]
+    exact extra_fixed_multiplier_normSq_gt_one m hpoly
+  by_contra hnot
+  have hle : ‖m‖ ≤ 1 := le_of_not_gt hnot
+  have hnonneg : 0 ≤ ‖m‖ := norm_nonneg _
+  nlinarith
+
+/-- The two non-target fixed points of `H3_complex` are repelling in the
+    formal multiplier sense. -/
+theorem H3_extra_fixed_multiplier_normSq_gt_one (y : ℂ)
+    (hden : 3 * y + 2 ≠ 0)
+    (hq : 13 * y ^ 2 + 34 * y + 28 = 0) :
+    1 < Complex.normSq (H3_formal_multiplier y) := by
+  exact extra_fixed_multiplier_normSq_gt_one _
+    (H3_formal_multiplier_extra_fixed_poly y hden hq)
+
+/-- The two non-target fixed points of `H3_complex` are repelling in the
+    usual complex norm. -/
+theorem H3_extra_fixed_multiplier_norm_gt_one (y : ℂ)
+    (hden : 3 * y + 2 ≠ 0)
+    (hq : 13 * y ^ 2 + 34 * y + 28 = 0) :
+    1 < ‖H3_formal_multiplier y‖ := by
+  exact extra_fixed_multiplier_norm_gt_one _
+    (H3_formal_multiplier_extra_fixed_poly y hden hq)
 
 /-- The origin is a fixed point of the totalized complex Pandrosion map. -/
 theorem P3_complex_zero_fixed (X : ℂ) : P3_complex X 0 = 0 := by
