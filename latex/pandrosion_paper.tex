@@ -357,6 +357,27 @@ For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \over
 
 \begin{figure}[H]
 \centering
+\includegraphics[width=0.95\textwidth]{fig_julia_sidebyside.pdf}
+\caption{\textbf{High-resolution side-by-side comparison.} \emph{Left:} Newton's method for $z^3 - 1$ creates intricate fractal filaments at every basin boundary, where nearby starting points can converge to entirely different roots. \emph{Right:} The Pandrosion iteration for the same polynomial produces clean, smooth boundaries with zero fractal structure. White stars mark the three cube roots of unity.}
+\label{fig:julia_sidebyside}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig_julia_zoom.pdf}
+\caption{\textbf{Zoomed Newton fractal boundary.} A close-up of the central region where all three Newton basins meet. The boundary exhibits self-similar fractal complexity at arbitrarily fine scales --- a hallmark of Julia set theory. Each colored filament contains infinitely nested sub-basins. The Pandrosion iteration (Theorem~\ref{thm:julia}) provably contains \emph{none} of this structure: its boundaries are smooth rays.}
+\label{fig:julia_zoom}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig_julia_classic.pdf}
+\caption{\textbf{Classical Julia Set} for $z \mapsto z^2 + c$ with $c = -0.7 + 0.27i$. This iconic fractal illustrates the fundamental complexity barrier in iterative dynamics on $\mathbb{C}$: the boundary between convergent and divergent orbits is infinitely intricate. The Universitas Pandrosion framework (Deep~29) proves that the Pandrosion map structurally \emph{cannot} generate such fractal boundaries, making it topologically ``sterile'' by construction.}
+\label{fig:julia_classic}
+\end{figure}
+
+\begin{figure}[H]
+\centering
 \includegraphics[width=0.85\textwidth]{fig_convergence_heatmap.pdf}
 \caption{\textbf{Convergence speed landscape} for $\sqrt[3]{2}$ across the complex plane. Color encodes the number of Pandrosion iterations required to reach the real cube root within tolerance $10^{-8}$. The smooth, radially symmetric structure confirms the absence of fractal basin boundaries. The white star marks the target root $\sqrt[3]{2} \approx 1.26$.}
 \label{fig:heatmap}
