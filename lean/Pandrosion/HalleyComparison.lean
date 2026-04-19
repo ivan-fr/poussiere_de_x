@@ -140,7 +140,8 @@ theorem rate_ne_one : -(1 : ℝ) / 5 ≠ 1 := by norm_num
 theorem rate_ne_zero : -(1 : ℝ) / 5 ≠ 0 := by norm_num
 
 /-- The absolute contraction rate |P'(r)| = 1/5 < 1, confirming convergence. -/
-theorem rate_abs_lt_one : |-(1 : ℝ) / 5| < 1 := by norm_num
+theorem rate_abs_lt_one : |(-1 : ℝ) / 5| < 1 := by
+  simp [abs_of_neg (by norm_num : (-1 : ℝ) / 5 < 0)]; norm_num
 
 /-! ## §205. Newton's derivative vanishes at the root (for comparison)
 

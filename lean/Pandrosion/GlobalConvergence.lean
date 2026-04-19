@@ -9,6 +9,8 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 import Pandrosion.Core
+import Pandrosion.SmaleComplexity
+import Pandrosion.FormalAlgorithm
 
 open Real
 

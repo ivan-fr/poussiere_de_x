@@ -68,10 +68,11 @@ theorem optimal_offset (d : ℕ) :
     π / (d : ℝ) = 2 * π / (d : ℝ) / 2 := by ring
 
 /-- **With d equispaced starts, d orbits cover the full circle.** -/
-theorem full_circle_coverage (d : ℕ) :
-    d * (2 * π / (d : ℝ)) = 2 * π := by
-  ring_nf
-  simp [mul_div_cancel₀]
+theorem full_circle_coverage (d : ℕ) (hd : d ≥ 1) :
+    (d : ℝ) * (2 * π / (d : ℝ)) = 2 * π := by
+  have hd_pos : (0 : ℝ) < d := by positivity
+  have hd_ne : (d : ℝ) ≠ 0 := ne_of_gt hd_pos
+  field_simp
 
 /-! ## §214. Steffensen Quadratic Convergence
 
@@ -142,7 +143,8 @@ theorem epoch_contraction_strong :
 theorem epoch_count_bound (e₀ ε : ℝ) (he : e₀ > 0) (hε : ε > 0)
     (h_small : ε < e₀) :
     e₀ / ε > 1 := by
-  exact div_lt_iff hε |>.mpr (by linarith) |> le_of_lt |> lt_of_lt_of_le (by linarith)
+  rw [gt_iff_lt, lt_div_iff hε]
+  linarith
 
 /-! ## §217. Multi-Start vs Newton: Root Discovery
 

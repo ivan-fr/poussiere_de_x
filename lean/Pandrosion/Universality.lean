@@ -11,6 +11,9 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 import Pandrosion.Core
+import Pandrosion.SmaleComplexity
+import Pandrosion.FormalAlgorithm
+import Pandrosion.GlobalConvergence
 
 open Real
 

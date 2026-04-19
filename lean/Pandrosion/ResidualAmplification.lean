@@ -86,9 +86,8 @@ theorem oscillation_ratio_at_root (X r : ℝ) (hX : r ^ 3 = X) (hr : r ≠ 0) :
   have hr3 : r ^ 3 ≠ 0 := pow_ne_zero 3 hr
   have h5 : (5 : ℝ) * r ^ 3 ≠ 0 := mul_ne_zero (by norm_num) hr3
   rw [show 3 * r ^ 3 + 2 * r ^ 3 = 5 * r ^ 3 from by ring]
-  rw [neg_div, neg_div]
-  congr 1
-  exact div_self hr3 ▸ by rw [div_eq_div_iff h5 (by norm_num : (5 : ℝ) ≠ 0)]; ring
+  field_simp
+  ring
 
 /-! ## §211. The convergence rate -1/5 emerges from THREE independent sources
 
