@@ -1,4 +1,6 @@
-\documentclass[11pt,a4paper,oneside]{book}
+import os
+
+latex_source = r"""\documentclass[11pt,a4paper,oneside]{book}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[french,english]{babel}
@@ -144,3 +146,9 @@ Universitas Pandrosion est le triomphe de la convergence absolue.
 Chaque étape, chaque théorème, du Tenseur d'Hilbert aux Entiers Aléatoires Diophantiens de Fermat, a été mathématiquement passé au compilateur le plus rigide du monde : \textbf{Lean 4}. Zéro approximation. Zéro supposition en l'air. L'univers entier algorithmique contenu dans cette matrice est certifié VRAI. C'est l'essence même de l'Hyper-Géométrie contemporaine.
 
 \end{document}
+"""
+
+with open("/Users/ivanbesevic/Documents/poussiere/latex/pandrosion_master.tex", "w") as f:
+    f.write(latex_source)
+
+print("Master LaTeX generated successfully.")
