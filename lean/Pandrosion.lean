@@ -15,3 +15,4 @@ import Pandrosion.FixedPoint
 import Pandrosion.Fourier
 import Pandrosion.Analog
 import Pandrosion.Deep
+import Pandrosion.Deep2
