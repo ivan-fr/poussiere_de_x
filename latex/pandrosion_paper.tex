@@ -74,7 +74,7 @@
 \maketitle
 
 \begin{abstract}
-We present and formally verify in Lean~4 a rational iteration $s \mapsto s(s^3+4X)/(3s^3+2X)$ for computing $\sqrt[3]{X}$. This base iteration is derivative-free and converges linearly with a universal rate of exactly $1/5$, independently of~$X$ (formally proved). When composed with Steffensen acceleration (Aitken $\Delta^2$) into the \emph{Pandrosion Multi-Start} algorithm, the method achieves stable quadratic convergence without requiring derivatives, while avoiding the fractal basin boundaries associated with Newton's method on the complex plane. We develop a systematic corpus of \emph{exact algebraic identities} governing this map across several algebraic structures: real scalars ($\mathbb{R}$), integers ($\mathbb{Z}$), the complex plane ($\mathbb{C}$), arbitrary rings, commutative rings, and $n\times n$ complex matrices. These include: (i)~a residual conservation identity with exact polynomial factorisation, (ii)~a multiplicative Thue--Pell generator over $\mathbb{Z}$, (iii)~coprimality isolation identities, (iv)~a proof that the Vorono\"i basins of attraction form connected affine half-planes, (v)~commutativity and Hermitian preservation for matrix operators, and (vi)~a formal proof that the iteration structurally evades the McMullen impossibility constraints. The entire theoretical foundation (377 theorems across 51 modules) is machine-checked with zero \texttt{sorry} declarations.
+We present and formally verify in Lean~4 a rational iteration $s \mapsto s(s^3+4X)/(3s^3+2X)$ for computing $\sqrt[3]{X}$. This base iteration is derivative-free and converges linearly with a universal rate of exactly $1/5$, independently of~$X$ (formally proved). When composed with Steffensen acceleration (Aitken $\Delta^2$) into the \emph{Pandrosion-Steffensen Multi-Start} algorithm, the method achieves stable quadratic convergence without requiring derivatives. We develop a systematic corpus of \emph{exact algebraic identities} governing this base map across several algebraic structures: real scalars ($\mathbb{R}$), integers ($\mathbb{Z}$), the complex plane ($\mathbb{C}$), arbitrary rings, commutative rings, and $n\times n$ complex matrices. These include: (i)~a residual conservation identity with exact polynomial factorisation, (ii)~a multiplicative Thue--Pell generator over $\mathbb{Z}$, (iii)~coprimality isolation identities, (iv)~commutativity and Hermitian preservation for matrix operators, and (v)~a formal proof that the iteration functionally excludes the Chebyshev--Halley and Householder families. Finally, we formally prove that for the complete multi-start algorithmic grid over $\mathbb{R}^2$, the Vorono\"i basins of attraction strictly form connected affine half-planes. The entire theoretical foundation (377 theorems across 51 modules) is machine-checked with zero \texttt{sorry} declarations.
 \end{abstract}
 
 \tableofcontents
@@ -93,7 +93,7 @@ whose fixed points satisfy $h(s) = s \iff s^p = 1/x$ (formally verified in Lean~
 \begin{equation}\label{eq:pandrosion}
   s' \;=\; \frac{U(s)}{V(s)} \;=\; s\,\frac{s^3 + 4X}{3s^3 + 2X}\,,
 \end{equation}
-where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. While structurally reminiscent of Halley's method~\cite{halley} and the Householder family~\cite{householder, traub}, the Pandrosion iteration is algebraically \emph{distinct} from both (see Section~\ref{sec:classical}). Once derived, the formula is a closed-form rational expression requiring no symbolic derivatives at evaluation time. The remainder of this paper focuses on the cubic specialisation~\eqref{eq:pandrosion}, where the algebraic structure is richest.
+where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. The historical namesake of this method pays homage to Pappus of Alexandria's record of Pandrosion~\cite{pappus}, whose ancient geometric construction for cube duplication relied upon a sum of three spatial segments, mirroring the $3s^3 + 2X$ geometric sum polynomial structure in the denominator. While structurally reminiscent of Halley's method~\cite{halley} and the Householder family~\cite{householder, traub}, the Pandrosion iteration is algebraically \emph{distinct} from both (see Section~\ref{sec:classical}). Once derived, the formula is a closed-form rational expression requiring no symbolic derivatives at evaluation time. The remainder of this paper focuses on the cubic specialisation~\eqref{eq:pandrosion}, where the algebraic structure is richest.
 
 \begin{figure}[H]
 \centering
@@ -206,7 +206,7 @@ These are both \emph{different} from the Pandrosion iteration $\mathcal{P}_X(s) 
 Both differences vanish \emph{only} when $s^3 = X$ (or $s = 0$). The three iterations agree at the root and disagree everywhere else.
 
 \begin{remark}
-A common misconception (see e.g.\ some informal discussions) is that the Pandrosion iteration coincides with Halley's method on $s^3 - X = 0$. Theorems~\ref{thm:pn} and~\ref{thm:ph} refute this algebraically. The two iterations have different coefficient structures, different convergence orders, and different trajectories for any starting point $s_0 \neq \sqrt[3]{X}$.
+A common misconception (see e.g.\ some informal discussions) is that the Pandrosion iteration coincides with Halley's method on $s^3 - X = 0$. Theorems~\ref{thm:pn} and~\ref{thm:ph} refute this algebraically. The two iterations have different coefficient structures, different convergence orders ($1/5$ vs $0$), and different trajectories for any starting point $s_0 \neq \sqrt[3]{X}$. Furthermore, module \texttt{ChebyshevHalleyExclusion.lean} formally certifies that the Pandrosion map does not correspond to \emph{any} member of the one-parameter Chebyshev--Halley family nor the discrete Householder sequences.
 \end{remark}
 
 \subsection{The Universal Derivative Identity}
@@ -284,7 +284,7 @@ theorem pandrosion_kinematic_conservation (X s : R) (hs : 3 * s^3 + 2 * X /= 0) 
   \addplot[blue!70!black, mark=*, mark size=1.5pt, very thick] coordinates {
     (0, 0) (1, -1.2) (2, -4.8) (3, -15.6) (4, -32)
   };
-  \addlegendentry{Pandrosion $|G^3-X|$}
+  \addlegendentry{Pandrosion+Steffensen $|G^3-X|$}
   % Newton quadratic
   \addplot[red!70!black, mark=square*, mark size=1.5pt, very thick, dashed] coordinates {
     (0, 0) (1, -0.8) (2, -2.4) (3, -5.6) (4, -12) (5, -25)
@@ -338,7 +338,11 @@ For $x > 1$, $s^* > 0$ with $(s^*)^2 = 1/x$, and any $s \geq 0$, $s \neq s^*$:
 \]
 \end{theorem}
 
-The analogous identity for $p=3$ (the cubic case central to this paper) involves the polynomial $S_3(s) - S_3(t) = (s-t)(1+s+t)$ and produces a similar contraction, establishing the formal convergence of the Pandrosion cube root iteration.
+\begin{remark}[Computational Singularity]
+Note that the denominator $V(s) = 3s^3 + 2X$ vanishes for $s = -\sqrt[3]{2X/3}$. This real pole induces a singularity, meaning the iteration is strictly constrained to domains avoiding this negative boundary. For strictly positive targets $X > 0$ and starts $s > 0$, the orbit is globally shielded from this pole.
+\end{remark}
+
+The analogous contraction identity for $p=3$ (the cubic case central to this paper) involves the cross-multiplication of the degree-3 polynomials. This reduces to a much longer algebraic polynomial which we fully verify in our Lean codebase (\texttt{ContractionIdentity.lean}) to establish the formal monotonic convergence of the Pandrosion cube root iteration. We display the $p=2$ contraction identity above strictly for typographical clarity, as the algebraic symmetry is identical.
 
 \begin{figure}[H]
 \centering
@@ -433,7 +437,7 @@ This identity shows that the Pandrosion map preserves the cubic Thue form $A^3 -
   }
   
   % Explosion note
-  \node[draw, dashed, rounded corners, fill=yellow!10, font=\footnotesize, text width=5cm, align=center] at (9.5, -0.8) {Each $\Phi_i$ is a degree-9 polynomial.\\ $|M_n|$ grows as $\sim |M_0|^{3^n}$\\ --- \textbf{multiplicative amplification!}};
+  \node[draw, dashed, rounded corners, fill=yellow!10, font=\footnotesize, text width=5cm, align=center] at (9.5, -0.8) {Each $\Phi_i$ is a degree-9 polynomial.\\ $|A_n|, |B_n|$ grow as $\sim |A_0|^{4^n}$\\ --- \textbf{quartic amplification!}};
 \end{tikzpicture}
 \caption{\textbf{The Diophantine Amplification Tower.} Each application of the Pandrosion map multiplies the Pell error $M = A^3 - XB^3$ by an explicit degree-9 polynomial $\Phi$, generating an infinite tower of integer solutions to the cubic Thue equation.}
 \label{fig:thue_tower}
@@ -442,14 +446,14 @@ This identity shows that the Pandrosion map preserves the cubic Thue form $A^3 -
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{fig_abc_growth.pdf}
-\caption{\textbf{Diophantine digit explosion.} Starting from $(A_0, B_0) = (1, 1)$ with $X = 2$, the digit counts of $|A_n|$ and $|B_n|$ grow cubically at each iteration. Despite this explosive growth, Deep~33 proves that the set of prime factors entering the fractions remains algebraically bounded by the isolation identities $5A^4B$ and $10XAB^4$.}
+\caption{\textbf{Diophantine digit explosion.} Starting from $(A_0, B_0) = (1, 1)$ with $X = 2$, the digit counts of $|A_n|$ and $|B_n|$ grow quartically at each iteration since $A'$ and $B'$ contain degree-$4$ cross-combinations. Despite this explosive computational growth, Deep~33 proves that the set of prime factors entering the fractions remains algebraically bounded by the isolation identities $5A^4B$ and $10XAB^4$.}
 \label{fig:abc_growth}
 \end{figure}
 
 \subsection{Coprimality Isolation Identities}
-The ABC conjecture concerns the relationship between the prime factorisations of integers $a + b = c$ and in particular the growth of the radical $\rad(abc)$. The following identities show how the Pandrosion iteration constrains prime factor propagation through explicit algebraic relations.
+The following identities show how the Pandrosion iteration constrains prime factor propagation through explicit algebraic relations.
 
-\begin{theorem}[Deep 33: ABC Isolation Identities]
+\begin{theorem}[Deep 33: Coprimality Isolation Identities]
 Over any commutative ring $\alpha$:
 \begin{align}
   B \cdot A' - A \cdot B' &= 2AB(XB^3 - A^3), \label{eq:abc1}\\
@@ -476,7 +480,7 @@ For any $X, z \in \mathbb{C}$ with $3z^3 + 2X \neq 0$:
 \]
 \end{theorem}
 
-This result proves there are no \emph{spurious fixed points}: the only period-1 attractors are the true roots and the origin. The numerical basin plots (Figures~\ref{fig:newton_fractal}--\ref{fig:heatmap}) provide strong empirical evidence that the basins of attraction have smooth boundaries, in contrast to the fractal Julia boundaries of Newton's method. However, a complete proof that the iteration has no higher-period cycles or fractal basin boundaries would require additional dynamical-systems analysis beyond the algebraic identities presented here.
+This result proves there are no \emph{spurious fixed points}: the only period-1 attractors are the true roots and the origin. The numerical basin plots (Figures~\ref{fig:newton_fractal}--\ref{fig:heatmap}) provide empirical evidence that the base Pandrosion iteration produces smoother boundaries on $\mathbb{C}$ without the catastrophic fractal filaments of Newton's method. However, note carefully that this is a strict numerical observation. Completely smooth (affine half-plane) convex basin boundaries are only formally proven over the $\mathbb{R}^2$ grid when utilizing the multi-start architecture (see \texttt{MultiStart.lean}).
 
 \begin{theorem}[Deep 29: Conjugate Symmetry]\label{thm:conjugate}
 For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \overline{\mathcal{P}_X(z)}$.
@@ -725,11 +729,11 @@ This identity shows that the cross-difference is always divisible by $(A-B)$, wi
 \end{figure}
 
 %===========================================================
-\section{Effective Contraction for Rational Approximations}
+\section{Effective Rational Contraction}
 \label{sec:irrationality}
 %===========================================================
 
-The Thue--Siegel--Roth theorem establishes that for any algebraic $\alpha$ of degree $\geq 2$, $|A/B - \alpha| > B^{-(2+\epsilon)}$ for all but finitely many $(A,B)$. However, the theorem is \emph{ineffective}: no explicit bound is provided. Deep~28 gives an explicit contraction factor for the Pandrosion iteration applied to rational approximants:
+Deep~28 gives an explicit contraction factor for the Pandrosion iteration applied to rational approximants, demonstrating how the error scales predictably:
 
 \begin{theorem}[Deep 28: Effective Irrationality Proximity]
 For $(A,B) \in \mathbb{R}^2$ with the Pandrosion iteration step:
@@ -752,11 +756,11 @@ This provides an \emph{explicit} contraction factor for each iteration step with
     grid=both,
     grid style={gray!15},
     legend pos=south west,
-    title={\textbf{Irrationality Measure: Pandrosion vs Roth Bound}},
+    title={\textbf{Effective Contraction: Pandrosion Rational Bounds}},
   ]
-  % Roth ineffective boundary
+  % Ineffective conceptual boundary
   \addplot[red!60!black, very thick, dashed, domain=1:1000, samples=50] {1/x};
-  \addlegendentry{Roth bound $B^{-(2+\epsilon)}$ (ineffective)}
+  \addlegendentry{Conceptual threshold (ineffective)}
   % Pandrosion effective trajectory
   \addplot[blue!70!black, very thick, mark=*, mark size=1.5pt] coordinates {
     (1, 0.5) (3, 0.05) (10, 0.001) (30, 0.00005) (100, 0.000001) (300, 0.00000005) (1000, 0.0000000001)
@@ -764,7 +768,7 @@ This provides an \emph{explicit} contraction factor for each iteration step with
   \addlegendentry{Pandrosion trajectory (effective)}
   \end{axis}
 \end{tikzpicture}
-\caption{\textbf{Effective vs Roth bound (schematic).} The classical Roth bound (red dashed) guarantees existence but provides no constructive rate. The Pandrosion sequence (blue) achieves an explicit algebraic recurrence \emph{within its own iterates}. This does not constitute a general effective irrationality measure; it is a property of this specific fractional progression.}
+\caption{\textbf{Effective contraction bound (schematic).} The Pandrosion sequence (blue) achieves an explicit algebraic recurrence \emph{within its own iterates}, serving as a formally verified metric of scaling contraction for rational bounds. This does not constitute a general effective irrationality measure; it is a property of this specific fractional progression.}
 \label{fig:irrationality}
 \end{figure}
 
@@ -779,10 +783,10 @@ We have introduced the Pandrosion iteration, an original rational map for comput
 The identities themselves are exact and unconditional: residual factorisation over $\mathbb{R}$ (Deep~25), multiplicative Thue progression over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), effective contraction for rational approximants (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), Lipschitz-type cross-state factorisation (Deep~32), and coprimality isolation identities (Deep~33). Each of these is a \emph{certified algebraic fact}.
 
 \subsection*{What has not been proven}
-We do \emph{not} claim to have resolved any of the classical open problems to which these identities thematically relate. The gap between an algebraic identity about a specific iteration and a resolution of problems such as the Riemann Hypothesis, P vs NP, or the ABC conjecture is immense. Our identities provide interesting structural constraints on the Pandrosion map. Whether these constraints can be leveraged toward progress on the classical problems remains an open --- and ambitious --- question.
+We do \emph{not} claim to have resolved any generalized theorems to which these identities thematically relate. The gap between an algebraic identity about a specific iteration and a resolution of highly generalized classification problems is immense. Our identities provide interesting structural constraints on the Pandrosion map alone.
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational cube-root iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family, with a formally proved universal convergence rate of exactly $1/5$; (2)~a rich algebraic structure that propagates cleanly across real, integer, complex, ring, and matrix domains; (3)~the numerical observation that the complex-plane basins appear free of fractal boundaries, combined with the formal proof that no spurious fixed points exist; and (4)~a methodology of formal verification (338~theorems, zero \texttt{sorry}) applied to iterative numerical analysis.
+The genuine contribution lies in: (1)~a rational cube-root iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family, with a formally proved universal convergence rate of exactly $1/5$; (2)~a rich algebraic structure that propagates cleanly across real, integer, complex, ring, and matrix domains; (3)~the numerical observation that the complex-plane basins appear free of fractal boundaries, combined with the formal geometric proof that the real Multi-Start algorithm generates strictly connected Vorono\"i basins; and (4)~a methodology of formal verification (377~theorems, zero \texttt{sorry}) applied to iterative numerical analysis.
 
 \begin{figure}[H]
 \centering
@@ -813,7 +817,7 @@ The genuine contribution lies in: (1)~a rational cube-root iteration, algebraica
 \end{figure}
 
 \subsection*{Formal Verification Summary}
-The complete Lean~4 corpus comprises \textbf{46~modules}, \textbf{323~theorems}, and \textbf{zero \texttt{sorry} declarations}, built against Mathlib~\cite{mathlib}. The source code is publicly available and fully reproducible.
+The complete Lean~4 corpus comprises \textbf{51~modules}, \textbf{377~theorems}, and \textbf{zero \texttt{sorry} declarations}, built against Mathlib~\cite{mathlib}. The source code is publicly available and fully reproducible.
 
 \bigskip
 
