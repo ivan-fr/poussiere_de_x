@@ -41,3 +41,4 @@ build/
 
 # Optional: Ignore all PDFs in the latex tree to prevent committing huge binaries (can be commented out if needed)
 # latex/**/*.pdf
+lean/.lake/
