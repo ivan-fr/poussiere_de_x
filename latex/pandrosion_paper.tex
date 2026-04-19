@@ -7,6 +7,7 @@
 \usepackage{geometry}
 \geometry{top=2.2cm, bottom=2.2cm, left=2.2cm, right=2.2cm}
 \usepackage{graphicx}
+\graphicspath{{./}}
 \usepackage{float}
 \usepackage{booktabs,array}
 \usepackage{xcolor}
@@ -209,6 +210,13 @@ theorem pandrosion_kinematic_conservation (X s : R) (hs : 3 * s^3 + 2 * X /= 0) 
 \label{fig:residual}
 \end{figure}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig_kinematic_3d.pdf}
+\caption{\textbf{3D Kinematic Conservation Surface.} The contraction ratio $\Phi(s,X)/(3s^3+2X)^3$ governs the error decay at each step. The surface crosses zero along the curve $s^3 = X$ (the exact roots), confirming that the iteration converges from both directions. The steep gradients near the root manifold explain the cubic convergence speed.}
+\label{fig:kinematic3d}
+\end{figure}
+
 \subsection{Topological Sterility}
 \begin{theorem}[Zero Parasitic Attractors]\label{thm:sterility}
 For any $X$ and any $s$ with $3s^3 + 2X \neq 0$, the fixed points of $\mathcal{P}_X$ are exactly $\{0\} \cup \{s : s^3 = X\}$. No periodic orbits exist.
@@ -259,6 +267,13 @@ The fundamental \emph{multiplicative} structure of the cubic Pell error $M = A^3
 \end{tikzpicture}
 \caption{\textbf{The Diophantine Amplification Tower.} Each application of the Pandrosion map multiplies the Pell error $M = A^3 - XB^3$ by an explicit degree-9 polynomial $\Phi$, generating an infinite tower of integer solutions to the cubic Thue equation.}
 \label{fig:thue_tower}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{fig_abc_growth.pdf}
+\caption{\textbf{Diophantine digit explosion.} Starting from $(A_0, B_0) = (1, 1)$ with $X = 2$, the digit counts of $|A_n|$ and $|B_n|$ grow cubically at each iteration. Despite this explosive growth, Deep~33 proves that the set of prime factors entering the fractions remains algebraically bounded by the isolation identities $5A^4B$ and $10XAB^4$.}
+\label{fig:abc_growth}
 \end{figure}
 
 \subsection{The ABC Coprimality Isolators}
@@ -328,76 +343,23 @@ For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \over
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[scale=1.0]
-  % ---- LEFT: Newton fractal chaos ----
-  \begin{scope}[xshift=-5.5cm]
-    \node[font=\bfseries] at (0, 3.5) {Newton's Method ($z^3 - 1$)};
-    \draw[thick] (-2.8,-2.8) rectangle (2.8,2.8);
-    \draw[->, gray] (-2.8,0) -- (2.8,0) node[right, font=\small] {$\Re$};
-    \draw[->, gray] (0,-2.8) -- (0,2.8) node[above, font=\small] {$\Im$};
-    
-    % Simulate fractal boundaries with random-ish patterns
-    \foreach \i in {1,...,120} {
-      \pgfmathsetmacro{\rx}{-2.5 + 5*rnd}
-      \pgfmathsetmacro{\ry}{-2.5 + 5*rnd}
-      \pgfmathsetmacro{\rr}{0.02 + 0.06*rnd}
-      \pgfmathsetmacro{\rc}{int(100*rnd)}
-      \ifnum\rc>66
-        \fill[red!60, opacity=0.5] (\rx, \ry) circle (\rr);
-      \else
-        \ifnum\rc>33
-          \fill[blue!60, opacity=0.5] (\rx, \ry) circle (\rr);
-        \else
-          \fill[green!60, opacity=0.5] (\rx, \ry) circle (\rr);
-        \fi
-      \fi
-    }
-    % Fractal boundary lines
-    \draw[very thick, red!40!black, decorate, decoration={random steps, segment length=3pt, amplitude=2pt}] (-2,1) -- (0,0) -- (1.5, -1.8);
-    \draw[very thick, blue!40!black, decorate, decoration={random steps, segment length=3pt, amplitude=2pt}] (1,2) -- (0,0) -- (-2, -1.5);
-    \draw[very thick, green!40!black, decorate, decoration={random steps, segment length=3pt, amplitude=2pt}] (-0.5,2.5) -- (0,0) -- (2, 0.5);
-    
-    % Roots
-    \filldraw[white, draw=black, thick] (1,0) circle (4pt);
-    \filldraw[white, draw=black, thick] (-0.5, 0.866) circle (4pt);
-    \filldraw[white, draw=black, thick] (-0.5, -0.866) circle (4pt);
-    
-    \node[font=\footnotesize, text width=3cm, align=center] at (0, -3.5) {\textcolor{red!60!black}{Chaotic fractal boundaries}\\Infinite parasitic attractors};
-  \end{scope}
-  
-  % ---- RIGHT: Pandrosion clean basins ----
-  \begin{scope}[xshift=5.5cm]
-    \node[font=\bfseries] at (0, 3.5) {Pandrosion ($z^3 - X$)};
-    \draw[thick] (-2.8,-2.8) rectangle (2.8,2.8);
-    \draw[->, gray] (-2.8,0) -- (2.8,0) node[right, font=\small] {$\Re$};
-    \draw[->, gray] (0,-2.8) -- (0,2.8) node[above, font=\small] {$\Im$};
-    
-    % Clean smooth basins
-    \fill[red!15] (-2.8,-2.8) rectangle (2.8,2.8);
-    \fill[blue!15] (0,0) -- (2.8, 2.8) -- (-2.8, 2.8) -- cycle;
-    \fill[green!15] (0,0) -- (-2.8, 2.8) -- (-2.8, -0.5) -- cycle;
-    
-    % Clean boundary lines
-    \draw[very thick, gray!60] (0,0) -- (2.8, 0);
-    \draw[very thick, gray!60] (0,0) -- (-1.4, 2.43);
-    \draw[very thick, gray!60] (0,0) -- (-1.4, -2.43);
-    
-    % Roots
-    \filldraw[red!70!black] (1.26,0) circle (4pt);
-    \filldraw[blue!70!black] (-0.63, 1.09) circle (4pt);
-    \filldraw[green!70!black] (-0.63, -1.09) circle (4pt);
-    
-    % Origin
-    \filldraw[black] (0,0) circle (2pt) node[anchor=north east, font=\footnotesize] {$0$};
-    
-    \node[font=\footnotesize, text width=3cm, align=center] at (0, -3.5) {\textcolor{green!50!black}{Smooth basin boundaries}\\Zero parasitic attractors};
-  \end{scope}
-  
-  % Versus arrow
-  \node[font=\Huge\bfseries, gray] at (0, 0) {vs};
-\end{tikzpicture}
-\caption{\textbf{Newton vs Pandrosion on the complex plane.} \emph{Left:} Newton's method for $z^3 - 1$ produces fractal Julia-set boundaries between attraction basins, creating infinite computational traps. \emph{Right:} The Pandrosion iteration generates clean, smooth basin boundaries separated by straight rays from the origin. Theorem~\ref{thm:julia} certifies that only the roots and the origin are fixed points --- \textbf{zero parasitic attractors}.}
-\label{fig:julia_comparison}
+\includegraphics[width=0.75\textwidth]{fig_newton_fractal.pdf}
+\caption{\textbf{Newton's method fractal} for $z^3 - 1$ on $\mathbb{C}$. The three attraction basins (red, blue, green) are separated by infinitely intricate fractal boundaries --- the Julia set. Points near these boundaries undergo chaotic, unpredictable iterations, creating parasitic computational traps. This fractal complexity is the hallmark of derivative-based root-finding in the complex plane.}
+\label{fig:newton_fractal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig_pandrosion_fractal.pdf}
+\caption{\textbf{Pandrosion iteration basins} for $z^3 - 1$ on $\mathbb{C}$. In stark contrast to Figure~\ref{fig:newton_fractal}, the attraction basins are separated by \emph{smooth, straight rays} emanating from the origin. There are no fractal boundaries, no chaotic mixing zones, and no parasitic attractors. This topological sterility is a direct consequence of Theorem~\ref{thm:julia}: the only fixed points are $\{0\} \cup \{z : z^3 = X\}$.}
+\label{fig:pandrosion_fractal}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig_convergence_heatmap.pdf}
+\caption{\textbf{Convergence speed landscape} for $\sqrt[3]{2}$ across the complex plane. Color encodes the number of Pandrosion iterations required to reach the real cube root within tolerance $10^{-8}$. The smooth, radially symmetric structure confirms the absence of fractal basin boundaries. The white star marks the target root $\sqrt[3]{2} \approx 1.26$.}
+\label{fig:heatmap}
 \end{figure}
 
 \begin{figure}[H]
@@ -487,8 +449,15 @@ If $\mathrm{Commute}(S, X)$, then $\mathrm{Commute}(U, V)$.
   
   \node[font=\Huge\bfseries, gray] at (0,0) {vs};
 \end{tikzpicture}
-\caption{\textbf{Spectral Phase Locking.} \emph{Left:} Generic non-commuting operators scatter eigenvalues chaotically across $\mathbb{C}$. \emph{Right:} The Pandrosion operators $U, V$ are proven to commute (Deep~30), locking their shared eigenvalues onto structured spectral lines.}
+\caption{\textbf{Spectral Phase Locking (schematic).} \emph{Left:} Generic non-commuting operators scatter eigenvalues chaotically across $\mathbb{C}$. \emph{Right:} The Pandrosion operators $U, V$ are proven to commute (Deep~30), locking their shared eigenvalues onto structured spectral lines.}
 \label{fig:phaselocking}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig_eigenvalue_spectrum.pdf}
+\caption{\textbf{Numerical eigenvalue experiment} ($50 \times 50$ matrices). \emph{Left:} A generic random complex matrix scatters its 50 eigenvalues across $\mathbb{C}$. \emph{Right:} The Pandrosion product $UV$ constructed from Hermitian inputs $S = S^*$, $X = X^*$ confines all 50 eigenvalues exactly onto the real axis ($\Im(\lambda) = 0$), confirming the Hermitian invariance proven in Deep~31.}
+\label{fig:eigenvalue_numerical}
 \end{figure}
 
 \subsection{The Hilbert--P\'olya Hermitian Invariant}
@@ -665,8 +634,15 @@ where $\Phi(A,B,X) = 3A^3B^3 + 2X(A^3 + A^2B + AB^2 + B^3) - 12XAB(A+B) + 8X^2$.
     No exponential divergence is algebraically possible. \textbf{Zero backtracking entropy.}
   };
 \end{tikzpicture}
-\caption{\textbf{Entropy stability comparison.} \emph{Left:} Generic algorithms allow exponential divergence from initial perturbations $\delta = |A - B|$ (the butterfly effect). \emph{Right:} Pandrosion's cross-product difference is \emph{algebraically forced} to factor through $(A-B)$, bounding divergence polynomially. This is a structural impossibility of chaotic computation.}
+\caption{\textbf{Entropy stability comparison (schematic).} \emph{Left:} Generic algorithms allow exponential divergence from initial perturbations $\delta = |A - B|$ (the butterfly effect). \emph{Right:} Pandrosion's cross-product difference is \emph{algebraically forced} to factor through $(A-B)$, bounding divergence polynomially.}
 \label{fig:entropy}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_lipschitz_map.pdf}
+\caption{\textbf{Lipschitz entropy map} for $X = 2$. The polynomial factor $\Phi(A,B,X)$ is plotted as a function of states $A$ and $B$. The diagonal $A = B$ (white dashed) is the zero-divergence locus. The smooth, continuous structure of $\Phi$ confirms that the cross-difference $U(A)V(B) - U(B)V(A)$ factors \emph{exactly} through $(A-B)$ with no singularities or chaotic discontinuities. The white star marks the fixed point $\sqrt[3]{2}$.}
+\label{fig:lipschitz_map}
 \end{figure}
 
 %===========================================================
