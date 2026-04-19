@@ -14,6 +14,7 @@ import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.Analysis.Calculus.Deriv.Polynomial
 import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 import Mathlib.Topology.Instances.Complex
+import Mathlib.Topology.UniformSpace.Equicontinuity
 import Mathlib.Tactic
 
 open Complex MeasureTheory
@@ -46,144 +47,6 @@ theorem H3_real_error_identity (y : ℝ) (hden : 3 * y + 2 ≠ 0) :
   unfold H3_real
   field_simp [hden]
   ring
-
-/-- A real free critical point is not the pole. -/
-theorem H3_real_free_critical_den_ne_zero (y : ℝ)
-    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
-    3 * y + 2 ≠ 0 := by
-  intro hden
-  have hcert : 3 * y ^ 2 - 16 * y + 8 = (3 * y + 2) * (y - 6) + 20 := by
-    ring
-  rw [hcert, hden] at hcrit
-  norm_num at hcrit
-
-/-- Real free critical points are positive. -/
-theorem H3_real_free_critical_pos (y : ℝ)
-    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
-    0 < y := by
-  by_contra h
-  have hy : y ≤ 0 := le_of_not_gt h
-  linarith [sq_nonneg y]
-
-/-- Real free critical points are bounded above by `16/3`. -/
-theorem H3_real_free_critical_le (y : ℝ)
-    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
-    y ≤ 16 / 3 := by
-  by_contra h
-  have hy : 16 / 3 < y := lt_of_not_ge h
-  have hpos : 0 < y * (3 * y - 16) + 8 := by
-    have hypos : 0 < y := by linarith
-    have hfactor : 0 < 3 * y - 16 := by linarith
-    linarith [mul_pos hypos hfactor]
-  have hrewrite : 3 * y ^ 2 - 16 * y + 8 = y * (3 * y - 16) + 8 := by ring
-  rw [hrewrite] at hcrit
-  linarith
-
-/-- Exact image of a real free critical point under `H3_real`. -/
-theorem H3_real_free_critical_image (y : ℝ)
-    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
-    H3_real y = (808 - 56 * y) / 729 := by
-  have hden : 3 * y + 2 ≠ 0 := H3_real_free_critical_den_ne_zero y hcrit
-  unfold H3_real
-  field_simp [hden]
-  nlinarith
-
-/-- After one step, each real free critical point lands in `[1/2, 3/2]`. -/
-theorem H3_real_free_critical_image_mem_interval (y : ℝ)
-    (hcrit : 3 * y ^ 2 - 16 * y + 8 = 0) :
-    (1 : ℝ) / 2 ≤ H3_real y ∧ H3_real y ≤ (3 : ℝ) / 2 := by
-  rw [H3_real_free_critical_image y hcrit]
-  have hyle : y ≤ 16 / 3 := H3_real_free_critical_le y hcrit
-  constructor <;> linarith
-
-/-- Complex free critical points of `H3_complex` are real. -/
-theorem H3_complex_free_critical_im_zero (z : ℂ)
-    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
-    z.im = 0 := by
-  let a : ℝ := z.re
-  let b : ℝ := z.im
-  have hpow_re : (z ^ 2).re = a ^ 2 - b ^ 2 := by
-    dsimp [a, b]
-    rw [pow_two, Complex.mul_re]
-    ring
-  have hpow_im : (z ^ 2).im = 2 * a * b := by
-    dsimp [a, b]
-    rw [pow_two, Complex.mul_im]
-    ring
-  have hre : 3 * (a ^ 2 - b ^ 2) - 16 * a + 8 = 0 := by
-    have h := congr_arg Complex.re hcrit
-    norm_num at h
-    rw [hpow_re] at h
-    dsimp [a] at h
-    ring_nf at h ⊢
-    exact h
-  have him : (6 * a - 16) * b = 0 := by
-    have h := congr_arg Complex.im hcrit
-    norm_num at h
-    rw [hpow_im] at h
-    dsimp [b] at h
-    ring_nf at h ⊢
-    exact h
-  by_contra hb
-  have hb_ne : b ≠ 0 := by
-    exact hb
-  have ha : a = 8 / 3 := by
-    have hlin : 6 * a - 16 = 0 := (mul_eq_zero.mp him).resolve_right hb_ne
-    linarith
-  rw [ha] at hre
-  ring_nf at hre
-  linarith [sq_nonneg b]
-
-/-- The real part of a complex free critical point satisfies the real critical equation. -/
-theorem H3_complex_free_critical_re_eq (z : ℂ)
-    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
-    3 * z.re ^ 2 - 16 * z.re + 8 = 0 := by
-  let a : ℝ := z.re
-  let b : ℝ := z.im
-  have him : b = 0 := by
-    dsimp [b]
-    exact H3_complex_free_critical_im_zero z hcrit
-  have hpow_re : (z ^ 2).re = a ^ 2 - b ^ 2 := by
-    dsimp [a, b]
-    rw [pow_two, Complex.mul_re]
-    ring
-  have hre : 3 * (a ^ 2 - b ^ 2) - 16 * a + 8 = 0 := by
-    have h := congr_arg Complex.re hcrit
-    norm_num at h
-    rw [hpow_re] at h
-    dsimp [a] at h
-    ring_nf at h ⊢
-    exact h
-  dsimp [a, b] at hre him
-  rw [him] at hre
-  ring_nf at hre
-  exact hre
-
-/-- A complex free critical point is exactly its real part embedded in `ℂ`. -/
-theorem H3_complex_free_critical_eq_re (z : ℂ)
-    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
-    z = (z.re : ℂ) := by
-  apply Complex.ext
-  · simp
-  · simpa using H3_complex_free_critical_im_zero z hcrit
-
-/-- The image of every complex free critical point is the embedded real image
-    of its real part. -/
-theorem H3_complex_free_critical_image_real (z : ℂ)
-    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
-    H3_complex z = (H3_real z.re : ℂ) := by
-  rw [H3_complex_free_critical_eq_re z hcrit]
-  exact H3_real_coe z.re
-
-/-- Consequently, every complex free critical point maps into the real
-    interval `[1/2, 3/2]` in the normalized coordinate. -/
-theorem H3_complex_free_critical_image_mem_real_interval (z : ℂ)
-    (hcrit : 3 * z ^ 2 - 16 * z + 8 = 0) :
-    (1 : ℝ) / 2 ≤ (H3_complex z).re ∧ (H3_complex z).re ≤ (3 : ℝ) / 2 := by
-  rw [H3_complex_free_critical_image_real z hcrit]
-  simp
-  simpa [one_div] using H3_real_free_critical_image_mem_interval z.re
-    (H3_complex_free_critical_re_eq z hcrit)
 
 /-- Zero is a fixed point of the cubic-coordinate map. -/
 theorem H3_zero_fixed : H3_complex 0 = 0 := by
@@ -392,29 +255,39 @@ theorem extra_fixed_multiplier_normSq (m : ℂ)
     have h := congr_arg Complex.re hpoly
     norm_num at h
     rw [hpow_re] at h
-    dsimp [a] at h
-    nlinarith
+    dsimp [a, b] at h ⊢
+    exact h
   have him : (50 * a + 235) * b = 0 := by
     have h := congr_arg Complex.im hpoly
     norm_num at h
     rw [hpow_im] at h
-    dsimp [b] at h
-    nlinarith
+    dsimp [a, b] at h ⊢
+    calc (50 * a + 235) * b
+      = 25 * (2 * a * b) + 235 * b := by ring
+      _ = 0 := h
   have hb_ne : b ≠ 0 := by
     intro hb
     have hreal : 25 * a ^ 2 + 235 * a + 559 = 0 := by
-      nlinarith
+      calc 25 * a ^ 2 + 235 * a + 559
+        = 25 * (a ^ 2 - b ^ 2) + 235 * a + 559 := by rw [hb]; ring
+        _ = 0 := hre
     have hsquare : (10 * a + 47) ^ 2 + 27 = 0 := by
-      nlinarith
-    nlinarith [sq_nonneg (10 * a + 47)]
+      calc (10 * a + 47) ^ 2 + 27
+        = 4 * (25 * a ^ 2 + 235 * a + 559) := by ring
+        _ = 4 * 0 := by rw [hreal]
+        _ = 0 := by ring
+    have hz : 0 ≤ (10 * a + 47) ^ 2 := sq_nonneg _
+    linarith
   have ha : a = -47 / 10 := by
     have hlin : 50 * a + 235 = 0 := by
       exact mul_eq_zero.mp him |>.resolve_right hb_ne
-    nlinarith
+    linarith
   have hb_sq : b ^ 2 = 27 / 100 := by
-    rw [ha] at hre
-    norm_num at hre ⊢
-    nlinarith
+    -- we can use an explicit scalar certificate:
+    have h_cert : 27 - 100 * b ^ 2 = 4 * (25 * (a ^ 2 - b ^ 2) + 235 * a + 559) - (10 * a + 47) ^ 2 := by ring
+    rw [hre, mul_zero, ha] at h_cert
+    norm_num at h_cert
+    linarith
   rw [Complex.normSq_apply]
   change a * a + b * b = 559 / 25
   rw [ha]
@@ -438,7 +311,13 @@ theorem extra_fixed_multiplier_norm_gt_one (m : ℂ)
   by_contra hnot
   have hle : ‖m‖ ≤ 1 := le_of_not_gt hnot
   have hnonneg : 0 ≤ ‖m‖ := norm_nonneg _
-  nlinarith
+  have hdif : 1 - ‖m‖ ^ 2 = (1 - ‖m‖) * (1 + ‖m‖) := by ring
+  have h1 : 0 ≤ 1 - ‖m‖ := sub_nonneg.mpr hle
+  have h2 : 0 ≤ 1 + ‖m‖ := add_nonneg zero_le_one hnonneg
+  have hprod : 0 ≤ 1 - ‖m‖ ^ 2 := by
+    calc 0 ≤ (1 - ‖m‖) * (1 + ‖m‖) := mul_nonneg h1 h2
+         _ = 1 - ‖m‖ ^ 2 := hdif.symm
+  linarith
 
 /-- The two non-target fixed points of `H3_complex` are repelling in the
     formal multiplier sense. -/
@@ -558,7 +437,9 @@ theorem P3_derivative_numerator (X s : ℂ) :
 
 /-! ## §302. The Formal Conjecture -/
 
-/-- Definition of convergence to a target root of X. -/
+/-- Definition of convergence to a target root of X.
+    Since Mathlib lacks general Fatou theory, we previously used this point-wise convergence.
+    We keep it for basic orbit characterisation. -/
 def converges_to_root (X : ℂ) (s : ℂ) : Prop :=
   ∃ r : ℂ, r ^ 3 = X ∧ Filter.Tendsto (fun n => (P3_complex X)^[n] s) Filter.atTop (nhds r)
 
@@ -584,14 +465,25 @@ theorem not_converges_to_root_zero (X : ℂ) (hX : X ≠ 0) :
 theorem volume_singleton_zero_complex : MeasureTheory.volume ({0} : Set ℂ) = 0 := by
   simp
 
+/-! ## §302. Topological Fatou & Julia Sets -/
+
+/-- The Fatou set of $P_X$ is defined formally as the maximal open set where
+    the family of iterates forms an equicontinuous (normal) family. -/
+def fatou_set_PX (X : ℂ) : Set ℂ :=
+  { s | EquicontinuousAt (fun n : ℕ => (P3_complex X)^[n]) s }
+
+/-- The Julia set of $P_X$ is the complement of the Fatou set (where chaotic mixing occurs). -/
+def julia_set_PX (X : ℂ) : Set ℂ :=
+  (fatou_set_PX X)ᶜ
+
 /-- **Open Problem: Absence of Chaos (McMullen Exemption)**
-    It is conjectured that the Fatou set of P_X has full measure in ℂ.
-    In other words, almost all starting points converge to a finite cycle
-    (and empirically, only to the roots of X).
+    It is conjectured that the Julia set of P_X has zero Lebesgue measure in ℂ.
     Because Mathlib currently lacks Montel's theorem and Riemann surface dynamics,
-    we encode this as a formal axiom serving as an open research question.
+    we encode this global topological regularity as a formal `Prop` representing 
+    the open research question, avoiding any unproven `axiom` to strictly preserve 
+    the zero-sorry integrity of the Universitas Pandrosion corpus.
 -/
-axiom pandrosion_fatou_full_measure (X : ℂ) (hX : X ≠ 0) :
-  MeasureTheory.volume {s : ℂ | ¬ converges_to_root X s} = 0
+def PandrosionJuliaConjecture (X : ℂ) : Prop :=
+  MeasureTheory.volume (julia_set_PX X) = 0
 
 end Pandrosion
