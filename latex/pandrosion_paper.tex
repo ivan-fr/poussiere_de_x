@@ -857,6 +857,27 @@ The norm propagation~\eqref{eq:irrationality} ensures that this bound applies at
 \end{figure}
 
 %===========================================================
+\section{Certified Step Complexity (Smale Context)}
+\label{sec:smale}
+%===========================================================
+
+Smale's 17th Problem asks whether a zero of a polynomial of degree $d$ can be found approximately in polynomial time on average. While our focus is specifically on the $p$-th root extraction $z^p - X = 0$ rather than general polynomials, we can formally certify the step complexity of our iteration.
+
+For the base iteration, the contraction rate is $c = (p-1)/p$. The number of steps $N$ required to reach an error $\varepsilon > 0$ from an initial error $e_0$ is completely determined by this contraction factor. In our Lean formalization, we have certified this continuous ceiling:
+
+\begin{theorem}[\texttt{BaseComplexity.lean}: Strict Logarithmic Bound]\label{thm:complexity}
+If $0 < c < 1$ and $e_0 > 0$, then for any $\varepsilon > 0$, the sequence of errors $e_n \leq c^n e_0$ satisfies $e_n \leq \varepsilon$ for all $n$ such that:
+$$n \;\geq\; \frac{\log(e_0/\varepsilon)}{\log(1/c)}$$
+\end{theorem}
+
+For the Pandrosion base map applied to $p$-th roots ($c = (p-1)/p$), this proves the step complexity:
+$$N = O\left(\frac{\log(1/\varepsilon)}{\log(p/(p-1))}\right)$$
+When composed with Steffensen's acceleration (Aitken $\Delta^2$), the method achieves quadratic convergence. Although the acceleration operator itself remains to be fully formalized in Lean, analytically this yields a highly efficient operational complexity of:
+$$N = O\left(\log\log\frac{1}{\varepsilon}\right) \text{ Steffensen cycles}$$
+
+While modest in the context of Smale's general problem, providing a \emph{formally verified worst-case bound} for the base rational iteration demonstrates a clear path toward fully certified asymptotic complexity measures in numerical analysis.
+
+%===========================================================
 \section{Conclusion}
 \label{sec:conclusion}
 %===========================================================
@@ -864,13 +885,13 @@ The norm propagation~\eqref{eq:irrationality} ensures that this bound applies at
 We have presented a formally verified study of the Pandrosion iteration, an original rational map for computing $p$-th roots (with detailed analysis for $p=3$). The key contribution is methodological: by formalising every identity in Lean~4, we provide a fully machine-verified foundation with zero unproven assertions.
 
 \subsection*{What has been proven}
-The certified identities include: residual factorisation over $\mathbb{R}$ (Deep~25), integer sequence amplification over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), fractional contraction bounds (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), cross-state factorisation (Deep~32), coprimality isolation (Deep~33), and the general contraction theorem for all $p \geq 2$ (Deep~IX). The fixed-point theorem and contraction bounds are stated and proved for arbitrary $p$, not only $p=3$. Each result is a \emph{certified algebraic fact}.
+The certified identities include: residual factorisation over $\mathbb{R}$ (Deep~25), integer sequence amplification over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), fractional contraction bounds (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), cross-state factorisation (Deep~32), coprimality isolation (Deep~33), the general contraction theorem for all $p \geq 2$ (Deep~IX), effective irrationality measures (Theorem~\ref{thm:effective}), and formally verified step complexity bounds (Theorem~\ref{thm:complexity}).
 
 \subsection*{What has not been proven}
-We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. Newton's method remains operationally superior for scalar cube roots (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition; it does not establish global basin invariance. The cycle exclusion (Theorem~\ref{thm:nocycles}) applies to the real line; the complex case remains open.
+We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. Newton's method remains operationally superior for scalar cube roots (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition; it does not establish global basin invariance. The cycle exclusion (Theorem~\ref{thm:nocycles}) applies to the real line; the complex case remains open. The Steffensen acceleration is analytically understood but not yet fully certified in Lean.
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family, with a formally proved universal convergence rate; (2)~a rich algebraic structure that propagates cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$, not only $p = 3$; (4)~a formally verified basin stability theorem connecting the contraction dynamics to Vorono\"i cell geometry (Theorem~\ref{thm:basin_stability}); and (5)~a methodology demonstrating how formal verification tools (Lean~4, Mathlib) can be systematically applied to iterative numerical analysis.
+The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; and (5)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis.
 
 \begin{figure}[H]
 \centering
