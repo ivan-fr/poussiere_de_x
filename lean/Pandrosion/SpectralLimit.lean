@@ -16,6 +16,7 @@ import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Analysis.SpecificLimits.Basic
 import Mathlib.MeasureTheory.Integral.IntervalIntegral
 import Mathlib.Tactic
+import Pandrosion.FixedPointGeneral
 
 open Finset BigOperators Real MeasureTheory Set Filter
 

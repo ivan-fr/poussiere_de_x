@@ -11,6 +11,7 @@
 import Mathlib.Data.Matrix.Basic
 import Mathlib.Data.Complex.Basic
 import Mathlib.Tactic
+import Pandrosion.MatrixSpectral
 
 namespace Pandrosion
 

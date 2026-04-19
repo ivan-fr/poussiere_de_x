@@ -13,6 +13,7 @@ import Mathlib.Data.Complex.Basic
 import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Algebra.Star.Basic
 import Mathlib.Tactic
+import Pandrosion.CommutativityPropagation
 
 namespace Pandrosion
 

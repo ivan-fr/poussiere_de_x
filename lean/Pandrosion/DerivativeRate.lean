@@ -15,6 +15,8 @@ import Mathlib.Analysis.Calculus.Deriv.Inv
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Tactic
+import Pandrosion.ContractionIdentity
+import Pandrosion.FixedPointGeneral
 
 open Real
 

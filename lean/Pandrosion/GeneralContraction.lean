@@ -8,6 +8,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.GeomSum
 import Mathlib.Algebra.BigOperators.Basic
 import Mathlib.Tactic
+import Pandrosion.FixedPointGeneral
 
 open Finset BigOperators
 

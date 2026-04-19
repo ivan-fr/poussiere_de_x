@@ -9,6 +9,7 @@
 -/
 import Mathlib.Data.Matrix.Basic
 import Mathlib.Data.Complex.Basic
+import Pandrosion.MatrilinearIdentity
 
 namespace Pandrosion
 

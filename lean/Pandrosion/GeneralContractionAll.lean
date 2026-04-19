@@ -16,6 +16,8 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.GeomSum
 import Mathlib.Tactic
+import Pandrosion.CubicContraction
+import Pandrosion.FixedPointGeneral
 
 open Finset BigOperators
 
