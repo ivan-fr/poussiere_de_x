@@ -29,7 +29,6 @@ theorem matrix_pandrosion_oscillation {α : Type*} [Ring α]
   
   -- Extract commutativity equations
   have h_SR : S * R = R * S := h_comm.eq
-  have h_S2R : S^2 * R = R * S^2 := (h_comm.pow_left 2).eq
   have h_SR2 : S * R^2 = R^2 * S := (h_comm.pow_right 2).eq
   have h_SR3 : S * R^3 = R^3 * S := (h_comm.pow_right 3).eq
   
@@ -44,8 +43,6 @@ theorem matrix_pandrosion_oscillation {α : Type*} [Ring α]
   -- Transform RHS
   have hRight : (S - R) * (S^3 - 2 • (R * S^2) - 2 • (R^2 * S) + 2 • R^3) =
                 S^4 + 4 • (R^3 * S) - 3 • (R * S^3) - 2 • R^4 := by
-    have h1 : S * S^3 = S^4 := (pow_succ' S 3).symm
-    have h2 : R * R^3 = R^4 := (pow_succ' R 3).symm
     have h3 : S * (R * S^2) = R * S^3 := by
       calc S * (R * S^2) = (S * R) * S^2 := by rw [←mul_assoc]
         _ = (R * S) * S^2 := by rw [h_SR]
