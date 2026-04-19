@@ -73,3 +73,4 @@ import Pandrosion.VoronoiInvariance
 import Pandrosion.NoCycles
 import Pandrosion.EffectiveIrrationality
 import Pandrosion.BaseComplexity
+import Pandrosion.DynamicsConjecture
