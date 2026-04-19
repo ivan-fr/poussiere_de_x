@@ -51,7 +51,7 @@ theorem pandrosion_p2_identity (x r s : ℝ) (hs : s > 0)
     pandrosion_map 2 x s - r = (s - r) ^ 2 / (2 * s) := by
   unfold pandrosion_map
   simp only
-  have hs_ne : s ≠ 0 := ne_of_gt hs
+  have _hs_ne : s ≠ 0 := ne_of_gt hs
   have hs2_ne : (2 : ℝ) * s ^ 2 ≠ 0 := by positivity
   -- After substitution x = r^2, den = 2*s^2 + (2-1)*r^2 - r^2 = 2*s^2
   have hden_ne : (↑(2 : ℕ) : ℝ) * s ^ 2 + ((↑(2 : ℕ) : ℝ) - 1) * x - x ≠ 0 := by
@@ -141,7 +141,7 @@ structure PandrosionSpec where
 theorem termination (p : ℕ) (hp : p ≥ 2) (ε : ℝ) (hε : ε > 0) :
     ∃ N : ℕ, (((p : ℝ) - 1) / p) ^ N < ε := by
   have h_lt : ((p : ℝ) - 1) / p < 1 := contraction_ratio_at_fixpoint p hp
-  have h_nn : 0 ≤ ((p : ℝ) - 1) / p := contraction_ratio_nonneg p hp
+  have _h_nn : 0 ≤ ((p : ℝ) - 1) / p := contraction_ratio_nonneg p hp
   exact exists_pow_lt_of_lt_one hε h_lt
 
 /-- **The algorithm's total cost: d iterations × O(d) per step = O(d²).

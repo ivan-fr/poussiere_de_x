@@ -53,8 +53,8 @@ theorem half_ne_two_fifths : (1 : ℝ) / 2 ≠ 2 / 5 := by norm_num
 theorem pandrosion_not_in_chebyshev_halley :
     ¬ ∃ α : ℝ, 6 * (3 - 2 * α) = 15 - 6 * α ∧ 12 * α = 4 + 2 * α := by
   intro ⟨α, h1, h2⟩
-  have hα1 : α = 1 / 2 := chebyshev_halley_coeff_s6 α h1
-  have hα2 : α = 2 / 5 := chebyshev_halley_coeff_s3X α h2
+  have _hα1 : α = 1 / 2 := chebyshev_halley_coeff_s6 α h1
+  have _hα2 : α = 2 / 5 := chebyshev_halley_coeff_s3X α h2
   linarith
 
 /-! ## §208. Classification of known methods

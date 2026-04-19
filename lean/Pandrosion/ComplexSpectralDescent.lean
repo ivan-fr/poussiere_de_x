@@ -43,7 +43,7 @@ theorem omega_ne_one (p : ℕ) (hp : p ≥ 2) : omega p ≠ 1 := by
   have hpi : (2 : ℂ) * ↑π * I ≠ 0 := by
     apply mul_ne_zero (mul_ne_zero (by norm_num) _) Complex.I_ne_zero
     exact_mod_cast Real.pi_ne_zero
-  have hp_ne : (p : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
+  have _hp_ne : (p : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
   -- Rewrite hn: 2πI * (1/p) = 2πI * n
   have : (2 * ↑π * I) * (1 / (p : ℂ)) = (2 * ↑π * I) * (n : ℂ) := by
     rw [mul_one_div]

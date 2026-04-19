@@ -140,7 +140,7 @@ theorem epoch_contraction_strong :
 
 /-- **To reach ε accuracy from error e₀, need O(log(e₀/ε)) T3 epochs.**
     Since T3 is quadratic, the number of epochs is O(log log(1/ε)). -/
-theorem epoch_count_bound (e₀ ε : ℝ) (he : e₀ > 0) (hε : ε > 0)
+theorem epoch_count_bound (e₀ ε : ℝ) (_he : e₀ > 0) (hε : ε > 0)
     (h_small : ε < e₀) :
     e₀ / ε > 1 := by
   rw [gt_iff_lt, lt_div_iff hε]

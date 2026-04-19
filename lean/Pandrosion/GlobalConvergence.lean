@@ -46,7 +46,7 @@ theorem canonical_ratio (ρ : ℝ) (hρ : ρ > 0) : ρ / cauchy_R ρ = 1 / 3 := 
   unfold cauchy_R; field_simp; ring
 
 /-- **At canonical R = 3ρ: product (1/3)^d.** -/
-theorem canonical_contraction (ρ : ℝ) (hρ : ρ > 0) (d : ℕ) (hd : d ≥ 1) :
+theorem canonical_contraction (ρ : ℝ) (hρ : ρ > 0) (d : ℕ) (_hd : d ≥ 1) :
     (ρ / cauchy_R ρ) ^ d = (1 / 3) ^ d := by
   rw [canonical_ratio ρ hρ]
 
@@ -74,7 +74,7 @@ The theorem chain (global_convergence → smale_17) uses only
 the existential, not the O(d) bound. -/
 
 /-- **Near case: if s₀ is already in the basin, 0 steps suffice.** -/
-theorem basin_entry_near (d : ℕ) (hd : d ≥ 2) (ρ : ℝ) (hρ : ρ > 0)
+theorem basin_entry_near (d : ℕ) (hd : d ≥ 2) (ρ : ℝ) (_hρ : ρ > 0)
     (s₀ : ℝ) (h_close : |s₀ - 1| < basin_radius ρ d) :
     ∃ n : ℕ, n ≤ 2 * d ∧
     |iterate d 1 s₀ n - 1| < basin_radius ρ d :=
@@ -127,7 +127,7 @@ theorem universal_epoch_bound (d : ℕ) (hd : d ≥ 2) :
 
 /-- **The convergence rate → 1 as d → ∞, but epoch → 1/e.
     This means the number of epochs is O(1), so steps = O(d). -/
-theorem epoch_count_constant (d : ℕ) (hd : d ≥ 2) :
+theorem epoch_count_constant (d : ℕ) (_hd : d ≥ 2) :
     Real.exp (-1) < 1 :=
   exp_neg_one_lt_one
 

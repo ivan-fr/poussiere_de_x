@@ -52,7 +52,7 @@ theorem Q_selfevaluation (a : ℝ) :
 
 /-- **Q(a, s) is positive when a > 0 and s > 0.**
     (Because s² + as + a² = (s + a/2)² + 3a²/4 > 0.) -/
-theorem Q_cubic_pos (a s : ℝ) (ha : a > 0) (hs : s > 0) :
+theorem Q_cubic_pos (a s : ℝ) (ha : a > 0) (_hs : s > 0) :
     Q_cubic a s > 0 := by
   unfold Q_cubic
   nlinarith [sq_nonneg (s + a / 2)]

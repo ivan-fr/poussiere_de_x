@@ -23,7 +23,7 @@ namespace Pandrosion
 /-- **((d-1)/d)^d ≤ exp(-1).** From one_sub_div_pow_le_exp_neg. -/
 theorem epoch_contraction (d : ℕ) (hd : d ≥ 2) :
     ((d - 1 : ℝ) / d) ^ d ≤ Real.exp (-1) := by
-  have hd_pos : (0 : ℝ) < d := by positivity
+  have _hd_pos : (0 : ℝ) < d := by positivity
   have hd_ge : (1 : ℝ) ≤ (d : ℝ) := by exact_mod_cast (show 1 ≤ d by omega)
   rw [show ((d : ℝ) - 1) / d = 1 - 1 / (d : ℝ) from by field_simp]
   exact one_sub_div_pow_le_exp_neg hd_ge
