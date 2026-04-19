@@ -70,14 +70,29 @@ theorem epoch_descent_negative (d : ℕ) (hd : d ≥ 2) :
   · exact_mod_cast (show 0 < d by omega)
   · exact descent_negative d hd
 
-/-- The contraction ratio per start is bounded: cos(π/(2d)) ≤ cos(π/4) for d ≥ 2. -/
-theorem contraction_bounded (d : ℕ) (hd : d ≥ 2) :
-    cos (π / (2 * (d : ℝ))) ≤ cos (π / 4) := by
-  sorry  -- Requires monotonicity of cos on [0, π], Mathlib-specific
+/-- For d ≥ 2, the angle π/(2d) ≤ π/4. -/
+lemma angle_le_pi_div_four (d : ℕ) (hd : d ≥ 2) :
+    π / (2 * (d : ℝ)) ≤ π / 4 := by
+  have hd_cast : (2 : ℝ) ≤ (d : ℝ) := by exact_mod_cast hd
+  have h4 : (4 : ℝ) ≤ 2 * (d : ℝ) := by linarith
+  exact div_le_div_of_nonneg_left (le_of_lt pi_pos) (by norm_num : (0:ℝ) < 4) h4
 
-/-- For reference: cos(π/4) = √2/2 ≈ 0.707.
-    For p=3 (d=3): cos(π/6) = √3/2 ≈ 0.866. -/
-theorem cos_pi_div_six : cos (π / 6) = Real.sqrt 3 / 2 := by
-  sorry  -- Exact trigonometric identity, depends on Mathlib API availability
+/-- The contraction ratio is bounded below by cos(π/4):
+    cos(π/4) ≤ cos(π/(2d)) for d ≥ 2.
+    (cos is decreasing on [0,π], smaller angle ⟹ bigger cosine.) -/
+theorem contraction_bounded_below (d : ℕ) (hd : d ≥ 2) :
+    cos (π / 4) ≤ cos (π / (2 * (d : ℝ))) := by
+  have h1 := angle_in_range d hd
+  apply cos_le_cos_of_nonneg_of_le_pi
+  · exact le_of_lt h1.1
+  · linarith [h1.2, pi_pos]
+  · exact angle_le_pi_div_four d hd
+
+/-- The contraction ratio is bounded above by 1 (already proven as cos_angle_lt_one).
+    Combined with contraction_bounded_below, we get:
+    cos(π/4) ≤ cos(π/(2d)) < 1 for all d ≥ 2. -/
+theorem contraction_sandwich (d : ℕ) (hd : d ≥ 2) :
+    cos (π / 4) ≤ cos (π / (2 * (d : ℝ))) ∧ cos (π / (2 * (d : ℝ))) < 1 :=
+  ⟨contraction_bounded_below d hd, cos_angle_lt_one d hd⟩
 
 end Pandrosion
