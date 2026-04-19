@@ -15,6 +15,7 @@
 
   References: pandrosion_master.tex, §4.5 (Algorithm), §5.4 (Results)
 -/
+import Mathlib.Data.Complex.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 import Pandrosion.Core
@@ -167,5 +168,39 @@ theorem cost_ratio : (3 : ℝ) / 2 = 1.5 := by norm_num
     must be restarted.** -/
 theorem effective_cost_with_restart (d restarts : ℕ) (h : restarts ≥ 2) :
     d ≤ d * restarts := le_mul_of_one_le_right (Nat.zero_le d) (by omega)
+
+/-! ## §218. Voronoï Basin Connectivity
+
+The Pandrosion multi-start algorithm assigns each starting point to the
+nearest converged root. Mathematically, the basin of attraction
+for a root r_i is defined by the Voronoï cell:
+  V_i = {z ∈ ℂ | ∀ j, |z - r_i| ≤ |z - r_j|}
+
+The boundary between any two roots r_1 and r_2 is the bisector:
+  |z - r_1| ≤ |z - r_2|
+By squaring and expanding the complex norm |w|² = w * w.conj,
+this condition simplifies to a linear affine inequality:
+  2 Re(z(r_2 - r_1)*) ≤ |r_2|² - |r_1|²
+Because it defines a closed half-plane, it is convex.
+Since intersections of convex sets are convex, and any convex
+set is path-connected and thus connected, the Pandrosion basins
+are PERFECTLY CONNECTED. This distinguishes them fundamentally
+from the fractal, disconnected basins of Newton's method.
+-/
+
+/-- **The Voronoï bisector inequality is an affine condition.**
+    |z - r₁|² ≤ |z - r₂|² ↔ 2⟨z, r₂ - r₁⟩ ≤ |r₂|² - |r₁|²
+    This proves the bisector is a half-plane in ℝ², hence convex. -/
+theorem voronoi_halfplane_affine (r1 r2 z : ℂ) :
+    Complex.normSq (z - r1) ≤ Complex.normSq (z - r2) ↔
+    2 * (z.re * (r2.re - r1.re) + z.im * (r2.im - r1.im)) ≤
+      Complex.normSq r2 - Complex.normSq r1 := by
+  change (z.re - r1.re) * (z.re - r1.re) + (z.im - r1.im) * (z.im - r1.im) ≤
+         (z.re - r2.re) * (z.re - r2.re) + (z.im - r2.im) * (z.im - r2.im) ↔
+    2 * (z.re * (r2.re - r1.re) + z.im * (r2.im - r1.im)) ≤
+      (r2.re * r2.re + r2.im * r2.im) - (r1.re * r1.re + r1.im * r1.im)
+  constructor
+  · intro h; ring_nf at h ⊢; linarith
+  · intro h; ring_nf at h ⊢; linarith
 
 end Pandrosion
