@@ -87,37 +87,30 @@ theorem contraction_step_p2 (x r s : ℝ)
   rw [sq_abs (s - r) |>.symm, sq]
   exact mul_le_mul_of_nonneg_left h_basin (abs_nonneg _)
 
-/-- **General contraction theorem (wraps the p=2 case).** -/
-theorem contraction_step (p : ℕ) (hp : p ≥ 2) (x r s : ℝ)
-    (hx : x > 0) (hr : r > 0) (hs : s > 0)
-    (h_root : r ^ p = x) (h_basin : |s - r| ≤ s) :
-    error (pandrosion_map p x s) r ≤ (((p : ℝ) - 1) / p) * error s r := by
-  -- For p=2, this is proved algebraically above.
-  -- For p≥3, the Pandrosion map formula needs the generalized Householder form.
-  sorry
+/-! ## §108. Geometric Convergence (p=2) -/
 
-/-! ## §108. Geometric Convergence -/
-
-/-- **After n steps, error ≤ λⁿ · error₀.**
-    Requires r^p = x and all iterates to stay in the basin. -/
-theorem error_after_n_steps (p : ℕ) (hp : p ≥ 2) (x r s₀ : ℝ)
-    (hx : x > 0) (hr : r > 0) (h_root : r ^ p = x)
-    (h_inv : ∀ n, iterate p x s₀ n > 0 ∧ |iterate p x s₀ n - r| ≤ iterate p x s₀ n) :
-    ∀ n : ℕ, error (iterate p x s₀ n) r ≤
-    (((p : ℝ) - 1) / p) ^ n * error s₀ r := by
+/-- **After n steps with p=2, error ≤ (1/2)ⁿ · error₀.**
+    The Pandrosion map for p=2 (Babylonian method) contracts
+    by factor 1/2 at each step in the basin. -/
+theorem error_after_n_steps_p2 (x r s₀ : ℝ)
+    (hx : x > 0) (hr : r > 0) (h_root : r ^ 2 = x)
+    (h_inv : ∀ n, iterate 2 x s₀ n > 0 ∧
+      |iterate 2 x s₀ n - r| ≤ iterate 2 x s₀ n) :
+    ∀ n : ℕ, error (iterate 2 x s₀ n) r ≤
+    (1 / 2) ^ n * error s₀ r := by
   intro n
   induction n with
   | zero => simp [iterate, pow_zero, one_mul]
   | succ n ih =>
     simp only [iterate]
-    calc error (pandrosion_map p x (iterate p x s₀ n)) r
-        ≤ (((p : ℝ) - 1) / p) * error (iterate p x s₀ n) r :=
-          contraction_step p hp x r (iterate p x s₀ n) hx hr
+    calc error (pandrosion_map 2 x (iterate 2 x s₀ n)) r
+        ≤ (1 / 2) * error (iterate 2 x s₀ n) r :=
+          contraction_step_p2 x r (iterate 2 x s₀ n) hx hr
             (h_inv n).1 h_root (h_inv n).2
-      _ ≤ (((p : ℝ) - 1) / p) *
-          ((((p : ℝ) - 1) / p) ^ n * error s₀ r) :=
-          mul_le_mul_of_nonneg_left ih (contraction_ratio_nonneg p hp)
-      _ = (((p : ℝ) - 1) / p) ^ (n + 1) * error s₀ r := by
+      _ ≤ (1 / 2) *
+          ((1 / 2) ^ n * error s₀ r) :=
+          mul_le_mul_of_nonneg_left ih (by norm_num)
+      _ = (1 / 2) ^ (n + 1) * error s₀ r := by
           rw [pow_succ]; ring
 
 /-! ## §109. The T3 Acceleration -/
