@@ -10,17 +10,22 @@ open Real
 
 namespace Pandrosion
 
-/-! ## §1. The Pandrosion Iteration for p-th roots
+/-! ## §1. The Pandrosion Iteration
 
 Given x > 0 and p ≥ 2, the Pandrosion map is:
   F(s) = s · (s^p + (p-1)·x) / (p·s^p + (p-1)·x − x)
 
-The fixed point is s* = x^(1/p).
-At the fixed point, λ* = (p-1)/p.
+Fixed point: s* = (x/(p-1))^(1/p) in general.
+For p=2 (Babylonian method): s* = x^(1/2) = √x.
+Contraction ratio (p-1)/p < 1 for all p ≥ 2.
+
+**Note (verified in Deep15):** The formula has x^(1/p) as fixed point
+only for p=2. For p≥3, F(x^(1/p)) = p/(2(p-1)) · x^(1/p) ≠ x^(1/p).
+The contraction_step is formally proved for p=2.
 -/
 
-/-- Theorem 336: The Pandrosion contraction ratio λ* = (p-1)/p < 1.
-    This is the key inequality guaranteeing convergence. -/
+/-- Theorem 336: The ratio (p-1)/p < 1 for p ≥ 2.
+    For p=2 this is the Babylonian method contraction rate 1/2. -/
 theorem contraction_ratio_at_fixpoint (p : ℕ) (hp : p ≥ 2) :
     ((p : ℝ) - 1) / (p : ℝ) < 1 := by
   rw [div_lt_one (by positivity : (0 : ℝ) < (p : ℝ))]
