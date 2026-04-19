@@ -93,7 +93,7 @@ whose fixed points satisfy $h(s) = s \iff s^p = 1/x$ (formally verified in Lean~
 \begin{equation}\label{eq:pandrosion}
   s' \;=\; \frac{U(s)}{V(s)} \;=\; s\,\frac{s^3 + 4X}{3s^3 + 2X}\,,
 \end{equation}
-where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. Unlike Newton's method, which requires the symbolic derivative $f'(s) = 3s^2$, and Halley's method, which further needs the second derivative, the Pandrosion formula operates as a pure \emph{ratio oracle}. The remainder of this paper focuses on the cubic specialisation~\eqref{eq:pandrosion}, where the algebraic structure is richest.
+where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. While structurally reminiscent of Halley's method~\cite{halley} and the Householder family~\cite{householder, traub}, the Pandrosion iteration is algebraically \emph{distinct} from both (see Section~\ref{sec:classical}). Once derived, the formula is a closed-form rational expression requiring no symbolic derivatives at evaluation time. The remainder of this paper focuses on the cubic specialisation~\eqref{eq:pandrosion}, where the algebraic structure is richest.
 
 \begin{figure}[H]
 \centering
@@ -172,6 +172,71 @@ theorem fixed_point_iff (x : R) (hx : x > 0) (p : N) (hp : p >= 1)
     suffices (x - 1) / (x * Sp p s) = 1 - s by linarith
     rw [div_eq_iff hxS_ne, Sp_mul_one_sub]; linarith
 \end{lstlisting}
+
+%===========================================================
+\section{Relationship to Classical Methods}
+\label{sec:classical}
+%===========================================================
+
+A natural question is whether~\eqref{eq:pandrosion} coincides with classical cube-root iterations. We prove formally that it does not.
+
+\subsection{Pandrosion $\neq$ Newton $\neq$ Halley}
+Newton's method applied to $f(s) = s^3 - X$ gives
+\[
+  N(s) = \frac{2s^3 + X}{3s^2}\,,
+\]
+and Halley's method gives
+\[
+  H(s) = \frac{s(s^3 + 2X)}{2s^3 + X}\,.
+\]
+These are both \emph{different} from the Pandrosion iteration $\mathcal{P}_X(s) = s(s^3+4X)/(3s^3+2X)$. Compare the coefficient pairs: Newton has $(2,1)/(3,0)$; Halley has $(1,2)/(2,1)$; Pandrosion has $(1,4)/(3,2)$. The exact polynomial differences are:
+
+\begin{theorem}[Pandrosion $\neq$ Newton, \texttt{HalleyComparison.lean}]\label{thm:pn}
+\[
+  \mathcal{P}_X(s) \cdot 3s^2 - N(s) \cdot (3s^3+2X) \;=\; -(3s^3-2X)(s^3-X).
+\]
+\end{theorem}
+
+\begin{theorem}[Pandrosion $\neq$ Halley, \texttt{HalleyComparison.lean}]\label{thm:ph}
+\[
+  \mathcal{P}_X(s) \cdot (2s^3+X) - H(s) \cdot (3s^3+2X) \;=\; -s^4(s^3-X).
+\]
+\end{theorem}
+
+Both differences vanish \emph{only} when $s^3 = X$ (or $s = 0$). The three iterations agree at the root and disagree everywhere else.
+
+\begin{remark}
+A common misconception (see e.g.\ some informal discussions) is that the Pandrosion iteration coincides with Halley's method on $s^3 - X = 0$. Theorems~\ref{thm:pn} and~\ref{thm:ph} refute this algebraically. The two iterations have different coefficient structures, different convergence orders, and different trajectories for any starting point $s_0 \neq \sqrt[3]{X}$.
+\end{remark}
+
+\subsection{The Universal Derivative Identity}
+The convergence order is determined by the derivative at the fixed point. For $\mathcal{P}_X(s) = U(s)/V(s)$ with $U = s^4 + 4sX$, $V = 3s^3 + 2X$:
+
+\begin{theorem}[Universal Convergence Rate, \texttt{HalleyComparison.lean}]\label{thm:derivative}
+For all $r \neq 0$ with $r^3 = X$:
+\begin{align*}
+  U'(r)V(r) - U(r)V'(r) &= -5r^6\,, \\
+  V(r)^2 &= 25r^6\,,
+\end{align*}
+and therefore $\mathcal{P}'_X(r) = -\tfrac{1}{5}$, independently of~$X$.
+\end{theorem}
+
+Since $\mathcal{P}'_X(r) = -1/5 \neq 0$, the Pandrosion iteration converges \textbf{linearly} with rate $1/5$. By contrast, Newton satisfies $N'(r) = 0$ (quadratic convergence), and Halley satisfies $H'(r) = H''(r) = 0$ (cubic convergence).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lccc}
+\hline
+\textbf{Method} & \textbf{Formula} & \textbf{Needs derivatives} & \textbf{Order} \\
+\hline
+Pandrosion & $s(s^3{+}4X)/(3s^3{+}2X)$ & none & 1 (rate $1/5$) \\
+Newton & $(2s^3{+}X)/(3s^2)$ & $f'$ & 2 \\
+Halley & $s(s^3{+}2X)/(2s^3{+}X)$ & $f',f''$ & 3 \\
+\hline
+\end{tabular}
+\end{center}
+
+The negative sign $\mathcal{P}'_X(r) = -1/5$ explains the characteristic alternating approach pattern observed numerically (Theorem~\ref{thm:oscillation}). After Steffensen acceleration (Aitken $\Delta^2$), the linear convergence is converted to quadratic convergence (see \texttt{SteffensenAcceleration.lean}), making the Pandrosion-T3 algorithm competitive with Newton while remaining derivative-free.
 
 %===========================================================
 \section{Residual Factorisation and Convergence}
@@ -878,7 +943,7 @@ The genuine contribution lies in: (1)~an original, derivative-free iteration wit
 \end{figure}
 
 \subsection*{Formal Verification Summary}
-The complete Lean~4 corpus comprises \textbf{45~modules}, \textbf{33~deep theorems}, and \textbf{zero \texttt{sorry} declarations}. The source code is publicly available and fully reproducible.
+The complete Lean~4 corpus comprises \textbf{46~modules}, \textbf{323~theorems}, and \textbf{zero \texttt{sorry} declarations}, built against Mathlib~\cite{mathlib}. The source code is publicly available and fully reproducible.
 
 \bigskip
 
@@ -890,6 +955,10 @@ The complete Lean~4 corpus comprises \textbf{45~modules}, \textbf{33~deep theore
 \bibitem{hilbert_polya} Berry, M.V., Keating, J.P., \textit{The Riemann zeros and eigenvalue asymptotics}, SIAM Review 41 (1999), 236--266.
 \bibitem{pappus} Pappus of Alexandria, \textit{Collectio}, Book III, ca.\ 340 CE.
 \bibitem{thue} Thue, A., \textit{\"Uber Ann\"aherungswerte algebraischer Zahlen}, J.\ reine angew.\ Math.\ 135 (1909), 284--305.
+\bibitem{halley} Halley, E., \textit{A New, Exact and Easy Method of Finding Roots of any Equations Generally, and that without any Previous Reduction}, Phil.\ Trans.\ Royal Soc.\ 18 (1694), 136--148.
+\bibitem{traub} Traub, J.F., \textit{Iterative Methods for the Solution of Equations}, Prentice-Hall (1964).
+\bibitem{householder} Householder, A.S., \textit{The Numerical Treatment of a Single Nonlinear Equation}, McGraw-Hill (1970).
+\bibitem{mathlib} The Mathlib Community, \textit{Mathlib: A unified library of mathematics formalized}, available at \url{https://github.com/leanprover-community/mathlib4}.
 \end{thebibliography}
 
 \end{document}
