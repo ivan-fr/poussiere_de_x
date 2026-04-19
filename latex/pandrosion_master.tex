@@ -112,7 +112,7 @@ Every theorem in this monograph is accompanied by extensive Python-based numeric
 % Article 1: latex/pandrosion_en_improved.tex
 % =====================================================================
 \chapter{Article 1: Generalized Pandrosion Residuals}
-\graphicspath{{../}{../../figures/}{../smale/figures/}}
+\graphicspath{{../figures/}}
 
 
 \begin{abstract}
@@ -1059,7 +1059,7 @@ A.~C. Aitken,
 % Article 2: latex/pandrosion_complex.tex
 % =====================================================================
 \chapter{Article 2: Pandrosion Iteration in the Complex Plane}
-\graphicspath{{../}{../../figures/}{../smale/figures/}}
+\graphicspath{{../figures/}}
 
 
 \begin{abstract}
@@ -1549,7 +1549,7 @@ J.~F. Steffensen,
 % Article 3: latex/pandrosion_optimality.tex
 % =====================================================================
 \chapter{Article 3: Kung--Traub Optimality of Steffensen--Pandrosion}
-\graphicspath{{../}{../../figures/}{../smale/figures/}}
+\graphicspath{{../figures/}}
 
 
 \begin{abstract}
@@ -1945,7 +1945,7 @@ Academic Press, New York, 1980.
 % Article 4: latex/pandrosion_higher_order.tex
 % =====================================================================
 \chapter{Article 4: Higher-Order Pandrosion Methods}
-\graphicspath{{../}{../../figures/}{../smale/figures/}}
+\graphicspath{{../figures/}}
 
 
 \begin{abstract}
@@ -2383,7 +2383,7 @@ Academic Press, New York, 1980.
 % Article 7: latex/smale/pandrosion_smale_v2.tex
 % =====================================================================
 \chapter{Article 7: Pandrosion Operator and Smale's 17th Problem}
-\graphicspath{{../smale/}{../../figures/}{../smale/figures/}}
+\graphicspath{{../figures/}}
 
 
 \begin{abstract}
@@ -4552,7 +4552,7 @@ S.~Smale,
 % Article 8: latex/mcmullen/pandrosion_mcmullen.tex
 % =====================================================================
 \chapter{Article 8: Circumventing McMullen's Impossibility:}
-\graphicspath{{../mcmullen/}{../../figures/}{../smale/figures/}}
+\graphicspath{{../figures/}}
 
 \begin{abstract}
 McMullen (1987) proved that no generally convergent purely iterative rational map $z \mapsto R(z)$ exists for polynomials of degree $d \geq 4$.  
@@ -5434,13 +5434,13 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/art01_pandrosion_convergence.png}
+\includegraphics[width=\textwidth]{art01_pandrosion_convergence.png}
 \caption{\textbf{Left:} Convergence trajectories of the Pandrosion iteration $h$ for $p=3$ and various $x$.  Smaller $x$ (closer to~1 via the Scaling Principle) converges faster.  \textbf{Right:} The contraction ratio $\lambda_{p,x}$ as a function of $x$, confirming monotone increase toward~1 (Theorem~5.1).  The scaling reduction $x \to x' \approx 1$ dramatically reduces $\lambda$.}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/art01_dust_scaling.png}
+\includegraphics[width=\textwidth]{art01_dust_scaling.png}
 \caption{\textbf{Left:} The Steffensen--Pandrosion quadratic error constant $K_{SP}$ as a function of $x$ for different $p$.  $K_{SP}$ grows with $x$, motivating the Scaling Principle.  \textbf{Right:} Effect of scaling on the contraction ratio: without scaling (red), $\lambda \to 1$ as $x \to \infty$; with scaling (green), $\lambda$ stays bounded below $0.25$ for all $x$.}
 \end{figure}
 
@@ -5450,7 +5450,7 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/art02_complex_basins.png}
+\includegraphics[width=\textwidth]{art02_complex_basins.png}
 \caption{\textbf{Left:} Newton's method basins of attraction for $z^3 - 1$ with speed shading (brighter = faster convergence).  The fractal boundaries, where basins interlace at every scale, are the hallmark of holomorphic iteration.  \textbf{Right:} Pandrosion contraction landscape $\log_{10}|r/(r-1)|$ with fixed anchor $a=1.5$ ($\triangle$).  The white contour marks $|r/(r-1)| = 1$; inside (green) Pandrosion contracts.  Unlike Newton, this landscape is \emph{entirely smooth} --- no fractals --- because the Pandrosion map is non-holomorphic.  This is the structural advantage identified in Article~2.}
 \end{figure}
 
@@ -5460,7 +5460,7 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/art03_kungtraub.png}
+\includegraphics[width=\textwidth]{art03_kungtraub.png}
 \caption{\textbf{Left:} Quadratic error constants $K_{SP}$ (Pandrosion, green) vs.\ $K_N$ (Newton, red) for $x=2$ across root orders $p = 2, \ldots, 19$.  Pandrosion is consistently better.  \textbf{Right:} The ratio $K_N/K_{SP}$: Newton's constant is $3$--$30\times$ larger, confirming near-optimality of Steffensen--Pandrosion (Conjecture~\ref{conj:optimality}).}
 \end{figure}
 
@@ -5470,7 +5470,7 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/art04_higher_order.png}
+\includegraphics[width=\textwidth]{art04_higher_order.png}
 \caption{\textbf{Left:} Error decay for the basic iteration $h$ (linear, orange) vs.\ Steffensen $T_2$ acceleration (quadratic, green).  Steffensen achieves the same accuracy in half the evaluations.  \textbf{Right:} Measured convergence orders: basic $h$ converges at order~1, Steffensen at order~2, consistent with the Kung--Traub bound $2^{n-1}$ for $n=2$ evaluations.}
 \end{figure}
 
@@ -5480,7 +5480,7 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/art07_smale.png}
+\includegraphics[width=\textwidth]{art07_smale.png}
 \caption{\textbf{Left:} Half-plane containment verified: $\mathrm{Re}(r_s) < 0$ for all $d$ starting points on the Cauchy circle ($R = 3\rho$), for random polynomials of degree $d = 5, 10, 20$.  \textbf{Right:} Product descent $\sum_s \log|P(F_s)/P(z_s)|$ as a function of degree $d$.  The sum is \emph{strictly negative} for all tested degrees $3 \leq d \leq 50$, confirming the Unconditional Product Descent Theorem.}
 \end{figure}
 
@@ -5490,7 +5490,7 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/art08_mcmullen.png}
+\includegraphics[width=\textwidth]{art08_mcmullen.png}
 \caption{\textbf{Left:} Five Pandrosion orbits (one per root of $z^5-1$) launched from the Cauchy circle, each converging to a distinct root.  The $\pi/d$ offset and non-holomorphic reanchoring circumvent McMullen's $d \geq 4$ impossibility.  \textbf{Right:} Residual $|P(z_n)|$ decay: all five orbits achieve exponential descent, reaching machine precision in $\sim 10$ steps.}
 \end{figure}
 
@@ -5502,7 +5502,7 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/bonus_t3_indicator.png}
+\includegraphics[width=\textwidth]{bonus_t3_indicator.png}
 \caption{\textbf{Top:} Simulated price series with Pandrosion $T_3$ structural volatility bands.  Green shading marks bullish divergences (price below band, but $\hat{\lambda} > 0$: structural expansion intact).  \textbf{Bottom:} The geometric eigenvalue $\hat{\lambda}$: positive regions (green) indicate structural growth; negative regions (red) indicate contraction.  The $T_3$ bands dynamically adapt without moving-average lag.}
 \end{figure}
 
@@ -5512,7 +5512,7 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/bonus_analog_pipeline.png}
+\includegraphics[width=\textwidth]{bonus_analog_pipeline.png}
 \caption{\textbf{Left:} Systematic bias vs.\ component noise $\sigma$.  The iterated Pandrosion pipeline ($h^1$, $h^2$) maintains constant bias across all noise levels, while Newton's bias floor is $2.7\times$ higher.  Both degrade gracefully --- neither diverges.  \textbf{Right:} Output distributions at $\sigma = 1\%$: Newton (red) is centered at $1.333$ (7\% bias), while $h^2$ (green) is centered near the true value $\alpha = 1.2599$ ($0.5\%$ bias).}
 \end{figure}
 
@@ -5522,7 +5522,7 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/grand_summary.png}
+\includegraphics[width=\textwidth]{grand_summary.png}
 \caption{\textbf{The Universitas Pandrosion in four panels.}  \emph{Top-left:} The universal contraction bound $\cos^p(\pi/(2p))$ for each root order $p$.  \emph{Top-right:} Complexity bounds for polynomial root-finding: the $O(d^3)$ unconditional bound and the $O(d^2 \log d)$ conjectured bound.  \emph{Bottom-left:} The Pandrosion map $h(s)$ for $p = 2, 3, 5$, showing fixed-point geometry.  \emph{Bottom-right:} Historical arc from Pandrosion (340~AD) to the resolution of Smale's 17th problem (2026).}
 \end{figure}
 
@@ -5530,13 +5530,13 @@ The following figures provide a visual synthesis of the core results established
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/spec_spectral.png}
+\includegraphics[width=\textwidth]{spec_spectral.png}
 \caption{\textbf{Article~7: Three genuinely novel objects from the Pandrosion multi-start --- beyond~$f'/f$.}  \textbf{Top-left:} The \emph{Pandrosion spectral theorem}: the DFT of the ratio vector $r_s = P(R\alpha\omega^s)/P(R\omega^s)$ decays geometrically as $|\hat{r}_k| \leq 2d(\rho/R)^k/k$, verified on $z^5-1$, the Wilkinson polynomial~$W_7$, and a random degree-20 polynomial.  The spectral inversion $p_k = kR^k\hat{r}_k/(e^{-ik\pi/d}-1)$ recovers all Newton power sums from $2d$~evaluations, \emph{without derivatives or coefficient access}.  \textbf{Top-center:} The Pandrosion--Parseval identity $\frac{1}{d}\sum|r_s|^2 = \sum|\hat{r}_k|^2$, verified to $10^{-16}$ on all three families.  \textbf{Top-right:} Multi-start convergence on a random degree-20 polynomial: 20~secant orbits from the Cauchy circle find 15/20 distinct roots without reanchoring.  \textbf{Bottom-left:} Root clustering is encoded in the \emph{spectral asymmetry}: uniform roots ($z^{15}-1$) produce flat $|\hat{r}_k|^2 \sim 10^{-30}$, while clustered roots concentrate energy at low frequencies.  \textbf{Bottom-center:} The Pandrosion zeta function $\mathscr{Z} = \sum\log(1-r_n) = \log[(z_0 - z_{\mathrm{init}})/(z_0 - \zeta^*)]$: a Laplace-type conservation law tracking orbit convergence.  These three structures (spectral decomposition, Parseval energy, Laplace zeta) are \emph{unique} to the equispaced multi-start architecture and are \textbf{not} derivable from the logarithmic derivative~$f'/f$.}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{figures_conclusion/spec_exploits.png}
+\includegraphics[width=\textwidth]{spec_exploits.png}
 \caption{\textbf{Article~8: Five novel spectral identities from the Pandrosion multi-start --- beyond~$f'/f$.}  All formulas use only the ratio vector $r_s = P(R\alpha\omega^s)/P(R\omega^s)$ and its DFT $\hat{r}_k$, requiring $2d$~evaluation-oracle calls and no derivatives.  \textbf{(1)~Spectral Vieta:} the leading coefficient $e_1 = -R\hat{r}_1/(e^{-i\pi/d}-1) + O(\rho^d)$ is recovered to $10^{-14}$ for $d=50$.  \textbf{(2)~Spectral Trace Formula:} the Parseval excess $E-1 = \sum |c_k|^2$ equals $\sum_{k=1}^{d-1} \frac{4\sin^2(k\pi/2d)}{k^2}\frac{|p_k|^2}{R^{2k}}$, verified to $O((\rho/R)^{2d})$.  \textbf{(3)~Root geometry:} the spectral energy correlates linearly with the root radius scatter $\sigma(|\zeta_k|)/\rho$.  \textbf{(4)~Universal descent:} the total first-step descent $\sum_s\log|P(F_s)/P(z_s)| \approx -\pi^2/8 \approx -1.23$ nats per Cauchy-circle epoch, \emph{independently} of $d$ and root configuration.  \textbf{(5)~Energy scaling:} $E-1 \sim |p_1|^2/R^2$ (first spectral mode dominates at large~$R$).  \textbf{(6)~Multi-scale tomography:} changing $R/\rho$ shifts the spectral envelope while preserving the geometric decay $({\rho/R})^k$.  \textbf{(7)~Spectral condition number:} $\kappa_{\mathrm{spec}} = |\hat{r}_1|/|\hat{r}_{d-1}|$ is a derivative-free measure of root separation: well-separated roots give $\kappa \approx 1$, ill-conditioned polynomials give $\kappa \gg 1$.}
 \end{figure}
 
@@ -5545,7 +5545,7 @@ The following figures provide a visual synthesis of the core results established
 % =====================================================================
 
 \chapter{Bonus Article: Spectral Dessins d'Enfants --- Derivative-Free Galois Signatures via Pandrosion Energy}
-\graphicspath{{../../figures/}}
+\graphicspath{{../figures/}}
 
 \begin{abstract}
 Grothendieck's \emph{dessins d'enfants} are classically understood as bipartite graphs arising from the preimages $\beta^{-1}([0,1])$ of Belyi functions. This traditional approach requires computing the logarithmic derivative $\beta'/\beta$ and tracking its poles to identify the vertices of the graph. We propose a radically different architecture relying on the \textbf{Pandrosion spectral scan}. By evaluating the derivative-free Pandrosion ratio $r_s = \beta(R\omega^s e^{i\pi/d})/\beta(R\omega^s)$ strictly on a macroscopic Cauchy circle $R$, we bypass point-wise tracing. Because Belyi functions feature highly degenerate root geometries to satisfy the ramification constraints, their associated Pandrosion energy $\mathcal{E}(R) = \sum |\hat{r}_k|^2$ exhibits a rigid, quantized signature. We demonstrate that Galois conjugate dessins---which share the same multiplicity passport but possess distinct internal geometries---can be unambiguously distinguished macroscopically via their Pandrosion spectral energy, without ever plotting the graph or computing a derivative.
