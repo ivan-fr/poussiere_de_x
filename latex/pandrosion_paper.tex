@@ -1130,7 +1130,7 @@ $G^3-X=(s^3-X)\Phi(s,X)/(3s^3+2X)^3$. The plotted multiplier for $X=2$ crosses t
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{fig_proof_gallery_07_voronoi_stability.pdf}
-\caption{\textbf{Voronoi basin stability.} Theorem~\ref{thm:basin_stability} links algebraic contraction to geometric basin persistence: if $z$ is deep enough in the Voronoi cell of $r$, then the contracted point $f(z)$ remains closer to $r$ than to a competing anchor $r'$. This is the geometric bridge between the contraction proof and the multi-start basin architecture.}
+\caption{\textbf{Voronoi basin stability.} This schematic combines the 2D convexity of Voronoi half-planes from \texttt{VoronoiInvariance.lean} with the distance inequality of Theorem~\ref{thm:basin_stability}: if $z$ is deep enough in the cell of $r$, then a contraction toward $r$ leaves the next point closer to $r$ than to a competing anchor $r'$. The formal basin-stability theorem is stated as a real distance inequality; the displayed plane is the geometric interpretation used by the multi-start architecture.}
 \label{fig:proof_gallery_voronoi_stability}
 \end{figure}
 

@@ -201,14 +201,18 @@ def fig_voronoi_stability():
     fig, ax = plt.subplots(figsize=(7.2, 6.2))
     r = np.array([-1.0, 0.0])
     rp = np.array([1.0, 0.0])
+    c = 0.45
     yy = np.linspace(-1.8, 1.8, 200)
     ax.fill_betweenx(yy, -2.2, 0, color=COLORS["blue"], alpha=0.10)
     ax.fill_betweenx(yy, 0, 2.2, color=COLORS["red"], alpha=0.08)
     ax.axvline(0, color=COLORS["gray"], lw=1.8, ls="--", label="Voronoi bisector")
-    circle = plt.Circle(tuple(r), 0.55, color=COLORS["blue"], fill=False, lw=2)
-    ax.add_patch(circle)
     z = np.array([-1.38, 0.32])
-    fz = r + 0.45 * (z - r)
+    radius = np.linalg.norm(z - r)
+    fz = r + c * (z - r)
+    before = plt.Circle(tuple(r), radius, color=COLORS["gold"], fill=False, lw=1.5, ls="--")
+    after = plt.Circle(tuple(r), c * radius, color=COLORS["green"], fill=False, lw=2)
+    ax.add_patch(before)
+    ax.add_patch(after)
     ax.scatter([r[0], rp[0]], [r[1], rp[1]], s=100, color=[COLORS["blue"], COLORS["red"]], zorder=5)
     ax.text(r[0] - 0.08, r[1] - 0.22, "r", ha="right", color=COLORS["blue"])
     ax.text(rp[0] + 0.08, rp[1] - 0.22, "r'", ha="left", color=COLORS["red"])
@@ -216,12 +220,13 @@ def fig_voronoi_stability():
     ax.annotate("", xy=fz, xytext=z, arrowprops=dict(arrowstyle="->", lw=2, color=COLORS["ink"]))
     ax.text(z[0] - 0.05, z[1] + 0.15, "z", color=COLORS["gold"])
     ax.text(fz[0] + 0.08, fz[1] + 0.07, "f(z)", color=COLORS["green"])
-    ax.text(-1.85, 1.45, "(1+2c)|z-r| < |z-r'|", color=COLORS["ink"],
+    ax.text(-1.85, 1.45, "c=0.45,  (1+2c)|z-r| < |z-r'|\n"
+                          "contracted point stays in r-cell", color=COLORS["ink"],
             bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=COLORS["gray"], alpha=0.9))
     ax.set_xlim(-2.1, 2.1)
     ax.set_ylim(-1.8, 1.8)
     ax.set_aspect("equal", adjustable="box")
-    ax.set_title("Voronoi basin stability under contraction")
+    ax.set_title("Voronoi basin stability schematic")
     ax.set_xlabel("real coordinate")
     ax.set_ylabel("imaginary coordinate")
     ax.grid(alpha=0.15)
@@ -271,10 +276,6 @@ def fig_dft_spectral():
 
 def fig_effective_irrationality():
     r = 2 ** (1 / 3)
-    B = np.arange(1, 140)
-    integer_scale = 1 / (3 * r**2 * B**2)
-    rational_scale = 1 / (3 * r**2 * B**3)
-
     orbit_B = []
     orbit_error = []
     orbit_generic_bound = []
@@ -288,6 +289,10 @@ def fig_effective_irrationality():
         orbit_generic_bound.append(1 / (Bb * form))
         orbit_labels.append(f"n={n}, |d|={abs(d):.0e}" if abs(d) > 999 else f"n={n}, |d|={abs(d)}")
         A, Bb = pandrosion_step(A, Bb, 2)
+
+    B = np.logspace(0, math.log10(max(orbit_B) * 1.25), 360)
+    integer_scale = 1 / (3 * r**2 * B**2)
+    rational_scale = 1 / (3 * r**2 * B**3)
 
     fig, ax = plt.subplots(figsize=(8.8, 4.8))
     ax.loglog(B, integer_scale, color=COLORS["purple"], lw=2.0, ls="--",
