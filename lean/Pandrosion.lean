@@ -78,3 +78,4 @@ import Pandrosion.ThueBridge
 import Pandrosion.ThueFiniteness
 import Pandrosion.ThueGeneral
 import Pandrosion.DynMordellLang
+import Pandrosion.LattesExclusion

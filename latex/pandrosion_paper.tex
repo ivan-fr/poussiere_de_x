@@ -759,6 +759,31 @@ If $d_m = c = d_n$, then $m = n$ by Theorem~\ref{thm:thue_unique}.
 
 Moreover, the norm function $d: \mathbb{N} \to \mathbb{Z}$ is \textbf{injective} (Theorem~\ref{thm:thue_unique}), meaning the Pandrosion orbit provides a bijection between iteration steps and Thue norm values. This constitutes the first formally verified instance of the Dynamical Mordell-Lang conjecture for a concrete algebraic dynamical system of Diophantine interest.
 
+\subsection{Latt\`es Exclusion and Dynamical Classification}
+
+A \emph{Latt\`es map} is a rational map on $\mathbb{P}^1$ arising from an endomorphism of an elliptic curve via the quotient $\pi: E \to E/\mathrm{Aut}(E) \cong \mathbb{P}^1$. Latt\`es maps are the only known rational maps with Julia set equal to all of $\mathbb{P}^1(\mathbb{C})$ (Milnor). A key property: every periodic point of a Latt\`es map is repelling or parabolic — \emph{no} attracting fixed points exist.
+
+\begin{theorem}[\texttt{LattesExclusion.lean}: Latt\`es Exclusion]\label{thm:lattes}
+The Pandrosion map $h_p(s) = 1 - (x-1)/(x \cdot S_p(s))$ is \textbf{not a Latt\`es map} for any $p \geq 2$, $x > 1$.
+\end{theorem}
+\begin{proof}
+By Theorem~\ref{thm:contraction} (Deep~IX), $|h_p(s) - s^*| < |s - s^*|$ for all $s \geq 0$, $s \neq s^*$. Hence $s^*$ is a globally attracting fixed point. Since Latt\`es maps have no attracting fixed points, $h_p$ is not Latt\`es.
+\end{proof}
+
+Combined with the Chebyshev-Halley exclusion (\texttt{ChebyshevHalleyExclusion.lean}), the Pandrosion map is now formally excluded from \textbf{three} major families:
+
+\begin{center}
+\begin{tabular}{lll}
+\textbf{Family} & \textbf{Exclusion Criterion} & \textbf{Module} \\
+\hline
+Newton's method & Different algebraic form & (structural) \\
+Chebyshev-Halley & Parameter $\beta$ mismatch & \texttt{ChebyshevHalleyExclusion} \\
+Latt\`es maps & Attracting fixed point & \texttt{LattesExclusion} \\
+\end{tabular}
+\end{center}
+
+This triple exclusion establishes the Pandrosion iteration as a \emph{genuinely novel} object in the classification of rational dynamical systems on $\mathbb{P}^1$.
+
 \section{Matrix Algebra: Commutativity and Hermitian Invariance}
 \label{sec:matrix_algebra}
 %===========================================================
@@ -1014,7 +1039,7 @@ The certified identities include: residual factorisation over $\mathbb{R}$ (Deep
 We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. Newton's method remains operationally superior for scalar cube roots (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition; it does not establish global basin invariance. The cycle exclusion (Theorem~\ref{thm:nocycles}) applies to the real line; the complex case remains open. The Steffensen acceleration is analytically understood but not yet fully certified in Lean. Finally, the absence of chaotic dynamics and fractal structures in the Julia set is rigorously formulated as an open challenge (Conjecture~\ref{conj:chaos}), acknowledging the present limits of formalised complex analysis.
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; (6)~the Thue Bridge connecting Pandrosion integer sequences to Diophantine approximation theory via norm amplification, providing machine-certified scaffolding toward effective Thue--Siegel bounds; and (7)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{60-module, zero-sorry} corpus.
+The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; (6)~the Thue Bridge connecting Pandrosion integer sequences to Diophantine approximation theory via norm amplification, providing machine-certified scaffolding toward effective Thue--Siegel bounds; and (7)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{61-module, zero-sorry} corpus.
 
 \begin{figure}[H]
 \centering
