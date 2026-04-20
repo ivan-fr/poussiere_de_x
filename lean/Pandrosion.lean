@@ -121,3 +121,6 @@ import Pandrosion.HyperEllipticOrbital
 
 -- Deep three-theorem synthesis
 import Pandrosion.DeepThreeTheorems
+
+-- Deep five-theorem synthesis
+import Pandrosion.DeepFiveTheorems
