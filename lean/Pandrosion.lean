@@ -211,3 +211,6 @@ import Pandrosion.TateAlgebraicCycles
 
 -- Mason-Stothers / Function-Field FLT Frontier: polynomial abc and FLT
 import Pandrosion.MasonStothersFLT
+
+-- log₂(3) integer-core irrationality — REAL PROOF (no hypothesis-in-structure)
+import Pandrosion.LogTwoThreeIrrational
