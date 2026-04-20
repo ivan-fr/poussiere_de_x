@@ -139,3 +139,6 @@ import Pandrosion.AbcTopologicalEmbedding
 
 -- Smale 17 N-Dimensional Tensor Majority
 import Pandrosion.SmaleTensorMajority
+
+-- Computability logic for the Effective Faltings threshold
+import Pandrosion.EffectiveFaltingsAlgorithm
