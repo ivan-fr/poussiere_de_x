@@ -115,3 +115,6 @@ import Pandrosion.MatrixDiophantineOrbital
 import Pandrosion.PadicHenselOrbital
 import Pandrosion.VoronoiGlobalDensity
 import Pandrosion.PadeEquivalenceOrbital
+import Pandrosion.NonArchimedeanOrbital
+import Pandrosion.TelescopicZetaOrbital
+import Pandrosion.HyperEllipticOrbital
