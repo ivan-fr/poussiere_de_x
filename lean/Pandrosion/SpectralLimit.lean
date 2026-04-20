@@ -5,7 +5,7 @@
   Architecture:
   1. Define D_p as the spectral sum
   2. Prove D_p < 0 for p ≥ 2 (sum_lt_sum + cos bounds)
-  3. Closed form via product formula + tangent symmetry [axiom]
+  3. Closed form via product formula + tangent symmetry [classical input]
   4. Prove D_p → -ln(2) from closed form + log(n)/n → 0
 
   Reference: pandrosion_master.tex, §77 (Spectral Limit)
@@ -27,7 +27,7 @@ namespace Pandrosion
 noncomputable def D (p : ℕ) : ℝ :=
   (1 / (p : ℝ)) * ∑ k in range p, Real.log (Real.cos ((k : ℝ) * π / (2 * (p : ℝ))))
 
-/-! ## §78. Classical Integral Identity -/
+/-! ## §78. Classical Analytic Input: Integral Identity -/
 
 variable (integral_log_cos_eq :
     ∫ t in (0 : ℝ)..1, Real.log (Real.cos (π * t / 2)) = -Real.log 2)
@@ -87,7 +87,7 @@ theorem D_neg (p : ℕ) (hp : p ≥ 2) : D p < 0 := by
             by push_cast at hlt ⊢; exact hlt⟩
       _ = 0 := by simp
 
-/-! ## §81. Closed Form -/
+/-! ## §81. Classical Analytic Input: Closed Form -/
 
 variable (D_eq_closed : ∀ (p : ℕ) (_hp : p ≥ 2),
     D p = (Real.log (2 * ↑p) - (2 * ↑p - 1) * Real.log 2) / (2 * ↑p))

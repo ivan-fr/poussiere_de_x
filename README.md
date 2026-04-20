@@ -42,9 +42,11 @@ As of April 20, 2026:
 - Top-level `theorem` declarations under `lean/Pandrosion/` plus root import file: `678`
 - `lake build Pandrosion` passes through Docker Compose.
 - No executable `sorry` terms were found in the corpus; the only `sorry` occurrence is in prose inside a comment.
-- Two explicit axioms remain in [`lean/Pandrosion/SpectralLimit.lean`](lean/Pandrosion/SpectralLimit.lean), used for spectral-limit statements:
+- No project-level `axiom` declarations remain under `lean/Pandrosion/`.
+- [`lean/Pandrosion/SpectralLimit.lean`](lean/Pandrosion/SpectralLimit.lean) keeps two classical analytic inputs as explicit Lean variables, used for spectral-limit statements:
   - `integral_log_cos_eq`
   - `D_eq_closed`
+  This makes the dependency honest and local: the convergence proof is formalized relative to the closed-form identity, while the identity itself is treated as a standard analytic input rather than a project-declared axiom.
 
 The paper is therefore best read as a formally verified algebraic and
 dynamical case study, not as a claim to have resolved any open global problem.
