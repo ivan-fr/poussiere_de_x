@@ -134,26 +134,11 @@ import Pandrosion.DeepThirteenTheorems
 -- Deep fifteen-theorem synthesis (14-15)
 import Pandrosion.DeepFifteenTheorems
 
--- Topological embedding for Full ABC Conjecture
-import Pandrosion.AbcTopologicalEmbedding
-
 -- Smale 17 N-Dimensional Tensor Majority
 import Pandrosion.SmaleTensorMajority
 
--- Computability logic for the Effective Faltings threshold
-import Pandrosion.EffectiveFaltingsAlgorithm
-
--- Topological distribution bounds for Pisot-Salem algebraic sets
-import Pandrosion.PisotSalemDistribution
-
 -- The Polya-Hilbert Operator equilibrium bounding the Riemann Critical Line
 import Pandrosion.RiemannGyroscopicAttractor
-
--- Topologizing Birch and Swinnerton-Dyer (BSD) via Multi-Root Algebraic Dimensions
-import Pandrosion.BsdAttractorRank
-
--- Syracuse (Collatz) 3x+1 Envelope Absorption via Faltings Extinction Bounds
-import Pandrosion.CollatzExtinctionHorizon
 
 -- Szemerédi's Theorem: Ergodic Arithmetic Progressions via Standing Fluid Waves
 import Pandrosion.SzemerediErgodicResonance
@@ -161,56 +146,14 @@ import Pandrosion.SzemerediErgodicResonance
 -- The Skolem-Mahler-Lech Absolute Theorem: Diophantine Trace Finiteness
 import Pandrosion.SkolemMahlerLech
 
--- The Liouville-Roth Irrationality Bound: Infinite Dimensional Compression Impossibility
-import Pandrosion.RothIrrationalityBound
-
 -- Lehmer's Spectral Limit: The Absolute Trace Gap of Non-Cyclotomic Volumes
 import Pandrosion.LehmersSpectralLimit
-
--- Kronecker's Theorem: Roots of Unity Classification via Lehmer Void
-import Pandrosion.KroneckerRootsOfUnity
-
--- Weyl's Equidistribution: Orbital Tensor Volume Conservation
-import Pandrosion.WeylEquidistribution
-
--- Gelfond-Schneider Transcendence: Exponential Tower Compression Impossibility
-import Pandrosion.GelfondSchneiderTranscendence
 
 -- Baker's Theorem: Multi-Dimensional Logarithmic Tensor Bounds
 import Pandrosion.BakerLinearForms
 
--- Schmidt's Subspace Theorem: Higher-Dimensional Roth Decomposition
-import Pandrosion.SchmidtSubspace
-
--- Littlewood Simultaneous Frontier: liminf n·‖nα‖·‖nβ‖ = 0 via Schmidt + Vojta dim 2
-import Pandrosion.LittlewoodSimultaneous
-
--- Beal Orbital Frontier: coprime A^x+B^y=C^z with exponents ≥ 3
-import Pandrosion.BealOrbital
-
--- Oppenheim Ergodic Frontier: density of indefinite quadratic form values
-import Pandrosion.OppenheimErgodic
-
--- Leopoldt p-adic Frontier: non-vanishing of the p-adic regulator
-import Pandrosion.LeopoldtPadic
-
--- Vojta Main Conjecture Frontier: unifying Roth / abc / Schmidt / Faltings / Lang
-import Pandrosion.VojtaMainFrontier
-
--- Artin Primitive Root Frontier: GRH-conditional infinitude of primitive-root primes
-import Pandrosion.ArtinPrimitiveRoot
-
--- Lehmer Totient Frontier: every solution of φ(n) | n-1 is prime
-import Pandrosion.LehmerTotient
-
--- Goldfeld Average Rank Frontier: average rank of quadratic twists is 1/2
-import Pandrosion.GoldfeldAverageRank
-
--- Tate Algebraic Cycles Frontier: cycle rank = Galois-invariant rank
-import Pandrosion.TateAlgebraicCycles
-
--- Mason-Stothers / Function-Field FLT Frontier: polynomial abc and FLT
-import Pandrosion.MasonStothersFLT
-
--- log₂(3) integer-core irrationality — REAL PROOF (no hypothesis-in-structure)
+-- log₂(3) integer-core irrationality — REAL PROOF
 import Pandrosion.LogTwoThreeIrrational
+
+-- Concrete sequence evaluation for X=2 (Real orbital Thue finiteness)
+import Pandrosion.ConcreteOrbitX2
