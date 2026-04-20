@@ -142,3 +142,6 @@ import Pandrosion.SmaleTensorMajority
 
 -- Computability logic for the Effective Faltings threshold
 import Pandrosion.EffectiveFaltingsAlgorithm
+
+-- Topological distribution bounds for Pisot-Salem algebraic sets
+import Pandrosion.PisotSalemDistribution
