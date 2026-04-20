@@ -27,10 +27,10 @@ namespace Pandrosion
 noncomputable def D (p : ℕ) : ℝ :=
   (1 / (p : ℝ)) * ∑ k in range p, Real.log (Real.cos ((k : ℝ) * π / (2 * (p : ℝ))))
 
-/-! ## §78. Classical Integral Identity (Axiom) -/
+/-! ## §78. Classical Integral Identity -/
 
-axiom integral_log_cos_eq :
-    ∫ t in (0 : ℝ)..1, Real.log (Real.cos (π * t / 2)) = -Real.log 2
+variable (integral_log_cos_eq :
+    ∫ t in (0 : ℝ)..1, Real.log (Real.cos (π * t / 2)) = -Real.log 2)
 
 /-! ## §79. Auxiliary: angle bounds and cosine properties -/
 
@@ -89,9 +89,8 @@ theorem D_neg (p : ℕ) (hp : p ≥ 2) : D p < 0 := by
 
 /-! ## §81. Closed Form -/
 
-/-- Closed form for D_p (from product formula + tangent symmetry). -/
-axiom D_eq_closed (p : ℕ) (hp : p ≥ 2) :
-    D p = (Real.log (2 * ↑p) - (2 * ↑p - 1) * Real.log 2) / (2 * ↑p)
+variable (D_eq_closed : ∀ (p : ℕ) (_hp : p ≥ 2),
+    D p = (Real.log (2 * ↑p) - (2 * ↑p - 1) * Real.log 2) / (2 * ↑p))
 
 /-! ## §82. D_p → -ln(2) -/
 
