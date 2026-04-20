@@ -90,3 +90,4 @@ import Pandrosion.LehmerOrbital
 import Pandrosion.NorthcottDynamics
 import Pandrosion.AbcOrbital
 import Pandrosion.VojtaOrbital
+import Pandrosion.ManinMumfordDynamics
