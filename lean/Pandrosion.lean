@@ -163,3 +163,6 @@ import Pandrosion.SkolemMahlerLech
 
 -- The Liouville-Roth Irrationality Bound: Infinite Dimensional Compression Impossibility
 import Pandrosion.RothIrrationalityBound
+
+-- Lehmer's Spectral Limit: The Absolute Trace Gap of Non-Cyclotomic Volumes
+import Pandrosion.LehmersSpectralLimit
