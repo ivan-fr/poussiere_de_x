@@ -108,3 +108,6 @@ import Pandrosion.BombieriPilaOrbital
 import Pandrosion.EffectiveFaltingsOrbital
 import Pandrosion.LangOrbital
 import Pandrosion.HilbertIrreducibilityOrbital
+import Pandrosion.AbcGlobalFrontier
+import Pandrosion.RothEffectiveFrontier
+import Pandrosion.LehmerGlobalFrontier
