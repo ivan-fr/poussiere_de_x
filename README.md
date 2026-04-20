@@ -30,7 +30,6 @@ The repository contains:
 - a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities;
 - a LaTeX research paper describing the formal corpus;
 - generated figures, including a final ten-figure proof gallery;
-- Python scripts for figure generation and numerical visualization;
 - Docker Compose tooling for reproducible Lean builds.
 
 ## Current Formal Status
@@ -54,8 +53,7 @@ the Lean theorem statements.
 
 ## Proof Highlights
 
-The final section of the paper contains a ten-figure proof gallery generated
-from [`scripts/generate_proof_gallery_figures.py`](scripts/generate_proof_gallery_figures.py):
+The final section of the paper contains a ten-figure proof gallery:
 
 1. Universal local derivative `P'(r) = -1/5`
 2. Chebyshev-Halley family exclusion
@@ -68,8 +66,8 @@ from [`scripts/generate_proof_gallery_figures.py`](scripts/generate_proof_galler
 9. DFT character orthogonality
 10. Effective irrationality bound and norm explosion
 
-The generated gallery files live in `latex/fig_proof_gallery_*.pdf` and are
-included by `latex/pandrosion_paper.tex`.
+The gallery files live in `latex/fig_proof_gallery_*.pdf` and are included by
+`latex/pandrosion_paper.tex`.
 
 ## Repository Layout
 
@@ -88,8 +86,6 @@ included by `latex/pandrosion_paper.tex`.
 │   ├── lakefile.lean
 │   ├── lake-manifest.json
 │   └── lean-toolchain
-├── scripts/
-│   └── generate_proof_gallery_figures.py
 ├── figures/                          # Additional generated visual assets
 ├── docker-compose.yml                # Lean build/check services
 ├── Dockerfile                        # Lean container image
@@ -146,33 +142,6 @@ From inside `latex/`, the equivalent copy command is:
 cp pandrosion_paper.pdf ../articles/pandrosion_paper.pdf
 ```
 
-## Regenerate The Proof Gallery Figures
-
-Requirements:
-
-- Python 3
-- `numpy`
-- `matplotlib`
-
-On this machine, `/usr/bin/python3` has the needed scientific packages. The
-Matplotlib cache is pointed at `/tmp` to avoid user-cache permission issues:
-
-```bash
-MPLCONFIGDIR=/tmp/mplconfig /usr/bin/python3 scripts/generate_proof_gallery_figures.py
-```
-
-Generic command if your default Python environment has the dependencies:
-
-```bash
-python3 scripts/generate_proof_gallery_figures.py
-```
-
-After regenerating figures, rebuild the paper:
-
-```bash
-(cd latex && ../tectonic pandrosion_paper.tex)
-```
-
 ## Useful Lean Modules
 
 Some central modules:
@@ -194,7 +163,6 @@ This repository contains several types of evidence:
 - Lean theorem proofs: machine-checked formal statements.
 - LaTeX exposition: human-readable presentation of those statements and their interpretation.
 - Figures: numerical or schematic visualizations, not additional proofs.
-- Python scripts: figure generation and numerical visualization helpers.
 
 The project does not claim to solve Smale's 17th problem, the Riemann
 hypothesis, abc, Roth, or other global open problems. The value of the corpus
