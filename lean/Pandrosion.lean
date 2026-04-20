@@ -145,3 +145,6 @@ import Pandrosion.EffectiveFaltingsAlgorithm
 
 -- Topological distribution bounds for Pisot-Salem algebraic sets
 import Pandrosion.PisotSalemDistribution
+
+-- The Polya-Hilbert Operator equilibrium bounding the Riemann Critical Line
+import Pandrosion.RiemannGyroscopicAttractor
