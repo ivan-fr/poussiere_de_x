@@ -1,0 +1,30 @@
+name: Universitas Pandrosion CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build_and_verify:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Establish Elan Cache
+      uses: actions/cache@v3
+      with:
+        path: /home/lean_user/.elan
+        key: ${{ runner.os }}-elan-${{ hashFiles('lean/lean-toolchain') }}
+        restore-keys: |
+          ${{ runner.os }}-elan-
+          
+    - name: Build Docker Checking Environment
+      run: docker compose build lean-check
+
+    - name: Run Strict Zero-Sorry Compilation
+      run: docker compose run --rm lean-check
