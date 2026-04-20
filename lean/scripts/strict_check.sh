@@ -97,25 +97,49 @@ echo "  axiom in source:            $AXIOM_CT"
 echo
 echo "--- Axiom audit (every Pandrosion.* theorem via #print axioms) ---"
 AUDIT=$(mktemp)
-# lake env lean runs with the project's LEAN_PATH so imports resolve.
-if lake env lean CheckAllAxioms.lean 2>&1 | tee "$AUDIT"; then
+# Generate the audit file by scanning every theorem/lemma in Pandrosion/*.lean
+# and emitting a `#print axioms` line for each.
+# We detect: `theorem NAME ...` and `lemma NAME ...`, optionally preceded by
+# `noncomputable`, `private` etc. We skip names starting with `_` (anonymous).
+GEN=$(mktemp)
+find Pandrosion/ -name "*.lean" -print0 \
+  | xargs -0 perl -ne '
+      if (/^\s*(?:noncomputable\s+|private\s+|protected\s+)*(?:theorem|lemma)\s+([A-Za-z][A-Za-z0-9_'"'"'\.]*)/) {
+        print "Pandrosion.$1\n";
+      }
+    ' \
+  | sort -u > "$GEN"
+AUDIT_IN=$(wc -l < "$GEN" | tr -d ' ')
+echo "  theorems discovered: $AUDIT_IN"
+# Write the generated audit section into CheckAllAxioms.lean (between markers).
+AUDIT_SRC=$(mktemp)
+awk -v body="$(awk '{print "#print axioms " $0}' "$GEN")" '
+  /BEGIN GENERATED AXIOM AUDIT/ { print; print body; skip=1; next }
+  /END GENERATED AXIOM AUDIT/   { skip=0 }
+  !skip { print }
+' CheckAllAxioms.lean > "$AUDIT_SRC"
+cp "$AUDIT_SRC" CheckAllAxioms.lean
+
+# Compile / run the audit file with the same strict lean options the library uses.
+if lake env lean CheckAllAxioms.lean \
+     -Dlinter.unusedVariables=true \
+     -DautoImplicit=false \
+     -DmaxHeartbeats=400000 > "$AUDIT" 2>&1; then
   :
 else
-  echo "❌ Axiom audit run failed."
+  echo "❌ Axiom audit run failed — lean exited non-zero."
 fi
-AUDIT_THMS=$(grep -c '^## Pandrosion\.' "$AUDIT" || true)
+# `#print axioms foo` emits either:
+#   "'foo' depends on axioms: [propext, Classical.choice]"
+# or a single-line variant. We collect every bracketed axiom list.
+AUDIT_THMS=$(grep -cE "depends on axioms:" "$AUDIT" || true)
 SORRYAX_HITS=$(grep -c 'sorryAx' "$AUDIT" || true)
-# Extract every axiom name mentioned by `#print axioms` output.
-# `#print axioms` emits lines like:
-#   "'Pandrosion.foo' depends on axioms: [propext, Classical.choice]"
-# We pull the bracketed list.
 FOREIGN_AXIOMS=$(mktemp)
 perl -ne '
   if (/depends on axioms:\s*\[([^\]]*)\]/) {
     for my $a (split /,\s*/, $1) {
       $a =~ s/^\s+|\s+$//g;
       next unless $a;
-      # whitelist
       next if $a eq "propext" or $a eq "Classical.choice" or $a eq "Quot.sound";
       print "$a\n";
     }
