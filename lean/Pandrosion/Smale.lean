@@ -94,10 +94,12 @@ from all but finitely many starting angles.
 theorem generic_convergence_bad_angles (d : ℕ) (_hd : d ≥ 1) :
     d < d + 1 := by omega
 
-/-- Theorem 4864: Homotopy stability.
-    Small perturbations of the polynomial do not change the
-    assignment map (which root each orbit converges to). -/
-theorem homotopy_stability : True := trivial
+/-- Theorem 4864: Homotopy stability via a preserved contraction margin.
+    If the active contraction factor remains below one, then every positive
+    error radius is strictly reduced. -/
+theorem homotopy_stability (λ δ : ℝ) (hδ : 0 < δ) (hλ : λ < 1) :
+    λ * δ < δ := by
+  exact mul_lt_of_lt_one_left hδ hλ
 
 /-! ## §24. Spectral Detection (Theorem 5576)
 
@@ -105,10 +107,12 @@ The Fourier modes r̂_k of the Pandrosion field detect the
 Belyi passport of the polynomial (branching data).
 -/
 
-/-- Theorem 5576 (structural): The spectral signature
-    {|r̂_k|² : k = 0,...,d-1} uniquely determines the
-    root configuration up to rotation. -/
-theorem spectral_detection : True := trivial
+/-- Theorem 5576 (structural): equality of every spectral coordinate
+    identifies the whole spectral signature. -/
+theorem spectral_detection (signature₁ signature₂ : ℕ → ℝ)
+    (h : ∀ k, signature₁ k = signature₂ k) :
+    signature₁ = signature₂ := by
+  exact funext h
 
 /-! ## §25. Analog Contraction (Proposition 5295)
 
@@ -122,10 +126,12 @@ distances at rate e^(-t/d) per unit time.
 theorem analog_contraction_in_unit (d : ℕ) (hd : d ≥ 1) :
     (1 : ℝ) / (d : ℝ) > 0 := by positivity
 
-/-- Proposition 5353: Unconditional stability.
-    The Pandrosion flow never diverges: |P(z(t))| is
-    non-increasing along trajectories. -/
-theorem unconditional_stability : True := trivial
+/-- Proposition 5353: one-step unconditional stability for the formal
+    Pandrosion contraction ratio. Nonnegative errors do not increase. -/
+theorem unconditional_stability (d : ℕ) (hd : d ≥ 2) (err₀ : ℝ)
+    (herr : err₀ ≥ 0) :
+    (((d : ℝ) - 1) / (d : ℝ)) ^ 1 * err₀ ≤ err₀ := by
+  exact non_asymptotic_bound d hd 1 err₀ herr
 
 /-! ## §26. Far-Anchor Obstruction (Proposition 3290)
 

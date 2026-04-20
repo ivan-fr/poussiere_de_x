@@ -138,17 +138,18 @@ Open question: Does P_X belong to any previously studied family
 of rational maps, or is it truly novel?
 -/
 
-/-- **The exclusion triple: Pandrosion is neither Newton, nor
-    Chebyshev-Halley, nor Lattès.**
-
-    This theorem combines the three exclusion results into a single
-    statement. Newton exclusion is trivial (different algebraic form).
-    CH exclusion is from ChebyshevHalleyExclusion.lean.
-    Lattès exclusion is from this module.
-
-    The combined result: P_X is a genuinely new rational iteration. -/
-theorem pandrosion_classification_novel : True := trivial
--- The three exclusion theorems are separately verified;
--- this marker theorem witnesses their formal existence in the corpus.
+/-- **Classification certificate at the Lattès boundary.**
+    Under the standard fixed-point hypotheses, the Pandrosion map has both
+    the strict contraction property and the corresponding non-Lattès
+    exclusion. This replaces the former marker with an actual bundled
+    theorem used by the rigidity narrative. -/
+theorem pandrosion_classification_novel (p : ℕ) (hp : p ≥ 2)
+    (x sstar : ℝ) (hx : x > 1) (hss_pos : sstar > 0)
+    (hss_lt : sstar < 1) (hss_eq : sstar ^ p = 1 / x) :
+    strict_global_contraction (pandrosion_h x p) sstar ∧
+      ¬ lattes_compatible_at (pandrosion_h x p) sstar := by
+  constructor
+  · exact pandrosion_strict_contraction p hp x sstar hx hss_pos hss_lt hss_eq
+  · exact pandrosion_not_lattes p hp x sstar hx hss_pos hss_lt hss_eq
 
 end Pandrosion

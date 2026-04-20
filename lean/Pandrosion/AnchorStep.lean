@@ -164,15 +164,13 @@ recovers the standard Pandrosion formula from the paper:
 We prove the relationship in the general anchor case.
 -/
 
-/-- **The standard Pandrosion iteration is NOT F_a for any fixed a.**
-    The standard formula s(s³+4X)/(3s³+2X) involves no anchor.
-    It comes from F_a with the implicit choice a = something specific.
-
-    Key relationship: the standard Pandrosion map equals
-    F_{something}(s) where the "anchor" depends on s.
-    This is the fundamental difference with the multi-start version,
-    where a is fixed externally. -/
-theorem standard_vs_anchor : True := trivial
+/-- **Self-anchoring collapses the anchor step to Newton's cubic step.**
+    This is the certified degenerate case of the anchor architecture:
+    when the external anchor is set equal to the current iterate, the
+    derivative-free divided-difference step has Newton's value. -/
+theorem standard_vs_anchor (X a : ℝ) (ha : a ≠ 0) :
+    pandrosion_anchor_step X a a = (2 * a ^ 3 + X) / (3 * a ^ 2) :=
+  newton_from_pandrosion X a ha
 
 /-! ## §224. Reanchoring Identity
 
@@ -357,4 +355,3 @@ theorem mcmullen_circumvention_trivial (X a s : ℝ) :
   exact ⟨rfl, rfl⟩
 
 end Pandrosion
-

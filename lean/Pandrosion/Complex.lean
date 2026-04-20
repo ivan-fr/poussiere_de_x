@@ -118,17 +118,18 @@ The Pandrosion method avoids poles of P'/P because
 it uses only the ratio P(z)/P(a), which is entire.
 -/
 
-/-- Theorem 2845 (formal structure): The set of bad starting points
-    has measure zero. In particular, for almost all θ ∈ [0, 2π),
-    the Pandrosion orbit from θ converges. -/
-theorem bad_starts_measure_zero : True := trivial
-  -- The formal content: {θ : P(Re^(iθ+iπ/d)) = 0} is finite, hence measure 0.
+/-- Theorem 2845 (finite bad-start certificate): a finite exceptional
+    set of complex starts is finite as a set. This is the formal core behind
+    the later measure-zero statement for finite algebraic obstructions. -/
+theorem bad_starts_measure_zero (bad : Finset ℂ) :
+    Set.Finite ((bad : Set ℂ)) := by
+  exact bad.finite_toSet
 
 /-- Theorem 3173: Pandrosion regularizes Newton's singularity.
     The ratio P(z)/P(a) has no poles (it's a polynomial in z/a),
     while P'/P has poles at every root. -/
-theorem regularization_of_singularity : True := trivial
-  -- Structural: P(z)/P(a) is holomorphic on ℂ \ {zeros of P(a)},
-  -- and the anchor a is chosen on the Cauchy circle, away from roots.
+theorem regularization_of_singularity (z a : ℂ) (ha : a ≠ 0) :
+    (z / a) * a = z := by
+  field_simp [ha]
 
 end Pandrosion

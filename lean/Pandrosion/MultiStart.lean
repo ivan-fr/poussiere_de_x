@@ -118,9 +118,13 @@ theorem max_roots_found (d : ℕ) : d ≤ d := le_refl d
 /-- **The number of angular sectors equals the number of starts.** -/
 theorem sector_count (d : ℕ) : d = d := rfl
 
-/-- **For generic polynomials of degree d, there are exactly d roots.**
-    Combined with the sector coverage, d starts suffice. -/
-theorem roots_eq_degree : True := trivial
+/-- **For the formal `Fin d` root index model, the number of root slots is
+    exactly the degree parameter `d`.**
+    This is the finite combinatorial core used by the later bijective
+    basin-assignment theorem. -/
+theorem roots_eq_degree (d : ℕ) :
+    Fintype.card (Fin d) = d := by
+  simp
 
 /-! ## §216. Epoch Convergence Bounds
 

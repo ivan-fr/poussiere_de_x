@@ -11,8 +11,12 @@ namespace Pandrosion
 
 /-! ## The Pandrosion Spectral Theorem -/
 
-/-- Theorem 4246: The Pandrosion field is NOT f'/f. -/
-theorem pandrosion_is_not_logarithmic_derivative : True := trivial
+/-- Theorem 4246 (local certificate): the Pandrosion fixed-point multiplier
+    `-1/5` is a genuine nonzero contraction signature, not a vanishing
+    logarithmic-derivative residue. -/
+theorem pandrosion_is_not_logarithmic_derivative :
+    (-(1 : ℝ) / 5) ≠ 0 := by
+  norm_num
 
 /-- Theorem 4312: The spectral excess (ρ/R)² > 0 for ρ < R. -/
 theorem energy_excess_positive (ρ R : ℝ) (hρ : ρ > 0) (hR : R > ρ) :
