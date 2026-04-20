@@ -133,3 +133,9 @@ import Pandrosion.DeepThirteenTheorems
 
 -- Deep fifteen-theorem synthesis (14-15)
 import Pandrosion.DeepFifteenTheorems
+
+-- Topological embedding for Full ABC Conjecture
+import Pandrosion.AbcTopologicalEmbedding
+
+-- Smale 17 N-Dimensional Tensor Majority
+import Pandrosion.SmaleTensorMajority
