@@ -33,7 +33,7 @@ P_X(s) = s * (s^3 + 4X) / (3s^3 + 2X)
 
 The repository contains:
 
-- a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities (120 modules, zero `sorry`);
+- a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities (125 modules, zero `sorry`);
 - a LaTeX research paper describing the formal corpus with four visual epilogues;
 - generated figures, including a ten-figure proof gallery and 12 theorem visualizations;
 - Docker Compose tooling for reproducible Lean builds.
@@ -44,8 +44,8 @@ As of April 20, 2026:
 
 - Lean toolchain: `leanprover/lean4:v4.7.0`
 - Mathlib: `v4.7.0`
-- Lean modules under `lean/Pandrosion/`: `120`
-- Top-level `theorem` declarations under `lean/Pandrosion/` plus root import file: `700+`
+- Lean modules under `lean/Pandrosion/`: `125`
+- Top-level `theorem` declarations under `lean/Pandrosion/` plus root import file: `720+`
 - `lake build Pandrosion` passes through Docker Compose.
 - No executable `sorry` terms were found in the corpus; the only `sorry` occurrence is in prose inside a comment.
 - No project-level `axiom` declarations remain under `lean/Pandrosion/`.
@@ -90,7 +90,7 @@ The gallery files live in `latex/fig_proof_gallery_*.pdf` and are included by
 │   └── fig_*.pdf                     # Paper figures
 ├── lean/
 │   ├── Pandrosion.lean               # Root import module
-│   ├── Pandrosion/                   # 120 Lean modules
+│   ├── Pandrosion/                   # 125 Lean modules
 │   ├── lakefile.lean
 │   ├── lake-manifest.json
 │   └── lean-toolchain
@@ -111,8 +111,8 @@ docker compose run --rm lean-check
 Expected result:
 
 ```text
-Compiled: 120 / 120
-✅ INCREMENTAL OK — 120 modules compiled
+Compiled: 125 / 125
+✅ INCREMENTAL OK — 125 modules compiled
 ```
 
 For a clean rebuild with cache cleanup and summary:
