@@ -181,3 +181,18 @@ import Pandrosion.BakerLinearForms
 
 -- Schmidt's Subspace Theorem: Higher-Dimensional Roth Decomposition
 import Pandrosion.SchmidtSubspace
+
+-- Littlewood Simultaneous Frontier: liminf n·‖nα‖·‖nβ‖ = 0 via Schmidt + Vojta dim 2
+import Pandrosion.LittlewoodSimultaneous
+
+-- Beal Orbital Frontier: coprime A^x+B^y=C^z with exponents ≥ 3
+import Pandrosion.BealOrbital
+
+-- Oppenheim Ergodic Frontier: density of indefinite quadratic form values
+import Pandrosion.OppenheimErgodic
+
+-- Leopoldt p-adic Frontier: non-vanishing of the p-adic regulator
+import Pandrosion.LeopoldtPadic
+
+-- Vojta Main Conjecture Frontier: unifying Roth / abc / Schmidt / Faltings / Lang
+import Pandrosion.VojtaMainFrontier
