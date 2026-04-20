@@ -86,3 +86,5 @@ import Pandrosion.HallOrbital
 import Pandrosion.PillaiOrbital
 import Pandrosion.SkolemMahlerLech
 import Pandrosion.EffectiveThue
+import Pandrosion.LehmerOrbital
+import Pandrosion.NorthcottDynamics
