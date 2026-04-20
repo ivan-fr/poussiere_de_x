@@ -30,7 +30,7 @@ The repository contains:
 - a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities;
 - a LaTeX research paper describing the formal corpus;
 - generated figures, including a final ten-figure proof gallery;
-- Python scripts for numerical and visual exploration;
+- Python scripts for figure generation and numerical visualization;
 - Docker Compose tooling for reproducible Lean builds.
 
 ## Current Formal Status
@@ -90,7 +90,6 @@ included by `latex/pandrosion_paper.tex`.
 │   └── lean-toolchain
 ├── scripts/
 │   └── generate_proof_gallery_figures.py
-├── verification/                     # Python verification/exploration scripts
 ├── figures/                          # Additional generated visual assets
 ├── docker-compose.yml                # Lean build/check services
 ├── Dockerfile                        # Lean container image
@@ -188,23 +187,6 @@ Some central modules:
 - [`lean/Pandrosion/DFTDecomposition.lean`](lean/Pandrosion/DFTDecomposition.lean) - roots-of-unity cancellation and DFT identities
 - [`lean/Pandrosion/EffectiveIrrationality.lean`](lean/Pandrosion/EffectiveIrrationality.lean) - effective Liouville-type lower bound
 
-## Python Verification And Exploration
-
-The `verification/` directory contains exploratory numerical scripts and
-stress tests used while developing the paper. These are not the formal proof
-source; Lean is the authoritative formal layer.
-
-Examples:
-
-```bash
-python3 verification/verification_complex.py
-python3 verification/verification_optimality.py
-python3 verification/final_stress_test.py
-```
-
-Some scripts may require scientific Python packages such as `numpy`,
-`matplotlib`, or `scipy`.
-
 ## Scope Notes
 
 This repository contains several types of evidence:
@@ -212,7 +194,7 @@ This repository contains several types of evidence:
 - Lean theorem proofs: machine-checked formal statements.
 - LaTeX exposition: human-readable presentation of those statements and their interpretation.
 - Figures: numerical or schematic visualizations, not additional proofs.
-- Python verification scripts: exploratory tests and numerical experiments.
+- Python scripts: figure generation and numerical visualization helpers.
 
 The project does not claim to solve Smale's 17th problem, the Riemann
 hypothesis, abc, Roth, or other global open problems. The value of the corpus
