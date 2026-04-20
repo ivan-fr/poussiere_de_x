@@ -138,9 +138,6 @@ For non-trivial trace, take P(z) = z³ + z² − 2 (trace = -1):
   Trace = -1, |trace| = 1, the bound is sharp.
 -/
 
-/-- **PSL cert: trace of z³ − 2 is 0 (no contribution).** -/
-theorem psl_cert_x2_trace : (0 : ℤ) = 0 := rfl
-
 /-- **PSL cert: trace of z³ + z² − 2 is -1 (sharp bound).** -/
 theorem psl_cert_x2_perturbed : |((-1 : ℤ))| = 1 := by norm_num
 

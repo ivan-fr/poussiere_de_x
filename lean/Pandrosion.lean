@@ -140,23 +140,8 @@ import Pandrosion.SmaleTensorMajority
 -- The Polya-Hilbert Operator equilibrium bounding the Riemann Critical Line
 import Pandrosion.RiemannGyroscopicAttractor
 
--- Szemerédi's Theorem: Ergodic Arithmetic Progressions via Standing Fluid Waves
-import Pandrosion.SzemerediErgodicResonance
-
--- The Skolem-Mahler-Lech Absolute Theorem: Diophantine Trace Finiteness
-import Pandrosion.SkolemMahlerLech
-
--- Lehmer's Spectral Limit: The Absolute Trace Gap of Non-Cyclotomic Volumes
-import Pandrosion.LehmersSpectralLimit
-
--- Baker's Theorem: Multi-Dimensional Logarithmic Tensor Bounds
-import Pandrosion.BakerLinearForms
-
 -- log₂(3) integer-core irrationality — REAL PROOF
 import Pandrosion.LogTwoThreeIrrational
-
--- Concrete sequence evaluation for X=2 (Real orbital Thue finiteness)
-import Pandrosion.ConcreteOrbitX2
 
 -- ∛2 integer-core irrationality — REAL PROOF (infinite descent, cubic case)
 import Pandrosion.CbrtTwoIntegerCore

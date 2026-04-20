@@ -148,9 +148,6 @@ theorem fft_cost (d : ℕ) (hd : d ≥ 2) :
 Further properties of E(R) = (1/d)∑|r_s|².
 -/
 
-/-- E(R) ≥ 1 for all R > ρ (since r̂_0 ≈ -1 and |r̂_0|² ≈ 1). -/
-theorem energy_lower_bound : (1 : ℝ) ≥ 1 := le_refl 1
-
 /-- E(R) = 1 if and only if P(z) = z^d (all roots at origin).
     When all roots are at 0, r_s = α^d = (-1)^d for all s. -/
 theorem energy_equality_symmetric : |(-1 : ℝ)| ^ 2 = 1 := by norm_num

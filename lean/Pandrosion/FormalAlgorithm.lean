@@ -127,14 +127,7 @@ noncomputable def pandrosion_t3 (p : ℕ) (x s₀ : ℝ) : ℕ → ℝ
   | 0 => s₀
   | n + 1 => t3_step p x (pandrosion_t3 p x s₀ n)
 
-/-! ## §110. Algorithm Specification -/
-
-/-- **Complete algorithm specification.** -/
-structure PandrosionSpec where
-  degree : ℕ
-  target : ℝ
-  h_degree : degree ≥ 2
-  h_target : target > 0
+/-! ## §110. Algorithm Termination -/
 
 /-- **The algorithm terminates in finite steps.**
     Since λ < 1, for any ε > 0, ∃ N such that λᴺ · err₀ < ε. -/

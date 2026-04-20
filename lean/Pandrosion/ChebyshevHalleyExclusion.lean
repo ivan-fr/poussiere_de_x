@@ -57,25 +57,4 @@ theorem pandrosion_not_in_chebyshev_halley :
   have _hα2 : α = 2 / 5 := chebyshev_halley_coeff_s3X α h2
   linarith
 
-/-! ## §208. Classification of known methods
-
-For reference, the standard members of CH_α for f(s)=s³-X are:
-  α = 0   : Chebyshev's method (order 3)
-  α = 1/2 : Halley's method (order 3)
-  α = 1   : super-Halley / Ostrowski's method (order 3)
-
-The Pandrosion iteration (order 1, rate -1/5) lies OUTSIDE this family.
-It is a fundamentally different kind of rational iteration.
--/
-
-/-- Halley corresponds to α = 1/2 in the CH family. -/
-theorem halley_is_ch_half : (1 : ℝ) / 2 = 1 / 2 := rfl
-
-/-- Chebyshev corresponds to α = 0 in the CH family. -/
-theorem chebyshev_is_ch_zero : (0 : ℝ) = 0 := rfl
-
-/-- The Pandrosion rate -1/5 differs from the universal CH rate 0
-    (all CH_α methods have P'(r) = 0, i.e., at least quadratic convergence). -/
-theorem pandrosion_rate_ne_ch_rate : -(1 : ℝ) / 5 ≠ 0 := by norm_num
-
 end Pandrosion

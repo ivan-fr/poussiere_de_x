@@ -312,46 +312,4 @@ theorem aitken_exact_geometric (r e lam : ℝ) (hlam : lam ≠ 1)
 theorem aitken_pandrosion_denominator :
     (-(1 : ℝ) / 5 - 1) ^ 2 = 36 / 25 := by norm_num
 
-/-! ## §227. Structural Non-Holomorphicity
-
-In the context of Smale's 17th problem and McMullen's impossibility theorem,
-purely rational iterations s ↦ f(s) fail to be generally convergent for d ≥ 4.
-The Pandrosion algorithm circumvents this topological barrier by:
-1. Elevating the dynamic to a coupled 2D map (a, s) ↦ (â, s').
-2. Introducing non-holomorphic structural breaks via piecewise conditional
-   branching in the Aitken Δ² extrapolation.
-
-These components break the Julia-set self-similarity, allowing the algorithm
-to target the basin of attraction globally.
--/
-
-/-- **The Pandrosion epoch is a coupled 2D map.**
-    By signature, multistart_step operates on the product space ℝ × ℝ
-    (anchor and iterate), preventing reduction to a 1D rational map. -/
-theorem multistart_is_2d_coupled :
-    (multistart_step : ℝ → ℝ → ℝ → ℝ × ℝ) = multistart_step := rfl
-
-/-- **Reanchoring relies on non-algebraic conditional branching.**
-    The function strictly employs an if-then-else construct to handle
-    the geometric accumulation limit, inherently breaking pure global
-    holomorphicity (or polynomial/rational algebraic structures)
-    across the complex plane. -/
-
-theorem reanchor_is_piecewise (X a s : ℝ) :
-    let s1 := pandrosion_anchor_step X a s
-    let s2 := pandrosion_anchor_step X a s1
-    let denom := s2 - 2 * s1 + s
-    reanchor X a s = if denom = 0 then s2 else s - (s1 - s) ^ 2 / denom := rfl
-
-/-- **McMullen's Impossibility Circumvention (Trivial Structure).**
-    Since Pandrosion maps (Anchor, Iterate) → (Anchor', Iterate'),
-    it operates in ℝ × ℝ. This simple structural tuple inherently
-    escapes McMullen’s "generally convergent pure rational map"
-    impossibility theorem, which solely binds functions of type ℂ → ℂ. -/
-theorem mcmullen_circumvention_trivial (X a s : ℝ) :
-    Prod.fst (multistart_step X a s) = reanchor X a s ∧
-    Prod.snd (multistart_step X a s) = pandrosion_anchor_step X a (pandrosion_anchor_step X a (pandrosion_anchor_step X a s)) := by
-  unfold multistart_step
-  exact ⟨rfl, rfl⟩
-
 end Pandrosion

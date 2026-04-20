@@ -139,7 +139,6 @@ import Pandrosion
 #print axioms Pandrosion.character_sum_not_dvd
 #print axioms Pandrosion.chebyshev_halley_coeff_s3X
 #print axioms Pandrosion.chebyshev_halley_coeff_s6
-#print axioms Pandrosion.chebyshev_is_ch_zero
 #print axioms Pandrosion.complex_conjugate_symmetry
 #print axioms Pandrosion.complex_contraction_ratio
 #print axioms Pandrosion.complex_descent_neg
@@ -147,7 +146,6 @@ import Pandrosion
 #print axioms Pandrosion.complex_quadratic_convergence
 #print axioms Pandrosion.complex_roots_count
 #print axioms Pandrosion.complexity_cubic
-#print axioms Pandrosion.complexity_exponent
 #print axioms Pandrosion.conservation_polynomial_at_root
 #print axioms Pandrosion.containment_at_canonical_radius
 #print axioms Pandrosion.contraction_bounded_below
@@ -177,7 +175,6 @@ import Pandrosion
 #print axioms Pandrosion.cos_angle_lt_unit
 #print axioms Pandrosion.cos_angle_pos
 #print axioms Pandrosion.cos_in_unit_interval
-#print axioms Pandrosion.cost_ratio
 #print axioms Pandrosion.critical_line_ratio
 #print axioms Pandrosion.critical_line_ratio_pos
 #print axioms Pandrosion.cross_det_pattern_p2
@@ -226,7 +223,6 @@ import Pandrosion
 #print axioms Pandrosion.dml_orbit_injection
 #print axioms Pandrosion.dml_return_set_finite
 #print axioms Pandrosion.dml_return_set_subsingleton
-#print axioms Pandrosion.effective_cost_with_restart
 #print axioms Pandrosion.effective_distance_bound
 #print axioms Pandrosion.effective_distance_bound_amplified
 #print axioms Pandrosion.effective_irrationality_proximity
@@ -242,7 +238,6 @@ import Pandrosion
 #print axioms Pandrosion.energy_excess_lt_one
 #print axioms Pandrosion.energy_excess_positive
 #print axioms Pandrosion.energy_excess_quadratic_decay
-#print axioms Pandrosion.energy_lower_bound
 #print axioms Pandrosion.energy_normalizes
 #print axioms Pandrosion.energy_zero_of_zero_vector
 #print axioms Pandrosion.epoch_contraction
@@ -321,7 +316,6 @@ import Pandrosion
 #print axioms Pandrosion.hall_threshold_2_pow_20
 #print axioms Pandrosion.hall_threshold_geometric
 #print axioms Pandrosion.hall_threshold_linear
-#print axioms Pandrosion.halley_is_ch_half
 #print axioms Pandrosion.hasDerivAt_inv_one_add
 #print axioms Pandrosion.hilbert_irreducibility_orbital
 #print axioms Pandrosion.hilbert_polya_hermitian_U
@@ -334,7 +328,6 @@ import Pandrosion
 #print axioms Pandrosion.initial_norm_x2_nonzero
 #print axioms Pandrosion.injective_is_wandering
 #print axioms Pandrosion.int_cast_abs_ge_one
-#print axioms Pandrosion.int_pow_ge_one
 #print axioms Pandrosion.int_strict_gap
 #print axioms Pandrosion.intersection_equation
 #print axioms Pandrosion.iterated_epoch_bound
@@ -366,9 +359,7 @@ import Pandrosion
 #print axioms Pandrosion.mahler_yu_real_gap
 #print axioms Pandrosion.majority_vote
 #print axioms Pandrosion.matrix_pandrosion_oscillation
-#print axioms Pandrosion.max_roots_found
 #print axioms Pandrosion.mcmullen_circumvention
-#print axioms Pandrosion.mcmullen_circumvention_trivial
 #print axioms Pandrosion.mihailescu_orbital_unique
 #print axioms Pandrosion.mm_cert_x2_v0
 #print axioms Pandrosion.mm_cert_x2_v43
@@ -397,7 +388,6 @@ import Pandrosion
 #print axioms Pandrosion.multiplicative_exp_growth
 #print axioms Pandrosion.multistart_bss_cost
 #print axioms Pandrosion.multistart_distinct_roots_guarantee
-#print axioms Pandrosion.multistart_is_2d_coupled
 #print axioms Pandrosion.multistart_step_at_root
 #print axioms Pandrosion.multistart_total_cost
 #print axioms Pandrosion.near_identity_regime
@@ -479,17 +469,12 @@ import Pandrosion
 #print axioms Pandrosion.pandrosion_lehmer_d2
 #print axioms Pandrosion.pandrosion_lehmer_d3
 #print axioms Pandrosion.pandrosion_lehmer_x2
-#print axioms Pandrosion.pandrosion_map_nonconjugacy_standard
-#print axioms Pandrosion.pandrosion_map_rigidity_data
 #print axioms Pandrosion.pandrosion_newton_cross
-#print axioms Pandrosion.pandrosion_nonconjugacy_standard
 #print axioms Pandrosion.pandrosion_not_in_chebyshev_halley
 #print axioms Pandrosion.pandrosion_not_lattes
 #print axioms Pandrosion.pandrosion_ops_lt_newton
 #print axioms Pandrosion.pandrosion_oscillation_identity
 #print axioms Pandrosion.pandrosion_p2_identity
-#print axioms Pandrosion.pandrosion_rate_ne_ch_rate
-#print axioms Pandrosion.pandrosion_rigidity
 #print axioms Pandrosion.pandrosion_step_x2
 #print axioms Pandrosion.pandrosion_strict_contraction
 #print axioms Pandrosion.parseval_dc_term
@@ -523,7 +508,6 @@ import Pandrosion
 #print axioms Pandrosion.pillai_unique
 #print axioms Pandrosion.pillai_unique_signed
 #print axioms Pandrosion.pillai_value_set_infinite
-#print axioms Pandrosion.poly_has_cauchy_bound
 #print axioms Pandrosion.polynomial_intersection_identity
 #print axioms Pandrosion.positive_reals_converge
 #print axioms Pandrosion.potential_positive
@@ -540,7 +524,6 @@ import Pandrosion
 #print axioms Pandrosion.progress_rate_pos
 #print axioms Pandrosion.psl_cert_x2_disc
 #print axioms Pandrosion.psl_cert_x2_perturbed
-#print axioms Pandrosion.psl_cert_x2_trace
 #print axioms Pandrosion.psl_compound_d3
 #print axioms Pandrosion.psl_headline_d3
 #print axioms Pandrosion.psl_trace_d2
@@ -559,7 +542,6 @@ import Pandrosion
 #print axioms Pandrosion.re_nontrivial_sum
 #print axioms Pandrosion.re_roots_sum_zero
 #print axioms Pandrosion.reanchor_at_root
-#print axioms Pandrosion.reanchor_is_piecewise
 #print axioms Pandrosion.reduced_ratio_lt
 #print axioms Pandrosion.regularization_of_singularity
 #print axioms Pandrosion.residual_ratio_at_root
@@ -582,7 +564,6 @@ import Pandrosion
 #print axioms Pandrosion.second_derivative_denominator
 #print axioms Pandrosion.second_derivative_numerator
 #print axioms Pandrosion.second_derivative_value
-#print axioms Pandrosion.sector_count
 #print axioms Pandrosion.skolem_escape_cutoff
 #print axioms Pandrosion.skolem_non_escape_bounded
 #print axioms Pandrosion.skolem_return_dichotomy
@@ -592,7 +573,6 @@ import Pandrosion
 #print axioms Pandrosion.skolem_x2_cutoff_million
 #print axioms Pandrosion.skolem_zero_set_empty
 #print axioms Pandrosion.skolem_zero_set_finite
-#print axioms Pandrosion.smale_17_pandrosion
 #print axioms Pandrosion.smale_conditional_complexity
 #print axioms Pandrosion.smale_conditional_contraction
 #print axioms Pandrosion.smale_conditional_cubic_bound
@@ -630,7 +610,6 @@ import Pandrosion
 #print axioms Pandrosion.sss_headline_d3
 #print axioms Pandrosion.sss_lower_bound_d3
 #print axioms Pandrosion.sss_normalization_d3
-#print axioms Pandrosion.standard_conjugacy_forces_degeneracy
 #print axioms Pandrosion.standard_vs_anchor
 #print axioms Pandrosion.start_improves
 #print axioms Pandrosion.steffensen_at_fixpoint
@@ -648,7 +627,6 @@ import Pandrosion
 #print axioms Pandrosion.sym_form_pos
 #print axioms Pandrosion.t3_converges
 #print axioms Pandrosion.t3_cubic_rate
-#print axioms Pandrosion.t3_evaluations
 #print axioms Pandrosion.t3_evaluations_per_step
 #print axioms Pandrosion.t3_rate_d2
 #print axioms Pandrosion.t3_rate_d3
@@ -681,15 +659,10 @@ import Pandrosion
 #print axioms Pandrosion.turing_entropy_lipschitz_bound
 #print axioms Pandrosion.two_stage_cost
 #print axioms Pandrosion.unconditional_stability
-#print axioms Pandrosion.uniform_cost_per_step
-#print axioms Pandrosion.uniform_cubic_bound
-#print axioms Pandrosion.uniform_steps_per_root
 #print axioms Pandrosion.universal_contraction_ratio
 #print axioms Pandrosion.universal_diophantine_pandrosion
 #print axioms Pandrosion.universal_epoch_bound
 #print axioms Pandrosion.universal_epoch_contraction
-#print axioms Pandrosion.used
-#print axioms Pandrosion.using
 #print axioms Pandrosion.vojta_cert_slope_positive
 #print axioms Pandrosion.vojta_cert_x2_h0
 #print axioms Pandrosion.vojta_cert_x2_h1

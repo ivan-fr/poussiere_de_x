@@ -46,10 +46,6 @@ theorem multistart_total_cost (d : ℕ) : d * (d * 3) = 3 * d ^ 2 := by ring
 /-- **With O(d) per polynomial evaluation: 3d² × d = 3d³.** -/
 theorem multistart_bss_cost (d : ℕ) : 3 * d ^ 2 * d = 3 * d ^ 3 := by ring
 
-/-- **The T3 cost per step: exactly 3 base evaluations
-    (s → P(s), P(P(s)), P(P(P(s))), then Aitken).** -/
-theorem t3_evaluations : (3 : ℕ) = 3 := rfl
-
 /-! ## §213. Equispaced Starting Configuration
 
 For d equispaced anchors aₛ = R·e^{2πis/d}, s = 0,...,d-1:
@@ -112,12 +108,6 @@ For Newton's method, this guarantee FAILS: multiple orbits can
 converge to the same root, leaving others undiscovered.
 -/
 
-/-- **With d starts, at most d distinct roots can be found.** -/
-theorem max_roots_found (d : ℕ) : d ≤ d := le_refl d
-
-/-- **The number of angular sectors equals the number of starts.** -/
-theorem sector_count (d : ℕ) : d = d := rfl
-
 /-- **For the formal `Fin d` root index model, the number of root slots is
     exactly the degree parameter `d`.**
     This is the finite combinatorial core used by the later bijective
@@ -163,16 +153,6 @@ The Pandrosion multi-start avoids this via:
 2. Reanchoring after each T3 epoch (breaks self-similarity)
 3. Nearest-root selection (Voronoï partition)
 -/
-
-/-- **The Pandrosion T3 uses 3 evaluations per step,
-    vs Newton's 2 (f and f'). Cost ratio: 3/2.** -/
-theorem cost_ratio : (3 : ℝ) / 2 = 1.5 := by norm_num
-
-/-- **But Pandrosion finds ALL d roots, Newton misses some.
-    Effective cost per ROOT: Pandrosion wins when Newton
-    must be restarted.** -/
-theorem effective_cost_with_restart (d restarts : ℕ) (h : restarts ≥ 2) :
-    d ≤ d * restarts := le_mul_of_one_le_right (Nat.zero_le d) (by omega)
 
 /-- **Pandrosion d-starts → d-roots Guarantee.**
     If the multi-start algorithm constructs a mapping from d starts to d roots,
