@@ -157,3 +157,9 @@ import Pandrosion.CollatzExtinctionHorizon
 
 -- Szemerédi's Theorem: Ergodic Arithmetic Progressions via Standing Fluid Waves
 import Pandrosion.SzemerediErgodicResonance
+
+-- The Skolem-Mahler-Lech Absolute Theorem: Diophantine Trace Finiteness
+import Pandrosion.SkolemMahlerLech
+
+-- The Liouville-Roth Irrationality Bound: Infinite Dimensional Compression Impossibility
+import Pandrosion.RothIrrationalityBound
