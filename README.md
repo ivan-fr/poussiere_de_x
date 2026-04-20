@@ -1,7 +1,11 @@
 # Pandrosion Lean 4 Corpus
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19662877.svg)](https://doi.org/10.5281/zenodo.19662877)
+
 Formal verification and numerical illustration of the Pandrosion rational
 root-finding map, with a compiled research paper and reproducible figures.
+
+**Cite this work:** DOI [10.5281/zenodo.19662877](https://zenodo.org/records/19662877)
 
 The current primary artifact is:
 
@@ -27,9 +31,9 @@ P_X(s) = s * (s^3 + 4X) / (3s^3 + 2X)
 
 The repository contains:
 
-- a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities;
-- a LaTeX research paper describing the formal corpus;
-- generated figures, including a final ten-figure proof gallery;
+- a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities (120 modules, zero `sorry`);
+- a LaTeX research paper describing the formal corpus with four visual epilogues;
+- generated figures, including a ten-figure proof gallery and 12 theorem visualizations;
 - Docker Compose tooling for reproducible Lean builds.
 
 ## Current Formal Status
@@ -38,8 +42,8 @@ As of April 20, 2026:
 
 - Lean toolchain: `leanprover/lean4:v4.7.0`
 - Mathlib: `v4.7.0`
-- Lean modules under `lean/Pandrosion/`: `100`
-- Top-level `theorem` declarations under `lean/Pandrosion/` plus root import file: `678`
+- Lean modules under `lean/Pandrosion/`: `120`
+- Top-level `theorem` declarations under `lean/Pandrosion/` plus root import file: `700+`
 - `lake build Pandrosion` passes through Docker Compose.
 - No executable `sorry` terms were found in the corpus; the only `sorry` occurrence is in prose inside a comment.
 - No project-level `axiom` declarations remain under `lean/Pandrosion/`.
@@ -84,7 +88,7 @@ The gallery files live in `latex/fig_proof_gallery_*.pdf` and are included by
 │   └── fig_*.pdf                     # Paper figures
 ├── lean/
 │   ├── Pandrosion.lean               # Root import module
-│   ├── Pandrosion/                   # 100 Lean modules
+│   ├── Pandrosion/                   # 120 Lean modules
 │   ├── lakefile.lean
 │   ├── lake-manifest.json
 │   └── lean-toolchain
@@ -105,8 +109,8 @@ docker compose run --rm lean-check
 Expected result:
 
 ```text
-Compiled: 100 / 100
-ALL 100 MODULES OK
+Compiled: 120 / 120
+✅ INCREMENTAL OK — 120 modules compiled
 ```
 
 For a clean rebuild with cache cleanup and summary:
@@ -174,11 +178,13 @@ formalizes for this particular rational iteration.
 ## Citation
 
 ```bibtex
-@article{besevic2026pandrosion,
-  title  = {The Pandrosion-Steffensen Iteration: Formal Verification of a Rational Root-Finding Map in Lean 4},
+@software{besevic2026pandrosion,
+  title  = {Universitas Pandrosion: Formal Verification of a Rational Root-Finding Map and Diophantine Bridges in Lean 4},
   author = {Besevic, Ivan},
   year   = {2026},
-  note   = {Lean 4 formalization and preprint}
+  doi    = {10.5281/zenodo.19662877},
+  url    = {https://zenodo.org/records/19662877},
+  note   = {120 Lean 4 modules, zero sorry}
 }
 ```
 
