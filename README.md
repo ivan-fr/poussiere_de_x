@@ -1,134 +1,232 @@
-# The Pandrosion Pentalogy
+# Pandrosion Lean 4 Corpus
 
-**From ancient geometry to analog hardware computation: A complete mathematical and physical study of derivative-free $p$-th root extraction.**
+Formal verification and numerical illustration of the Pandrosion rational
+root-finding map, with a compiled research paper and reproducible figures.
 
-[![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19598498.svg)](https://doi.org/10.5281/zenodo.19598498)
-[![HAL](https://img.shields.io/badge/HAL-preprint-blue)](https://hal.science)
+The current primary artifact is:
 
-## Overview
+- [`articles/pandrosion_paper.pdf`](articles/pandrosion_paper.pdf) - distributable compiled paper
+- [`latex/pandrosion_paper.tex`](latex/pandrosion_paper.tex) - LaTeX source
+- [`lean/Pandrosion.lean`](lean/Pandrosion.lean) - root Lean module importing the corpus
 
-This repository contains the complete five-part research series exploring **Pandrosion of Alexandria's** geometric construction (c. 340 AD) and its rigorous transformation into an optimal algorithm for analog integrated circuits. The iteration reduces to a single recurrence involving the geometric sum $S_p(s)$:
+## What This Repository Contains
 
-$$s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)}$$
-
-The research spans five distinct papers, each tackling a specific facet of this algorithm:
-
----
-
-### Paper I: Generalized Pandrosion Residuals
-**Focus:** Core geometry, contraction ratio $\lambda_{p,x}$, and the geometric scaling optimization.
-
-We prove the convergence signature of the core map $h(s)$ and establish the "Thales preconditioning" $s_0^{\text{opt}} = h(1)$, which exponentially accelerates the fallback convergence without scaling the physical variables.
-
-<p align="center">
-  <img src="figures/pandrosion_geometry.png" width="400" alt="Pandrosion's geometric construction"/>
-  <br><em>Pandrosion's pure geometric construction</em>
-</p>
-
----
-
-### Paper II: Complex Dynamics
-**Focus:** Basins of attraction and absence of fractal chaos in $\mathbb{C}$.
-
-Unlike Newton's method, which is plagued by chaotic fractal boundaries that can trap noisy signals, Pandrosion's map guarantees smooth, robust basins of attraction over the complex plane, intrinsically protecting against phase-noise trapping.
-
-<p align="center">
-  <img src="figures/pandrosion_complex_basins.png" width="800" alt="Pandrosion complex basins"/>
-  <br><em>Smooth, non-fractal basins of attraction</em>
-</p>
-
----
-
-### Paper III: Steffensen-Pandrosion & Optimality
-**Focus:** Reaching quadratic convergence without derivatives.
-
-By applying Steffensen's acceleration to the geometric core, we construct a purely derivative-free quadratic method that yields a near-minimal asymptotic error constant $K_S \approx 0.013$ (vastly smaller than Newton's $0.794$).
-
-<p align="center">
-  <img src="figures/pandrosion_steffensen.png" width="800" alt="Steffensen-Pandrosion vs Newton"/>
-  <br><em>Steffensen–Pandrosion reaches machine precision in 3 steps</em>
-</p>
-
----
-
-### Paper IV: Higher-Order KT-Optimal Methods
-**Focus:** Saturating the Kung-Traub optimal bound.
-
-Extending the principles of Paper III, we establish an entire hierarchy of Kung-Traub optimal extrapolation methods ($T_4, T_8$). They achieve convergence of order $2^{n-1}$ using exactly $n$ evaluations of the core sum $S_p(s)$, heavily outperforming classical high-order techniques.
-
-<p align="center">
-  <img src="figures/pandrosion_higher_order.png" width="800" alt="Higher-Order KT-Optimal convergence"/>
-  <br><em>Order 4 and Order 8 saturation</em>
-</p>
-
----
-
-### Paper V: Analog Hardware Architecture
-**Focus:** Physical VLSI realization and systematic bias.
-
-Returning to the constraints of the real world—where mathematical extrapolations like $T_4$ fail due to analog noise amplification—we prove that iterating the pure, primitive map $h(n)$ from Paper I provides the **ultimate analog architecture**. A simple 15-component Pandrosion pipeline ($h^2$) delivers **12× lower systematic bias** than a Newton pipeline, requires no clock, and is unconditionally stable at 10% thermal noise. 
-
-<p align="center">
-  <img src="figures/pandrosion_analog.png" width="800" alt="Analog Bias Evaluation"/>
-  <br><em>Systematic bias and precision scaling in analog VLSI noise</em>
-</p>
-
----
-
-## Repository Structure
-
-All assets are cleanly organized by type:
+This project studies the Pandrosion iteration for root extraction. For the
+general `p`-th root setting the core map is written using the geometric sum
+`S_p(s)`:
 
 ```text
-├── articles/                        # Compiled PDFs
-│   ├── pandrosion_en_improved.pdf   # Paper I: Generalized Pandrosion Residuals
-│   ├── pandrosion_complex.pdf       # Paper II: Complex Plane & Basins
-│   ├── pandrosion_optimality.pdf    # Paper III: Steffensen-Pandrosion & Optimality
-│   ├── pandrosion_higher_order.pdf  # Paper IV: Higher-Order KT-Optimal Methods
-│   └── pandrosion_analog.pdf        # Paper V: Analog Hardware Architecture
-├── latex/                           # LaTeX source files for all 5 papers
-├── figures/                         # High-res output figures (.png and .pdf)
-├── verification/                    # 300+ Monte Carlo assertions and unit tests
-└── scripts/                         # Python scripts generating all plots
+h(s) = 1 - (x - 1) / (x * S_p(s))
 ```
 
-## Building
+For the cubic specialization, the main rational map is:
 
-### Compile the PDFs
+```text
+P_X(s) = s * (s^3 + 4X) / (3s^3 + 2X)
+```
+
+The repository contains:
+
+- a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities;
+- a LaTeX research paper describing the formal corpus;
+- generated figures, including a final ten-figure proof gallery;
+- Python scripts for numerical and visual exploration;
+- Docker Compose tooling for reproducible Lean builds.
+
+## Current Formal Status
+
+As of April 20, 2026:
+
+- Lean toolchain: `leanprover/lean4:v4.7.0`
+- Mathlib: `v4.7.0`
+- Lean modules under `lean/Pandrosion/`: `100`
+- Top-level `theorem` declarations under `lean/Pandrosion/` plus root import file: `678`
+- `lake build Pandrosion` passes through Docker Compose.
+- No executable `sorry` terms were found in the corpus; the only `sorry` occurrence is in prose inside a comment.
+- Two explicit axioms remain in [`lean/Pandrosion/SpectralLimit.lean`](lean/Pandrosion/SpectralLimit.lean), used for spectral-limit statements:
+  - `integral_log_cos_eq`
+  - `D_eq_closed`
+
+The paper is therefore best read as a formally verified algebraic and
+dynamical case study, not as a claim to have resolved any open global problem.
+Some figures are numerical or schematic illustrations; the formal claims are
+the Lean theorem statements.
+
+## Proof Highlights
+
+The final section of the paper contains a ten-figure proof gallery generated
+from [`scripts/generate_proof_gallery_figures.py`](scripts/generate_proof_gallery_figures.py):
+
+1. Universal local derivative `P'(r) = -1/5`
+2. Chebyshev-Halley family exclusion
+3. Kinematic residual conservation
+4. Exclusion of periodic orbits under contraction
+5. Pell-Pandrosion integer norm amplification
+6. Cross-determinant separation of consecutive approximants
+7. Voronoi basin stability under contraction
+8. Hermitian preservation and spectral confinement
+9. DFT character orthogonality
+10. Effective irrationality bound and norm explosion
+
+The generated gallery files live in `latex/fig_proof_gallery_*.pdf` and are
+included by `latex/pandrosion_paper.tex`.
+
+## Repository Layout
+
+```text
+.
+├── articles/
+│   └── pandrosion_paper.pdf          # Current distributable paper
+├── latex/
+│   ├── pandrosion_paper.tex          # Main paper source
+│   ├── pandrosion_paper.pdf          # Local compiled copy
+│   ├── pandrosion_master.tex/.pdf    # Larger working manuscript
+│   └── fig_*.pdf                     # Paper figures
+├── lean/
+│   ├── Pandrosion.lean               # Root import module
+│   ├── Pandrosion/                   # 100 Lean modules
+│   ├── lakefile.lean
+│   ├── lake-manifest.json
+│   └── lean-toolchain
+├── scripts/
+│   └── generate_proof_gallery_figures.py
+├── verification/                     # Python verification/exploration scripts
+├── figures/                          # Additional generated visual assets
+├── docker-compose.yml                # Lean build/check services
+├── Dockerfile                        # Lean container image
+└── tectonic                          # Local Tectonic binary
+```
+
+## Reproduce The Lean Build
+
+The easiest path is Docker Compose:
+
 ```bash
-# We recommend using tectonic
-cd latex
-tectonic pandrosion_analog.tex
+docker compose run --rm lean-check
 ```
 
-### Generate Figures
-```bash
-pip install numpy matplotlib
-cd scripts
-python3 figures_analog.py
+Expected result:
+
+```text
+Compiled: 100 / 100
+ALL 100 MODULES OK
 ```
 
-### Run Verification Suites
-The repository contains Python scripts mathematically verifying every claim across the 5 papers:
+For a clean rebuild with cache cleanup and summary:
+
 ```bash
-cd verification
-python3 verification_article_complet.py   # Paper I tests
-python3 verification_complex.py           # Paper II tests
-python3 verification_optimality.py        # Paper III tests
-python3 verification_higher_order.py      # Paper IV tests
-python3 verification_analog.py            # Paper V Monte Carlo tests
+docker compose run --rm lean-build
 ```
+
+To open an interactive Lean workspace container:
+
+```bash
+docker compose run --rm lean
+```
+
+The Lean project itself is under `lean/`; inside the container the working
+directory is `/workspace/lean`.
+
+## Rebuild The Paper
+
+The repository includes a local `tectonic` binary at the repository root.
+
+```bash
+(cd latex && ../tectonic pandrosion_paper.tex)
+```
+
+Then copy the compiled PDF to the distributable location:
+
+```bash
+cp latex/pandrosion_paper.pdf articles/pandrosion_paper.pdf
+```
+
+From inside `latex/`, the equivalent copy command is:
+
+```bash
+cp pandrosion_paper.pdf ../articles/pandrosion_paper.pdf
+```
+
+## Regenerate The Proof Gallery Figures
+
+Requirements:
+
+- Python 3
+- `numpy`
+- `matplotlib`
+
+On this machine, `/usr/bin/python3` has the needed scientific packages. The
+Matplotlib cache is pointed at `/tmp` to avoid user-cache permission issues:
+
+```bash
+MPLCONFIGDIR=/tmp/mplconfig /usr/bin/python3 scripts/generate_proof_gallery_figures.py
+```
+
+Generic command if your default Python environment has the dependencies:
+
+```bash
+python3 scripts/generate_proof_gallery_figures.py
+```
+
+After regenerating figures, rebuild the paper:
+
+```bash
+(cd latex && ../tectonic pandrosion_paper.tex)
+```
+
+## Useful Lean Modules
+
+Some central modules:
+
+- [`lean/Pandrosion/HalleyComparison.lean`](lean/Pandrosion/HalleyComparison.lean) - Newton/Halley comparison and universal derivative `-1/5`
+- [`lean/Pandrosion/ChebyshevHalleyExclusion.lean`](lean/Pandrosion/ChebyshevHalleyExclusion.lean) - exclusion from the Chebyshev-Halley family
+- [`lean/Pandrosion/ResidualConservation.lean`](lean/Pandrosion/ResidualConservation.lean) - kinematic residual conservation
+- [`lean/Pandrosion/NoCycles.lean`](lean/Pandrosion/NoCycles.lean) - no finite cycles under contraction
+- [`lean/Pandrosion/ThueBridge.lean`](lean/Pandrosion/ThueBridge.lean) - norm amplification and cross-determinants
+- [`lean/Pandrosion/VoronoiInvariance.lean`](lean/Pandrosion/VoronoiInvariance.lean) - Voronoi convexity and basin stability
+- [`lean/Pandrosion/HermitianPreservation.lean`](lean/Pandrosion/HermitianPreservation.lean) - Hermitian preservation for matrix products
+- [`lean/Pandrosion/DFTDecomposition.lean`](lean/Pandrosion/DFTDecomposition.lean) - roots-of-unity cancellation and DFT identities
+- [`lean/Pandrosion/EffectiveIrrationality.lean`](lean/Pandrosion/EffectiveIrrationality.lean) - effective Liouville-type lower bound
+
+## Python Verification And Exploration
+
+The `verification/` directory contains exploratory numerical scripts and
+stress tests used while developing the paper. These are not the formal proof
+source; Lean is the authoritative formal layer.
+
+Examples:
+
+```bash
+python3 verification/verification_complex.py
+python3 verification/verification_optimality.py
+python3 verification/final_stress_test.py
+```
+
+Some scripts may require scientific Python packages such as `numpy`,
+`matplotlib`, or `scipy`.
+
+## Scope Notes
+
+This repository contains several types of evidence:
+
+- Lean theorem proofs: machine-checked formal statements.
+- LaTeX exposition: human-readable presentation of those statements and their interpretation.
+- Figures: numerical or schematic visualizations, not additional proofs.
+- Python verification scripts: exploratory tests and numerical experiments.
+
+The project does not claim to solve Smale's 17th problem, the Riemann
+hypothesis, abc, Roth, or other global open problems. The value of the corpus
+is in the exact algebraic identities and certified structural bridges that it
+formalizes for this particular rational iteration.
 
 ## Citation
 
 ```bibtex
-@article{besevic2026pandrosion_suite,
-  title     = {The Pandrosion Pentalogy: From geometry to analog hardware computation},
-  author    = {Besevic, Ivan},
-  year      = {2026},
-  note      = {Preprint series, HAL},
-  doi       = {10.5281/zenodo.19598498}
+@article{besevic2026pandrosion,
+  title  = {The Pandrosion-Steffensen Iteration: Formal Verification of a Rational Root-Finding Map in Lean 4},
+  author = {Besevic, Ivan},
+  year   = {2026},
+  note   = {Lean 4 formalization and preprint}
 }
 ```
 
@@ -138,4 +236,4 @@ This work is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/
 
 ## Author
 
-**Ivan Besevic** — April 2026
+Ivan Besevic, April 2026
