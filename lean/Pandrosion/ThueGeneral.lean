@@ -70,31 +70,6 @@ theorem cross_determinant_p2 (A B X : ℤ) :
   intros
   ring
 
-/-- **Φ₂ at (1,1,2) for √2: Φ₂ = 1 + 2 + 4 = 7.** -/
-theorem phi_p2_at_x2 : pandrosion_phi_p2 1 1 2 = 7 := by
-  unfold pandrosion_phi_p2; norm_num
-
-/-- **|Φ₂(1,1,2)| ≥ 2.** -/
-theorem phi_p2_at_x2_abs : |pandrosion_phi_p2 1 1 2| ≥ 2 := by
-  unfold pandrosion_phi_p2; norm_num
-
-/-- **The initial Pell norm for (1,1) targeting √2: d₀ = -1.** -/
-theorem pell_initial_norm_x2 : (1 : ℤ) ^ 2 - 2 * 1 ^ 2 = -1 := by norm_num
-
-/-- **After one step: d₁ = (-1)·7 = -7.** -/
-theorem pell_norm_step1_x2 : (-1 : ℤ) * pandrosion_phi_p2 1 1 2 = -7 := by
-  unfold pandrosion_phi_p2; norm_num
-
-/-- **The first iterate for √2: (A₁, B₁) = (5, 4).**
-    5/4 = 1.25, while √2 ≈ 1.4142... -/
-theorem pell_step_x2 :
-    1 * (1 ^ 2 + 2 * 2 * 1 ^ 2) = (5 : ℤ) ∧
-    1 * (2 * 1 ^ 2 + 2 * 1 ^ 2) = (4 : ℤ) := by
-  constructor <;> norm_num
-
-/-- **Verification: 5² - 2·4² = 25 - 32 = -7 = d₀·Φ₂.** -/
-theorem pell_verify_x2 : (5 : ℤ) ^ 2 - 2 * 4 ^ 2 = -7 := by norm_num
-
 /-! ## §602. Degree 4: Quartic Thue Equations
 
 For p = 4, the quartic norm d = A⁴ - XB⁴ and the amplification
@@ -136,23 +111,6 @@ This holds because:
 
 We verify this for p = 2, 3, 4, 5 via ring certificates.
 -/
-
-/-- **Verification summary: the coefficient pattern p ↦ (p-1).**
-
-    | p | Cross-determinant coefficient | Verified |
-    |---|-------------------------------|----------|
-    | 2 | 1 = 2-1                      | ✓ ring   |
-    | 3 | 2 = 3-1                      | ✓ ring   |
-    | 4 | 3 = 4-1                      | ✓ ring   |
-    | 5 | 4 = 5-1                      | ✓ ring   |
-
-    Combined with `norm_amplification` (p=3) and `norm_amplification_p2` (p=2),
-    the orbital finiteness theorem `thue_value_injective` applies to
-    ALL degrees p ≥ 2 where the amplification condition |Φ| ≥ 2 holds. -/
-theorem cross_det_pattern_p2 : (2 : ℤ) - 1 = 1 := by norm_num
-theorem cross_det_pattern_p3 : (3 : ℤ) - 1 = 2 := by norm_num
-theorem cross_det_pattern_p4 : (4 : ℤ) - 1 = 3 := by norm_num
-theorem cross_det_pattern_p5 : (5 : ℤ) - 1 = 4 := by norm_num
 
 /-! ## §605. Thue vs Pell: Structural Contrast
 

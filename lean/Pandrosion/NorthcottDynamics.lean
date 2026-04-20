@@ -162,31 +162,6 @@ For the ∛2 orbit starting from (1, 1):
 This is a tight, explicit cardinality bound — formally verified.
 -/
 
-/-- **Northcott cert: at H = 1, X = 2: bounded set has ≤ 1 element.** -/
-theorem northcott_x2_height_1 (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0) (hd0_val : |d 0| = 1)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n)
-    (n : ℕ) (hn : |d n| ≤ 1) :
-    n = 0 := by
-  have h := thue_orbital_bound d Φ hd0 hΦ hd 1 n hn
-  rw [hd0_val] at h
-  have : (n : ℤ) ≤ 0 := by linarith
-  have : (n : ℤ) = 0 := by
-    have _hn_nn : (0 : ℤ) ≤ (n : ℤ) := by exact_mod_cast Nat.zero_le n
-    omega
-  exact_mod_cast this
-
-/-- **Northcott cert: at H = 100, X = 2: bounded indices satisfy n ≤ 99.** -/
-theorem northcott_x2_height_100 (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0) (hd0_val : |d 0| = 1)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n)
-    (n : ℕ) (hn : |d n| ≤ 100) :
-    (n : ℤ) ≤ 99 := by
-  have h := thue_orbital_bound d Φ hd0 hΦ hd 100 n hn
-  rw [hd0_val] at h
-  linarith
 
 /-! ## §1705. The Northcott Headline
 

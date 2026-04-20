@@ -175,14 +175,4 @@ The values −1, 43, … are all distinct (Pillai uniqueness),
 and any threshold M is exceeded after step `M`.
 -/
 
-/-- **Pillai escape cert at M=42: any n ≥ 42 has |d_n| > 42.** -/
-theorem pillai_cert_x2_escape_42 (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0) (hd0_val : |d 0| = 1)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n)
-    (n : ℕ) (hn : 42 < (n : ℤ)) :
-    (42 : ℤ) < |d n| := by
-  have h : (42 : ℤ) - |d 0| < (n : ℤ) := by rw [hd0_val]; linarith
-  exact thue_orbital_escape d Φ hd0 hΦ hd 42 n h
-
 end Pandrosion

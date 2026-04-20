@@ -73,16 +73,6 @@ For the Pandrosion iteration with λ = -1/5:
   K_S = |h''(s*)| / (12/5) = 5|h''(s*)|/12
 -/
 
-/-- **Steffensen denominator for λ = -1/5: (1-λ) = 6/5.** -/
-theorem steffensen_denominator : (1 : ℝ) - (-(1 : ℝ) / 5) = 6 / 5 := by norm_num
-
-/-- **The Steffensen constant scaling factor: 1/(2(1-λ)) = 5/12.** -/
-theorem steffensen_constant_factor :
-    (1 : ℝ) / (2 * (1 - (-(1 : ℝ) / 5))) = 5 / 12 := by norm_num
-
-/-- **Steffensen preserves convergence: |1/(2(1-λ))| < 1 when |λ| < 1.** -/
-theorem steffensen_constant_bounded :
-    (5 : ℝ) / 12 < 1 := by norm_num
 
 /-! ## §215. Multi-Start Coverage Guarantee
 
@@ -113,13 +103,6 @@ The Aitken acceleration then extracts the limit from the
 geometric progression, giving quadratic convergence overall.
 -/
 
-/-- **Three raw Pandrosion steps contract by (1/5)³ = 1/125.** -/
-theorem three_step_contraction :
-    (1 : ℝ) / 5 * (1 / 5) * (1 / 5) = 1 / 125 := by norm_num
-
-/-- **Absolute contraction per T3 epoch is significant: 1/125 < 1/100.** -/
-theorem epoch_contraction_strong :
-    (1 : ℝ) / 125 < 1 / 100 := by norm_num
 
 /-- **To reach ε accuracy from error e₀, need O(log(e₀/ε)) T3 epochs.**
     Since T3 is quadratic, the number of epochs is O(log log(1/ε)). -/

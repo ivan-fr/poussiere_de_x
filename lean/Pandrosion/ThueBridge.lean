@@ -84,41 +84,6 @@ Computing Φ at specific algebraic points connects the abstract
 amplification to concrete Thue equation dynamics.
 -/
 
-/-- **Φ at the initial point for ∛2.**
-    Φ(1, 1, 2) = 1 - 28 - 80 + 64 = -43. -/
-theorem phi_at_x2_initial : pandrosion_phi 1 1 2 = -43 := by
-  unfold pandrosion_phi; norm_num
-
-/-- **The absolute value of Φ(1,1,2) is large, certifying amplification.** -/
-theorem phi_at_x2_initial_abs : |pandrosion_phi 1 1 2| ≥ 2 := by
-  unfold pandrosion_phi; norm_num
-
-/-- **Φ at the initial point for ∛3.**
-    Φ(1, 1, 3) = 1 - 42 - 180 + 216 = -5. -/
-theorem phi_at_x3_initial : pandrosion_phi 1 1 3 = -5 := by
-  unfold pandrosion_phi; norm_num
-
-/-- **|Φ(1,1,3)| ≥ 2.** -/
-theorem phi_at_x3_initial_abs : |pandrosion_phi 1 1 3| ≥ 2 := by
-  unfold pandrosion_phi; norm_num
-
-/-! ## §402b. Concrete Pandrosion Iterations
-
-Explicit integer computations that ground the abstract theory.
--/
-
-/-- **The first Pandrosion iterate for X=2, starting from (1,1).**
-    A₁ = 1·(1³ + 4·2·1³) = 9,   B₁ = 1·(3·1³ + 2·2·1³) = 7. -/
-theorem pandrosion_step_x2 :
-    1 * (1 ^ 3 + 4 * 2 * 1 ^ 3) = (9 : ℤ) ∧
-    1 * (3 * 1 ^ 3 + 2 * 2 * 1 ^ 3) = (7 : ℤ) := by
-  constructor <;> norm_num
-
-/-- **Verification: d₁ = d₀ · Φ(1,1,2) = (-1)·(-43) = 43.** -/
-theorem norm_amplification_x2_verify :
-    (-1 : ℤ) * pandrosion_phi 1 1 2 = 43 := by
-  unfold pandrosion_phi; norm_num
-
 /-! ## §403. Geometric Growth of the Norm
 
 If the amplification factor |Φ_n| ≥ 2 at every step, the norm

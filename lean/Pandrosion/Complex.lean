@@ -61,14 +61,6 @@ theorem tn_converges (d : ℕ) (hd : d ≥ 2) (n : ℕ) (hn : n ≥ 1) :
     (((d : ℝ) - 1) / (d : ℝ)) ^ n < 1 :=
   epoch_contraction_factor d hd n hn
 
-/-- Specific rates for small d:
-    d=2: λ = 1/2, λ³ = 1/8
-    d=3: λ = 2/3, λ³ = 8/27
-    d=4: λ = 3/4, λ³ = 27/64 -/
-theorem t3_rate_d2 : ((1 : ℝ) / 2) ^ 3 = 1 / 8 := by norm_num
-theorem t3_rate_d3 : ((2 : ℝ) / 3) ^ 3 = 8 / 27 := by norm_num
-theorem t3_rate_d4 : ((3 : ℝ) / 4) ^ 3 = 27 / 64 := by norm_num
-
 /-! ## §14. Per-Root Contraction (Theorems 2909, 2976, 3012)
 
 On the Cauchy circle, each root contributes a contraction factor.

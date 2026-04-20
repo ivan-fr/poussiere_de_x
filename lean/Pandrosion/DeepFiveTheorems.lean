@@ -136,13 +136,6 @@ theorem shub_smale_alpha_gamma_certificate
     error (pandrosion_map 2 x s) r ≤ (1 / 2) * error s r :=
   contraction_step_p2 x r s hx hr hs h_root h_basin
 
-/-- **(C′) Ratio half: `(p-1)/p = 1/2` for p = 2 — the sharp form
-    of the Babylonian contraction constant.  This is the `α · γ`
-    product appearing in the Shub–Smale approximate-zero
-    inequality. -/
-theorem shub_smale_half_ratio :
-    ((2 : ℝ) - 1) / 2 = 1 / 2 := by norm_num
-
 /-! ## §D. T3 quadratic-rate certificate
 
 `T3_rate` provides `((p-1)/p)^3 < 1`. Combined with the
@@ -151,25 +144,6 @@ T3 accelerator converts the linear rate into a quadratic one:
     |s_{n+1} − s*| ≤ K · |s_n − s*|²,
 with `K = 5/12 < 1` in the concrete Pandrosion case.
 -/
-
-/-- **(D) T3 quadratic-rate certificate.**
-    Three raw Pandrosion steps contract by `((p-1)/p)^3 < 1`, and
-    the Steffensen-Aitken denominator `1 - λ = 6/5` yields an
-    overall Steffensen constant `K = 5/12 < 1`. These two
-    inequalities together give the quadratic-rate certificate
-    `|s_{n+1} − s*| ≤ K · |s_n − s*|²` for the T3 iteration. -/
-theorem t3_quadratic_rate_certificate (p : ℕ) (hp : p ≥ 2) :
-    (((p : ℝ) - 1) / p) ^ 3 < 1 ∧ (5 : ℝ) / 12 < 1 :=
-  ⟨t3_cubic_rate p hp, steffensen_constant_bounded⟩
-
-/-- **(D′) T3 Steffensen constant is explicit.**
-    For the canonical Pandrosion linear rate `λ = -1/5`,
-    the Steffensen quadratic constant `K_S = 1/(2(1-λ))`
-    equals `5/12`.  This is the exact scalar multiplying
-    the squared error term. -/
-theorem t3_steffensen_constant_value :
-    (1 : ℝ) / (2 * (1 - (-(1 : ℝ) / 5))) = 5 / 12 :=
-  steffensen_constant_factor
 
 /-! ## §E. Finite-time universal termination
 

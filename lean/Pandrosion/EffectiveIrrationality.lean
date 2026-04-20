@@ -126,20 +126,6 @@ so the effective lower bound applies at every step.
 theorem norm_product_nonzero (d₀ Φ : ℤ) (hd₀ : d₀ ≠ 0) (hΦ : Φ ≠ 0) :
     d₀ * Φ ≠ 0 := mul_ne_zero hd₀ hΦ
 
-/-- **The Pandrosion Φ factor at the initial step (A,B) = (1,1).**
-    Φ(1,1,X) = 1 - 14X - 20X² + 8X³ for the cube root case.
-    This is nonzero for X ≥ 2 (verified for specific X by norm_num). -/
-theorem phi_at_initial_x2 :
-    (1 : ℤ) - 14 * 2 - 20 * 2 ^ 2 + 8 * 2 ^ 3 = -43 := by norm_num
-
-/-- **The initial norm for (A,B) = (1,1) targeting ∛2.**
-    d₀ = 1³ - 2·1³ = -1 ≠ 0. -/
-theorem initial_norm_x2 : (1 : ℤ) ^ 3 - 2 * 1 ^ 3 = -1 := by norm_num
-
-/-- **Therefore, for ∛2, after one Pandrosion step on (1,1):
-    d₁ = (-1) · (-43) = 43 ≠ 0.** -/
-theorem norm_step1_x2 : (-1 : ℤ) * (-43) = 43 := by norm_num
-
 /-! ## §228. The Liouville Exponent for Cube Roots
 
 Combining the effective distance bound with B-scaling:

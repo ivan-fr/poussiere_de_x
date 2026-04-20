@@ -305,11 +305,4 @@ theorem aitken_exact_geometric (r e lam : ℝ) (hlam : lam ≠ 1)
     field_simp
     ring
 
-/-- **Aitken convergence rate for near-geometric sequences.**
-    The Aitken Δ² quotient (lam-1)² appears in the denominator,
-    confirming Steffensen acceleration is bounded when lam ≠ 1.
-    For Pandrosion with lam = -1/5: (lam-1)² = (6/5)² = 36/25. -/
-theorem aitken_pandrosion_denominator :
-    (-(1 : ℝ) / 5 - 1) ^ 2 = 36 / 25 := by norm_num
-
 end Pandrosion

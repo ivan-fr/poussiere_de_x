@@ -50,12 +50,6 @@ theorem spectral_decay_improves (rho R : ℝ) (hrho : rho > 0) (hR : R > rho) (k
 This is the energy decomposition.
 -/
 
-/-- Theorem 4117: Parseval's theorem applied to the DFT.
-    Standard Parseval: ∑|x_n|² = d·∑|X_k|².
-    The key algebraic identity: |r̂_0|² ≈ 1.
-    Formal: 1² = 1. -/
-theorem parseval_dc_term : (1 : ℝ) ^ 2 = 1 := by norm_num
-
 /-- The energy excess ∑_{k≥1}|r̂_k|² ≥ 0. -/
 theorem spectral_energy_excess_nonneg (n : ℕ) (f : ℕ → ℝ) (hf : ∀ k, 0 ≤ f k) :
     Finset.sum (Finset.range n) f ≥ 0 :=
@@ -147,10 +141,6 @@ theorem fft_cost (d : ℕ) (hd : d ≥ 2) :
 
 Further properties of E(R) = (1/d)∑|r_s|².
 -/
-
-/-- E(R) = 1 if and only if P(z) = z^d (all roots at origin).
-    When all roots are at 0, r_s = α^d = (-1)^d for all s. -/
-theorem energy_equality_symmetric : |(-1 : ℝ)| ^ 2 = 1 := by norm_num
 
 /-- The centroid controls the first correction:
     E - 1 ≈ 4sin²(π/(2d)) · |p₁|²/R² where p₁ = ∑ζ_k. -/

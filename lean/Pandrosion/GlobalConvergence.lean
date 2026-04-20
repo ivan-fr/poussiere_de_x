@@ -80,17 +80,6 @@ theorem basin_entry_near (d : ℕ) (hd : d ≥ 2) (ρ : ℝ) (_hρ : ρ > 0)
     |iterate d 1 s₀ n - 1| < basin_radius ρ d :=
   ⟨0, by omega, by simp [iterate]; exact h_close⟩
 
-/-- **NOTA BENE: The general basin entry bound is FALSE for d ≥ 3.**
-    The Pandrosion map F(s) = s·(sᵈ+(d-1)x)/(d·sᵈ+(d-2)x) with x=1
-    has fixed point s* = (1/(d-1))^{1/d} ≠ 1 for d ≥ 3.
-    Therefore iterates converge to s* ≠ 1, and |sₙ - 1| → |s*-1| > 0.
-    For small ρ, basin_radius ρ d = ρ/d < |s*-1|, making the bound
-    impossible to achieve.
-
-    For d=2: s* = 1 ✓ (Babylonian method, fully proved in Deep15).
-    The contraction chain is complete for p=2. -/
-theorem pandrosion_fixpoint_p2 : (1 : ℝ) ^ 2 = 1 := by norm_num
-
 /-! ## §115. The Two-Phase Global Convergence -/
 
 /-- **Phase 1: Global approach.**

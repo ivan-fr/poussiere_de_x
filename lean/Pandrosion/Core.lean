@@ -68,13 +68,6 @@ theorem non_asymptotic_bound (p : ℕ) (hp : p ≥ 2) (n : ℕ) (err₀ : ℝ) (
         · linarith }
     _ = err₀ := one_mul err₀
 
-/-- Theorem 810: Quadratic convergence of Steffensen-Pandrosion.
-    The T₃ (Aitken-Steffensen) acceleration converts the linear rate
-    λ* = (p-1)/p into quadratic convergence. The key algebraic identity:
-    for p=3, the quadratic constant is K = p/(2(p-1)) = 3/4. -/
-theorem steffensen_quadratic_constant_p3 :
-    (3 : ℝ) / (2 * (3 - 1)) = 3 / 4 := by norm_num
-
 /-- General Steffensen quadratic constant K_p = p/(2(p-1)). -/
 theorem steffensen_quadratic_constant (p : ℕ) (hp : p ≥ 2) :
     (p : ℝ) / (2 * ((p : ℝ) - 1)) > 0 := by
@@ -102,11 +95,6 @@ theorem root_to_radius_ratio_lt_one (ρ R : ℝ) (hρ : ρ > 0) (hR : R > ρ) :
 theorem root_to_radius_ratio_pos (ρ R : ℝ) (hρ : ρ > 0) (hR : R > ρ) :
     ρ / R > 0 := div_pos hρ (by linarith)
 
-/-- Theorem 3541 (quantitative): At the canonical R = 3ρ,
-    the containment ratio is 1/3. -/
-theorem containment_at_canonical_radius :
-    (1 : ℝ) / 3 < 1 := by norm_num
-
 /-- The product of d containment ratios decays exponentially. -/
 theorem product_containment_decay (ρ R : ℝ) (hρ : ρ > 0) (hR : R > ρ) (d : ℕ) (hd : d ≥ 1) :
     (ρ / R) ^ d < 1 := by
@@ -129,9 +117,6 @@ theorem t3_cubic_rate (p : ℕ) (hp : p ≥ 2) :
     (((p : ℝ) - 1) / (p : ℝ)) ^ 3 < 1 := by
   exact pow_lt_one (contraction_ratio_nonneg p hp)
     (contraction_ratio_at_fixpoint p hp) (by norm_num)
-
-/-- The T₃ rate for p=3 is (2/3)³ = 8/27 ≈ 0.296. -/
-theorem t3_rate_p3 : ((2 : ℝ) / 3) ^ 3 = 8 / 27 := by norm_num
 
 /-- Theorem 1805: Scaling-optimized complexity.
     The total number of oracle calls for ε-accuracy is

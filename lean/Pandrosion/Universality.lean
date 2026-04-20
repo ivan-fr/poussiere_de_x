@@ -41,12 +41,4 @@ theorem universal_epoch_contraction (d : ℕ) (hd : d ≥ 2) :
     ∀ _P : MonicPoly d, ((d - 1 : ℝ) / d) ^ d ≤ Real.exp (-1) :=
   fun _ => epoch_contraction d hd
 
-/-! ## §119. Edge Cases -/
-
-/-- **The d=3 case (cube root): rate = 2/3, epoch = 8/27.** -/
-theorem smale_d3 : ((3 : ℝ) - 1) / 3 = 2 / 3 := by norm_num
-
-/-- **The d=2 case (square root): rate = 1/2, epoch = 1/4.** -/
-theorem smale_d2 : ((2 : ℝ) - 1) / 2 = 1 / 2 := by norm_num
-
 end Pandrosion

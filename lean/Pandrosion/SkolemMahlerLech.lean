@@ -190,24 +190,4 @@ For (A₀, B₀) = (1, 1) targeting ∛2:
   • For threshold M = 10^6: any n > 999999 satisfies |d_n| > 10^6.
 -/
 
-/-- **Concrete cutoff for X=2, M=100: n > 99 ⇒ |d_n| > 100.** -/
-theorem skolem_x2_cutoff_100 (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0) (hd0_val : |d 0| = 1)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n)
-    (n : ℕ) (hn : 99 < (n : ℤ)) :
-    (100 : ℤ) < |d n| := by
-  have h : (100 : ℤ) - |d 0| < (n : ℤ) := by rw [hd0_val]; linarith
-  exact thue_orbital_escape d Φ hd0 hΦ hd 100 n h
-
-/-- **Concrete cutoff for X=2, M=10^6: n ≥ 10^6 ⇒ |d_n| > 10^6.** -/
-theorem skolem_x2_cutoff_million (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0) (hd0_val : |d 0| = 1)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n)
-    (n : ℕ) (hn : 999999 < (n : ℤ)) :
-    (1000000 : ℤ) < |d n| := by
-  have h : (1000000 : ℤ) - |d 0| < (n : ℤ) := by rw [hd0_val]; linarith
-  exact thue_orbital_escape d Φ hd0 hΦ hd 1000000 n h
-
 end Pandrosion

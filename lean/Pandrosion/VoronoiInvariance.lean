@@ -140,9 +140,4 @@ theorem pandrosion_basin_depth_gt_one (x : ℝ) (hx : x > 1) :
   rw [gt_iff_lt, lt_div_iff (by linarith : x > 0)]
   linarith
 
-/-- **For x = 2 (cube root of 2): depth factor = 2.**
-    The starting point must be ≤ half as far from its target root
-    as from any other root. -/
-theorem basin_depth_x2 : (3 * (2:ℝ) - 2) / 2 = 2 := by norm_num
-
 end Pandrosion
