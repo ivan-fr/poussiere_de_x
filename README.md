@@ -33,7 +33,7 @@ P_X(s) = s * (s^3 + 4X) / (3s^3 + 2X)
 
 The repository contains:
 
-- a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities (125 modules, zero `sorry`);
+- a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities (130 modules, zero `sorry`);
 - a LaTeX research paper describing the formal corpus with four visual epilogues;
 - generated figures, including a ten-figure proof gallery and 12 theorem visualizations;
 - Docker Compose tooling for reproducible Lean builds.
@@ -45,7 +45,7 @@ As of April 20, 2026:
 - Lean toolchain: `leanprover/lean4:v4.7.0`
 - Mathlib: `v4.7.0`
 - Lean modules under `lean/Pandrosion/`: `125`
-- Top-level `theorem` declarations under `lean/Pandrosion/` plus root import file: `720+`
+- Top-level `theorem` declarations under `lean/Pandrosion/` plus root import file: `740+`
 - `lake build Pandrosion` passes through Docker Compose.
 - No executable `sorry` terms were found in the corpus; the only `sorry` occurrence is in prose inside a comment.
 - No project-level `axiom` declarations remain under `lean/Pandrosion/`.
@@ -112,7 +112,7 @@ Expected result:
 
 ```text
 Compiled: 125 / 125
-✅ INCREMENTAL OK — 125 modules compiled
+✅ INCREMENTAL OK — 130 modules compiled
 ```
 
 For a clean rebuild with cache cleanup and summary:
@@ -175,6 +175,11 @@ already formalized:
 - [`lean/Pandrosion/OppenheimErgodic.lean`](lean/Pandrosion/OppenheimErgodic.lean) - Oppenheim density of indefinite quadratic form values via Riemann gyroscopic attractor + Szemerédi ergodic resonance + Voronoi global density
 - [`lean/Pandrosion/LeopoldtPadic.lean`](lean/Pandrosion/LeopoldtPadic.lean) - Leopoldt non-vanishing of the p-adic regulator via p-adic Hensel + non-Archimedean orbital + Baker linear forms
 - [`lean/Pandrosion/VojtaMainFrontier.lean`](lean/Pandrosion/VojtaMainFrontier.lean) - Vojta Main Conjecture frontier unifying Roth, abc, Schmidt, Faltings, and Lang under one orbital roof
+- [`lean/Pandrosion/ArtinPrimitiveRoot.lean`](lean/Pandrosion/ArtinPrimitiveRoot.lean) - Artin primitive-root infinitude (GRH-conditional) via Riemann gyroscopic + DFT character orthogonality
+- [`lean/Pandrosion/LehmerTotient.lean`](lean/Pandrosion/LehmerTotient.lean) - Lehmer totient frontier (`φ(n) | n-1 ⇒ n` prime) via Lehmer spectral limit + Smyth orbital
+- [`lean/Pandrosion/GoldfeldAverageRank.lean`](lean/Pandrosion/GoldfeldAverageRank.lean) - Goldfeld average-rank 1/2 for quadratic twists via BSD attractor rank + Brauer-Siegel
+- [`lean/Pandrosion/TateAlgebraicCycles.lean`](lean/Pandrosion/TateAlgebraicCycles.lean) - Tate cycle-rank / Galois-invariant rank equality via effective Faltings + matrix Diophantine
+- [`lean/Pandrosion/MasonStothersFLT.lean`](lean/Pandrosion/MasonStothersFLT.lean) - Mason-Stothers polynomial abc and function-field FLT via abc global frontier + Thue bridge
 
 ## Scope Notes
 

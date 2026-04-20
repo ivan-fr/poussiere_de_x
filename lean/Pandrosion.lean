@@ -196,3 +196,18 @@ import Pandrosion.LeopoldtPadic
 
 -- Vojta Main Conjecture Frontier: unifying Roth / abc / Schmidt / Faltings / Lang
 import Pandrosion.VojtaMainFrontier
+
+-- Artin Primitive Root Frontier: GRH-conditional infinitude of primitive-root primes
+import Pandrosion.ArtinPrimitiveRoot
+
+-- Lehmer Totient Frontier: every solution of φ(n) | n-1 is prime
+import Pandrosion.LehmerTotient
+
+-- Goldfeld Average Rank Frontier: average rank of quadratic twists is 1/2
+import Pandrosion.GoldfeldAverageRank
+
+-- Tate Algebraic Cycles Frontier: cycle rank = Galois-invariant rank
+import Pandrosion.TateAlgebraicCycles
+
+-- Mason-Stothers / Function-Field FLT Frontier: polynomial abc and FLT
+import Pandrosion.MasonStothersFLT
