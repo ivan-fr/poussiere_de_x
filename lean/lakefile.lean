@@ -2,7 +2,12 @@ import Lake
 open Lake DSL
 
 package «pandrosion» {
-  -- add package configuration options here
+  -- Max-strict Lean options applied to every module in the library.
+  moreLeanArgs := #[
+    "-Dlinter.unusedVariables=true",
+    "-DautoImplicit=false",
+    "-DmaxHeartbeats=400000"
+  ]
 }
 
 lean_lib «Pandrosion» {
