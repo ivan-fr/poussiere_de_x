@@ -212,13 +212,13 @@ theorem deep_five_grand_certificate
     -- (C)  Shub–Smale α·γ bound for p = 2
     (error (pandrosion_map 2 x s) r ≤ (1 / 2) * error s r) ∧
     -- (D)
-    ((((d : ℝ) - 1) / d) ^ 3 < 1 ∧ (5 : ℝ) / 12 < 1) ∧
+    ((((d : ℝ) - 1) / d) ^ 3 < 1) ∧
     -- (E)
     (∃ N : ℕ, (((d : ℝ) - 1) / d) ^ N < ε) := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · exact average_case_smale_17 d hd ε₀ ε hε₀ hε hεε₀ n hn
   · exact shub_smale_alpha_gamma_certificate x r s hx hr hs h_root h_basin
-  · exact t3_quadratic_rate_certificate d hd
+  · exact t3_cubic_rate d hd
   · exact finite_time_universal_termination d hd ε hε
 
 end Pandrosion
