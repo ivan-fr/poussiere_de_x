@@ -88,3 +88,5 @@ import Pandrosion.SkolemMahlerLech
 import Pandrosion.EffectiveThue
 import Pandrosion.LehmerOrbital
 import Pandrosion.NorthcottDynamics
+import Pandrosion.AbcOrbital
+import Pandrosion.VojtaOrbital
