@@ -111,3 +111,4 @@ import Pandrosion.HilbertIrreducibilityOrbital
 import Pandrosion.AbcGlobalFrontier
 import Pandrosion.RothEffectiveFrontier
 import Pandrosion.LehmerGlobalFrontier
+import Pandrosion.MatrixDiophantineOrbital
