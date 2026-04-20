@@ -103,3 +103,8 @@ import Pandrosion.SmythOrbital
 import Pandrosion.BrauerSiegelOrbital
 import Pandrosion.MahlerYuOrbital
 import Pandrosion.SchmidtSubspaceOrbital
+import Pandrosion.VojtaDim2Orbital
+import Pandrosion.BombieriPilaOrbital
+import Pandrosion.EffectiveFaltingsOrbital
+import Pandrosion.LangOrbital
+import Pandrosion.HilbertIrreducibilityOrbital
