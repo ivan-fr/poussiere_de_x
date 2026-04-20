@@ -166,3 +166,18 @@ import Pandrosion.RothIrrationalityBound
 
 -- Lehmer's Spectral Limit: The Absolute Trace Gap of Non-Cyclotomic Volumes
 import Pandrosion.LehmersSpectralLimit
+
+-- Kronecker's Theorem: Roots of Unity Classification via Lehmer Void
+import Pandrosion.KroneckerRootsOfUnity
+
+-- Weyl's Equidistribution: Orbital Tensor Volume Conservation
+import Pandrosion.WeylEquidistribution
+
+-- Gelfond-Schneider Transcendence: Exponential Tower Compression Impossibility
+import Pandrosion.GelfondSchneiderTranscendence
+
+-- Baker's Theorem: Multi-Dimensional Logarithmic Tensor Bounds
+import Pandrosion.BakerLinearForms
+
+-- Schmidt's Subspace Theorem: Higher-Dimensional Roth Decomposition
+import Pandrosion.SchmidtSubspace
