@@ -84,3 +84,5 @@ import Pandrosion.BakerDavenport
 import Pandrosion.MortonSilverman
 import Pandrosion.HallOrbital
 import Pandrosion.PillaiOrbital
+import Pandrosion.SkolemMahlerLech
+import Pandrosion.EffectiveThue
