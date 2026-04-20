@@ -96,3 +96,10 @@ import Pandrosion.SchurSiegelSmyth
 import Pandrosion.CatalanOrbital
 import Pandrosion.BiluTichy
 import Pandrosion.LaurentSUnit
+import Pandrosion.ErdosMahlerOrbital
+import Pandrosion.StewartYuOrbital
+import Pandrosion.ZsygmondyOrbital
+import Pandrosion.SmythOrbital
+import Pandrosion.BrauerSiegelOrbital
+import Pandrosion.MahlerYuOrbital
+import Pandrosion.SchmidtSubspaceOrbital
