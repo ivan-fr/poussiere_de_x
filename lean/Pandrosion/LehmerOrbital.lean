@@ -68,7 +68,6 @@ that turns algebraic separation into a quantitative bound.
 theorem disc_int_ge_one (D : ℤ) (hD : D ≠ 0) : (1 : ℝ) ≤ |(D : ℝ)| := by
   rw [← Int.cast_abs]
   have h : (0 : ℤ) < |D| := abs_pos.mpr hD
-  have _hD_ne : (D : ℝ) ≠ 0 := by omega
   have h2 : (1 : ℤ) ≤ |D| := by omega
   exact_mod_cast h2
 
@@ -88,7 +87,7 @@ least the size of the root separation, bounded by 1.
     If a, b are real algebraic numbers with |D| := |(a−b)²| ≥ 1,
     then |a − b| ≥ 1. -/
 theorem lehmer_quadratic_lower
-    (a b : ℝ) (hD_ne : (a - b) ≠ 0)
+    (a b : ℝ) (_hD_ne : (a - b) ≠ 0)
     (hD_int : ∃ D : ℤ, ((D : ℝ) = (a - b) ^ 2) ∧ D ≠ 0) :
     1 ≤ |a - b| ^ 2 := by
   obtain ⟨D, hD_eq, hD_ne⟩ := hD_int

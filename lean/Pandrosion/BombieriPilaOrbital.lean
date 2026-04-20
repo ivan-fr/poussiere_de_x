@@ -35,7 +35,7 @@ count inequality from the geometric escape of the norms.
     If n is an index where the norm is ≤ H, then 2^n is bounded by H/|d_0|. -/
 theorem bombieri_pila_orbital
     (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0)
+    (_hd0 : d 0 ≠ 0)
     (hΦ : ∀ n, 2 ≤ |Φ n|)
     (hd : ∀ n, d (n + 1) = d n * Φ n)
     (H : ℤ) (n : ℕ) (h_bound : |d n| ≤ H) :
@@ -55,7 +55,7 @@ Vojta dimension 2 bound, we get a counting limit on the actual pairs
     iteration index n must be strictly logarithmically blocked. -/
 theorem bombieri_pila_projective
     (d : ℕ → ℤ) (Φ : ℕ → ℤ) (A B : ℕ → ℤ) (X : ℤ)
-    (hd0 : d 0 ≠ 0)
+    (_hd0 : d 0 ≠ 0)
     (hΦ : ∀ n, 2 ≤ |Φ n|)
     (hd : ∀ n, d (n + 1) = d n * Φ n)
     (h_norm : ∀ n, d n = A n ^ 3 - X * B n ^ 3)
@@ -63,7 +63,7 @@ theorem bombieri_pila_projective
     (M : ℤ) (n : ℕ) (h_proj : proj_height (A n) (B n) ≤ M) :
     |d 0| * (2 : ℤ) ^ n ≤ (1 + |X|) * M ^ 3 := by
   have hd_bound := vojta_dim2_orbital_push (A n) (B n) X (d n) (h_norm n) hX
-  have hX_plus : 0 ≤ 1 + |X| := by
+  have _hX_plus : 0 ≤ 1 + |X| := by
     have : 0 ≤ |X| := abs_nonneg X
     omega
   have hM_cube : (proj_height (A n) (B n)) ^ 3 ≤ M ^ 3 := by
@@ -76,11 +76,11 @@ theorem bombieri_pila_projective
     have eq1 : proj_height (A n) (B n) ^ 3 = (proj_height (A n) (B n) * proj_height (A n) (B n)) * proj_height (A n) (B n) := by ring
     have eq2 : M ^ 3 = (M * M) * M := by ring
     linarith [eq1, eq2, p2]
-  have hX_plus : 0 ≤ 1 + |X| := by
+  have _hX_plus : 0 ≤ 1 + |X| := by
     have : 0 ≤ |X| := abs_nonneg X
     omega
   have h_scaled : (1 + |X|) * (proj_height (A n) (B n)) ^ 3 ≤ (1 + |X|) * M ^ 3 := by
-    nlinarith [hM_cube, hX_plus]
+    nlinarith [hM_cube, _hX_plus]
   have h_escape := vojta_orbital_multiplicative d Φ hΦ hd n
   linarith
 

@@ -97,9 +97,9 @@ theorem generic_convergence_bad_angles (d : ℕ) (_hd : d ≥ 1) :
 /-- Theorem 4864: Homotopy stability via a preserved contraction margin.
     If the active contraction factor remains below one, then every positive
     error radius is strictly reduced. -/
-theorem homotopy_stability (λ δ : ℝ) (hδ : 0 < δ) (hλ : λ < 1) :
-    λ * δ < δ := by
-  exact mul_lt_of_lt_one_left hδ hλ
+theorem homotopy_stability (lam δ : ℝ) (hδ : 0 < δ) (h_lam : lam < 1) :
+    lam * δ < δ := by
+  exact mul_lt_of_lt_one_left hδ h_lam
 
 /-! ## §24. Spectral Detection (Theorem 5576)
 
