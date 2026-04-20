@@ -148,3 +148,6 @@ import Pandrosion.PisotSalemDistribution
 
 -- The Polya-Hilbert Operator equilibrium bounding the Riemann Critical Line
 import Pandrosion.RiemannGyroscopicAttractor
+
+-- Topologizing Birch and Swinnerton-Dyer (BSD) via Multi-Root Algebraic Dimensions
+import Pandrosion.BsdAttractorRank
