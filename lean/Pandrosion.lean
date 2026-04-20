@@ -112,3 +112,6 @@ import Pandrosion.AbcGlobalFrontier
 import Pandrosion.RothEffectiveFrontier
 import Pandrosion.LehmerGlobalFrontier
 import Pandrosion.MatrixDiophantineOrbital
+import Pandrosion.PadicHenselOrbital
+import Pandrosion.VoronoiGlobalDensity
+import Pandrosion.PadeEquivalenceOrbital
