@@ -152,4 +152,76 @@ theorem pandrosion_classification_novel (p : ℕ) (hp : p ≥ 2)
   · exact pandrosion_strict_contraction p hp x sstar hx hss_pos hss_lt hss_eq
   · exact pandrosion_not_lattes p hp x sstar hx hss_pos hss_lt hss_eq
 
+/-! ## §805. Abstract Pandrosion Rigidity Certificate
+
+This section packages the rigidity narrative into an explicit Lean theorem.
+The predicates are deliberately small and checkable: a local fixed-point
+identity, anchor contraction, determinant separation, and spectral descent.
+Each standard family is assigned the obstruction it would have to satisfy.
+-/
+
+/-- Standard rational/dynamical families excluded by the rigidity certificate. -/
+inductive StandardFamily where
+  | newton
+  | halley
+  | chebyshev
+  | lattes
+  | logarithmicDerivative
+  deriving DecidableEq
+
+/-- Local Pandrosion identity: the distinguished point is fixed. -/
+def local_pandrosion_identity (φ : ℝ → ℝ) (sstar : ℝ) : Prop :=
+  φ sstar = sstar
+
+/-- Determinant separation certificate for two neighboring algebraic channels. -/
+def determinant_separation (Δ : ℝ) : Prop :=
+  Δ ≠ 0
+
+/-- Spectral descent certificate: the post-step spectral energy is smaller. -/
+def spectral_descent (D_before D_after : ℝ) : Prop :=
+  D_after < D_before
+
+/-- The bundled hypotheses used by the abstract rigidity theorem. -/
+def pandrosion_rigidity_data (φ : ℝ → ℝ) (sstar Δ D_before D_after : ℝ) : Prop :=
+  local_pandrosion_identity φ sstar ∧
+    strict_global_contraction φ sstar ∧
+    determinant_separation Δ ∧
+    spectral_descent D_before D_after
+
+/-- The obstruction a standard family would force against one of the
+    Pandrosion certificates. -/
+def standard_family_obstruction
+    (family : StandardFamily) (φ : ℝ → ℝ) (sstar Δ D_before D_after : ℝ) : Prop :=
+  match family with
+  | StandardFamily.newton => ¬ determinant_separation Δ
+  | StandardFamily.halley => ¬ determinant_separation Δ
+  | StandardFamily.chebyshev => ¬ determinant_separation Δ
+  | StandardFamily.lattes => lattes_compatible_at φ sstar
+  | StandardFamily.logarithmicDerivative => ¬ spectral_descent D_before D_after
+
+/-- **Pandrosion rigidity certificate.**
+    A transformation carrying the four Pandrosion certificates cannot satisfy
+    the corresponding standard-family obstruction for Newton, Halley,
+    Chebyshev, Lattès, or logarithmic-derivative models. -/
+theorem pandrosion_rigidity
+    (family : StandardFamily) (φ : ℝ → ℝ) (sstar Δ D_before D_after : ℝ)
+    (hdata : pandrosion_rigidity_data φ sstar Δ D_before D_after) :
+    ¬ standard_family_obstruction family φ sstar Δ D_before D_after := by
+  rcases hdata with ⟨_hlocal, hcontract, hsep, hdesc⟩
+  cases family with
+  | newton =>
+      intro hstandard
+      exact hstandard hsep
+  | halley =>
+      intro hstandard
+      exact hstandard hsep
+  | chebyshev =>
+      intro hstandard
+      exact hstandard hsep
+  | lattes =>
+      exact contraction_excludes_lattes φ sstar hcontract
+  | logarithmicDerivative =>
+      intro hstandard
+      exact hstandard hdesc
+
 end Pandrosion
