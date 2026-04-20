@@ -202,17 +202,4 @@ For the ∛2 orbit starting from (1, 1):
   n = 10: h(d_10) ≥ 10 · log 2 = log 1024 ≈ 6.93.
 -/
 
-/-- **Vojta cert: log 2 > 0 (the height-growth slope is positive).** -/
-theorem vojta_cert_slope_positive : (0 : ℝ) < Real.log 2 :=
-  Real.log_pos (by norm_num)
-
-/-- **Vojta cert: h(d_0) = log 1 = 0 for X = 2 (1,1) start.** -/
-theorem vojta_cert_x2_h0 : Real.log ((1 : ℤ) : ℝ) = 0 := by
-  simp [Real.log_one]
-
-/-- **Vojta cert: |d_1| = 43, hence h(d_1) = log 43 > 0.** -/
-theorem vojta_cert_x2_h1 : (0 : ℝ) < Real.log ((43 : ℤ) : ℝ) := by
-  apply Real.log_pos
-  norm_num
-
 end Pandrosion

@@ -114,40 +114,10 @@ theorem pandrosion_step_x2 :
     1 * (3 * 1 ^ 3 + 2 * 2 * 1 ^ 3) = (7 : ℤ) := by
   constructor <;> norm_num
 
-/-- **The cubic norm at step 1 for X=2: d₁ = 9³ - 2·7³ = 43.** -/
-theorem norm_at_step1_x2 : (9 : ℤ) ^ 3 - 2 * 7 ^ 3 = 43 := by norm_num
-
 /-- **Verification: d₁ = d₀ · Φ(1,1,2) = (-1)·(-43) = 43.** -/
 theorem norm_amplification_x2_verify :
     (-1 : ℤ) * pandrosion_phi 1 1 2 = 43 := by
   unfold pandrosion_phi; norm_num
-
-/-- **The cross-determinant at step 0→1 for X=2.
-    A₀·B₁ - B₀·A₁ = 1·7 - 1·9 = -2 = 2·1·1·(1-2) = 2·A₀·B₀·d₀.** -/
-theorem cross_det_x2_step0 :
-    (1 : ℤ) * 7 - 1 * 9 = 2 * 1 * 1 * (1 ^ 3 - 2 * 1 ^ 3) := by norm_num
-
-/-- **Quality comparison: the amplified bound K=43 vs Liouville K=1.**
-    For the second Pandrosion approximant 9/7 targeting ∛2,
-    the Liouville bound gives |9-∛2·7| ≥ 1/form, while our
-    amplified bound gives |9-∛2·7| ≥ 43/form — a 43× improvement. -/
-theorem amplification_factor_x2 : (43 : ℤ) = 43 * 1 := by norm_num
-
-/-! ## §402c. Iterated Norm Growth Certificate for X=2
-
-The Pandrosion orbit starting from (1,1) for ∛2 produces
-the norm sequence d₀ = -1, d₁ = 43, d₂ = 43·Φ(9,7,2), ...
-Each |d_n| ≥ 2ⁿ, giving a progressively stronger effective bound.
--/
-
-/-- **The initial norm is nonzero for X=2: d₀ = -1 ≠ 0.** -/
-theorem initial_norm_x2_nonzero : (1 : ℤ) ^ 3 - 2 * 1 ^ 3 ≠ 0 := by norm_num
-
-/-- **After one step, the norm exceeds 2¹ = 2: |43| ≥ 2.** -/
-theorem norm_exceeds_2_at_step1 : (2 : ℤ) ≤ |((9 : ℤ) ^ 3 - 2 * 7 ^ 3)| := by norm_num
-
-/-- **After one step, the norm exceeds 2⁵ = 32: |43| ≥ 32.** -/
-theorem norm_exceeds_32_at_step1 : (32 : ℤ) ≤ |((9 : ℤ) ^ 3 - 2 * 7 ^ 3)| := by norm_num
 
 /-! ## §403. Geometric Growth of the Norm
 

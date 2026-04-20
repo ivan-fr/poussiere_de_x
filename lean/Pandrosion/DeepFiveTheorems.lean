@@ -72,14 +72,6 @@ theorem average_case_smale_17
       _ = ε := by field_simp
   exact le_trans step h_exp_bound
 
-/-- **(A′) Majority-vote descent probability.**
-    At least half the equispaced starts give descent per epoch, so
-    the success probability per start is `≥ 1/2`.  This is the
-    Bernoulli ingredient underpinning the Beltrán–Pardo bound. -/
-theorem bernoulli_descent_bound (d : ℕ) (hd : d ≥ 2) :
-    (d / 2 + 1 : ℕ) > d / 2 ∧ (1 : ℕ) ≤ d :=
-  ⟨majority_vote d hd, at_least_one_good_start d (by omega)⟩
-
 /-! ## §B. Simply-connected basins (anti-McMullen)
 
 The Pandrosion basins are Voronoï cells. Voronoï cells are

@@ -85,27 +85,6 @@ theorem bias_tends_zero (C lam : ℝ) (_hC : C > 0) (hlam : 0 ≤ lam) (hlam1 : 
   rw [show (0:ℝ) = C * 0 by ring]
   exact Filter.Tendsto.const_mul C (tendsto_pow_atTop_nhds_zero_of_lt_one hlam hlam1)
 
-/-! ## §47. Pipeline Operation Count -/
-
-/-- Pandrosion h-block: 5 ops < Newton's 6 ops. -/
-theorem pandrosion_ops_lt_newton : (5 : ℕ) < 6 := by norm_num
-
-/-- Two-stage pipeline: 2 × 5 = 10 ops. -/
-theorem two_stage_cost : 2 * 5 = (10 : ℕ) := by norm_num
-
-/-- Three-stage pipeline: 3 × 5 = 15 ops. -/
-theorem three_stage_cost : 3 * 5 = (15 : ℕ) := by norm_num
-
-/-- Newton per step: 6 ops. Two Newton steps: 12 ops > 10 = Pandrosion 2-stage. -/
-theorem efficiency_comparison : (10 : ℕ) < 2 * 6 := by norm_num
-
-/-- The h² pipeline is 3 identical stages. -/
-theorem h2_stages : (3 : ℕ) = 1 + 1 + 1 := by norm_num
-
-/-- Modular replication: 3 × cost = cost + cost + cost. -/
-theorem modular_replication (c : ℕ) :
-    3 * c = c + c + c := by ring
-
 /-! ## §48. Noise Independence -/
 
 /-- Output precision: 1/(N·σ) > 1 when N·σ < 1. -/

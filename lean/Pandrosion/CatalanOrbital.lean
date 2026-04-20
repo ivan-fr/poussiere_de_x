@@ -160,12 +160,6 @@ theorem catalan_cert_x2_neg (d : ℕ → ℤ) (Φ : ℕ → ℤ)
     have heq : d m = d 0 := by rw [hm, hd0]
     exact dml_orbit_injection d Φ hd0_ne hΦ hd heq
 
-/-- **Catalan cert: |d_0| = 1 for X = 2.** -/
-theorem catalan_cert_x2_d0 : |((1 : ℤ) ^ 3 - 2 * 1 ^ 3)| = 1 := by norm_num
-
-/-- **Catalan cert: |d_1| = 43 ≠ 1 for X = 2.** -/
-theorem catalan_cert_x2_d1 : |((9 : ℤ) ^ 3 - 2 * 7 ^ 3)| ≠ 1 := by norm_num
-
 /-! ## §2306. The Catalan Headline
 
 The Catalan-orbital headline: every Catalan-style cubic equation

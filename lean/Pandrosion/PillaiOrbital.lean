@@ -175,16 +175,6 @@ The values −1, 43, … are all distinct (Pillai uniqueness),
 and any threshold M is exceeded after step `M`.
 -/
 
-/-- **Pillai cert: |d_0| = 1 ≠ 0 for X=2.** -/
-theorem pillai_cert_x2_d0 : ((1 : ℤ) ^ 3 - 2 * 1 ^ 3) ≠ 0 := by norm_num
-
-/-- **Pillai cert: |d_1| = 43 for X=2.** -/
-theorem pillai_cert_x2_d1 : |((9 : ℤ) ^ 3 - 2 * 7 ^ 3)| = 43 := by norm_num
-
-/-- **Pillai cert: d_0 ≠ d_1 (the value 43 is hit only at step 1).** -/
-theorem pillai_cert_x2_distinct :
-    ((1 : ℤ) ^ 3 - 2 * 1 ^ 3) ≠ ((9 : ℤ) ^ 3 - 2 * 7 ^ 3) := by norm_num
-
 /-- **Pillai escape cert at M=42: any n ≥ 42 has |d_n| > 42.** -/
 theorem pillai_cert_x2_escape_42 (d : ℕ → ℤ) (Φ : ℕ → ℤ)
     (hd0 : d 0 ≠ 0) (hd0_val : |d 0| = 1)

@@ -102,18 +102,6 @@ The first few iterates:
   n=2: B₂ = 24913 ≥ 4² = 16 ✓  (huge margin!)
 -/
 
-/-- **B₁ = 7 for the ∛2 orbit.** -/
-theorem b1_x2 : (1 : ℤ) * (3 * 1 ^ 3 + 2 * 2 * 1 ^ 3) = 7 := by norm_num
-
-/-- **A₁ = 9 for the ∛2 orbit.** -/
-theorem a1_x2 : (1 : ℤ) * (1 ^ 3 + 4 * 2 * 1 ^ 3) = 9 := by norm_num
-
-/-- **The denominator multiplier for (1,1,2): T = 7 ≥ 4 = 2X.** -/
-theorem denom_mult_x2_step0 : (3 : ℤ) * 1 ^ 3 + 2 * 2 * 1 ^ 3 = 7 := by norm_num
-
-/-- **7 ≥ 4 (the multiplier exceeds 2X).** -/
-theorem denom_mult_x2_bound : (7 : ℤ) ≥ 2 * 2 := by norm_num
-
 /-! ## §1003. The Baker-Davenport Effective Bound
 
 Combining the exponential denominator growth B_n ≥ (2X)^n
@@ -143,29 +131,6 @@ theorem baker_davenport_escape
     M < |d n| :=
   thue_orbital_escape d Φ hd0 hΦ hd M n hn
 
-/-- **Explicit escape for X = 2, (A₀,B₀) = (1,1).**
-    |d₀| = 1, so n ≤ M - 1 for orbital solutions.
-    At step n, B_n ≥ 4^n.
-    Combined: B_n ≤ 4^{M-1} for all orbital solutions with |d| ≤ M.
-    For M = 10, the bound gives B ≤ 4⁹ = 262144. -/
-theorem baker_davenport_x2_escape
-    (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n)
-    (hd0_val : |d 0| = 1)
-    (M : ℤ) (n : ℕ) (hn : M - 1 < (↑n : ℤ)) :
-    M < |d n| := by
-  have : M - |d 0| < (↑n : ℤ) := by rw [hd0_val]; linarith
-  exact thue_orbital_escape d Φ hd0 hΦ hd M n this
-
-/-- **Certificate: 4^9 = 262144.** -/
-theorem four_pow_nine : (4 : ℤ) ^ 9 = 262144 := by norm_num
-
-/-- **Certificate: for M = 100, the bound gives B ≤ 4^99.**
-    This is an astronomically large number — showing that the
-    Pandrosion orbit produces VERY sparse Thue solutions. -/
-theorem orbital_sparsity : (4 : ℤ) ^ 3 = 64 := by norm_num
 
 /-! ## §1004. Quality of the Bound
 

@@ -51,9 +51,6 @@ theorem zeta_vanishing_d2 (a b : ℝ) (hab : a ≠ b) :
 theorem spectral_det_d2 (a b : ℝ) :
     (a - b) * (b - a) = -(a - b) ^ 2 := by ring
 
-/-- **The discriminant sign for d = 2: (-1)^{d(d-1)/2} = (-1)^1 = -1.** -/
-theorem disc_sign_d2 : (-1 : ℤ) ^ (2 * (2 - 1) / 2) = -1 := by norm_num
-
 /-! ### d = 3: Three Roots
 
 For P(z) = (z - a)(z - b)(z - c):
@@ -122,9 +119,6 @@ theorem zeta_normalisation_d3 (a b c : ℝ)
 theorem spectral_det_d3 (a b c : ℝ) :
     (a - b) * (a - c) * ((b - a) * (b - c)) * ((c - a) * (c - b)) =
     -((a - b) * (a - c) * (b - c)) ^ 2 := by ring
-
-/-- **The discriminant sign for d = 3: (-1)^{d(d-1)/2} = (-1)^3 = -1.** -/
-theorem disc_sign_d3 : (-1 : ℤ) ^ (3 * (3 - 1) / 2) = -1 := by norm_num
 
 /-! ## §901. The Biorthogonality System
 

@@ -149,14 +149,6 @@ S-unit equation d_0 + d_n = 1 has UNIQUE n (if any).
 Numerical check: d_0 + d_1 = -1 + 43 = 42 ≠ 1, no solution at this n.
 -/
 
-/-- **S-unit cert: d_0 + d_1 = 42 for X = 2.** -/
-theorem s_unit_cert_x2_sum :
-    (((1 : ℤ) ^ 3 - 2 * 1 ^ 3) + ((9 : ℤ) ^ 3 - 2 * 7 ^ 3)) = 42 := by norm_num
-
-/-- **S-unit cert: d_0 + d_1 ≠ 1 for X = 2.** -/
-theorem s_unit_cert_x2_not_one :
-    (((1 : ℤ) ^ 3 - 2 * 1 ^ 3) + ((9 : ℤ) ^ 3 - 2 * 7 ^ 3)) ≠ 1 := by norm_num
-
 /-! ## §2506. The Laurent S-Unit Headline
 
 The Laurent S-unit equation theorem applied to the Pandrosion orbit:

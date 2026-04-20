@@ -133,12 +133,6 @@ Since P'(r) = −1/5 ≠ 1, Aitken's Δ² extrapolation (Steffensen's
 method) can be applied to accelerate convergence from linear to
 at least quadratic. See SteffensenAcceleration.lean. -/
 
-/-- The Pandrosion rate −1/5 is not 1, so Steffensen acceleration applies. -/
-theorem rate_ne_one : -(1 : ℝ) / 5 ≠ 1 := by norm_num
-
-/-- The Pandrosion rate −1/5 is not 0, confirming linear (not superlinear) convergence. -/
-theorem rate_ne_zero : -(1 : ℝ) / 5 ≠ 0 := by norm_num
-
 /-- The absolute contraction rate |P'(r)| = 1/5 < 1, confirming convergence. -/
 theorem rate_abs_lt_one : |(-1 : ℝ) / 5| < 1 := by
   simp [abs_of_neg (by norm_num : (-1 : ℝ) / 5 < 0)]; norm_num

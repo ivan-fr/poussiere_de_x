@@ -106,12 +106,6 @@ theorem phase2_contraction (d : ℕ) (hd : d ≥ 2) :
     ((d - 1 : ℝ) / d) ^ d ≤ Real.exp (-1) :=
   epoch_contraction d hd
 
-/-- **Combined: total steps = O(d) global + O(d) local = O(d).** -/
-theorem total_steps_per_root (d : ℕ) : 2 * d + d = 3 * d := by ring
-
-/-- **Grand total: d roots × O(d) steps × O(d) cost = O(d³).** -/
-theorem grand_total (d : ℕ) : d * (3 * d) * d = 3 * d ^ 3 := by ring
-
 /-! ## §116. Complete Convergence Certificate -/
 
 /-- **For ANY starting point on the Cauchy circle and ANY ε > 0,

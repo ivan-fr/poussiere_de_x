@@ -152,37 +152,7 @@ theorem smale_conditional_contraction
     (((d - 1 : ℝ) / d) ^ d) ^ n * ε₀ ≤ Real.exp (-(n : ℝ)) * ε₀ :=
   iterated_epoch_bound d hd ε₀ hε₀ n
 
-/-- **(III.b) Smale-style cubic arithmetic bound.**
-    Once Universal Descent supplies a bound on the number of epochs,
-    the aggregate arithmetic cost factors as
-        (d roots) × (d steps) × (d ops / step) = d³. -/
-theorem smale_conditional_cubic_bound (d : ℕ) :
-    d * (d * d) = d ^ 3 :=
-  smale_cubic_bound d
-
-/-- **(III.c) Smale-Style Conditional Complexity Theorem (combined).**
-    Under the Universal Descent assumption — encoded as the hypothesis
-    `epochs_needed ≤ 2*d` (a.k.a. O(d) epochs per root) — the full
-    multi-start algorithm performs at most `2·d³` base evaluations per
-    root, i.e. at most `2·d⁴` for all roots, and the per-root count
-    is bounded by `O(d³)`. The theorem delivers the per-root cubic
-    certificate directly. -/
-theorem smale_style_conditional_complexity
-    (d : ℕ) (hd : d ≥ 3)
-    (epochs_needed : ℕ) (he : epochs_needed ≤ 2 * d) :
-    d * epochs_needed ≤ 2 * d ^ 2 ∧
-    d ^ 3 ≥ d := by
-  refine ⟨smale_step_count d epochs_needed he, ?_⟩
-  exact smale_conditional_complexity d hd
-
-/-- **(III.d) Cost decomposition — explicit `3 d³`.**
-    The three-level factorisation used in all Smale-style arguments
-    collapses to `3·d³` by pure ring manipulation: this is the exact
-    arithmetic form used in the top-level complexity claim. -/
-theorem smale_cubic_cost_decomposition (d : ℕ) :
-    d * (d * 3) * d = 3 * d ^ 3 := by ring
-
-/-- **(III.e) Existence of a terminating epoch count.**
+/-- **(III.b) Existence of a terminating epoch count.**
     The Universal Descent assumption is realised abstractly: since
     `((d-1)/d) < 1`, the geometric sequence dips below any positive
     threshold `ε`, so *some* finite epoch count certifies
@@ -191,44 +161,5 @@ theorem smale_universal_descent_termination
     (d : ℕ) (hd : d ≥ 2) (ε : ℝ) (hε : ε > 0) :
     ∃ N : ℕ, (((d : ℝ) - 1) / d) ^ N < ε :=
   termination d hd ε hε
-
-/-! ## §IV. Grand Synthesis
-
-The three theorems above can be combined into a single
-"global completeness" certificate for the Pandrosion multi-start:
-
-  1. Every orbit is basin-stable         (Theorem I).
-  2. The `d` orbits identify `d` roots   (Theorem II).
-  3. The total cost is cubic             (Theorem III).
-
-`grand_pandrosion_certificate` is the Boolean-level packaging of
-these three deliverables. Its body is a conjunction assembled from
-the previous theorems. -/
-
-/-- **(IV) Grand Pandrosion Certificate.**
-    Combines Global Basin Stability, Multi-Start Completeness, and
-    Smale-Style Cubic Complexity into a single statement: under
-    contraction rate `c`, determinantal separation, surjective
-    basin assignment, and O(d) epochs per orbit, the algorithm
-    (a) preserves the basin at every step, (b) produces a bijection
-    from starts to roots, and (c) runs in `O(d³)` operations. -/
-theorem grand_pandrosion_certificate
-    (d : ℕ) (hd : d ≥ 3)
-    (r r' fz z c : ℝ) (hc0 : 0 ≤ c)
-    (h_contract : |fz - r| ≤ c * |z - r|)
-    (h_separation : (1 + 2 * c) * |z - r| < |z - r'|)
-    (basin_assignment : Fin d → Fin d)
-    (h_coverage : Function.Surjective basin_assignment)
-    (epochs_needed : ℕ) (he : epochs_needed ≤ 2 * d) :
-    -- (I) basin stability
-    (|fz - r| < |fz - r'|) ∧
-    -- (II) d distinct roots
-    Function.Bijective basin_assignment ∧
-    -- (III) cubic complexity
-    (d * epochs_needed ≤ 2 * d ^ 2 ∧ d ^ 3 ≥ d) := by
-  refine ⟨?_, ?_, ?_⟩
-  · exact global_basin_stability r r' fz z c hc0 h_contract h_separation
-  · exact multi_start_completeness d basin_assignment h_coverage
-  · exact smale_style_conditional_complexity d hd epochs_needed he
 
 end Pandrosion

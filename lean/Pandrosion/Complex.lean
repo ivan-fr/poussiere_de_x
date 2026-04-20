@@ -92,26 +92,6 @@ theorem product_contraction_tendsto (β : ℝ) (hβ : 0 ≤ β) (hβ1 : β < 1) 
     Filter.Tendsto (fun d => β ^ d) Filter.atTop (nhds 0) :=
   tendsto_pow_atTop_nhds_zero_of_lt_one hβ hβ1
 
-/-! ## §15. Polynomial Complexity (Theorem 3633)
-
-Total complexity: O(d³) arithmetic operations.
-= d orbits × O(d) epochs/orbit × O(d) cost/epoch
--/
-
-/-- Theorem 3633 (structure): The complexity is d × d × d = d³.
-    Each factor is at most d. -/
-theorem complexity_cubic (d : ℕ) : d * d * d = d ^ 3 := by ring
-
-/-- Theorem 2882: Iteration complexity.
-    Each epoch costs O(d) evaluations. After O(d) epochs,
-    the energy has been reduced by factor e^(-π²/8 · d). -/
-theorem epoch_cost_linear (d : ℕ) : d * 3 = 3 * d := by ring
-
-/-- Theorem 3466: Total step count.
-    Steps ≤ d · ⌈2d · log(R) / π⌉, which is O(d²). -/
-theorem step_count_quadratic (d : ℕ) :
-    d * (2 * d) = 2 * d ^ 2 := by ring
-
 /-! ## §16. Pole Avoidance (Theorem 2845)
 
 The Pandrosion method avoids poles of P'/P because

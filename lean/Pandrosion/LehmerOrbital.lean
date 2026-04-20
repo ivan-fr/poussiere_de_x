@@ -148,18 +148,6 @@ Hence |Π_k P'(α_k)| = |D(P)|² = 108² = 11664 ≥ 1.
 This is the concrete Pandrosion-Lehmer bound at X = 2.
 -/
 
-/-- **Discriminant of z³ − 2 has absolute value 108.** -/
-theorem disc_x2 : |(108 : ℤ)| = 108 := by norm_num
-
-/-- **108 ≥ 1.** -/
-theorem disc_x2_ge_one : (1 : ℤ) ≤ |(108 : ℤ)| := by norm_num
-
-/-- **108² = 11664: spectral determinant for z³ − 2.** -/
-theorem spectral_det_x2 : (108 : ℤ) ^ 2 = 11664 := by norm_num
-
-/-- **Pandrosion-Lehmer at X = 2: |Π_k P'(α_k)| ≥ 1.** -/
-theorem pandrosion_lehmer_x2 : (1 : ℤ) ≤ (108 : ℤ) ^ 2 := by norm_num
-
 /-! ## §1605. The Lehmer Orbital Headline
 
 Combining the spectral-discriminant identity with the integer

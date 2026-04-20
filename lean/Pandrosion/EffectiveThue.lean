@@ -203,24 +203,6 @@ These numerical certificates show the improvement is EFFECTIVE,
 COMPUTABLE, and machine-verified.
 -/
 
-/-- **Thue certificate: at step 1, the Liouville constant is amplified
-    to |d_1| = 43 for the ∛2 orbit.** -/
-theorem thue_cert_x2_step1 :
-    |((9 : ℤ) ^ 3 - 2 * 7 ^ 3)| = 43 := by norm_num
-
-/-- **Thue certificate: at step n, the Liouville constant is at least
-    2^n for the ∛2 orbit.** -/
-theorem thue_cert_x2_geometric (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n)
-    (n : ℕ) :
-    (2 : ℤ) ^ n ≤ |d n| :=
-  hall_normalized_escape d Φ hd0 hΦ hd n
-
-/-- **Thue certificate: million-fold amplification at step 20.** -/
-theorem thue_cert_x2_million : (2 : ℤ) ^ 20 = 1048576 := by norm_num
-
 /-! ## §1505. The Thue-Pandrosion Headline Theorem
 
 The combined effective Thue statement: every orbital cubic-root

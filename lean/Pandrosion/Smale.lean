@@ -15,33 +15,6 @@ The Pure Pandrosion-T₃ algorithm finds approximate zeros in O(d³)
 arithmetic operations (BSS model).
 -/
 
-/-- Theorem 3633: The total arithmetic cost is O(d³).
-    Decomposition: d orbits × d epochs × 3d evaluations. -/
-theorem total_complexity_bound (d : ℕ) :
-    d * d * (3 * d) = 3 * d ^ 3 := by ring
-
-/-- The number of epochs per orbit is at most O(d). -/
-theorem epochs_per_orbit (d : ℕ) (hd : d ≥ 1) :
-    2 * d ≥ d := by omega
-
-/-- Each epoch cost is O(d) (d polynomial evaluations of degree d). -/
-theorem epoch_cost (d : ℕ) : 3 * d = d + d + d := by ring
-
-/-- Theorem 3769: Conditional resolution of Smale's 17th problem.
-    ASSUMING the Universal Descent Conjecture (D(R) ≤ -c for all P),
-    the Pandrosion-T₃ finds an approximate zero in O(d³) operations.
-
-    The conjecture has been proven for:
-    1. P(z) = z^d - 1 (Theorem 3881)
-    2. General P with R = 3ρ (Theorem 3972, unconditional product descent)
-    3. Numerical verification for d ≤ 500 -/
-theorem smale_conditional_complexity (d : ℕ) (hd : d ≥ 3) :
-    d ^ 3 ≥ d := by
-  have : d ≥ 1 := by omega
-  calc d ^ 3 = d * d * d := by ring
-    _ ≥ 1 * 1 * d := by nlinarith
-    _ = d := by ring
-
 /-- Theorem 4012: Resolution of Smale's 17th Problem.
     The Pandrosion-T₃ multistart with d equispaced starts on
     the Cauchy circle of radius R = 3ρ finds an approximate
@@ -57,14 +30,6 @@ theorem smale_conditional_complexity (d : ℕ) (hd : d ≥ 3) :
 theorem smale_step_count (d : ℕ) (epochs_needed : ℕ) (he : epochs_needed ≤ 2 * d) :
     d * epochs_needed ≤ 2 * d ^ 2 := by nlinarith
 
-/-- With d starting orbits, total evaluations ≤ 2d² × 3 = 6d². -/
-theorem smale_total_evaluations (d : ℕ) :
-    6 * d ^ 2 ≤ 6 * d ^ 3 := by
-  cases d with
-  | zero => simp
-  | succ n =>
-    apply Nat.mul_le_mul_left
-    exact pow_le_pow_right (Nat.one_le_iff_ne_zero.mpr (Nat.succ_ne_zero n)) (by omega)
 /-! ## §22. McMullen's Impossibility (Theorem 4578)
 
 McMullen (1987) proved that no purely iterative algorithm
@@ -73,26 +38,12 @@ using only d evaluations per step. The Pandrosion method
 circumvents this by finding ONE root at a time.
 -/
 
-/-- Theorem 4578 (structural): McMullen's lower bound states
-    d evaluations per step are needed for the simultaneous problem.
-    The Pandrosion per-root approach uses only 3 evaluations per step. -/
-theorem mcmullen_circumvention : (3 : ℕ) < 4 := by norm_num
-
-/-- The Pandrosion T₃ uses 3 evaluations per step (one triple). -/
-theorem t3_evaluations_per_step : (3 : ℕ) = 1 + 1 + 1 := by norm_num
-
 /-! ## §23. Generic Convergence (Theorem 4847)
 
 For a generic monic polynomial (all roots simple, no root
 on the Cauchy circle), the Pandrosion multistart converges
 from all but finitely many starting angles.
 -/
-
-/-- Theorem 4847 (structural): The set of bad starting angles
-    θ such that P(Re^{iθ+iπ/d}) = 0 is finite (at most d points).
-    Therefore Pandrosion converges for all but finitely many θ. -/
-theorem generic_convergence_bad_angles (d : ℕ) (_hd : d ≥ 1) :
-    d < d + 1 := by omega
 
 /-- Theorem 4864: Homotopy stability via a preserved contraction margin.
     If the active contraction factor remains below one, then every positive
@@ -159,14 +110,5 @@ theorem far_anchor_correction_decay (rho R : ℝ) (hrho : rho > 0) (hR : R > 3 *
 Among d equispaced starts, at least d/2 + 1 give descent.
 This is the "majority vote" principle for robust convergence.
 -/
-
-/-- Proposition 3435: More than half the starts give descent.
-    Arithmetic: d/2 + 1 > d/2. -/
-theorem majority_vote (d : ℕ) (_hd : d ≥ 2) :
-    d / 2 + 1 > d / 2 := by omega
-
-/-- The number of good starts is at least 1 (existential). -/
-theorem at_least_one_good_start (d : ℕ) (hd : d ≥ 1) :
-    1 ≤ d := by omega
 
 end Pandrosion

@@ -137,11 +137,4 @@ theorem termination (p : ℕ) (hp : p ≥ 2) (ε : ℝ) (hε : ε > 0) :
   have _h_nn : 0 ≤ ((p : ℝ) - 1) / p := contraction_ratio_nonneg p hp
   exact exists_pow_lt_of_lt_one hε h_lt
 
-/-- **The algorithm's total cost: d iterations × O(d) per step = O(d²).
-    With d roots: O(d³) total.** -/
-theorem algorithm_cost_per_root (d : ℕ) : d * d = d ^ 2 := by ring
-
-/-- **Total cost across all roots.** -/
-theorem algorithm_total_cost (d : ℕ) : d * d ^ 2 = d ^ 3 := by ring
-
 end Pandrosion

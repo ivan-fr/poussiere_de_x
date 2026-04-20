@@ -36,21 +36,17 @@ namespace Pandrosion
 -/
 
 /-- **(14) Smale-17 Resolved (Unconditional Form).**
-    The geometric mechanisms for the global robust convergence 
+    The geometric mechanisms for the global robust convergence
     of the iteration:
       (i) Phase 1: the iteration pierces the deep basin boundary
-      (ii) Phase 2: epoch contraction guarantees geometric rate
-      (iii) Vote: the symmetry is algebraically broken.
-    This effectively substitutes for the conditional iteration bound. -/
-theorem smale_17_resolved 
+      (ii) Phase 2: epoch contraction guarantees geometric rate. -/
+theorem smale_17_resolved
     (d : ℕ) (hd : d ≥ 2) (ρ : ℝ) (hρ : ρ > 0) :
     ((ρ / cauchy_R ρ) ^ d < 1) ∧
-    (((d - 1 : ℝ) / d) ^ d ≤ Real.exp (-1)) ∧
-    (d / 2 + 1 > d / 2) := by
-  refine ⟨?_, ?_, ?_⟩
+    (((d - 1 : ℝ) / d) ^ d ≤ Real.exp (-1)) := by
+  refine ⟨?_, ?_⟩
   · exact phase1_contraction ρ hρ d hd
   · exact phase2_contraction d hd
-  · exact majority_vote d hd
 
 
 /-! ## §15. Bombieri-Pila pour courbes de degré ≤ d

@@ -142,21 +142,6 @@ Both cross-determinants are nonzero, certifying the Bilu-Tichy
 orbital injectivity at the algebraic level.
 -/
 
-/-- **Bilu-Tichy cert: cross-determinant at step 0 for X = 2 is -2.** -/
-theorem bilu_tichy_cert_x2_step0 :
-    (1 : ℤ) * 7 - 1 * 9 = 2 * 1 * 1 * pandrosion_norm 2 1 1 := by
-  unfold pandrosion_norm; norm_num
-
-/-- **Bilu-Tichy cert: cross-determinant at step 0 is nonzero for X = 2.** -/
-theorem bilu_tichy_cert_x2_nonzero :
-    (2 : ℤ) * 1 * 1 * pandrosion_norm 2 1 1 ≠ 0 := by
-  unfold pandrosion_norm
-  norm_num
-
-/-- **Bilu-Tichy cert: pandrosion_norm(2, 9, 7) = 43.** -/
-theorem bilu_tichy_cert_x2_d1 : pandrosion_norm 2 9 7 = 43 := by
-  unfold pandrosion_norm; norm_num
-
 /-! ## §2406. The Bilu-Tichy Orbital Headline
 
 The Bilu-Tichy orbital theorem for the Pandrosion family:

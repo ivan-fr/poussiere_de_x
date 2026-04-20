@@ -145,21 +145,6 @@ For (A₀, B₀) = (1, 1) targeting ∛2:
 These are small numbers proved by `norm_num`, witnessing the bound.
 -/
 
-/-- **Hall certificate at step 1 for ∛2: |d_1| = 43 ≥ 2¹.** -/
-theorem hall_cert_x2_step1 : (2 : ℤ) ^ 1 ≤ |((9 : ℤ) ^ 3 - 2 * 7 ^ 3)| := by
-  norm_num
-
-/-- **Hall certificate at step 1 for ∛2: |d_1| = 43 ≥ 2⁵ = 32.** -/
-theorem hall_cert_x2_step1_strong :
-    (2 : ℤ) ^ 5 ≤ |((9 : ℤ) ^ 3 - 2 * 7 ^ 3)| := by
-  norm_num
-
-/-- **Hall certificate threshold: 2^10 = 1024.** -/
-theorem hall_threshold_2_pow_10 : (2 : ℤ) ^ 10 = 1024 := by norm_num
-
-/-- **Hall certificate threshold: 2^20 = 1048576.** -/
-theorem hall_threshold_2_pow_20 : (2 : ℤ) ^ 20 = 1048576 := by norm_num
-
 /-! ## §1205. The Hall Orbital Theorem (Headline)
 
 The headline Hall-orbital statement combines escape and sparsity.

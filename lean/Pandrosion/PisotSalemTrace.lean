@@ -138,12 +138,6 @@ For non-trivial trace, take P(z) = z³ + z² − 2 (trace = -1):
   Trace = -1, |trace| = 1, the bound is sharp.
 -/
 
-/-- **PSL cert: trace of z³ + z² − 2 is -1 (sharp bound).** -/
-theorem psl_cert_x2_perturbed : |((-1 : ℤ))| = 1 := by norm_num
-
-/-- **PSL cert: discriminant of z³ − 2 is -108, |D| = 108 ≥ 1.** -/
-theorem psl_cert_x2_disc : (1 : ℤ) ≤ |(-108 : ℤ)| := by norm_num
-
 /-! ## §2105. The Pisot-Salem-Lehmer Headline
 
 Combining trace integrality with the Lehmer spectral identity gives

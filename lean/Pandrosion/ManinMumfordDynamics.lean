@@ -216,24 +216,4 @@ For the ∛2 orbit starting from (1, 1):
   • V_{42}  ∩ orbit = ∅ or {n} for at most one n.
 -/
 
-/-- **Manin-Mumford cert: the orbit never hits V_0.** -/
-theorem mm_cert_x2_v0 (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n) :
-    orbit_meeting d {0} = ∅ := by
-  ext n
-  simp only [orbit_meeting, Set.mem_singleton_iff, Set.mem_setOf_eq,
-             Set.mem_empty_iff_false, iff_false]
-  intro h
-  exact norm_never_zero d Φ hd0 hΦ hd n h
-
-/-- **Manin-Mumford cert: the value 43 occurs at most once in the orbit.** -/
-theorem mm_cert_x2_v43 (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0 : d 0 ≠ 0)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n) :
-    Set.Subsingleton (orbit_meeting d {43}) :=
-  mm_singleton_subsingleton d Φ hd0 hΦ hd 43
-
 end Pandrosion

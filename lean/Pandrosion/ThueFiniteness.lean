@@ -142,22 +142,4 @@ In particular, A³ - 2B³ = 1 has at most ONE orbital solution (n = 0),
 and A³ - 2B³ = 43 has at most ONE orbital solution (n = 1).
 -/
 
-/-- **For X=2: the initial norm has absolute value 1.** -/
-theorem abs_initial_norm_x2 : |(1 : ℤ) ^ 3 - 2 * 1 ^ 3| = 1 := by norm_num
-
-/-- **For X=2: the equation A³ - 2B³ = c with |c| ≤ M
-    has at most M solutions in the Pandrosion orbit from (1,1).**
-    Specifically: if d_n = A_n³ - 2·B_n³ satisfies |d_n| ≤ M,
-    then n ≤ M - 1, which means n ∈ {0, 1, ..., M-1}. -/
-theorem thue_x2_orbit_bound (d : ℕ → ℤ) (Φ : ℕ → ℤ)
-    (hd0_ne : d 0 ≠ 0)
-    (hd0_val : |d 0| = 1)
-    (hΦ : ∀ n, 2 ≤ |Φ n|)
-    (hd : ∀ n, d (n + 1) = d n * Φ n)
-    (M : ℤ) (n : ℕ) (hn : |d n| ≤ M) :
-    (n : ℤ) ≤ M - 1 := by
-  have hbound := thue_orbital_bound d Φ hd0_ne hΦ hd M n hn
-  rw [hd0_val] at hbound
-  exact hbound
-
 end Pandrosion

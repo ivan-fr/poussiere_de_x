@@ -37,15 +37,6 @@ With d orbits: total cost = d × d × 3 = 3d².
 Per-root cost: O(d) epochs × 3 evaluations = O(d).
 -/
 
-/-- **Per-orbit cost: d epochs × 3 evaluations per epoch.** -/
-theorem per_orbit_cost (d : ℕ) : d * 3 = 3 * d := by ring
-
-/-- **Total multi-start cost: d orbits × d epochs × 3 evals = 3d².** -/
-theorem multistart_total_cost (d : ℕ) : d * (d * 3) = 3 * d ^ 2 := by ring
-
-/-- **With O(d) per polynomial evaluation: 3d² × d = 3d³.** -/
-theorem multistart_bss_cost (d : ℕ) : 3 * d ^ 2 * d = 3 * d ^ 3 := by ring
-
 /-! ## §213. Equispaced Starting Configuration
 
 For d equispaced anchors aₛ = R·e^{2πis/d}, s = 0,...,d-1:
@@ -60,10 +51,6 @@ theorem angular_separation (d : ℕ) (hd : d ≥ 1) :
   apply div_pos
   · linarith [pi_pos]
   · exact_mod_cast (show 0 < d by omega)
-
-/-- **The offset π/d is exactly half the angular separation.** -/
-theorem optimal_offset (d : ℕ) :
-    π / (d : ℝ) = 2 * π / (d : ℝ) / 2 := by ring
 
 /-- **With d equispaced starts, d orbits cover the full circle.** -/
 theorem full_circle_coverage (d : ℕ) (hd : d ≥ 1) :

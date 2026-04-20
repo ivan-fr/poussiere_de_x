@@ -170,17 +170,4 @@ The triple at step 1 is:
 The orbital sandwich at step 1: 2 ≤ 43 ≤ 1 · 43 = 43. ✓
 -/
 
-/-- **abc cert: 686 + 43 = 729 (a + b = c at step 1, X = 2).** -/
-theorem abc_cert_x2_step1 : (686 : ℤ) + 43 = 729 := by norm_num
-
-/-- **abc cert: 729 = 9³ and 686 = 2 · 7³.** -/
-theorem abc_cert_x2_cubes : (9 : ℤ) ^ 3 = 729 ∧ 2 * 7 ^ 3 = 686 := by
-  refine ⟨?_, ?_⟩ <;> norm_num
-
-/-- **abc cert: |d_1| = 43, geometric lower bound 2^1 = 2 satisfied.** -/
-theorem abc_cert_x2_lower : (2 : ℤ) ^ 1 ≤ 43 := by norm_num
-
-/-- **abc cert: |d_1| = 43 = |d_0| · |Φ_0| = 1 · 43.** -/
-theorem abc_cert_x2_upper : (43 : ℤ) = 1 * 43 := by norm_num
-
 end Pandrosion

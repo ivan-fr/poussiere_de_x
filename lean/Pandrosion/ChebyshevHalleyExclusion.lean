@@ -42,10 +42,6 @@ theorem chebyshev_halley_coeff_s6 (α : ℝ) (h : 6 * (3 - 2 * α) = 15 - 6 * α
 theorem chebyshev_halley_coeff_s3X (α : ℝ) (h : 12 * α = 4 + 2 * α) :
     α = 2 / 5 := by linarith
 
-/-- **The exclusion theorem: 1/2 ≠ 2/5.**
-    No single α can satisfy both matching conditions simultaneously. -/
-theorem half_ne_two_fifths : (1 : ℝ) / 2 ≠ 2 / 5 := by norm_num
-
 /-- **Pandrosion ∉ Chebyshev-Halley family.**
     There is no α ∈ ℝ such that the Pandrosion iteration equals CH_α.
     Proof: the s⁶ condition forces α = 1/2, the s³X condition forces

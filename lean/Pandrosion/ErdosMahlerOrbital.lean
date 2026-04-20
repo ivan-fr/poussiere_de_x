@@ -56,14 +56,4 @@ theorem erdos_mahler_sparse_divergence
   have hesc := erdos_mahler_orbital_escape d Φ hd0 hΦ hd n
   linarith
 
-/-! ## §3101. Concrete Sparse Bounds (X=2)
-
-For X=2, starting from (1, 1), the norm sequence escapes immediately.
-For M = 1000, 2^10 = 1024 > 1000, ensuring escaping prime factors.
--/
-
-/-- **Certificate of exponential escape for indices > 9.** -/
-theorem erdos_mahler_cert_x2 : (2 : ℤ) ^ 10 = 1024 ∧ 1024 > 1000 := by
-  norm_num
-
 end Pandrosion

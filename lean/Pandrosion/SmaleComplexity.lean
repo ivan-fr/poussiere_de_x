@@ -60,28 +60,6 @@ theorem iterated_epoch_bound (d : ℕ) (hd : d ≥ 2) (ε₀ : ℝ) (hε₀ : ε
         rw [← Real.exp_nat_mul]
         congr 1; push_cast; ring
 
-/-! ## §97. Cost Structure -/
-
-/-- **Each step costs O(d) operations (polynomial evaluation).** -/
-theorem eval_cost (d : ℕ) : d + d = 2 * d := by ring
-
-/-- **One epoch = d steps, cost = d² per epoch.** -/
-theorem epoch_cost_quadratic (d : ℕ) : d * d = d ^ 2 := by ring
-
-/-! ## §98. The Smale Complexity Theorem -/
-
-/-- **Total ops = d roots × d steps/root × d ops/step = d³.** -/
-theorem smale_cubic_bound (d : ℕ) :
-    d * (d * d) = d ^ 3 := by ring
-
-/-- **Total ops with explicit constant: d · (d·C) · (2d) = 2C·d³.** -/
-theorem smale_with_constant (d : ℕ) (C : ℕ) :
-    d * (d * C) * (2 * d) = 2 * C * d ^ 3 := by ring
-
-/-- **d roots × d² per root = d³.** -/
-theorem total_complexity (d : ℕ) :
-    d * d ^ 2 = d ^ 3 := by ring
-
 /-! ## §99. Summary: the contraction rate is bounded -/
 
 /-- **The contraction rate is always positive.** -/

@@ -87,10 +87,6 @@ theorem ratio_complement (p : ℕ) (hp : p ≥ 2) :
 theorem progress_rate_pos (p : ℕ) (hp : p ≥ 2) :
     (1 : ℝ) / (p : ℝ) > 0 := by positivity
 
-/-- After d steps, the total progress is d/p. -/
-theorem total_progress (p d : ℕ) (_hp : p ≥ 2) :
-    (d : ℝ) * (1 / (p : ℝ)) = (d : ℝ) / (p : ℝ) := by ring
-
 /-! ## §7. Double Monotonicity (Theorem 585)
 
 The Pandrosion iteration has a remarkable property: both
