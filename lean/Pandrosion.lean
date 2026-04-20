@@ -76,3 +76,4 @@ import Pandrosion.BaseComplexity
 import Pandrosion.DynamicsConjecture
 import Pandrosion.ThueBridge
 import Pandrosion.ThueFiniteness
+import Pandrosion.ThueGeneral

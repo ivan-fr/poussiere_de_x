@@ -727,6 +727,21 @@ If $|d_n| \leq M$, then $n \leq M - |d_0|$. For $X = 2$ with $(A_0, B_0) = (1, 1
 
 This is the first formally verified \emph{effective orbital finiteness} result for cubic Thue equations via an explicit iterative descent argument.
 
+\subsection{Generalization to All Degrees $p \geq 2$}
+
+The Pandrosion integer iteration generalizes to all degrees $p \geq 2$ via the pattern:
+$$A' = A(A^p + 2(p-1)XB^p), \qquad B' = B(pA^p + (p-1)XB^p).$$
+
+The cross-determinant obeys a universal law, verified by \texttt{ring} for $p = 2, 3, 4, 5$:
+\begin{theorem}[\texttt{ThueGeneral.lean}: Universal Cross-Determinant]\label{thm:cross_det_gen}
+$A \cdot B' - B \cdot A' = (p-1) \cdot AB \cdot (A^p - XB^p).$
+\end{theorem}
+
+The norm amplification also generalizes. For $p = 2$ (Pell connection):
+$$d' = A'^2 - XB'^2 = (A^2 - XB^2) \cdot \underbrace{(A^4 + XA^2B^2 + X^2B^4)}_{\Phi_2 \geq 0}.$$
+
+A key structural observation: $\Phi_2$ is always nonneg for $X \geq 0$, reflecting the fact that Pell equations ($p = 2$) have infinitely many solutions. In contrast, $\Phi_3$ can be negative (e.g., $\Phi_3(1,1,2) = {-43}$), consistent with the finiteness of solutions for $p \geq 3$ (Thue, 1909). The orbital finiteness theorem applies uniformly to all $p$.
+
 \section{Matrix Algebra: Commutativity and Hermitian Invariance}
 \label{sec:matrix_algebra}
 %===========================================================
@@ -982,7 +997,7 @@ The certified identities include: residual factorisation over $\mathbb{R}$ (Deep
 We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. Newton's method remains operationally superior for scalar cube roots (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition; it does not establish global basin invariance. The cycle exclusion (Theorem~\ref{thm:nocycles}) applies to the real line; the complex case remains open. The Steffensen acceleration is analytically understood but not yet fully certified in Lean. Finally, the absence of chaotic dynamics and fractal structures in the Julia set is rigorously formulated as an open challenge (Conjecture~\ref{conj:chaos}), acknowledging the present limits of formalised complex analysis.
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; (6)~the Thue Bridge connecting Pandrosion integer sequences to Diophantine approximation theory via norm amplification, providing machine-certified scaffolding toward effective Thue--Siegel bounds; and (7)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{58-module, zero-sorry} corpus.
+The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; (6)~the Thue Bridge connecting Pandrosion integer sequences to Diophantine approximation theory via norm amplification, providing machine-certified scaffolding toward effective Thue--Siegel bounds; and (7)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{59-module, zero-sorry} corpus.
 
 \begin{figure}[H]
 \centering
