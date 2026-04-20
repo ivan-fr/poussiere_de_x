@@ -1077,6 +1077,85 @@ The genuine contribution lies in: (1)~a rational root-finding iteration, algebra
 
 The complete Lean~4 corpus comprises \textbf{100~modules}, \textbf{399~theorems}, and \textbf{zero \texttt{sorry} declarations}, built against Mathlib~\cite{mathlib}. The source code is publicly available and fully reproducible.
 
+%===========================================================
+\section*{Final Proof Gallery: Ten Certified Highlights}
+\addcontentsline{toc}{section}{Final Proof Gallery: Ten Certified Highlights}
+%===========================================================
+
+The following gallery collects ten of the most structurally significant Lean-certified arguments in the corpus. The figures are visual summaries only; the formal content is the corresponding Lean theorem chain.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_proof_gallery_01_universal_rate.pdf}
+\caption{\textbf{Universal derivative certificate.} Theorem~\ref{thm:derivative} and \texttt{HalleyComparison.lean} prove that the local multiplier of the cubic Pandrosion map at every nonzero cube root is exactly $-1/5$, independently of the target~$X$. The negative sign explains the alternating approach pattern; the absolute value gives a certified contraction rate.}
+\label{fig:proof_gallery_universal_rate}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_proof_gallery_02_ch_exclusion.pdf}
+\caption{\textbf{Chebyshev--Halley exclusion.} \texttt{ChebyshevHalleyExclusion.lean} proves that matching Pandrosion to the one-parameter Chebyshev--Halley family would force two incompatible values of the same parameter: $\alpha=1/2$ from the $s^6$ coefficient and $\alpha=2/5$ from the $s^3X$ coefficient. Hence Pandrosion is not any member of that classical family.}
+\label{fig:proof_gallery_ch_exclusion}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_proof_gallery_03_residual_conservation.pdf}
+\caption{\textbf{Kinematic residual conservation.} \texttt{ResidualConservation.lean} certifies the exact factorisation
+$G^3-X=(s^3-X)\Phi(s,X)/(3s^3+2X)^3$. The plotted multiplier for $X=2$ crosses the fixed point with limiting value $-1/5$, matching the derivative theorem and giving the residual-level explanation of the convergence mechanism.}
+\label{fig:proof_gallery_residual_conservation}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_proof_gallery_04_no_cycles.pdf}
+\caption{\textbf{No periodic orbits under contraction.} \texttt{NoCycles.lean} proves that if $|f(s)-r|\leq c|s-r|$ with $0\leq c<1$, then any finite periodic return $f^{\circ n}(s)=s$ forces $s=r$. The figure shows why: every composed contraction multiplies the nonzero distance by $c^n<1$, contradicting exact return.}
+\label{fig:proof_gallery_no_cycles}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_proof_gallery_05_integer_amplification.pdf}
+\caption{\textbf{Pell--Pandrosion integer amplification.} Theorem~\ref{thm:pell} and \texttt{ThueBridge.lean} prove the exact law $d_{n+1}=d_n\Phi_n$ for $d_n=A_n^3-XB_n^3$. For $X=2$, the logarithmic growth of both the norm and the amplification factor becomes enormous after only a few certified integer steps.}
+\label{fig:proof_gallery_integer_amplification}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_proof_gallery_06_cross_determinant.pdf}
+\caption{\textbf{Cross-determinant separation.} Theorem~\ref{thm:cross_det} proves $AB'-BA'=2AB(A^3-XB^3)$. This locks the separation of consecutive rational approximants to the same cubic norm that drives the Thue-style amplification, so distinctness is carried by an explicit polynomial certificate.}
+\label{fig:proof_gallery_cross_determinant}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{fig_proof_gallery_07_voronoi_stability.pdf}
+\caption{\textbf{Voronoi basin stability.} Theorem~\ref{thm:basin_stability} links algebraic contraction to geometric basin persistence: if $z$ is deep enough in the Voronoi cell of $r$, then the contracted point $f(z)$ remains closer to $r$ than to a competing anchor $r'$. This is the geometric bridge between the contraction proof and the multi-start basin architecture.}
+\label{fig:proof_gallery_voronoi_stability}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_proof_gallery_08_hermitian_preservation.pdf}
+\caption{\textbf{Hermitian preservation.} Theorem~\ref{thm:hermitian} and \texttt{HermitianPreservation.lean} prove that the Pandrosion numerator and denominator product preserves the Hermitian condition when the inputs are Hermitian and commute. The visual consequence is spectral confinement to the real axis, unlike a generic complex product.}
+\label{fig:proof_gallery_hermitian_preservation}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{fig_proof_gallery_09_dft_spectral.pdf}
+\caption{\textbf{DFT character orthogonality.} \texttt{DFTDecomposition.lean} proves the roots-of-unity cancellation law: $\sum_{j=0}^{p-1}\omega^{jm}$ is $p$ when $p\mid m$ and $0$ otherwise. This supplies the spectral bookkeeping used by the Fourier and descent modules.}
+\label{fig:proof_gallery_dft_spectral}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{fig_proof_gallery_10_effective_irrationality.pdf}
+\caption{\textbf{Effective irrationality bound.} Theorem~\ref{thm:effective} in \texttt{EffectiveIrrationality.lean} turns the cubic factorisation
+$A^3-(rB)^3=(A-rB)(A^2+A\,rB+(rB)^2)$ and the discreteness of nonzero integers into an explicit lower bound for $|A-rB|$. The Pandrosion norm propagation keeps this bound applicable along the integer orbit.}
+\label{fig:proof_gallery_effective_irrationality}
+\end{figure}
+
 \bigskip
 
 \bibliographystyle{plain}
