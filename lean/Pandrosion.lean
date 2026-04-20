@@ -154,3 +154,6 @@ import Pandrosion.BsdAttractorRank
 
 -- Syracuse (Collatz) 3x+1 Envelope Absorption via Faltings Extinction Bounds
 import Pandrosion.CollatzExtinctionHorizon
+
+-- Szemerédi's Theorem: Ergodic Arithmetic Progressions via Standing Fluid Waves
+import Pandrosion.SzemerediErgodicResonance
