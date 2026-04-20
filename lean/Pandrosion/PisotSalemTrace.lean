@@ -121,7 +121,7 @@ theorem psl_compound_d3 (a b c : ℝ) (T : ℤ)
       * |((a - b) * (a - c) * ((b - a) * (b - c)) * ((c - a) * (c - b)))| := by
   have h_trace := psl_trace_d3 a b c T hT hT_ne
   have h_spec := pandrosion_lehmer_d3 a b c hD_int
-  have h_trace_nn : 0 ≤ |trace_d3 a b c| := abs_nonneg _
+  have _h_trace_nn : 0 ≤ |trace_d3 a b c| := abs_nonneg _
   nlinarith
 
 /-! ## §2104. Concrete Pisot-Salem-Lehmer Certificate at X = 2
