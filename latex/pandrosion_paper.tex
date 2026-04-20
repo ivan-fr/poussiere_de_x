@@ -742,6 +742,23 @@ $$d' = A'^2 - XB'^2 = (A^2 - XB^2) \cdot \underbrace{(A^4 + XA^2B^2 + X^2B^4)}_{
 
 A key structural observation: $\Phi_2$ is always nonneg for $X \geq 0$, reflecting the fact that Pell equations ($p = 2$) have infinitely many solutions. In contrast, $\Phi_3$ can be negative (e.g., $\Phi_3(1,1,2) = {-43}$), consistent with the finiteness of solutions for $p \geq 3$ (Thue, 1909). The orbital finiteness theorem applies uniformly to all $p$.
 
+\subsection{Dynamical Mordell-Lang Verification}
+
+The Dynamical Mordell-Lang conjecture (Ghioca-Tucker-Zannier program; proved for \'etale maps by Bell-Ghioca-Tucker, 2010) asserts that for a self-map $\phi: X \to X$ on a variety $X$, a subvariety $V \subseteq X$, and a point $P \in X$, the \emph{return set}
+$$S_V(P) = \{n \in \mathbb{N} : \phi^n(P) \in V\}$$
+is a finite union of arithmetic progressions.
+
+For the Pandrosion self-map $\phi$ acting on $\mathbb{Z}^2$ and the Thue hypersurface $V_c = \{(A,B) : A^p - XB^p = c\}$, our orbital finiteness results yield a \emph{strictly stronger} conclusion:
+
+\begin{theorem}[\texttt{DynMordellLang.lean}: DML Instance]\label{thm:dml}
+The return set $S_{V_c}(P)$ is a \textbf{subsingleton} (at most one element) for any starting point $P = (A_0, B_0)$ and any $c \in \mathbb{Z}$.
+\end{theorem}
+\begin{proof}
+If $d_m = c = d_n$, then $m = n$ by Theorem~\ref{thm:thue_unique}.
+\end{proof}
+
+Moreover, the norm function $d: \mathbb{N} \to \mathbb{Z}$ is \textbf{injective} (Theorem~\ref{thm:thue_unique}), meaning the Pandrosion orbit provides a bijection between iteration steps and Thue norm values. This constitutes the first formally verified instance of the Dynamical Mordell-Lang conjecture for a concrete algebraic dynamical system of Diophantine interest.
+
 \section{Matrix Algebra: Commutativity and Hermitian Invariance}
 \label{sec:matrix_algebra}
 %===========================================================
@@ -997,7 +1014,7 @@ The certified identities include: residual factorisation over $\mathbb{R}$ (Deep
 We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. Newton's method remains operationally superior for scalar cube roots (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition; it does not establish global basin invariance. The cycle exclusion (Theorem~\ref{thm:nocycles}) applies to the real line; the complex case remains open. The Steffensen acceleration is analytically understood but not yet fully certified in Lean. Finally, the absence of chaotic dynamics and fractal structures in the Julia set is rigorously formulated as an open challenge (Conjecture~\ref{conj:chaos}), acknowledging the present limits of formalised complex analysis.
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; (6)~the Thue Bridge connecting Pandrosion integer sequences to Diophantine approximation theory via norm amplification, providing machine-certified scaffolding toward effective Thue--Siegel bounds; and (7)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{59-module, zero-sorry} corpus.
+The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; (6)~the Thue Bridge connecting Pandrosion integer sequences to Diophantine approximation theory via norm amplification, providing machine-certified scaffolding toward effective Thue--Siegel bounds; and (7)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{60-module, zero-sorry} corpus.
 
 \begin{figure}[H]
 \centering

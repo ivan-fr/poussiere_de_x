@@ -77,3 +77,4 @@ import Pandrosion.DynamicsConjecture
 import Pandrosion.ThueBridge
 import Pandrosion.ThueFiniteness
 import Pandrosion.ThueGeneral
+import Pandrosion.DynMordellLang
