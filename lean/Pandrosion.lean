@@ -151,3 +151,6 @@ import Pandrosion.RiemannGyroscopicAttractor
 
 -- Topologizing Birch and Swinnerton-Dyer (BSD) via Multi-Root Algebraic Dimensions
 import Pandrosion.BsdAttractorRank
+
+-- Syracuse (Collatz) 3x+1 Envelope Absorption via Faltings Extinction Bounds
+import Pandrosion.CollatzExtinctionHorizon
