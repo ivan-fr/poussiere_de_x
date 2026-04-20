@@ -163,3 +163,9 @@ import Pandrosion.CbrtTwoIntegerCore
 
 -- √2 integer-core irrationality — REAL PROOF (infinite descent, quadratic case)
 import Pandrosion.SqrtTwoIntegerCore
+
+-- Contraction ⇒ unique real fixed point (bridge: NoCycles → AnchorStep)
+import Pandrosion.ContractionUniqueFixedPoint
+
+-- Q_cubic positive-definite on ℝ² (unconditional; removes sign hypotheses)
+import Pandrosion.QCubicPositiveDefinite
