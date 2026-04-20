@@ -79,3 +79,4 @@ import Pandrosion.ThueFiniteness
 import Pandrosion.ThueGeneral
 import Pandrosion.DynMordellLang
 import Pandrosion.LattesExclusion
+import Pandrosion.PandrosionZeta
