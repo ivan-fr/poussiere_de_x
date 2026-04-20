@@ -23,6 +23,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-elan-
           
+    - name: Fix ownership for Docker (UID 1000)
+      run: sudo chown -R 1000:1000 .
+
     - name: Build Docker Checking Environment
       run: docker compose build lean-check
 
