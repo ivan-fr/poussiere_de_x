@@ -118,3 +118,6 @@ import Pandrosion.PadeEquivalenceOrbital
 import Pandrosion.NonArchimedeanOrbital
 import Pandrosion.TelescopicZetaOrbital
 import Pandrosion.HyperEllipticOrbital
+
+-- Deep three-theorem synthesis
+import Pandrosion.DeepThreeTheorems

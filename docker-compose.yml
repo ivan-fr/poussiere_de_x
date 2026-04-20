@@ -54,18 +54,82 @@ services:
     working_dir: /workspace/lean
     command: >
       bash -c '
-        echo "=== Pandrosion Lean Check (incremental) ===" &&
-        lake build Pandrosion 2>&1 &&
+        set -euo pipefail &&
+        echo "=== Pandrosion Lean Check (strict, verbose) ===" &&
+        echo "Toolchain: $$(cat lean-toolchain)" &&
+        echo "Lean:      $$(lean --version)" &&
+        echo "Lake:      $$(lake --version | head -1)" &&
         echo "" &&
+        echo "--- Build (verbose, all warnings = errors) ---" &&
+        LOG=$$(mktemp) &&
+        # -v: verbose progress; -Kwarning.level=error: warnings fatal;
+        # -KlinterSorries=true: surface sorry as lint error;
+        # --no-build-deps disabled so full dep graph is rechecked.
+        ( lake -v build Pandrosion \
+            -Kwarning.level=error \
+            -KlinterSorries=true 2>&1 | tee "$$LOG" ) &&
+        echo "" &&
+        echo "--- Raw lean diagnostics scan ---" &&
+        ERRORS=$$(grep -cE "^([^:]+\.lean:[0-9]+:[0-9]+: )?error:" "$$LOG" || true) &&
+        WARNS=$$(grep -cE "^([^:]+\.lean:[0-9]+:[0-9]+: )?warning:" "$$LOG" || true) &&
+        SORRIES=$$(grep -cE "(sorry|declaration uses .sorry.)" "$$LOG" || true) &&
+        AXIOMS_UNEXPECTED=$$(grep -cE "uses axiom" "$$LOG" || true) &&
+        echo "  errors in log:   $$ERRORS" &&
+        echo "  warnings in log: $$WARNS" &&
+        echo "  sorry mentions:  $$SORRIES" &&
+        echo "  axiom mentions:  $$AXIOMS_UNEXPECTED" &&
+        echo "" &&
+        echo "--- Source-tree scan ---" &&
         SRC=$$(find Pandrosion/ -name "*.lean" | wc -l | tr -d " ") &&
         OLE=$$(find .lake/build/lib/Pandrosion -name "*.olean" 2>/dev/null | wc -l | tr -d " ") &&
-        echo "Compiled: $$OLE / $$SRC" &&
-        FAILED=$$(comm -23 <(find Pandrosion/ -name "*.lean" | sed "s|/|.|g;s|\.lean||" | sort) <(find .lake/build/lib/Pandrosion -name "*.olean" 2>/dev/null | sed "s|.lake/build/lib/||;s|\.olean||;s|/|.|g" | sort)) &&
-        if [ -z "$$FAILED" ]; then
-          echo "✅ ALL $$SRC MODULES OK"
+        THM=$$(grep -rE "^(theorem|lemma) " Pandrosion/ --include="*.lean" | wc -l | tr -d " ") &&
+        DEF=$$(grep -rE "^(def|noncomputable def) " Pandrosion/ --include="*.lean" | wc -l | tr -d " ") &&
+        # Strip Lean comments before scanning (block /- -/, preserving line count; -- to EOL).
+        STRIP="perl -0777 -pe s|(/-.*?-/)|qq{\\n} x ((\\$$1=~tr/\\n//))|ges; perl -pe s|--.*||" &&
+        SRC_SORRY_FILE=$$(mktemp) &&
+        SRC_ADMIT_FILE=$$(mktemp) &&
+        SRC_AXIOM_FILE=$$(mktemp) &&
+        set +u &&
+        for f in $$(find Pandrosion/ -name "*.lean"); do
+          CLEAN=$$(perl -0777 -pe "s|(/-.*?-/)|qq{\\n} x ((\$$1=~tr/\\n//))|ges" "$$f" | perl -pe "s|--.*||")
+          printf "%s\n" "$$CLEAN" | grep -nP "(?<![-\w])sorry(?![-\w])" | sed "s|^|$$f:|" >> "$$SRC_SORRY_FILE" || true
+          printf "%s\n" "$$CLEAN" | grep -nP "(?<![-\w])admit(?![-\w])" | sed "s|^|$$f:|" >> "$$SRC_ADMIT_FILE" || true
+          printf "%s\n" "$$CLEAN" | grep -nE "^axiom "                  | sed "s|^|$$f:|" >> "$$SRC_AXIOM_FILE" || true
+        done &&
+        set -u &&
+        SRC_SORRY_CT=$$(wc -l < "$$SRC_SORRY_FILE" | tr -d " ") &&
+        SRC_ADMIT_CT=$$(wc -l < "$$SRC_ADMIT_FILE" | tr -d " ") &&
+        SRC_AXIOM_CT=$$(wc -l < "$$SRC_AXIOM_FILE" | tr -d " ") &&
+        echo "  .lean files:     $$SRC" &&
+        echo "  .olean built:    $$OLE" &&
+        echo "  theorems+lemmas: $$THM" &&
+        echo "  defs:            $$DEF" &&
+        echo "  sorry in source: $$SRC_SORRY_CT" &&
+        [ "$$SRC_SORRY_CT" -gt 0 ] && cat "$$SRC_SORRY_FILE" || true &&
+        echo "  admit in source: $$SRC_ADMIT_CT" &&
+        [ "$$SRC_ADMIT_CT" -gt 0 ] && cat "$$SRC_ADMIT_FILE" || true &&
+        echo "  axiom in source: $$SRC_AXIOM_CT" &&
+        [ "$$SRC_AXIOM_CT" -gt 0 ] && cat "$$SRC_AXIOM_FILE" || true &&
+        echo "" &&
+        echo "--- Missing oleans ---" &&
+        FAILED=$$(comm -23 \
+          <(find Pandrosion/ -name "*.lean" | sed "s|/|.|g;s|\.lean||" | sort) \
+          <(find .lake/build/lib/Pandrosion -name "*.olean" 2>/dev/null | sed "s|.lake/build/lib/||;s|\.olean||;s|/|.|g" | sort)) &&
+        # Strict gates
+        FAIL=0 &&
+        if [ -n "$$FAILED" ];           then echo "❌ Missing oleans:"; echo "$$FAILED"; FAIL=1; fi &&
+        if [ "$$ERRORS" -gt 0 ];        then echo "❌ Errors present in build log";          FAIL=1; fi &&
+        if [ "$$WARNS" -gt 0 ];         then echo "❌ Warnings present (strict mode)";       FAIL=1; fi &&
+        if [ "$$SRC_SORRY_CT" -gt 0 ];  then echo "❌ sorry present in source";              FAIL=1; fi &&
+        if [ "$$SRC_ADMIT_CT" -gt 0 ];  then echo "❌ admit present in source";              FAIL=1; fi &&
+        if [ "$$SRC_AXIOM_CT" -gt 0 ];  then echo "❌ raw axiom present in source";          FAIL=1; fi &&
+        if [ "$$OLE" -ne "$$SRC" ];     then echo "❌ olean count != src count ($$OLE/$$SRC)"; FAIL=1; fi &&
+        if [ "$$FAIL" -eq 0 ]; then
+          echo "" &&
+          echo "✅ STRICT CHECK PASSED — $$SRC modules, $$THM theorems/lemmas, $$DEF defs, 0 sorry, 0 admit, 0 raw axiom, 0 warning, 0 error"
         else
-          echo "❌ FAILED:" &&
-          echo "$$FAILED" &&
+          echo "" &&
+          echo "✗ STRICT CHECK FAILED" &&
           exit 1
         fi
       '
