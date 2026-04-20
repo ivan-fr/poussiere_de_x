@@ -271,19 +271,42 @@ def fig_dft_spectral():
 
 def fig_effective_irrationality():
     r = 2 ** (1 / 3)
-    B = np.arange(1, 90)
-    lower = 1 / (3 * r**2 * B**3)
-    thue = 43 / (3 * r**2 * B**3)
-    random_like = 1 / B**2.25
+    B = np.arange(1, 140)
+    integer_scale = 1 / (3 * r**2 * B**2)
+    rational_scale = 1 / (3 * r**2 * B**3)
+
+    orbit_B = []
+    orbit_error = []
+    orbit_generic_bound = []
+    orbit_labels = []
+    A, Bb = 1, 1
+    for n in range(3):
+        form = A**2 + A * r * Bb + (r * Bb) ** 2
+        d = A**3 - 2 * Bb**3
+        orbit_B.append(Bb)
+        orbit_error.append(abs(A / Bb - r))
+        orbit_generic_bound.append(1 / (Bb * form))
+        orbit_labels.append(f"n={n}, |d|={abs(d):.0e}" if abs(d) > 999 else f"n={n}, |d|={abs(d)}")
+        A, Bb = pandrosion_step(A, Bb, 2)
+
     fig, ax = plt.subplots(figsize=(8.8, 4.8))
-    ax.loglog(B, lower, color=COLORS["blue"], lw=2.5, label="Liouville-type lower envelope")
-    ax.loglog(B, thue, color=COLORS["red"], lw=2.0, ls="--", label="first amplified X=2 envelope")
-    ax.loglog(B, random_like, color=COLORS["green"], lw=1.8, alpha=0.75, label="reference B^-2.25")
-    ax.text(10, thue[9] * 1.8, "|A-rB| >= 1/(A^2 + A rB + (rB)^2)",
+    ax.loglog(B, integer_scale, color=COLORS["purple"], lw=2.0, ls="--",
+              label="integer distance scale |A-rB| ~ B^-2")
+    ax.loglog(B, rational_scale, color=COLORS["blue"], lw=2.5,
+              label="rational error scale |A/B-r| ~ B^-3")
+    ax.scatter(orbit_B, orbit_error, s=75, color=COLORS["red"], zorder=5,
+               label="Pandrosion orbit errors")
+    ax.scatter(orbit_B, orbit_generic_bound, s=55, color=COLORS["ink"], marker="x", zorder=6,
+               label="generic theorem bound at orbit points")
+    for x, y, label in zip(orbit_B, orbit_error, orbit_labels):
+        ax.annotate(label, xy=(x, y), xytext=(8, 8), textcoords="offset points",
+                    fontsize=8, color=COLORS["red"])
+    ax.text(7, rational_scale[6] * 2.5, "|A-rB| >= 1/(A^2 + A rB + (rB)^2)\n"
+                                         "|A/B-r| >= 1/(B(A^2 + A rB + (rB)^2))",
             color=COLORS["ink"], bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=COLORS["gray"], alpha=0.9))
     ax.set_xlabel("denominator scale B")
-    ax.set_ylabel("certified lower distance scale")
-    ax.set_title("Effective irrationality bound from cubic factorization")
+    ax.set_ylabel("certified lower-bound scale")
+    ax.set_title("Effective irrationality: integer and rational distance scales")
     ax.grid(alpha=0.22, which="both")
     ax.legend()
     save(fig, "fig_proof_gallery_10_effective_irrationality.pdf")
