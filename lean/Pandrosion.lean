@@ -82,3 +82,5 @@ import Pandrosion.LattesExclusion
 import Pandrosion.PandrosionZeta
 import Pandrosion.BakerDavenport
 import Pandrosion.MortonSilverman
+import Pandrosion.HallOrbital
+import Pandrosion.PillaiOrbital
