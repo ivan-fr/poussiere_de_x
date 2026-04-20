@@ -198,38 +198,63 @@ def fig_cross_determinant():
 
 
 def fig_voronoi_stability():
-    fig, ax = plt.subplots(figsize=(7.2, 6.2))
-    r = np.array([-1.0, 0.0])
-    rp = np.array([1.0, 0.0])
-    c = 0.45
-    yy = np.linspace(-1.8, 1.8, 200)
-    ax.fill_betweenx(yy, -2.2, 0, color=COLORS["blue"], alpha=0.10)
-    ax.fill_betweenx(yy, 0, 2.2, color=COLORS["red"], alpha=0.08)
-    ax.axvline(0, color=COLORS["gray"], lw=1.8, ls="--", label="Voronoi bisector")
-    z = np.array([-1.38, 0.32])
-    radius = np.linalg.norm(z - r)
-    fz = r + c * (z - r)
-    before = plt.Circle(tuple(r), radius, color=COLORS["gold"], fill=False, lw=1.5, ls="--")
-    after = plt.Circle(tuple(r), c * radius, color=COLORS["green"], fill=False, lw=2)
-    ax.add_patch(before)
-    ax.add_patch(after)
-    ax.scatter([r[0], rp[0]], [r[1], rp[1]], s=100, color=[COLORS["blue"], COLORS["red"]], zorder=5)
-    ax.text(r[0] - 0.08, r[1] - 0.22, "r", ha="right", color=COLORS["blue"])
-    ax.text(rp[0] + 0.08, rp[1] - 0.22, "r'", ha="left", color=COLORS["red"])
-    ax.scatter([z[0], fz[0]], [z[1], fz[1]], s=75, color=[COLORS["gold"], COLORS["green"]], zorder=6)
-    ax.annotate("", xy=fz, xytext=z, arrowprops=dict(arrowstyle="->", lw=2, color=COLORS["ink"]))
-    ax.text(z[0] - 0.05, z[1] + 0.15, "z", color=COLORS["gold"])
-    ax.text(fz[0] + 0.08, fz[1] + 0.07, "f(z)", color=COLORS["green"])
-    ax.text(-1.85, 1.45, "c=0.45,  (1+2c)|z-r| < |z-r'|\n"
-                          "contracted point stays in r-cell", color=COLORS["ink"],
-            bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=COLORS["gray"], alpha=0.9))
-    ax.set_xlim(-2.1, 2.1)
-    ax.set_ylim(-1.8, 1.8)
+    fig, ax = plt.subplots(figsize=(8.2, 6.8))
+    roots = np.array([[-1.15, 0.0], [1.05, 0.0], [0.0, 1.55]])
+    colors = [COLORS["blue"], COLORS["red"], COLORS["purple"]]
+    c = 0.42
+
+    xs = np.linspace(-2.2, 2.2, 420)
+    ys = np.linspace(-1.55, 2.25, 360)
+    Xg, Yg = np.meshgrid(xs, ys)
+    pts = np.stack([Xg, Yg], axis=-1)
+    dists = np.stack([np.sum((pts - root) ** 2, axis=-1) for root in roots], axis=0)
+    nearest = np.argmin(dists, axis=0)
+    margin = np.sqrt(np.partition(dists, 1, axis=0)[1]) - np.sqrt(np.partition(dists, 0, axis=0)[0])
+
+    rgb = np.zeros((*nearest.shape, 3))
+    palette = np.array([[38, 84, 124], [196, 69, 54], [109, 89, 122]]) / 255.0
+    for idx, col in enumerate(palette):
+        rgb[nearest == idx] = col
+    alpha = np.clip(0.16 + 0.36 * margin / np.nanmax(margin), 0.16, 0.48)
+    image = 1 - alpha[..., None] * (1 - rgb)
+    ax.imshow(image, extent=[xs.min(), xs.max(), ys.min(), ys.max()], origin="lower", aspect="equal")
+    ax.contour(Xg, Yg, nearest, levels=[0.5, 1.5], colors="white", linewidths=1.6, alpha=0.95)
+    ax.contour(Xg, Yg, margin, levels=[0.28, 0.55, 0.85], colors=COLORS["ink"], linewidths=[0.5, 0.8, 1.1], alpha=0.28)
+
+    for root, color, label in zip(roots, colors, ["r", "r'", "r''"]):
+        ax.scatter([root[0]], [root[1]], s=170, color=color, edgecolor="white", linewidth=1.8, zorder=6)
+        ax.text(root[0] + 0.07, root[1] + 0.07, label, color=color, fontsize=14, weight="bold", zorder=7)
+
+    start_points = np.array([
+        [-1.68, -0.88], [-1.72, -0.42], [-1.62, 0.34], [-1.38, 0.82],
+        [-0.92, -1.02], [-0.62, -0.54], [-0.72, 0.35], [-0.44, 0.88],
+    ])
+    anchor = roots[0]
+    contracted = anchor + c * (start_points - anchor)
+    vec = contracted - start_points
+    ax.quiver(start_points[:, 0], start_points[:, 1], vec[:, 0], vec[:, 1],
+              angles="xy", scale_units="xy", scale=1, width=0.007,
+              color=COLORS["ink"], alpha=0.9, zorder=5)
+    ax.scatter(start_points[:, 0], start_points[:, 1], s=32, color=COLORS["gold"],
+               edgecolor="white", linewidth=0.6, zorder=6)
+    ax.scatter(contracted[:, 0], contracted[:, 1], s=34, color=COLORS["green"],
+               edgecolor="white", linewidth=0.6, zorder=6)
+
+    stable = plt.Circle(tuple(anchor), 0.72, color=COLORS["green"], fill=False, lw=2.4, alpha=0.95)
+    ax.add_patch(stable)
+    ax.text(-2.02, 1.92, "certified depth condition\n(1+2c)|z-r| < |z-r'|",
+            color=COLORS["ink"],
+            bbox=dict(boxstyle="round,pad=0.35", fc="white", ec=COLORS["gray"], alpha=0.92))
+    ax.text(-1.98, -1.34, "gold: starts    green: contracted images\ncontours: distance margin inside Voronoi cells",
+            color=COLORS["ink"], fontsize=9,
+            bbox=dict(boxstyle="round,pad=0.28", fc="white", ec="none", alpha=0.78))
+    ax.set_xlim(-2.2, 2.2)
+    ax.set_ylim(-1.55, 2.25)
     ax.set_aspect("equal", adjustable="box")
-    ax.set_title("Voronoi basin stability schematic")
+    ax.set_title("Voronoi basin stability under certified contraction")
     ax.set_xlabel("real coordinate")
     ax.set_ylabel("imaginary coordinate")
-    ax.grid(alpha=0.15)
+    ax.grid(alpha=0.10)
     save(fig, "fig_proof_gallery_07_voronoi_stability.pdf")
 
 
@@ -279,41 +304,59 @@ def fig_effective_irrationality():
     orbit_B = []
     orbit_error = []
     orbit_generic_bound = []
+    norm_logs = []
+    form_logs = []
     orbit_labels = []
     A, Bb = 1, 1
-    for n in range(3):
+    for n in range(4):
         form = A**2 + A * r * Bb + (r * Bb) ** 2
         d = A**3 - 2 * Bb**3
         orbit_B.append(Bb)
         orbit_error.append(abs(A / Bb - r))
         orbit_generic_bound.append(1 / (Bb * form))
-        orbit_labels.append(f"n={n}, |d|={abs(d):.0e}" if abs(d) > 999 else f"n={n}, |d|={abs(d)}")
+        norm_logs.append(math.log10(abs(d)))
+        form_logs.append(math.log10(form))
+        orbit_labels.append(f"n={n}")
         A, Bb = pandrosion_step(A, Bb, 2)
 
     B = np.logspace(0, math.log10(max(orbit_B) * 1.25), 360)
     integer_scale = 1 / (3 * r**2 * B**2)
     rational_scale = 1 / (3 * r**2 * B**3)
 
-    fig, ax = plt.subplots(figsize=(8.8, 4.8))
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(12.2, 4.9), gridspec_kw={"width_ratios": [1.4, 1]})
     ax.loglog(B, integer_scale, color=COLORS["purple"], lw=2.0, ls="--",
               label="integer distance scale |A-rB| ~ B^-2")
     ax.loglog(B, rational_scale, color=COLORS["blue"], lw=2.5,
               label="rational error scale |A/B-r| ~ B^-3")
-    ax.scatter(orbit_B, orbit_error, s=75, color=COLORS["red"], zorder=5,
-               label="Pandrosion orbit errors")
-    ax.scatter(orbit_B, orbit_generic_bound, s=55, color=COLORS["ink"], marker="x", zorder=6,
+    ax.scatter(orbit_B, orbit_error, s=82, color=COLORS["red"], edgecolor="white", linewidth=0.8,
+               zorder=5, label="Pandrosion orbit errors")
+    ax.scatter(orbit_B, orbit_generic_bound, s=70, color=COLORS["ink"], marker="x", zorder=6,
                label="generic theorem bound at orbit points")
     for x, y, label in zip(orbit_B, orbit_error, orbit_labels):
         ax.annotate(label, xy=(x, y), xytext=(8, 8), textcoords="offset points",
                     fontsize=8, color=COLORS["red"])
-    ax.text(7, rational_scale[6] * 2.5, "|A-rB| >= 1/(A^2 + A rB + (rB)^2)\n"
-                                         "|A/B-r| >= 1/(B(A^2 + A rB + (rB)^2))",
+    ax.text(1.7, rational_scale[18] * 3.2, "|A-rB| >= 1/(A^2 + A rB + (rB)^2)\n"
+                                           "|A/B-r| >= 1/(B(A^2 + A rB + (rB)^2))",
             color=COLORS["ink"], bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=COLORS["gray"], alpha=0.9))
     ax.set_xlabel("denominator scale B")
     ax.set_ylabel("certified lower-bound scale")
-    ax.set_title("Effective irrationality: integer and rational distance scales")
+    ax.set_title("Certified distance envelopes")
     ax.grid(alpha=0.22, which="both")
     ax.legend()
+
+    steps = np.arange(len(norm_logs))
+    ax2.bar(steps - 0.18, norm_logs, width=0.36, color=COLORS["red"], alpha=0.82,
+            label="log10 |A^3-2B^3|")
+    ax2.bar(steps + 0.18, form_logs, width=0.36, color=COLORS["blue"], alpha=0.82,
+            label="log10 quadratic form")
+    ax2.plot(steps, norm_logs, color=COLORS["ink"], lw=1.2, alpha=0.45)
+    for x, y in zip(steps, norm_logs):
+        ax2.text(x - 0.28, y + max(norm_logs) * 0.025, f"{y:.1f}", fontsize=8, color=COLORS["red"])
+    ax2.set_xlabel("Pandrosion integer step")
+    ax2.set_ylabel("decimal logarithm")
+    ax2.set_title("Norm explosion keeps the orbit discrete")
+    ax2.grid(axis="y", alpha=0.2)
+    ax2.legend(loc="upper left")
     save(fig, "fig_proof_gallery_10_effective_irrationality.pdf")
 
 
