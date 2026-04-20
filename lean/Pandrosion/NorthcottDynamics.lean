@@ -86,7 +86,7 @@ theorem northcott_finite (d : ℕ → ℤ) (Φ : ℕ → ℤ)
   · push_neg at h_nn
     have : (n : ℤ) ≤ -1 := by linarith
     have : (n : ℤ) < 0 := by linarith
-    have hn_nn : (0 : ℤ) ≤ (n : ℤ) := by exact_mod_cast Nat.zero_le n
+    have _hn_nn : (0 : ℤ) ≤ (n : ℤ) := by exact_mod_cast Nat.zero_le n
     omega
 
 /-! ## §1702. Explicit Cardinality Bound
@@ -173,7 +173,7 @@ theorem northcott_x2_height_1 (d : ℕ → ℤ) (Φ : ℕ → ℤ)
   rw [hd0_val] at h
   have : (n : ℤ) ≤ 0 := by linarith
   have : (n : ℤ) = 0 := by
-    have hn_nn : (0 : ℤ) ≤ (n : ℤ) := by exact_mod_cast Nat.zero_le n
+    have _hn_nn : (0 : ℤ) ≤ (n : ℤ) := by exact_mod_cast Nat.zero_le n
     omega
   exact_mod_cast this
 

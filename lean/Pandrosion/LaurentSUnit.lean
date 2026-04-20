@@ -132,7 +132,7 @@ theorem s_unit_index_bound (d : ℕ → ℤ) (Φ : ℕ → ℤ)
     (hd0 : d 0 ≠ 0)
     (hΦ : ∀ n, 2 ≤ |Φ n|)
     (hd : ∀ n, d (n + 1) = d n * Φ n)
-    (M : ℤ) (m n : ℕ) (hm : |d m| ≤ M) :
+    (M : ℤ) (m _n : ℕ) (hm : |d m| ≤ M) :
     (m : ℤ) ≤ M - |d 0| :=
   thue_orbital_bound d Φ hd0 hΦ hd M m hm
 

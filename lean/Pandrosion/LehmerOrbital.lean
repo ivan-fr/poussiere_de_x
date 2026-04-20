@@ -68,6 +68,7 @@ that turns algebraic separation into a quantitative bound.
 theorem disc_int_ge_one (D : ℤ) (hD : D ≠ 0) : (1 : ℝ) ≤ |(D : ℝ)| := by
   rw [← Int.cast_abs]
   have h : (0 : ℤ) < |D| := abs_pos.mpr hD
+  have _hD_ne : (D : ℝ) ≠ 0 := by omega
   have h2 : (1 : ℤ) ≤ |D| := by omega
   exact_mod_cast h2
 

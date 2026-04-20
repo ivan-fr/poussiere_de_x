@@ -38,7 +38,7 @@ def proj_height (A B : ℤ) : ℤ := max |A| |B|
     The sum of the separated components is bounded by a polynomial
     function of the maximum height. -/
 theorem vojta_dim2_cube_bound
-    (A B X : ℤ) (hX : 0 ≤ |X|) :
+    (A B X : ℤ) (_hX : 0 ≤ |X|) :
     |A ^ 3| + |X * B ^ 3| ≤ (1 + |X|) * (proj_height A B) ^ 3 := by
   unfold proj_height
   have hA : |A| ≤ max |A| |B| := le_max_left _ _
@@ -67,7 +67,7 @@ theorem vojta_dim2_cube_bound
   have h_add : |A| ^ 3 + |X| * |B| ^ 3 ≤ (max |A| |B|) ^ 3 + |X| * (max |A| |B|) ^ 3 := by
     have hX_pos : 0 ≤ |X| := abs_nonneg X
     nlinarith [hb1, hb2, hX_pos]
-  have h_factor : (max |A| |B|) ^ 3 + |X| * (max |A| |B|) ^ 3 = (1 + |X|) * (max |A| |B|) ^ 3 := by
+  have _h_factor : (max |A| |B|) ^ 3 + |X| * (max |A| |B|) ^ 3 = (1 + |X|) * (max |A| |B|) ^ 3 := by
     ring
   rw [hA3, hB3]
   linarith
@@ -77,10 +77,10 @@ theorem vojta_dim2_cube_bound
     This effectively lifts the 1D Vojta theorem into the explicit
     2D coordinate components. -/
 theorem vojta_dim2_orbital_push
-    (A B X d : ℤ) (h_norm : d = A ^ 3 - X * B ^ 3) (hX : 0 ≤ |X|) :
+    (A B X d : ℤ) (h_norm : d = A ^ 3 - X * B ^ 3) (_hX : 0 ≤ |X|) :
     |d| ≤ (1 + |X|) * (proj_height A B) ^ 3 := by
   have h_triangle := schmidt_orbital_height_lower A B X d h_norm
-  have h_cube := vojta_dim2_cube_bound A B X hX
+  have h_cube := vojta_dim2_cube_bound A B X _hX
   linarith
 
 end Pandrosion

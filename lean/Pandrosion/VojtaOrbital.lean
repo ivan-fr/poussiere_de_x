@@ -95,7 +95,7 @@ theorem vojta_orbital_log
   have hpow_pos : (0 : ℝ) < (2 : ℝ) ^ n := by positivity
   have hprod_pos : (0 : ℝ) < ((|d 0| : ℤ) : ℝ) * (2 : ℝ) ^ n :=
     mul_pos hd0_pos hpow_pos
-  have hdn_pos : (0 : ℝ) < ((|d n| : ℤ) : ℝ) := lt_of_lt_of_le hprod_pos hreal
+  have _hdn_pos : (0 : ℝ) < ((|d n| : ℤ) : ℝ) := lt_of_lt_of_le hprod_pos hreal
   have hlog_le : Real.log (((|d 0| : ℤ) : ℝ) * (2 : ℝ) ^ n)
                  ≤ Real.log ((|d n| : ℤ) : ℝ) :=
     Real.log_le_log hprod_pos hreal
@@ -128,11 +128,11 @@ theorem vojta_orbital_step
   have h_dn_pos : (0 : ℝ) < ((|d n| : ℤ) : ℝ) := by
     have : (0 : ℤ) < |d n| := abs_pos.mpr h_dn_ne
     exact_mod_cast this
-  have h_dn1_pos : (0 : ℝ) < ((|d (n + 1)| : ℤ) : ℝ) := by
+  have _h_dn1_pos : (0 : ℝ) < ((|d (n + 1)| : ℤ) : ℝ) := by
     have : (0 : ℤ) < |d (n + 1)| := abs_pos.mpr h_dn1_ne
     exact_mod_cast this
   -- |d_{n+1}| = |d_n| · |Φ_n| ≥ |d_n| · 2
-  have hΦn : (2 : ℤ) ≤ |Φ n| := hΦ n
+  have _hΦn : (2 : ℤ) ≤ |Φ n| := hΦ n
   have h_step : (2 : ℤ) * |d n| ≤ |d (n + 1)| := by
     rw [hd n, abs_mul]
     have hd_nn : (0 : ℤ) ≤ |d n| := abs_nonneg _
