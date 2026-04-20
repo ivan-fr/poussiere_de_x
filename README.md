@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19662877.svg)](https://doi.org/10.5281/zenodo.19662877)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
-[![Lean 4 Verified](https://img.shields.io/badge/Lean_4-120%2F120_Modules_Compiled-success.svg)](https://lean-lang.org/)
+[![Universitas Pandrosion CI](https://github.com/ivan-fr/poussiere_de_x/actions/workflows/ci.yml/badge.svg)](https://github.com/ivan-fr/poussiere_de_x/actions)
 
 Formal verification and numerical illustration of the Pandrosion rational
 root-finding map, with a compiled research paper and reproducible figures.
