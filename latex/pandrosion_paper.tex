@@ -636,17 +636,13 @@ The constant $1 + 2c$ in Theorem~\ref{thm:basin_stability} is sharp: if equality
 \label{fig:conjugate}
 \end{figure}
 
-\subsection{The Julia Set Conjecture: Absence of Chaos}
+\subsection{Numerical Observations on Basin Boundaries}
 
-A fundamental result by McMullen~(1987) establishes that any purely rational iteration scheme for finding roots of polynomials of degree $d \geq 4$ (and generic schemes for $d=3$, like Newton's method) must possess a chaotic, fractal Julia set boundary. If a starting point lands on this boundary, it diverges or cycles erratically.
+When extended to $\mathbb{C}$, classical root-finding iterations (Newton, Halley) are known to produce intricate fractal basin boundaries --- the Julia sets. If a starting point lands on this boundary, it diverges or cycles erratically.
 
-The Pandrosion map $P_X(s)$ is a rational map, but it is deeply specialised for the extraction of $p$-th roots ($z^p - X$). Numerical evaluations (e.g., Figure~\ref{fig:julia_zoom} and~\ref{fig:heatmap}) strongly suggest that the basin boundaries in the complex plane are smooth curves, separating the roots without chaotic intertwining. This leads to the central topological conjecture of this theory:
+The Pandrosion map $P_X(s)$ is a rational map specialised for the extraction of $p$-th roots. While a full topological study of its global convergence on $\mathbb{C}$ lies outside the scope of this formal algebraic work, numerical evaluations (e.g., Figures~\ref{fig:julia_zoom} and~\ref{fig:heatmap}) suggest that the basin boundaries in the complex plane may possess a simpler structure than the highly fractal boundaries of Newton's method. 
 
-\begin{conjecture}[\texttt{DynamicsConjecture.lean}: McMullen Exemption]\label{conj:chaos}
-For any $X \in \mathbb{C} \setminus \{0\}$, the Julia set of the Pandrosion iteration $P_X$ has zero Lebesgue measure in $\mathbb{C}$. Equivalently, the Fatou set (the domain of stable convergence) has full measure, meaning almost all starting points converge to a finite cycle.
-\end{conjecture}
-
-As formalisation of complex dynamics (Montel's theorem, normal families) is currently beyond the scope of Mathlib, we rigorously formulate this property as an explicit formal \texttt{Prop} in the Lean corpus, setting it as an open challenge without polluting the zero-sorry axiomatic foundation. We have, however, verified a necessary algebraic condition: the critical points of $P_X$ on $\mathbb{C}$ are given by the roots of $3s^6 - 16Xs^3 + 8X^2 = 0$. Unlike super-attracting Newton maps, the derivative at the root is formally verified to be $P'_X(\sqrt[3]{X}) = -1/5 \neq 0$ (linear contraction). The global topological properties of its Julia set remain a major open problem in algebraic dynamics.
+We have verified a necessary algebraic condition underlying this difference: the critical points of $P_X$ on $\mathbb{C}$ are given by the roots of $3s^6 - 16Xs^3 + 8X^2 = 0$. Unlike super-attracting Newton maps, the derivative at the root is formally verified to be $P'_X(\sqrt[3]{X}) = -1/5 \neq 0$ (linear contraction). The exact global topological properties of its boundaries on $\mathbb{C}$ remain an interesting subject for future numerical and analytical study.
 
 %===========================================================
 \section{Thue Bridge: Norm Amplification and Diophantine Consequences}
@@ -742,49 +738,7 @@ $$d' = A'^2 - XB'^2 = (A^2 - XB^2) \cdot \underbrace{(A^4 + XA^2B^2 + X^2B^4)}_{
 
 A key structural observation: $\Phi_2$ is always nonneg for $X \geq 0$, reflecting the fact that Pell equations ($p = 2$) have infinitely many solutions. In contrast, $\Phi_3$ can be negative (e.g., $\Phi_3(1,1,2) = {-43}$), consistent with the finiteness of solutions for $p \geq 3$ (Thue, 1909). The orbital finiteness theorem applies uniformly to all $p$.
 
-\subsection{Dynamical Mordell-Lang Verification}
-
-The Dynamical Mordell-Lang conjecture (Ghioca-Tucker-Zannier program; proved for \'etale maps by Bell-Ghioca-Tucker, 2010) asserts that for a self-map $\phi: X \to X$ on a variety $X$, a subvariety $V \subseteq X$, and a point $P \in X$, the \emph{return set}
-$$S_V(P) = \{n \in \mathbb{N} : \phi^n(P) \in V\}$$
-is a finite union of arithmetic progressions.
-
-For the Pandrosion self-map $\phi$ acting on $\mathbb{Z}^2$ and the Thue hypersurface $V_c = \{(A,B) : A^p - XB^p = c\}$, our orbital finiteness results yield a \emph{strictly stronger} conclusion:
-
-\begin{theorem}[\texttt{DynMordellLang.lean}: DML Instance]\label{thm:dml}
-The return set $S_{V_c}(P)$ is a \textbf{subsingleton} (at most one element) for any starting point $P = (A_0, B_0)$ and any $c \in \mathbb{Z}$.
-\end{theorem}
-\begin{proof}
-If $d_m = c = d_n$, then $m = n$ by Theorem~\ref{thm:thue_unique}.
-\end{proof}
-
-Moreover, the norm function $d: \mathbb{N} \to \mathbb{Z}$ is \textbf{injective} (Theorem~\ref{thm:thue_unique}), meaning the Pandrosion orbit provides a bijection between iteration steps and Thue norm values. This constitutes the first formally verified instance of the Dynamical Mordell-Lang conjecture for a concrete algebraic dynamical system of Diophantine interest.
-
-\subsection{Latt\`es Exclusion and Dynamical Classification}
-
-A \emph{Latt\`es map} is a rational map on $\mathbb{P}^1$ arising from an endomorphism of an elliptic curve via the quotient $\pi: E \to E/\mathrm{Aut}(E) \cong \mathbb{P}^1$. Latt\`es maps are the only known rational maps with Julia set equal to all of $\mathbb{P}^1(\mathbb{C})$ (Milnor). A key property: every periodic point of a Latt\`es map is repelling or parabolic — \emph{no} attracting fixed points exist.
-
-\begin{theorem}[\texttt{LattesExclusion.lean}: Latt\`es Exclusion]\label{thm:lattes}
-The Pandrosion map $h_p(s) = 1 - (x-1)/(x \cdot S_p(s))$ is \textbf{not a Latt\`es map} for any $p \geq 2$, $x > 1$.
-\end{theorem}
-\begin{proof}
-By Theorem~\ref{thm:contraction} (Deep~IX), $|h_p(s) - s^*| < |s - s^*|$ for all $s \geq 0$, $s \neq s^*$. Hence $s^*$ is a globally attracting fixed point. Since Latt\`es maps have no attracting fixed points, $h_p$ is not Latt\`es.
-\end{proof}
-
-Combined with the Chebyshev-Halley exclusion (\texttt{ChebyshevHalleyExclusion.lean}), the Pandrosion map is now formally excluded from \textbf{three} major families:
-
-\begin{center}
-\begin{tabular}{lll}
-\textbf{Family} & \textbf{Exclusion Criterion} & \textbf{Module} \\
-\hline
-Newton's method & Different algebraic form & (structural) \\
-Chebyshev-Halley & Parameter $\beta$ mismatch & \texttt{ChebyshevHalleyExclusion} \\
-Latt\`es maps & Attracting fixed point & \texttt{LattesExclusion} \\
-\end{tabular}
-\end{center}
-
-This triple exclusion establishes the Pandrosion iteration as a \emph{genuinely novel} object in the classification of rational dynamical systems on $\mathbb{P}^1$.
-
-\subsection{Effective Baker-Davenport Bound}
+\subsection{Effective Size Bound}
 
 The Pandrosion denominator sequence $B_n$ grows exponentially. For $A \geq 0$, $B \geq 1$, $X \geq 1$:
 $$B_{n+1} = B_n(3A_n^3 + 2XB_n^3) \geq 2X \cdot B_n,$$
@@ -798,15 +752,14 @@ For $X = 2$: $B_n \leq 4^{M-1}$. In particular, for $M = 10$, all orbital soluti
 
 This is weaker in scope than Baker's general theorem (it applies only to orbital solutions, not all integer solutions), but \textbf{stronger in effectivity}: the constants are fully explicit with no hidden dependencies. It is also the first such bound with machine-checked certification.
 
-\subsection{Morton-Silverman Verification: Zero Preperiodic Points}
+\subsection{Absence of Periodic Norms}
 
-The Morton-Silverman conjecture (1994) predicts that for a rational map $\phi: \mathbb{P}^1 \to \mathbb{P}^1$ of degree $d \geq 2$ over a number field $K$, the number of $K$-rational preperiodic points is bounded by a function of $d$ and $[K:\mathbb{Q}]$ alone.
+Because the Pandrosion norm orbit $\{d_n\}$ is strictly monotonic in magnitude (Theorem \ref{thm:geom_growth}), it never loops.
 
-\begin{theorem}[\texttt{MortonSilverman.lean}: No Preperiodic Points]\label{thm:morton}
+\begin{theorem}[\texttt{MortonSilverman.lean}: No Periodic Orbits]\label{thm:morton}
 The Pandrosion norm orbit $\{d_n\}$ is \textbf{wandering}: $d_m = d_n \Rightarrow m = n$. In particular:
 \begin{enumerate}
 \item The orbit function $n \mapsto d_n$ is injective.
-\item There are no preperiodic norms: $\neg \exists\, m \neq n,\; d_m = d_n$.
 \item There are no periodic norms: $\neg \exists\, n \geq 1,\; d_n = d_0$.
 \end{enumerate}
 \end{theorem}
@@ -814,9 +767,7 @@ The Pandrosion norm orbit $\{d_n\}$ is \textbf{wandering}: $d_m = d_n \Rightarro
 By Theorem~\ref{thm:thue_unique}, $d_m = d_n$ implies $m = n$.
 \end{proof}
 
-Since the Pandrosion map is deterministic ($(A', B')$ is a polynomial function of $(A, B, X)$), equal iterates $\phi^m(P) = \phi^n(P)$ would give $d_m = d_n$, hence $m = n$. Therefore:\vspace{-0.5em}
-$$\#\{\text{preperiodic } \mathbb{Z}\text{-points of } P_X\} = 0.$$
-This is the strongest possible verification of the Morton-Silverman conjecture: not merely a finite bound, but an exact count of zero.
+Since the map is deterministic, equal iterates $\phi^m(P) = \phi^n(P)$ would give $d_m = d_n$, hence $m = n$. Therefore, there are no periodically cycling rational points generated by the iteration over $\mathbb{Z}$.
 
 \section{Matrix Algebra: Commutativity and Hermitian Invariance}
 \label{sec:matrix_algebra}
@@ -1039,52 +990,25 @@ The norm propagation~\eqref{eq:irrationality} ensures that this bound applies at
 \end{figure}
 
 %===========================================================
-\section{Diophantine Dynamics Extensions}
+\section{Extensions in the Lean Corpus: Algebraic Finiteness and Growth}
 \label{sec:diophantine_dynamics}
 %===========================================================
 
-The geometric growth of the Pandrosion norm sequence $|d_n| \geq 2^n$ (Theorem~\ref{thm:norm_amp}) combined with its Spectral properties unlocks a broad array of formal orbital analogues to classical Diophantine and dynamical theorems. We have formalized the following framework in Lean:
+The geometric growth of the Pandrosion norm sequence $|d_n| \geq 2^n$ (Theorem~\ref{thm:norm_amp}) combined with its algebraic separation properties unlocks a broad array of additional, purely algebraic constraints on the discrete orbit. The expanded Lean corpus (\texttt{Pandrosion.lean}) formalizes several extended bounding theorems:
 
 \begin{enumerate}
-    \item \textbf{Erd\H{o}s-Mahler Sparse Subsequences} (\texttt{ErdosMahlerOrbital.lean}): The geometric escape ensures that no finite set of prime factors can support the norm sequence indefinitely, proving the unbounded growth of the greatest prime factor along the orbit.
-    \item \textbf{Stewart-Yu Effective abc} (\texttt{StewartYuOrbital.lean}): The multiplicative factorization $d_n = d_0 \prod_{k<n} \Phi_k$ acts as a formally verified, exact radical replacement for the $abc$-conjecture bound on the triple $(X B_n^3, d_n, A_n^3)$.
-    \item \textbf{Zsygmondy Orbital Increment} (\texttt{ZsygmondyOrbital.lean}): The strict absolute value increment $|d_{n+1}| > |d_n|$ algebraically certifies the necessary emergence of new magnitude (and thus new prime signatures) at each iteration step.
-    \item \textbf{Smyth Strict Spectral Lower Bound} (\texttt{SmythOrbital.lean}): Extending the Lehmer bound, the explicit discriminant $|D(z^3-X)| \geq 108$ completely separates the Mahler-type spectral product $\prod P'(\alpha_k)$ from $1$, ensuring $|\prod P'(\alpha_k)| \ge 108$.
-    \item \textbf{Brauer-Siegel Effective Base} (\texttt{BrauerSiegelOrbital.lean}): The discriminant bound provides a trivial but completely effective base condition $|D| \geq 108$ for asymptotics of cubic fields $\mathbb{Q}(\sqrt[3]{X})$.
-    \item \textbf{Mahler-Yu Effective Rational Approximations} (\texttt{MahlerYuOrbital.lean}): The condition $A^3 \neq XB^3$ globally guarantees $|A^3 - XB^3| \geq 1$, translating the Diophantine height logic to effective Liouville barriers.
-    \item \textbf{Schmidt Subspace Qualitative Relation} (\texttt{SchmidtSubspaceOrbital.lean}): The exact identity $A^3 - XB^3 - d = 0$ locks the heights associated to the triple $(A_n^3, XB_n^3, d_n)$ into an exact projective subspace constraint, realizing the 1D analogue perfectly.
-    \item \textbf{Vojta conjecture in Dimension $\geq 2$} (\texttt{VojtaDim2Orbital.lean}): Formally establishes the multi-dimensional projective height bound, proving that the maximum absolute value of the coordinates strictly diverts from any bounding box, driving the 1D exponential escape into the full projective space $\mathbb{P}^1$.
-    \item \textbf{Bombieri-Pila Counting Points} (\texttt{BombieriPilaOrbital.lean}): Replaces the abstract asymptotic bound $O(H^\varepsilon)$ with a massively strict, machine-verified counting barrier $O(\log H)$ for orbital integer points up to height $H$.
-    \item \textbf{Effective Faltings for Genus 1} (\texttt{EffectiveFaltingsOrbital.lean}): Realizes the dream of effective finitude for points on the cubic structure $A^3 - XB^3 = d$ by algorithmically bounding the geometric index necessary to exhaust the target box.
-    \item \textbf{Lang's Integral Density Extinction} (\texttt{LangOrbital.lean}): Verifies the ``integrality sparsity'' principle, structurally proving that the integer coordinates $(A_n, B_n)$ strictly exit every finite affine bounding region.
-    \item \textbf{Hilbert Irreducibility Orbital Case} (\texttt{HilbertIrreducibilityOrbital.lean}): Certifies that the exact evaluation $|A_n^3 - X B_n^3| \ge 1$ never touches zero, propagating the algebraic irreducibility of the roots without degeneracy at any generic point in the sequence.
+    \item \textbf{Sparse Subsequences Integration}: The geometric escape ensures that no finite set of prime factors can support the norm sequence indefinitely, proving the unbounded growth of the greatest prime factor strictly along the orbit.
+    \item \textbf{Exact Radical Formulations}: The multiplicative factorization $d_n = d_0 \prod_{k<n} \Phi_k$ acts as a formally verified, exact constraint on the orbital variables, avoiding the necessity for external Diophantine radical bounding.
+    \item \textbf{Explicit Spectral Separation}: The explicit discriminant relation completely separates the evaluation from zero, certifying the algebraic isolation required for continued fraction properties of the sequence.
+    \item \textbf{Projective Vector Bounds}: Formally establishes multi-dimensional height bounds for the iterations, proving that the maximum absolute value of the coordinates strictly diverts from any bounding box without looping.
 \end{enumerate}
 
-These formal analogues translate the deep existential claims of analytic number theory into fully certified, effective algebraic bounds operating on the structure of the discrete rational iteration.
+These supplementary modules confirm that the strict contraction proven over $\mathbb{R}$ translates into robust arithmetic divergence over $\mathbb{Z}$, certified entirely via the foundational polynomial identities without appealing to unproven conjectures.
 
 %===========================================================
-\section{The Global Diophantine Frontier}
-\label{sec:frontier}
-%===========================================================
-
-To properly delineate the mathematically verified Pandrosion results from open mathematical conjectures, we formally defined the ``Global Diophantine Frontier'' within our Lean~4 corpus (Directions 18--20). Unlike the orbital theorems, these global statements cannot presently be formally verified because they rely on algebraic geometries existing fundamentally outside the dynamical structure of the sequence.
-
-Instead, they are instantiated as pure logical Propositions (with zero \texttt{sorry} declarations) representing the absolute boundaries of our framework:
-
-\begin{enumerate}
-    \item \textbf{The Full $abc$ Conjecture} (\texttt{AbcGlobalFrontier.lean}): While Pandrosion proves an exact, algebraic equivalent of $abc$ for the orbital sequence $(A_n^3, X B_n^3, d_n)$ via the multiplier $\prod \Phi_k$, expanding this to the full set of non-orbital triples $a+b=c$ requires controlling the generic radical $rad(abc)$, which does not exhibit the strict multiplicative invariance of $\Phi$.
-    \item \textbf{Effective Roth's Theorem} (\texttt{RothEffectiveFrontier.lean}): Pandrosion effectively bounds the Thue-Liouville approximation exponent to $3$ for all orbit elements explicitly, circumventing the non-effective nature of Roth's auxiliary polynomials. Yet, attaining the global bound $2+\varepsilon$ unconditionally remains separated from the dynamical scope by the underlying complexity of the Thue-Siegel-Roth method.
-    \item \textbf{Full Lehmer's Conjecture} (\texttt{LehmerGlobalFrontier.lean}): The sequence achieves strict Mahler-type isolation (the Smyth analogue $|D| \ge 108$) for the specific explicit polynomial family $z^3-X$. Expanding this exact property to universally isolate the Mahler measure for all non-cyclotomic irreducible polynomials by a single global $\lambda > 1$ exceeds the parameters of any discrete dynamical morphism.
-\end{enumerate}
-
-By rigorously characterizing these propositions, the corpus maps both the exact capabilities and the strict limitations of the orbital framework.
-
-%===========================================================
-\section{Certified Step Complexity (Smale Context)}
+\section{Certified Step Complexity}
 \label{sec:smale}
 %===========================================================
-
-Smale's 17th Problem asks whether a zero of a polynomial of degree $d$ can be found approximately in polynomial time on average. While our focus is specifically on the $p$-th root extraction $z^p - X = 0$ rather than general polynomials, we can formally certify the step complexity of our iteration.
 
 For the base iteration, the contraction rate is $c = (p-1)/p$. The number of steps $N$ required to reach an error $\varepsilon > 0$ from an initial error $e_0$ is completely determined by this contraction factor. In our Lean formalization, we have certified this continuous ceiling:
 
@@ -1093,12 +1017,12 @@ If $0 < c < 1$ and $e_0 > 0$, then for any $\varepsilon > 0$, the sequence of er
 $$n \;\geq\; \frac{\log(e_0/\varepsilon)}{\log(1/c)}$$
 \end{theorem}
 
-For the Pandrosion base map applied to $p$-th roots ($c = (p-1)/p$), this proves the step complexity:
+For the Pandrosion base map applied to $p$-th roots ($c = (p-1)/p$), this proves the worst-case step complexity:
 $$N = O\left(\frac{\log(1/\varepsilon)}{\log(p/(p-1))}\right)$$
-When composed with Steffensen's acceleration (Aitken $\Delta^2$), the method achieves quadratic convergence. Although the acceleration operator itself remains to be fully formalized in Lean, analytically this yields a highly efficient operational complexity of:
+When composed with Steffensen's acceleration (Aitken $\Delta^2$), the method achieves quadratic convergence. Although the acceleration operator itself remains to be fully formalized in Lean, analytically this yields an operational complexity of:
 $$N = O\left(\log\log\frac{1}{\varepsilon}\right) \text{ Steffensen cycles}$$
 
-While modest in the context of Smale's general problem, providing a \emph{formally verified worst-case bound} for the base rational iteration demonstrates a clear path toward fully certified asymptotic complexity measures in numerical analysis.
+Providing a \emph{formally verified worst-case bound} for the base rational iteration demonstrates a clear path toward fully certified asymptotic complexity measures in numerical analysis.
 
 %===========================================================
 \section{Conclusion}
@@ -1108,13 +1032,13 @@ While modest in the context of Smale's general problem, providing a \emph{formal
 We have presented a formally verified study of the Pandrosion iteration, an original rational map for computing $p$-th roots (with detailed analysis for $p=3$). The key contribution is methodological: by formalising every identity in Lean~4, we provide a fully machine-verified foundation with zero unproven assertions.
 
 \subsection*{What has been proven}
-The certified identities include: residual factorisation over $\mathbb{R}$ (Deep~25), integer sequence amplification over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), fractional contraction bounds (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), cross-state factorisation (Deep~32), coprimality isolation (Deep~33), the general contraction theorem for all $p \geq 2$ (Deep~IX), effective irrationality measures (Theorem~\ref{thm:effective}), formally verified step complexity bounds (Theorem~\ref{thm:complexity}), and the Thue Bridge norm amplification (Theorem~\ref{thm:norm_amp}) connecting Pandrosion orbits to the theory of Thue equations via the multiplicative law $d' = d \cdot \Phi$.
+The certified identities include: residual factorisation over $\mathbb{R}$ (Deep~25), integer sequence amplification over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), fractional contraction bounds (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), cross-state factorisation (Deep~32), coprimality isolation (Deep~33), the general contraction theorem for all $p \geq 2$ (Deep~IX), effective irrationality measures (Theorem~\ref{thm:effective}), formally verified step complexity bounds (Theorem~\ref{thm:complexity}), and the geometric growth of the integer sequence guaranteeing the absence of periodic cycles over $\mathbb{Z}$.
 
 \subsection*{What has not been proven}
-We do \emph{not} claim to have resolved any open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a theorem. Newton's method remains operationally superior for scalar cube roots (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition; it does not establish global basin invariance. The cycle exclusion (Theorem~\ref{thm:nocycles}) applies to the real line; the complex case remains open. The Steffensen acceleration is analytically understood but not yet fully certified in Lean. Finally, the absence of chaotic dynamics and fractal structures in the Julia set is rigorously formulated as an open challenge (Conjecture~\ref{conj:chaos}), acknowledging the present limits of formalised complex analysis.
+We do \emph{not} claim to have resolved any globally open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a formal theorem. Newton's method remains operationally superior for practical scalar cube root computations (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition rather than establishing global scale-invariant stability. The Steffensen acceleration phase is analytically understood but fully rigorous formalization in Lean of its quadratic limit remains an open project.
 
 \subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to Vorono\"i cell geometry; (5)~a verified explicit path to effective irrationality measures and exact discrete complexity; (6)~the Thue Bridge connecting Pandrosion integer sequences to Diophantine approximation theory via norm amplification, providing machine-certified scaffolding toward effective Thue--Siegel bounds; and (7)~a methodology demonstrating how formal verification tools can be systematically applied to iterative numerical analysis, establishing a \textbf{93-module, zero-sorry} corpus.
+The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to geometric depth; and (5)~a methodology demonstrating how formal verification computation can be systematically applied to iterative numerical analysis, establishing a corpus of \textbf{93 zero-sorry modules} verifying the rational iteration and its exact integer constraints.
 
 \begin{figure}[H]
 \centering
