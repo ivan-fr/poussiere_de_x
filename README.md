@@ -164,6 +164,18 @@ Some central modules:
 - [`lean/Pandrosion/DFTDecomposition.lean`](lean/Pandrosion/DFTDecomposition.lean) - roots-of-unity cancellation and DFT identities
 - [`lean/Pandrosion/EffectiveIrrationality.lean`](lean/Pandrosion/EffectiveIrrationality.lean) - effective Liouville-type lower bound
 
+## New Frontiers (April 2026)
+
+Five frontier modules were added on top of the existing corpus,
+reusing the Schmidt / Vojta / abc / Faltings / p-adic Hensel machinery
+already formalized:
+
+- [`lean/Pandrosion/LittlewoodSimultaneous.lean`](lean/Pandrosion/LittlewoodSimultaneous.lean) - Littlewood frontier `liminf n·‖nα‖·‖nβ‖ = 0` via Schmidt subspace + dim-2 Vojta
+- [`lean/Pandrosion/BealOrbital.lean`](lean/Pandrosion/BealOrbital.lean) - Beal / Fermat-Catalan frontier (coprime `A^x + B^y = C^z` with exponents ≥ 3) via abc global frontier + Catalan orbital + Bilu-Tichý
+- [`lean/Pandrosion/OppenheimErgodic.lean`](lean/Pandrosion/OppenheimErgodic.lean) - Oppenheim density of indefinite quadratic form values via Riemann gyroscopic attractor + Szemerédi ergodic resonance + Voronoi global density
+- [`lean/Pandrosion/LeopoldtPadic.lean`](lean/Pandrosion/LeopoldtPadic.lean) - Leopoldt non-vanishing of the p-adic regulator via p-adic Hensel + non-Archimedean orbital + Baker linear forms
+- [`lean/Pandrosion/VojtaMainFrontier.lean`](lean/Pandrosion/VojtaMainFrontier.lean) - Vojta Main Conjecture frontier unifying Roth, abc, Schmidt, Faltings, and Lang under one orbital roof
+
 ## Scope Notes
 
 This repository contains several types of evidence:
