@@ -157,3 +157,9 @@ import Pandrosion.LogTwoThreeIrrational
 
 -- Concrete sequence evaluation for X=2 (Real orbital Thue finiteness)
 import Pandrosion.ConcreteOrbitX2
+
+-- ∛2 integer-core irrationality — REAL PROOF (infinite descent, cubic case)
+import Pandrosion.CbrtTwoIntegerCore
+
+-- √2 integer-core irrationality — REAL PROOF (infinite descent, quadratic case)
+import Pandrosion.SqrtTwoIntegerCore
