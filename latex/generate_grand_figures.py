@@ -54,7 +54,8 @@ def create_abc_topology():
     ax.legend(loc='upper right', facecolor='#0a0a0a', edgecolor='none', labelcolor='white')
     
     plt.tight_layout()
-    plt.savefig('latex/grand_theorem_abc.pdf', format='pdf', bbox_inches='tight', dpi=300)
+    plt.savefig('grand_theorem_abc.pdf', format='pdf', bbox_inches='tight', dpi=300)
+    plt.savefig('grand_theorem_abc.png', format='png', bbox_inches='tight', dpi=300)
     plt.close()
 
 def create_smale_tensor():
@@ -98,7 +99,8 @@ def create_smale_tensor():
     ax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.1), ncol=2, facecolor='#0a0a0a', edgecolor='none', labelcolor='white')
     
     plt.tight_layout()
-    plt.savefig('latex/grand_theorem_smale_tensor.pdf', format='pdf', bbox_inches='tight', dpi=300)
+    plt.savefig('grand_theorem_smale_tensor.pdf', format='pdf', bbox_inches='tight', dpi=300)
+    plt.savefig('grand_theorem_smale_tensor.png', format='png', bbox_inches='tight', dpi=300)
     plt.close()
 
 def create_faltings_computability():
@@ -151,7 +153,8 @@ def create_faltings_computability():
     ax.legend(loc='upper left', facecolor='#0a0a0a', edgecolor='none', labelcolor='white')
     
     plt.tight_layout()
-    plt.savefig('latex/grand_theorem_faltings.pdf', format='pdf', bbox_inches='tight', dpi=300)
+    plt.savefig('grand_theorem_faltings.pdf', format='pdf', bbox_inches='tight', dpi=300)
+    plt.savefig('grand_theorem_faltings.png', format='png', bbox_inches='tight', dpi=300)
     plt.close()
 
 def create_pisot_salem():
@@ -208,7 +211,8 @@ def create_pisot_salem():
               loc='lower right', facecolor='#0a0a0a', edgecolor='none', labelcolor='white')
     
     plt.tight_layout()
-    plt.savefig('latex/grand_theorem_pisot_salem.pdf', format='pdf', bbox_inches='tight', dpi=300)
+    plt.savefig('grand_theorem_pisot_salem.pdf', format='pdf', bbox_inches='tight', dpi=300)
+    plt.savefig('grand_theorem_pisot_salem.png', format='png', bbox_inches='tight', dpi=300)
     plt.close()
 
 if __name__ == "__main__":
