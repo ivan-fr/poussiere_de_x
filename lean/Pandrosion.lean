@@ -130,3 +130,6 @@ import Pandrosion.DeepTenTheorems
 
 -- Deep thirteen-theorem synthesis (11-13)
 import Pandrosion.DeepThirteenTheorems
+
+-- Deep fifteen-theorem synthesis (14-15)
+import Pandrosion.DeepFifteenTheorems
