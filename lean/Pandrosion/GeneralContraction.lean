@@ -60,8 +60,8 @@ theorem output_formula_step (x s : ℝ) (p : ℕ) (hp : p ≥ 1) :
   ring
 
 /-- **At the fixed point: x · s^p = 1.** -/
-theorem output_at_fixpoint (x s : ℝ) (hx : x > 0)
-    (hs : s ^ (p : ℕ) = 1 / x) :
+theorem output_at_fixpoint {p : ℕ} (x s : ℝ) (hx : x > 0)
+    (hs : s ^ p = 1 / x) :
     x * s ^ p = 1 := by
   rw [hs]; field_simp
 

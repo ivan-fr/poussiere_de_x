@@ -54,5 +54,34 @@ services:
     working_dir: /workspace/lean
     command: bash scripts/strict_check.sh
 
+  # Fast incremental "trust" check — reuses .lake cache, no clean rebuild,
+  # no axiom audit. For iterating. Fails on any Lean error. Use `lean-check`
+  # for the authoritative max-strict gate.
+  lean-incremental:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/workspace
+      - elan_cache:/home/lean_user/.elan
+    working_dir: /workspace/lean
+    command: >
+      bash -c '
+        set -eo pipefail &&
+        echo "=== Pandrosion Lean Incremental (trust mode) ===" &&
+        lake build Pandrosion 2>&1 &&
+        SRC=$$(find Pandrosion/ -name "*.lean" | wc -l | tr -d " ") &&
+        OLE=$$(find .lake/build/lib/Pandrosion -name "*.olean" 2>/dev/null | wc -l | tr -d " ") &&
+        echo "Compiled: $$OLE / $$SRC" &&
+        FAILED=$$(comm -23 \
+          <(find Pandrosion/ -name "*.lean" | sed "s|/|.|g;s|\.lean||" | sort) \
+          <(find .lake/build/lib/Pandrosion -name "*.olean" 2>/dev/null | sed "s|.lake/build/lib/||;s|\.olean||;s|/|.|g" | sort)) &&
+        if [ -z "$$FAILED" ]; then
+          echo "✅ INCREMENTAL OK — $$SRC modules compiled"
+        else
+          echo "❌ FAILED modules:" && echo "$$FAILED" && exit 1
+        fi
+      '
+
 volumes:
   elan_cache:
