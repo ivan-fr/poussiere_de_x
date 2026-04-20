@@ -224,4 +224,109 @@ theorem pandrosion_rigidity
       intro hstandard
       exact hstandard hdesc
 
+/-! ## §806. Non-Conjugacy Outside Degenerate Cases -/
+
+/-- Dynamical conjugacy through an explicit coordinate change.
+    The two inverse identities make the coordinate change nondegenerate,
+    while the last identity is the usual conjugacy equation. -/
+def dynamical_conjugacy
+    (coord coordInv : ℝ → ℝ) (φ ψ : ℝ → ℝ) : Prop :=
+  (∀ z, coordInv (coord z) = z) ∧
+    (∀ y, coord (coordInv y) = y) ∧
+    ∀ z, coord (φ z) = ψ (coord z)
+
+/-- A conjugacy is rigidity-preserving when it transports the four
+    Pandrosion certificates to the target coordinates. This is the formal
+    meaning of "outside degenerate cases" in the non-conjugacy theorem. -/
+def preserves_rigidity_data
+    (φ ψ : ℝ → ℝ) (sstar tstar Δ D_before D_after : ℝ) : Prop :=
+  pandrosion_rigidity_data φ sstar Δ D_before D_after →
+    pandrosion_rigidity_data ψ tstar Δ D_before D_after
+
+/-- A nondegenerate conjugacy from a Pandrosion-certified map to a standard
+    family candidate: it is a genuine conjugacy, preserves the rigidity
+    certificates, and the target satisfies the relevant standard obstruction. -/
+def nondegenerate_conjugacy_to_standard
+    (family : StandardFamily) (φ ψ : ℝ → ℝ) (coord coordInv : ℝ → ℝ)
+    (sstar tstar Δ D_before D_after : ℝ) : Prop :=
+  dynamical_conjugacy coord coordInv φ ψ ∧
+    preserves_rigidity_data φ ψ sstar tstar Δ D_before D_after ∧
+    standard_family_obstruction family ψ tstar Δ D_before D_after
+
+/-- A degenerate conjugacy is a conjugacy that fails to transport the
+    rigidity certificates. This is the only escape route left by the theorem. -/
+def degenerate_conjugacy_to_standard
+    (φ ψ : ℝ → ℝ) (coord coordInv : ℝ → ℝ)
+    (sstar tstar Δ D_before D_after : ℝ) : Prop :=
+  dynamical_conjugacy coord coordInv φ ψ ∧
+    ¬ preserves_rigidity_data φ ψ sstar tstar Δ D_before D_after
+
+/-- **Rigidity / non-conjugacy theorem.**
+    A map carrying the Pandrosion rigidity data is not nondegenerately
+    conjugate to any Newton, Halley, Chebyshev, Lattès, or logarithmic-
+    derivative standard-family candidate. -/
+theorem pandrosion_nonconjugacy_standard
+    (family : StandardFamily) (φ ψ : ℝ → ℝ) (coord coordInv : ℝ → ℝ)
+    (sstar tstar Δ D_before D_after : ℝ)
+    (hdata : pandrosion_rigidity_data φ sstar Δ D_before D_after) :
+    ¬ nondegenerate_conjugacy_to_standard family φ ψ coord coordInv
+      sstar tstar Δ D_before D_after := by
+  intro hconj
+  rcases hconj with ⟨_hdyn, hpreserve, hstandard⟩
+  exact pandrosion_rigidity family ψ tstar Δ D_before D_after
+    (hpreserve hdata) hstandard
+
+/-- Equivalently: if a standard-family conjugacy is claimed, it must be
+    degenerate, i.e. it must fail to preserve the Pandrosion rigidity
+    certificates. -/
+theorem standard_conjugacy_forces_degeneracy
+    (family : StandardFamily) (φ ψ : ℝ → ℝ) (coord coordInv : ℝ → ℝ)
+    (sstar tstar Δ D_before D_after : ℝ)
+    (hdata : pandrosion_rigidity_data φ sstar Δ D_before D_after)
+    (hdyn : dynamical_conjugacy coord coordInv φ ψ)
+    (hstandard : standard_family_obstruction family ψ tstar Δ D_before D_after) :
+    degenerate_conjugacy_to_standard φ ψ coord coordInv
+      sstar tstar Δ D_before D_after := by
+  refine ⟨hdyn, ?_⟩
+  intro hpreserve
+  exact pandrosion_rigidity family ψ tstar Δ D_before D_after
+    (hpreserve hdata) hstandard
+
+/-- The concrete Pandrosion map carries the four rigidity certificates once
+    the fixed point, determinant separation, and spectral descent witnesses
+    are supplied. -/
+theorem pandrosion_map_rigidity_data (p : ℕ) (hp : p ≥ 2)
+    (x sstar Δ D_before D_after : ℝ) (hx : x > 1)
+    (hss_pos : sstar > 0) (hss_lt : sstar < 1)
+    (hss_eq : sstar ^ p = 1 / x)
+    (hsep : determinant_separation Δ)
+    (hdesc : spectral_descent D_before D_after) :
+    pandrosion_rigidity_data (pandrosion_h x p) sstar Δ D_before D_after := by
+  constructor
+  · exact principal_fixed_point x hx p hp sstar hss_pos hss_lt hss_eq
+  constructor
+  · exact pandrosion_strict_contraction p hp x sstar hx hss_pos hss_lt hss_eq
+  constructor
+  · exact hsep
+  · exact hdesc
+
+/-- **Concrete non-conjugacy for the Pandrosion map.**
+    Under the fixed-point hypotheses plus nonzero determinant separation
+    and strict spectral descent, `pandrosion_h x p` is not nondegenerately
+    conjugate to any of the standard families. -/
+theorem pandrosion_map_nonconjugacy_standard
+    (family : StandardFamily) (p : ℕ) (hp : p ≥ 2)
+    (x sstar Δ D_before D_after : ℝ) (hx : x > 1)
+    (hss_pos : sstar > 0) (hss_lt : sstar < 1)
+    (hss_eq : sstar ^ p = 1 / x)
+    (hsep : determinant_separation Δ)
+    (hdesc : spectral_descent D_before D_after)
+    (ψ coord coordInv : ℝ → ℝ) (tstar : ℝ) :
+    ¬ nondegenerate_conjugacy_to_standard family (pandrosion_h x p) ψ coord coordInv
+      sstar tstar Δ D_before D_after := by
+  exact pandrosion_nonconjugacy_standard family (pandrosion_h x p) ψ coord coordInv
+    sstar tstar Δ D_before D_after
+    (pandrosion_map_rigidity_data p hp x sstar Δ D_before D_after hx
+      hss_pos hss_lt hss_eq hsep hdesc)
+
 end Pandrosion
