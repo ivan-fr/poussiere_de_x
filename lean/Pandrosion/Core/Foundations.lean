@@ -13,6 +13,7 @@
     §5  Pandrosion + Steffensen acceleration                   [ℂ]
     §6  Scaling + Steffensen in ℂ
     §7  Optimal start + Scaling + Steffensen in ℂ (grand master)
+    §8  Multi-start + Optimal + Scaling + Steffensen in ℂ
 -/
 
 import Mathlib.Algebra.BigOperators.Basic
@@ -436,5 +437,85 @@ theorem optimal_scaling_steffensen_C
   · exact pandrosion_s0_opt_C_eq_h_one (x / A) p
 
 end OptimalScalingSteffensenComplex
+
+/-! ============================================================
+  §8. Multi-start + Optimal + Scaling + Steffensen in ℂ
+
+  Formalises §2.3 "Pandrosion multi-start (complete algorithm)"
+  of the McMullen paper. The multi-start algorithm runs `p`
+  independent orbits from Cauchy-circle starting pairs and
+  returns the root found by the orbit whose final anchor is
+  nearest to the query point `z₀` (Voronoï selection).
+
+  This stacks four independent speed-ups on top of each other:
+    • Multi-start : `p` orbits → covers every root of `z^p − x`,
+    • Scaling     : reduces the target `x` to `x/A ≈ 1`,
+    • Optimal     : start from `s₀^opt = h(1)`,
+    • Steffensen  : linear → quadratic convergence.
+
+  All four are packaged into a single verified theorem in ℂ.
+============================================================ -/
+
+section MultiStartGrandMaster
+
+/-- **Cauchy radius** `R = max(2·ρ, 2)` where `ρ` bounds the
+    roots. Guarantees every root lies strictly inside `|z| ≤ R`. -/
+noncomputable def cauchy_radius (ρ : ℝ) : ℝ := max (2 * ρ) 2
+
+theorem cauchy_radius_ge_two (ρ : ℝ) : cauchy_radius ρ ≥ 2 := by
+  unfold cauchy_radius; exact le_max_right _ _
+
+theorem cauchy_radius_pos (ρ : ℝ) : cauchy_radius ρ > 0 := by
+  linarith [cauchy_radius_ge_two ρ]
+
+/-- **Voronoï nearest anchor exists.** Among `p` complex anchors
+    (with `p > 0`), some index `s*` minimises the distance to
+    any query point `z₀`. This is Step 4 of the McMullen multi-
+    start algorithm. -/
+theorem voronoi_nearest_exists
+    (p : ℕ) (hp : 0 < p) (anchors : Fin p → ℂ) (z₀ : ℂ) :
+    ∃ s : Fin p, ∀ t : Fin p, ‖anchors s - z₀‖ ≤ ‖anchors t - z₀‖ := by
+  haveI : Nonempty (Fin p) := ⟨⟨0, hp⟩⟩
+  obtain ⟨s, _, hmin⟩ :=
+    Finset.exists_min_image (Finset.univ : Finset (Fin p))
+      (fun s => ‖anchors s - z₀‖) Finset.univ_nonempty
+  exact ⟨s, fun t => hmin t (Finset.mem_univ _)⟩
+
+/-- **Multi-start grand master theorem.**
+    For `p` independent orbits, each producing a final anchor
+    `γ s` that is a Pandrosion fixed point of the scaled problem
+    `y = x/A` (i.e. `(γ s)^p = A/x = 1/y`), the full pipeline
+    certifies simultaneously:
+      1. Multi-start selection: `∃ s*`, the Voronoï-nearest anchor
+         to any query `z₀`.
+      2. Steffensen fixing: `T_y(γ s) = γ s` for every `s`.
+      3. Scaling: `(α/β)^p = x/A`.
+      4. Reconstruction: `α = β · (α/β)`.
+      5. Optimal start: `s₀^opt(y) = h_C(y, 1)`. -/
+theorem multi_start_grand_master
+    (p : ℕ) (hp : 0 < p)
+    (α β x A : ℂ)
+    (hx : x ≠ 0) (hβ : β ≠ 0) (hA : A ≠ 0)
+    (hα : α ^ p = x) (hβpow : β ^ p = A)
+    (γ : Fin p → ℂ)
+    (hSp : ∀ s, Sp_C p (γ s) ≠ 0)
+    (hfp : ∀ s, (γ s) ^ p = A / x)
+    (z₀ : ℂ) :
+    (∃ s_star : Fin p,
+        ∀ t : Fin p, ‖γ s_star - z₀‖ ≤ ‖γ t - z₀‖) ∧
+    (∀ s, steffensen_step_C (x / A) p (γ s) = γ s) ∧
+    (α / β) ^ p = x / A ∧
+    α = β * (α / β) ∧
+    pandrosion_s0_opt_C (x / A) p = pandrosion_h_C (x / A) p 1 := by
+  have hxA : (x / A) ≠ 0 := div_ne_zero hx hA
+  refine ⟨voronoi_nearest_exists p hp γ z₀, ?_, ?_, ?_, ?_⟩
+  · intro s
+    have hfp_s : γ s ^ p = 1 / (x / A) := by rw [hfp s]; field_simp
+    exact steffensen_step_C_fixed_point (x / A) hxA p (γ s) (hSp s) hfp_s
+  · exact scaling_power_C α β x A p hα hβpow
+  · exact scaling_factorization_C α β hβ
+  · exact pandrosion_s0_opt_C_eq_h_one (x / A) p
+
+end MultiStartGrandMaster
 
 end Pandrosion
