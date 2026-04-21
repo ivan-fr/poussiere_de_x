@@ -1,31 +1,41 @@
 /-
-  Universitas Pandrosion — §14. Aitken-Steffensen quadratic rate
-                                 (Phase 1: algebraic skeleton).
+  Universitas Pandrosion — §14–§16. Aitken-Steffensen quadratic rate.
 
   Purely algebraic identities underlying the Aitken-Steffensen
   quadratic-rate theorem for the Pandrosion map
     h(s) = 1 − (x−1)/(x·S_p(s)).
 
   No calculus is used: every identity is proved by `ring`,
-  `linear_combination`, or `Commute.geom_sum₂_mul`.
+  `linear_combination`, `Commute.geom_sum₂_mul`, or
+  `Finset.sum_range_reflect`.
 
   Content:
-    §14.1  Load-bearing identity  (h − s)·x·S_p = 1 − x·s^p.
-    §14.2  Q-polynomial and root factorization
-           s^p − s*^p = (s − s*)·Q(s, s*).
-    §14.3  Fixed-point linear factorization
-           (h(s) − s*)·x·S_p(s) = (s − s*)·x·(S_p(s) − Q(s, s*)).
-    §14.4  Closed-form linear rate  `lambda_fp p s* = 1 − p·s*^{p−1}/S_p(s*)`
-           and identification with the ratio `(S_p − Q)/S_p`.
-    §14.5  Linear-rate quotient  `(h(s) − s*)/(s − s*) = (S_p(s) − Q(s, s*))/S_p(s)`.
-    §14.6  Quadratic deviation  `δ₂(s, s*) = (S_p − Q)/S_p − λ_fp`
-           vanishes at `s = s*` — algebraic precondition for Steffensen
-           quadratic acceleration.
+    §14  Algebraic skeleton (Phase 1).
+      §14.1  Load-bearing identity  (h − s)·x·S_p = 1 − x·s^p.
+      §14.2  Q-polynomial and root factorization
+             s^p − s*^p = (s − s*)·Q(s, s*).
+      §14.3  Fixed-point linear factorization
+             (h(s) − s*)·x·S_p(s) = (s − s*)·x·(S_p(s) − Q(s, s*)).
+      §14.4  Closed-form linear rate  `lambda_fp p s* = 1 − p·s*^{p−1}/S_p(s*)`.
+      §14.5  Linear-rate quotient  `(h(s) − s*)/(s − s*) = (S_p(s) − Q(s, s*))/S_p(s)`.
+      §14.6  Quadratic deviation  `δ₂(s, s*) = (S_p − Q)/S_p − λ_fp`
+             vanishes at `s = s*`.
 
-  Phase 2 (full `QuadraticRate` theorem proving
-    |T(s) − s*| ≤ K_S · (s − s*)^2
-  for Steffensen-Pandrosion, with `K_S = |h″(s*)|/(2·(1−λ))`) requires
-  Mathlib's Taylor machinery and is scoped out of this module.
+    §15  Quadratic factorization (Phase 2, structural).
+      §15.1  `M`-polynomial factorization  S_p(s) − S_p(s*) = (s − s*)·M.
+      §15.2  `N`-polynomial factorization  Q(s,s*) − Q(s*,s*) = (s − s*)·N.
+      §15.3  Division form  h(s) − s* − λ_fp·(s − s*) = (s − s*)·[ratio(s) − ratio(s*)].
+      §15.4  **★ Polynomial form**
+             (h(s) − s* − λ_fp·(s − s*)) · S_p(s) · S_p(s*)
+             = (s − s*)² · (Q(s*,s*)·M(p,s,s*) − S_p(s*)·N(p,s,s*)).
+
+    §16  Bridge to §9.2.
+      §16.1  Reflection  S_p(1/α) · α^{p−1} = S_p(α).
+      §16.2  **★ `lambda_fp p (1/α) = lambda_closed p α`** — unifies §9.2 and §14.
+
+  Phase 2+ (conversion of the polynomial identity into a pointwise bound
+  `|T(s) − s*| ≤ K_S·(s−s*)^2` with explicit δ radius) requires analytic
+  bounding of `M`, `N` on a neighborhood, which is scoped out of this file.
 -/
 
 import Pandrosion.Core.Foundations
