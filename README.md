@@ -17,25 +17,29 @@ The current primary artifact is:
 
 ## What This Repository Contains
 
-This project studies the Pandrosion iteration for root extraction. For the
-general `p`-th root setting the core map is written using the geometric sum
-`S_p(s)`:
+This project studies the **Pandrosion-Steffensen algorithm** for solving the
+complex equation `z^p = x`. The base map is the derivative-free rational
+iteration built from the geometric sum `S_p(s) = 1 + s + ... + s^(p-1)`:
 
 ```text
 h(s) = 1 - (x - 1) / (x * S_p(s))
 ```
 
-For the cubic specialization, the main rational map is:
-
-```text
-P_X(s) = s * (s^3 + 4X) / (3s^3 + 2X)
-```
+Its fixed points are exactly the `p`-th roots of `1/x`. Composing `h` with the
+Aitken-Steffensen `Δ²` accelerator yields a derivative-free iterator of
+quadratic order that attains the Kung-Traub efficiency bound for two
+evaluations per step.
 
 The repository contains:
 
-- a Lean 4 formalization of algebraic, dynamical, Diophantine, matrix, and spectral identities (130 modules, zero `sorry`);
-- a LaTeX research paper describing the formal corpus with four visual epilogues;
-- generated figures, including a ten-figure proof gallery and 12 theorem visualizations;
+- the **`Pandrosion.Core` spine** — 15 Lean 4 modules in `lean/Pandrosion/Core/`
+  that build, in dependency order, the algebraic foundations, multi-start
+  Voronoï architecture, closed-form linear rate, Kung-Traub optimality,
+  complex multiplier, local attraction, and almost-everywhere dynamical
+  convergence of the Steffensen iterator;
+- a broader **legacy corpus** of further Lean modules under `lean/Pandrosion/`
+  exploring algebraic, Diophantine, matrix, and spectral identities;
+- a LaTeX research paper organized around the `Pandrosion.Core` spine;
 - Docker Compose tooling for reproducible Lean builds.
 
 ## Current Formal Status
@@ -59,23 +63,53 @@ dynamical case study, not as a claim to have resolved any open global problem.
 Some figures are numerical or schematic illustrations; the formal claims are
 the Lean theorem statements.
 
-## Proof Highlights
+## The `Pandrosion.Core` Spine (15 Modules)
 
-The final section of the paper contains a ten-figure proof gallery:
+The current paper is organized around the 15-module spine in
+`lean/Pandrosion/Core/`. Dependency order top-to-bottom:
 
-1. Universal local derivative `P'(r) = -1/5`
-2. Chebyshev-Halley family exclusion
-3. Kinematic residual conservation
-4. Exclusion of periodic orbits under contraction
-5. Pell-Pandrosion integer norm amplification
-6. Cross-determinant separation of consecutive approximants
-7. Voronoi basin stability under contraction
-8. Hermitian preservation and spectral confinement
-9. DFT character orthogonality
-10. Effective irrationality bound and norm explosion
+1. [`Foundations.lean`](lean/Pandrosion/Core/Foundations.lean) — `S_p`, real
+   and complex fixed-point theorem `h(s) = s ⇔ s^p = 1/x`, Pandrosion-Steffensen
+   accelerator, scaling invariance, multi-start grand master.
+2. [`MultiStartBasins.lean`](lean/Pandrosion/Core/MultiStartBasins.lean) —
+   Voronoï basins: convexity, closedness, connectedness, bisector frontier;
+   constructive McMullen off the boundary.
+3. [`QuadraticRate.lean`](lean/Pandrosion/Core/QuadraticRate.lean) — algebraic
+   skeleton of Aitken-Steffensen quadratic rate.
+4. [`QuadraticComplexity.lean`](lean/Pandrosion/Core/QuadraticComplexity.lean) —
+   convergence-to-`ε` bounds from the abstract skeleton.
+5. [`VoronoiMeasure.lean`](lean/Pandrosion/Core/VoronoiMeasure.lean) — Voronoï
+   boundary has 2D Lebesgue measure zero.
+6. [`CyclotomicMcMullen.lean`](lean/Pandrosion/Core/CyclotomicMcMullen.lean) —
+   cyclotomic anchor family `γ_k = α · e^(2πik/p)`, unconditional constructive
+   McMullen.
+7. [`KungTraub.lean`](lean/Pandrosion/Core/KungTraub.lean) — efficiency index,
+   Pandrosion attains `KT(2) = √2`, converse optimality (axiom-conditional).
+8. [`UniformComplexity.lean`](lean/Pandrosion/Core/UniformComplexity.lean) —
+   uniform complexity skeleton across ensembles.
+9. [`SuperGrandMaster.lean`](lean/Pandrosion/Core/SuperGrandMaster.lean) —
+   abstract super-grand-master for the bounded regime `x > 1`.
+10. [`UniformContractionRate.lean`](lean/Pandrosion/Core/UniformContractionRate.lean) —
+    closed-form model `λ_p^model(x)`, Taylor residue bound, `p`-uniform complexity.
+11. [`ConcreteIteration.lean`](lean/Pandrosion/Core/ConcreteIteration.lean) —
+    concrete specialization to Pandrosion-Steffensen sequences.
+12. [`MasterAbsolu.lean`](lean/Pandrosion/Core/MasterAbsolu.lean) — top-level
+    stitching: five simultaneous conjuncts (anchor distinctness, fixed-point
+    property, a.e. Voronoï uniqueness, `p`-uniform complexity, Kung-Traub
+    optimality).
+13. [`ComplexMultiplier.lean`](lean/Pandrosion/Core/ComplexMultiplier.lean) —
+    complex multiplier `h'(α) = 1 - p·α^(p-1)/S_p(α)` in closed form at every
+    fixed point.
+14. [`LocalAttraction.lean`](lean/Pandrosion/Core/LocalAttraction.lean) — abstract
+    local attraction and its quadratic-bound reducer; Steffensen local
+    attraction conditional on a local quadratic bound.
+15. [`DynamicalConvergence.lean`](lean/Pandrosion/Core/DynamicalConvergence.lean) —
+    **crown jewel**: a.e. dynamical convergence of the Steffensen orbit to a
+    cyclotomic anchor, conditional on per-anchor quadratic bounds and a.e.
+    trajectory entry.
 
-The gallery files live in `latex/fig_proof_gallery_*.pdf` and are included by
-`latex/pandrosion_paper.tex`.
+The spine builds with `Compiled: 15 / 15` via `docker compose run --rm
+lean-incremental`.
 
 ## Repository Layout
 
@@ -108,11 +142,11 @@ The easiest path is Docker Compose:
 docker compose run --rm lean-check
 ```
 
-Expected result:
+Expected result for the `Pandrosion.Core` spine:
 
 ```text
-Compiled: 125 / 125
-✅ INCREMENTAL OK — 130 modules compiled
+Compiled: 15 / 15
+✅ INCREMENTAL OK — 15 modules compiled
 ```
 
 For a clean rebuild with cache cleanup and summary:
@@ -150,9 +184,12 @@ From inside `latex/`, the equivalent copy command is:
 cp pandrosion_paper.pdf ../articles/pandrosion_paper.pdf
 ```
 
-## Useful Lean Modules
+## Useful Lean Modules (Legacy Corpus)
 
-Some central modules:
+Beyond the `Pandrosion.Core` spine, the legacy corpus under `lean/Pandrosion/`
+contains further exploratory modules on the cubic specialization `P_X(s) =
+s(s^3+4X)/(3s^3+2X)` and on Diophantine / matrix / spectral identities. These
+are *not* included in the current paper's scope but remain in the repository:
 
 - [`lean/Pandrosion/HalleyComparison.lean`](lean/Pandrosion/HalleyComparison.lean) - Newton/Halley comparison and universal derivative `-1/5`
 - [`lean/Pandrosion/ChebyshevHalleyExclusion.lean`](lean/Pandrosion/ChebyshevHalleyExclusion.lean) - exclusion from the Chebyshev-Halley family
@@ -164,11 +201,10 @@ Some central modules:
 - [`lean/Pandrosion/DFTDecomposition.lean`](lean/Pandrosion/DFTDecomposition.lean) - roots-of-unity cancellation and DFT identities
 - [`lean/Pandrosion/EffectiveIrrationality.lean`](lean/Pandrosion/EffectiveIrrationality.lean) - effective Liouville-type lower bound
 
-## New Frontiers (April 2026)
+## Legacy Frontier Modules (April 2026)
 
-Five frontier modules were added on top of the existing corpus,
-reusing the Schmidt / Vojta / abc / Faltings / p-adic Hensel machinery
-already formalized:
+The following modules are part of the broader legacy corpus, not the current
+paper's scope. They remain in the repository as exploratory material:
 
 - [`lean/Pandrosion/LittlewoodSimultaneous.lean`](lean/Pandrosion/LittlewoodSimultaneous.lean) - Littlewood frontier `liminf n·‖nα‖·‖nβ‖ = 0` via Schmidt subspace + dim-2 Vojta
 - [`lean/Pandrosion/BealOrbital.lean`](lean/Pandrosion/BealOrbital.lean) - Beal / Fermat-Catalan frontier (coprime `A^x + B^y = C^z` with exponents ≥ 3) via abc global frontier + Catalan orbital + Bilu-Tichý
@@ -189,10 +225,34 @@ This repository contains several types of evidence:
 - LaTeX exposition: human-readable presentation of those statements and their interpretation.
 - Figures: numerical or schematic visualizations, not additional proofs.
 
-The project does not claim to solve Smale's 17th problem, the Riemann
-hypothesis, abc, Roth, or other global open problems. The value of the corpus
-is in the exact algebraic identities and certified structural bridges that it
-formalizes for this particular rational iteration.
+**What the paper proves (unconditional):** real and complex fixed-point
+characterisation, Steffensen preserves every Pandrosion fixed point, multi-start
+grand master, Voronoï basin structure (convex, closed, connected, bisector
+frontier), constructive McMullen off the boundary, Voronoï boundary has Lebesgue
+measure zero, cyclotomic anchor injectivity, unconditional constructive
+McMullen for `z^p = x`, closed-form rate `λ_{p,x} ∈ (0,1)`, complex multiplier
+`h'(α) = 1 - p·α^(p-1)/S_p(α)` at every fixed point, Kung-Traub attainment
+`E(2,2) = √2`, `p`-uniform complexity bound, Master Absolu.
+
+**What is proven conditional on an explicit axiom:** Kung-Traub converse
+optimality (conditional on the Kung-Traub 1974 conjecture, stated as an
+explicit `axiom` in `KungTraub.lean`).
+
+**What is proven conditional on explicit hypotheses (no new axioms):**
+Steffensen local attraction, pointwise dynamical convergence from entry, and
+a.e. dynamical convergence — each conditional on a local quadratic bound
+`‖σ(z) - γ_k‖ ≤ K_k·‖z - γ_k‖²` on `B(γ_k, r_k)` (the super-attracting content
+of Steffensen's method) and, for the a.e. statement, on a.e. trajectory entry
+into some local disk.
+
+**What is not claimed:** an unconditional, fully Lean-certified proof of the
+local quadratic bound; an unconditional a.e. trajectory-entry theorem; any
+resolution of classical open problems (Riemann hypothesis, BSD, Faltings,
+Smale's 17th, etc.).
+
+The value of the corpus is the exact algebraic identities, the measure-theoretic
+coverage theorem, and the dynamical-systems statement — for this particular
+rational iteration, in a proof-assistant-checked form.
 
 ## Citation
 
