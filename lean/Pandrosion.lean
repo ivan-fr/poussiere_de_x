@@ -9,3 +9,5 @@ import Pandrosion.Core.VoronoiMeasure
 import Pandrosion.Core.CyclotomicMcMullen
 import Pandrosion.Core.KungTraub
 import Pandrosion.Core.UniformComplexity
+import Pandrosion.Core.SuperGrandMaster
+import Pandrosion.Core.UniformContractionRate
