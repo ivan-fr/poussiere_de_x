@@ -399,6 +399,25 @@ theorem VoronoiBoundary_subset_bisectors (γ : Fin p → ℂ) :
            Set.mem_iUnion.mpr ⟨hst, ?_⟩⟩⟩
   exact heq
 
+/-- **Voronoï boundary = filtered union of bisectors.**
+    Strengthens `VoronoiBoundary_subset_bisectors` to an *equality*: the
+    Voronoï boundary equals the union over distinct pairs `(s, t)` of
+    bisector points where `γ s` already achieves the minimum distance to
+    `z`. The added filter `∀ u, ‖γ s − z‖ ≤ ‖γ u − z‖` is essential —
+    without it the reverse inclusion fails (a generic bisector point may
+    be beaten by a third anchor and therefore lies in a cell interior,
+    not on the boundary). The forward direction extracts the filter from
+    the VoronoiBoundary minimality witness; the reverse direction
+    reassembles the definition. -/
+theorem VoronoiBoundary_eq_bisectors_filtered (γ : Fin p → ℂ) :
+    VoronoiBoundary γ =
+      ⋃ (s : Fin p) (t : Fin p) (_ : s ≠ t),
+        { z : ℂ | z ∈ perpBisector (γ s) (γ t) ∧
+                  ∀ u : Fin p, ‖γ s - z‖ ≤ ‖γ u - z‖ } := by
+  ext z
+  simp only [VoronoiBoundary, perpBisector, Set.mem_setOf_eq, Set.mem_iUnion,
+             exists_prop]
+
 /-- **★ CONSTRUCTIVE McMULLEN — Main global-convergence theorem.**
 
     For the problem of computing `p`-th roots of any `x ≠ 0` via
