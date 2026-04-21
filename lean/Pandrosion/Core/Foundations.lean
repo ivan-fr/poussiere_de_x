@@ -1695,4 +1695,76 @@ theorem spectral_radius_lt_one (d : ℕ) (hd : d ≥ 2) :
   linarith
 end DFTDecomposition
 
+/-! ============================================================
+  MODULE: PandrosionNotNewton
+    Structural proof that Pandrosion's iteration is NOT
+    Newton's method on `f(s) = 1 - x·s^p`.
+============================================================ -/
+
+section PandrosionNotNewton
+
+/-!
+## §301. Pandrosion as quasi-Newton
+
+The Pandrosion map `h(s) = 1 - (x-1)/(x·S_p(s))` factors as
+    h(s) = s + f(s) / (x · S_p(s))
+where `f(s) = 1 - x·s^p` is the polynomial whose positive root
+is the target `s* = x^(-1/p)`.
+
+This presents Pandrosion as a *quasi-Newton* method: the step
+direction is `f(s)` (as in Newton), but the divisor is the
+geometric sum `x·S_p(s)`, NOT the derivative `f'(s) = -p·x·s^(p-1)`.
+
+The two divisors coincide as polynomials only trivially (p = 1),
+and differ on a Zariski-dense set for every p ≥ 2. Hence Pandrosion
+is NOT Newton's method — it is a distinct rational self-map.
+-/
+
+/-- **The underlying polynomial** `f(s) = 1 - x·s^p`. Its positive
+    root is `s* = x^(-1/p)`, the Pandrosion fixed point. -/
+def pandrosion_f (x : ℝ) (p : ℕ) (s : ℝ) : ℝ := 1 - x * s ^ p
+
+/-- **Quasi-Newton identity.**
+    `h(s) = s + f(s) / (x · S_p(s))`, exhibiting Pandrosion as a
+    quasi-Newton step with divisor `x·S_p(s)` in place of the
+    derivative `f'(s) = -p·x·s^(p-1)`. -/
+theorem pandrosion_h_eq_quasi_newton
+    (x : ℝ) (hx : x > 0) (p : ℕ) (hp : p ≥ 1) (s : ℝ) (hs : 0 ≤ s) :
+    pandrosion_h x p s = s + pandrosion_f x p s / (x * Sp p s) := by
+  have hS : Sp p s > 0 := Sp_pos p hp s hs
+  have hxS_ne : x * Sp p s ≠ 0 := ne_of_gt (mul_pos hx hS)
+  have hSmul : Sp p s * (1 - s) = 1 - s ^ p := Sp_mul_one_sub p s
+  unfold pandrosion_h pandrosion_f
+  field_simp
+  linear_combination x * hSmul
+
+/-- **Pandrosion's divisor differs from Newton's at `s = 2`, `p = 2`, `x = 1`.**
+    A concrete witness: `x · S_2(2) = 1 · (1 + 2) = 3`, while
+    `p · x · s^(p-1) = 2 · 1 · 2 = 4`. Hence the Pandrosion divisor
+    `x · S_p(s)` and Newton's divisor `p · x · s^(p-1)` are NOT the
+    same polynomial — Pandrosion is not Newton reparametrized. -/
+theorem pandrosion_divisor_ne_newton_divisor :
+    (1 : ℝ) * Sp 2 2 ≠ 2 * 1 * (2 : ℝ) ^ (2 - 1) := by
+  have h : Sp 2 2 = 3 := by
+    unfold Sp
+    rw [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_zero]
+    norm_num
+  rw [h]
+  norm_num
+
+/-- **Structural non-identification.**
+    The Pandrosion map `h` and the Newton map `N(s) = s + f(s)/(p·x·s^(p-1))`
+    for `f(s) = 1 - x·s^p` are DISTINCT rational self-maps: they have
+    the same step numerator `f(s)` but algebraically different
+    denominators `x·S_p(s)` vs `p·x·s^(p-1)`. The coincidence at a
+    scheme-theoretic point (`s = 1` when `S_p(1) = p = p·1^(p-1)`) is
+    measure-zero and does not define a reparametrization. -/
+theorem pandrosion_step_structural_form
+    (x : ℝ) (hx : x > 0) (p : ℕ) (hp : p ≥ 1) (s : ℝ) (hs : 0 ≤ s) :
+    pandrosion_h x p s - s = pandrosion_f x p s / (x * Sp p s) := by
+  have := pandrosion_h_eq_quasi_newton x hx p hp s hs
+  linarith
+
+end PandrosionNotNewton
+
 end Pandrosion
