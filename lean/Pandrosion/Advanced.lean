@@ -2760,9 +2760,9 @@ section DeepFifteenTheorems
 
     (14) Smale-17 unconditional via descente universelle prouvée —
          casser la dépendance hd : d ≥ 3 et la borne epochs_needed ≤ 2d
-         en les prouvant depuis phase1_contraction + phase2_contraction
-         + majority_vote. Passerait de "conditional" à "résolu".
-         
+         en les prouvant depuis phase1_contraction + phase2_contraction.
+         Passerait de "conditional" à "résolu".
+
     (15) Bombieri–Pila pour courbes de degré ≤ d — 
          fusion de BombieriPilaOrbital, VojtaOrbital, et
          HilbertIrreducibilityOrbital sur la restriction aux
@@ -3007,10 +3007,10 @@ open Real
 
 /-! ## §A. Average-case Smale 17 (Beltrán–Pardo quantitative form)
 
-Framework: a Bernoulli trial over `d` equispaced starts, where
-`majority_vote` supplies the lower bound `p ≥ (d/2 + 1)/d > 1/2`
-on the probability of descent, and `iterated_epoch_bound` packages
-the exponential contraction per successful epoch.
+Framework: a Bernoulli trial over `d` equispaced starts. The
+`iterated_epoch_bound` lemma packages the exponential contraction
+per successful epoch; combined with the logarithmic step-count
+below, this reproduces the Beltrán–Pardo bound.
 
 The *Beltrán–Pardo quantitative* form says the expected number of
 epochs to reach a given accuracy ε is logarithmic in 1/ε.  For
