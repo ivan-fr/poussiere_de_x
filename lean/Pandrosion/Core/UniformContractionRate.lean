@@ -605,4 +605,110 @@ theorem super_grand_master_uniform_closed_form
 
 end UnconditionalBoundedRegime
 
+/-! ============================================================
+  §23.7  Bridge to §14/§16 — `lamModel = lambda_fp = lambda_closed`
+============================================================ -/
+
+/-!
+  **Motivation — vertical integration between §14/§16 and §23.**
+
+  §23.5 defines `lamModel p x = [p(α − 1) + α(x − 1)] / [α(x − 1)]` as
+  the *analytic* closed-form of `h'(α)` derived by direct differentiation
+  of the Pandrosion map at its fixed point `α = alphaP p x = x^{−1/p}`.
+
+  §14.4 independently defines `lambda_fp p s_star = 1 − p·s_star^{p−1}/S_p(s_star)`
+  as the *algebraic* fixed-point rate (a purely combinatorial expression
+  in terms of `S_p` and `s_star`), and §9.2/§16 connect it to the paper's
+  `lambda_closed p β = 1 − p / S_p(β)` under the reciprocal substitution
+  `s_star = 1/β`.
+
+  Without the bridge below, the unconditional super-grand-master
+  `super_grand_master_uniform_closed_form` (§23.6) references `lamModel`
+  as an **analytically derived** quantity, unconnected to the rest of
+  the repo. This section closes the loop: `lamModel` **is** the §14
+  algebraic rate at `α`, which **is** the paper's `lambda_closed` at
+  `1/α`. §23.6 is thereby grounded in machinery proved in §14–§16, not
+  in an abstract definition.
+-/
+
+section LambdaModelBridge
+
+/-- **★ Bridge from analytic to algebraic rate.**
+    `lamModel p x = lambda_fp p (alphaP p x)`.
+
+    The closed-form contraction rate from §23.5, obtained by direct
+    differentiation of Pandrosion's `h(s)` at its fixed point, equals
+    the algebraic fixed-point rate from §14.4 evaluated at the same
+    fixed point `α = x^{−1/p}`:
+        h'(α)  =  [p(α − 1) + α(x − 1)] / [α(x − 1)]         (§23.5)
+               =  1 − p·α^{p−1} / S_p(α)                      (§14.4).
+
+    **Proof.** Direct algebraic manipulation using two identities:
+    (i) `α^p = 1/x` (fixed-point condition from `α = exp(−log x / p)`);
+    (ii) `S_p(α)·(1 − α) = 1 − α^p` (geometric-sum identity).
+    Clearing denominators in the target equation reduces it to
+    `p·[(α − 1)·S_p(α) + α^p·(x − 1)] = 0`, which follows from (i)+(ii)
+    via `(α − 1)·S_p(α) = α^p − 1 = 1/x − 1` and `α^p·(x − 1) = (x−1)/x`,
+    whose sum is `0`. -/
+theorem lamModel_eq_lambda_fp
+    (p : ℕ) (hp : p ≥ 1) (x : ℝ) (hx : 1 < x) :
+    lamModel p x = lambda_fp p (alphaP p x) := by
+  set α := alphaP p x
+  have hα_pos : 0 < α := alphaP_pos p x
+  have hα_nn : (0 : ℝ) ≤ α := hα_pos.le
+  have hα_ne : α ≠ 0 := ne_of_gt hα_pos
+  have hx_pos : 0 < x := by linarith
+  have hx1_pos : 0 < x - 1 := by linarith
+  have hx1_ne : x - 1 ≠ 0 := ne_of_gt hx1_pos
+  have hS_pos : 0 < Sp p α := Sp_pos p hp α hα_nn
+  have hS_ne : Sp p α ≠ 0 := ne_of_gt hS_pos
+  have hp_pos : (0 : ℝ) < (p : ℝ) := Nat.cast_pos.mpr hp
+  have hp_ne : (p : ℝ) ≠ 0 := ne_of_gt hp_pos
+  -- (i) Fixed-point identity: α^p = 1/x.
+  have hα_pow : α ^ p = 1 / x := by
+    show Real.exp (-Real.log x / (p : ℝ)) ^ p = 1 / x
+    rw [← Real.exp_nat_mul]
+    have h1 : (p : ℝ) * (-Real.log x / (p : ℝ)) = -Real.log x := by
+      field_simp; ring
+    rw [h1, Real.exp_neg, Real.exp_log hx_pos, one_div]
+  -- (ii) Geometric-sum identity.
+  have hSp_id : Sp p α * (1 - α) = 1 - α ^ p := Sp_mul_one_sub p α
+  -- Natural-subtraction identity: α^(p-1)·α = α^p (valid since p ≥ 1).
+  have h_pow_sub : α ^ (p - 1) * α = α ^ p := by
+    rw [← pow_succ, Nat.sub_add_cancel hp]
+  have hxα_ne : α * (x - 1) ≠ 0 := mul_ne_zero hα_ne hx1_ne
+  -- Master algebraic identity (derived from (i)+(ii)):
+  --    (α − 1)·S_p(α) + α^p·(x − 1) = 0.
+  have key : (α - 1) * Sp p α + α ^ p * (x - 1) = 0 := by
+    have h1 : (α - 1) * Sp p α = α ^ p - 1 := by linarith [hSp_id]
+    rw [h1, hα_pow]
+    field_simp
+  -- Clear denominators and finish by linear combination.
+  unfold lamModel lambda_fp
+  field_simp
+  linear_combination (p : ℝ) * key + ((p : ℝ) * (x - 1)) * h_pow_sub
+
+/-- **★ Bridge via the §16.2 reflection identity.**
+    `lamModel p x = lambda_closed p (1 / alphaP p x)`.
+
+    The inversion `1/α` reflects the paper's §9.2 convention
+    `lambda_closed p β = 1 − p / S_p(β)` where `β = x^{1/p}` is the
+    paper's root — the *reciprocal* of the §14 Pandrosion fixed point
+    `s_star = x^{−1/p}`. Composes `lamModel_eq_lambda_fp` with
+    `lambda_fp_eq_lambda_closed` (§16.2). -/
+theorem lamModel_eq_lambda_closed
+    (p : ℕ) (hp : p ≥ 1) (x : ℝ) (hx : 1 < x) :
+    lamModel p x = lambda_closed p (1 / alphaP p x) := by
+  rw [lamModel_eq_lambda_fp p hp x hx]
+  have hα_pos : 0 < alphaP p x := alphaP_pos p x
+  have hα_inv_pos : 0 < 1 / alphaP p x := one_div_pos.mpr hα_pos
+  -- `lambda_fp_eq_lambda_closed` applied at β := 1/α gives
+  --    lambda_fp p (1 / (1/α)) = lambda_closed p (1/α),
+  -- i.e., lambda_fp p α = lambda_closed p (1/α).
+  have h := lambda_fp_eq_lambda_closed p hp (1 / alphaP p x) hα_inv_pos
+  rw [one_div_one_div] at h
+  exact h
+
+end LambdaModelBridge
+
 end Pandrosion
