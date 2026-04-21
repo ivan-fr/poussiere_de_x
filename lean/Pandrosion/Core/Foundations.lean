@@ -1861,4 +1861,217 @@ theorem steffensen_pandrosion_quadratic_rate (p : ℕ) (hp : p ≥ 2) :
 
 end SteffensenPandrosion
 
+/-! ============================================================
+  MODULE: OptimalStartingPoint
+    Section 12 of pandrosion_en_improved.tex:
+    among starting points computable without knowledge of α,
+    `s_0^opt = h(1) = 1 - (x-1)/(x·p)` minimises the initial
+    residual (to leading order).
+============================================================ -/
+
+section OptimalStartingPoint
+
+/-!
+## §303. Optimal starting point
+
+**Claim (Proposition in §12 of the reference).**
+Among starting values `s_0` that can be computed without knowing
+the target `α = x^{1/p}`, the choice
+    `s_0^opt := 1 - (x-1)/(x·p)`
+coincides with `h(1)` (the Pandrosion iterate applied to the naive
+start `s = 1`). This minimises the initial residual `|s_0 - s*|`
+to leading order in `1/p`.
+
+This module formalises the structural (non-asymptotic) content:
+  (1) `pandrosion_s0_opt = h(1)`;
+  (2) for `x = 1`, `s_0^opt = 1 = s*` (the trivial fixed point);
+  (3) for `x > 1` and `p ≥ 2`, `0 < s_0^opt < 1`.
+
+The asymptotic minimisation claim (with `ln x` expansion) is
+left at the informal level — it requires transcendental analysis
+beyond the ring identities formalised here.
+-/
+
+/-- **Evaluation of the geometric sum at `s = 1`.** `S_p(1) = p`. -/
+theorem Sp_at_one (p : ℕ) : Sp p 1 = p := by
+  unfold Sp
+  simp
+
+/-- **Optimal starting point** for Pandrosion on `x^{1/p}`:
+    `s_0^opt = 1 - (x-1)/(x·p)`. -/
+noncomputable def pandrosion_s0_opt (x : ℝ) (p : ℕ) : ℝ :=
+  1 - (x - 1) / (x * p)
+
+/-- **Identity: the optimal start is `h(1)`.**
+    `s_0^opt = h(1)` where `h` is the Pandrosion map. In particular,
+    one Pandrosion step from the naive initial guess `s = 1` lands
+    exactly on the optimal starting point. -/
+theorem pandrosion_s0_opt_eq_h_one (x : ℝ) (p : ℕ) :
+    pandrosion_s0_opt x p = pandrosion_h x p 1 := by
+  unfold pandrosion_s0_opt pandrosion_h
+  rw [Sp_at_one]
+
+/-- **Trivial case: `x = 1` forces `s_0^opt = 1`.**
+    When the target is `1^{1/p} = 1`, the optimal starting point
+    coincides with the fixed point `s* = 1`. -/
+theorem pandrosion_s0_opt_trivial (p : ℕ) :
+    pandrosion_s0_opt 1 p = 1 := by
+  unfold pandrosion_s0_opt
+  simp
+
+/-- **Upper bound: `s_0^opt < 1` for `x > 1`.**
+    For any `x > 1` and `p ≥ 1`, the optimal starting point lies
+    strictly below 1 — consistent with `s* = x^{-1/p} < 1`. -/
+theorem pandrosion_s0_opt_lt_one
+    (x : ℝ) (hx : x > 1) (p : ℕ) (hp : p ≥ 1) :
+    pandrosion_s0_opt x p < 1 := by
+  unfold pandrosion_s0_opt
+  have hx0 : x > 0 := by linarith
+  have hp_pos : (0 : ℝ) < p := by exact_mod_cast hp
+  have hxp : x * p > 0 := mul_pos hx0 hp_pos
+  have hnum : x - 1 > 0 := by linarith
+  have hratio : (x - 1) / (x * p) > 0 := div_pos hnum hxp
+  linarith
+
+/-- **Lower bound: `s_0^opt > 0` when `p ≥ 2`.**
+    For `x > 1` and `p ≥ 2`, the optimal starting point is strictly
+    positive, staying inside the natural Pandrosion domain. -/
+theorem pandrosion_s0_opt_pos
+    (x : ℝ) (hx : x > 1) (p : ℕ) (hp : p ≥ 2) :
+    pandrosion_s0_opt x p > 0 := by
+  unfold pandrosion_s0_opt
+  have hx0 : x > 0 := by linarith
+  have hp_pos : (0 : ℝ) < p := by exact_mod_cast (by omega : p ≥ 1)
+  have hp_ge2 : (2 : ℝ) ≤ p := by exact_mod_cast hp
+  have hxp : x * p > 0 := mul_pos hx0 hp_pos
+  -- Show (x-1)/(x·p) < 1, i.e., x-1 < x·p, i.e., x·p - x + 1 > 0, i.e., x·(p-1) + 1 > 0.
+  have h_le : (x - 1) / (x * p) < 1 := by
+    rw [div_lt_one hxp]
+    have : x - 1 < x := by linarith
+    have hx_le_xp : x ≤ x * p := by
+      have : x * 1 ≤ x * p := by
+        apply mul_le_mul_of_nonneg_left
+        · linarith
+        · linarith
+      linarith [this]
+    linarith
+  linarith
+
+/-- **Structural summary: the optimal starting point is in (0, 1).**
+    Packages the two inequalities: for `x > 1` and `p ≥ 2`,
+    `0 < s_0^opt < 1`, so the single-step Pandrosion start stays
+    strictly inside the natural domain. -/
+theorem pandrosion_s0_opt_in_unit_interval
+    (x : ℝ) (hx : x > 1) (p : ℕ) (hp : p ≥ 2) :
+    0 < pandrosion_s0_opt x p ∧ pandrosion_s0_opt x p < 1 :=
+  ⟨pandrosion_s0_opt_pos x hx p hp,
+   pandrosion_s0_opt_lt_one x hx p (by omega)⟩
+
+end OptimalStartingPoint
+
+/-! ============================================================
+  MODULE: ScalingOptimization
+    Section 14 of pandrosion_en_improved.tex:
+    scaling principle and Thales preconditioning.
+============================================================ -/
+
+section ScalingOptimization
+
+/-!
+## §304. Scaling optimization (§14.1 scaling principle, §14.2 Thales preconditioning)
+
+**Principle.** For any reference value `A > 0` whose `p`-th root `β` is
+known, the target `α = x^{1/p}` factorises as
+    `α = β · (α/β)`
+where `α/β` is the `p`-th root of the *reduced* value `x' = x/A`.
+Applying Pandrosion's method to the reduced problem `x'` — chosen so
+that `x'` is close to 1 — is far cheaper than attacking `x` directly.
+
+This section formalises:
+  (1) the algebraic scaling factorisation `(α/β)^p = x/A`;
+  (2) the monotonicity of the first-step offset `(x-1)/(x·p)` in `x`,
+      which underlies the "Thales preconditioning" geometric picture:
+      smaller `x` → optimal start closer to `1 = s*(x=1)`.
+
+The transcendental table of iteration counts (39× reduction at
+`x = 10 000`, p = 3) and the full monotonicity of `λ_{p,x}` are
+beyond this pure-algebra layer.
+-/
+
+/-- **§14.1 Scaling factorisation (algebraic form).**
+    If `α^p = x` and `β^p = A` with `β > 0`, then `(α/β)^p = x/A`.
+    This is the algebraic content of `x^{1/p} = A^{1/p} · (x/A)^{1/p}`
+    using *given* integer-power witnesses, avoiding `Real.rpow`. -/
+theorem pandrosion_scaling_power
+    (α β x A : ℝ) (p : ℕ)
+    (hα : α ^ p = x) (hβpow : β ^ p = A) :
+    (α / β) ^ p = x / A := by
+  rw [div_pow, hα, hβpow]
+
+/-- **§14.1 Scaling factorisation (reconstruction form).**
+    The target `α = x^{1/p}` equals the product of the "reference root"
+    `β = A^{1/p}` and the "reduced root" `α/β = (x/A)^{1/p}`. -/
+theorem pandrosion_scaling_factorization
+    (α β : ℝ) (hβ : β ≠ 0) :
+    α = β * (α / β) := by
+  rw [mul_div_assoc', mul_comm, mul_div_assoc, div_self hβ, mul_one]
+
+/-- **§14.2 Offset monotonicity (first-step residual).**
+    The Pandrosion first-step offset `(x-1)/(x·p)` — i.e.,
+    `1 - s_0^opt(x)` — is monotone non-decreasing in `x` on `(0, ∞)`.
+    Consequence: scaling `x ↦ x' = x/A ∈ [1, ·)` strictly reduces the
+    gap between `s_0^opt` and `1`, which is one half of the "double
+    preconditioning" (§14.2 Proposition). -/
+theorem pandrosion_offset_monotone
+    (p : ℕ) (hp : p ≥ 1) (x₁ x₂ : ℝ) (hx₁ : x₁ > 0) (hle : x₁ ≤ x₂) :
+    (x₁ - 1) / (x₁ * p) ≤ (x₂ - 1) / (x₂ * p) := by
+  have hx₂ : x₂ > 0 := lt_of_lt_of_le hx₁ hle
+  have hp_pos : (0 : ℝ) < p := by exact_mod_cast hp
+  have hx₁p : x₁ * p > 0 := mul_pos hx₁ hp_pos
+  have hx₂p : x₂ * p > 0 := mul_pos hx₂ hp_pos
+  -- Rewrite both sides as 1/p - 1/(x·p).
+  have eq₁ : (x₁ - 1) / (x₁ * p) = 1 / p - 1 / (x₁ * p) := by
+    field_simp
+  have eq₂ : (x₂ - 1) / (x₂ * p) = 1 / p - 1 / (x₂ * p) := by
+    field_simp
+  rw [eq₁, eq₂]
+  -- Reduces to 1/(x₂·p) ≤ 1/(x₁·p), i.e. x₁·p ≤ x₂·p.
+  have h_recip : 1 / (x₂ * p) ≤ 1 / (x₁ * p) :=
+    one_div_le_one_div_of_le hx₁p (by nlinarith)
+  linarith
+
+/-- **§14.2 Scaled start stays closer to 1.**
+    If `1 ≤ x' ≤ x`, the scaled optimal starting point `s_0^opt(x')`
+    lies above `s_0^opt(x)` (closer to the boundary value 1). -/
+theorem pandrosion_scaled_s0_opt_closer_to_one
+    (p : ℕ) (hp : p ≥ 1) (x x' : ℝ) (hx' : x' ≥ 1) (hle : x' ≤ x) :
+    pandrosion_s0_opt x p ≤ pandrosion_s0_opt x' p := by
+  unfold pandrosion_s0_opt
+  have hx'_pos : x' > 0 := by linarith
+  have h_offset : (x' - 1) / (x' * p) ≤ (x - 1) / (x * p) :=
+    pandrosion_offset_monotone p hp x' x hx'_pos hle
+  linarith
+
+/-- **§14.2 Double-preconditioning summary (algebraic core).**
+    Two facts package the scaling benefit on its algebraic side:
+      (i) the `p`-th root factorises across the scaling:
+          `(α/β)^p = x/A` with `α^p = x`, `β^p = A`;
+      (ii) the first-step offset is monotone in `x`, so scaling
+          down to `x' ≤ x` can only move `s_0^opt` closer to `1`.
+    Together these are the algebraic content of §14.2 Proposition
+    (Double preconditioning). The contraction-rate reduction half
+    of the double preconditioning depends on the monotonicity of
+    `λ_{p,x}` in `x`, which lives in the analysis layer. -/
+theorem pandrosion_double_preconditioning
+    (p : ℕ) (hp : p ≥ 1)
+    (α β x A : ℝ)
+    (hα : α ^ p = x) (hβpow : β ^ p = A)
+    (x' : ℝ) (hx' : x' ≥ 1) (hle : x' ≤ x) :
+    (α / β) ^ p = x / A ∧
+    pandrosion_s0_opt x p ≤ pandrosion_s0_opt x' p :=
+  ⟨pandrosion_scaling_power α β x A p hα hβpow,
+   pandrosion_scaled_s0_opt_closer_to_one p hp x x' hx' hle⟩
+
+end ScalingOptimization
+
 end Pandrosion
