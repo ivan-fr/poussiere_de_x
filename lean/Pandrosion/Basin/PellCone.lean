@@ -5,7 +5,7 @@
 -/
 import Mathlib.Tactic
 import Pandrosion.Core
-import Pandrosion.Advanced
+import Pandrosion.Diophantine
 
 namespace Pandrosion
 
