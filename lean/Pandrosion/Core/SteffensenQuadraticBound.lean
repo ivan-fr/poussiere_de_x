@@ -70,12 +70,12 @@ theorem steffensen_step_C_quadratic_bound
   -- Non-vanishing of lam − 1 (§29.1).
   have h_lam_ne : lambdaClosedC p α ≠ 1 :=
     lambdaClosedC_ne_one_at_fp hp hα hSp
-  set lam : ℂ := lambdaClosedC p α with hlam_def
+  set lam : ℂ := lambdaClosedC p α
   have h_lam_sub_ne : lam - 1 ≠ 0 := sub_ne_zero.mpr h_lam_ne
   have h_lam_abs_pos : 0 < ‖lam - 1‖ := norm_pos_iff.mpr h_lam_sub_ne
   have h_lam_sq_pos : 0 < ‖lam - 1‖ ^ 2 := pow_pos h_lam_abs_pos 2
   -- Abbreviations.
-  set A : ℝ := ‖lam‖ with hA_def
+  set A : ℝ := ‖lam‖
   have hA_nn : 0 ≤ A := norm_nonneg _
   -- Constants B, C, Mq aggregating the coefficient budgets.
   -- B := A + 1 bounds |lam| + M·r₁ when M·r₁ ≤ 1.
@@ -85,8 +85,6 @@ theorem steffensen_step_C_quadratic_bound
   set Mn : ℝ := 2 * ‖lam - 1‖ * M + M ^ 2 with hMn_def
   have hMd_nn : 0 ≤ Md := by
     rw [hMd_def]; positivity
-  have hMn_nn : 0 ≤ Mn := by
-    rw [hMn_def]; positivity
   -- Choose r₁ small enough for all the estimates to work.
   -- Constraints:
   --   (a) r₁ ≤ r₀               (so §30 applies to z)
@@ -95,16 +93,14 @@ theorem steffensen_step_C_quadratic_bound
   --   (d) Md · r₁ ≤ ‖lam − 1‖²/2 (lower bound on Steffensen denom)
   --   (e) r₁ ≤ 1                (so |z − α|³ ≤ |z − α|² on the ball)
   have hA2_pos : 0 < A + 2 := by linarith
-  have hM1_pos : 0 < M + 1 := by linarith
-  have hMd1_pos : 0 < Md + 1 := by linarith
   have h_half_pos : 0 < ‖lam - 1‖ ^ 2 / (2 * (Md + 1)) := by positivity
   have h_inv_M1_pos : 0 < 1 / (M + 1) := by positivity
   have h_r₀_A2_pos : 0 < r₀ / (A + 2) := by positivity
   -- Build r₁ from sequential mins so each constraint is a single min_le.
-  set r_a : ℝ := min r₀ (1 / (M + 1)) with hra_def
-  set r_b : ℝ := min r_a (r₀ / (A + 2)) with hrb_def
-  set r_c : ℝ := min r_b (‖lam - 1‖ ^ 2 / (2 * (Md + 1))) with hrc_def
-  set r₁ : ℝ := min r_c 1 with hr₁_def
+  set r_a : ℝ := min r₀ (1 / (M + 1))
+  set r_b : ℝ := min r_a (r₀ / (A + 2))
+  set r_c : ℝ := min r_b (‖lam - 1‖ ^ 2 / (2 * (Md + 1)))
+  set r₁ : ℝ := min r_c 1
   have hra_pos : 0 < r_a := lt_min hr₀_pos h_inv_M1_pos
   have hrb_pos : 0 < r_b := lt_min hra_pos h_r₀_A2_pos
   have hrc_pos : 0 < r_c := lt_min hrb_pos h_half_pos
@@ -312,7 +308,6 @@ theorem steffensen_step_C_quadratic_bound
   -- Numerator residue bound.
   have h_Rz_sq_bd : ‖Rz‖ ^ 2 ≤ M ^ 2 * ‖z - α‖ ^ 4 := by
     have h_Rz_nn : 0 ≤ ‖Rz‖ := norm_nonneg _
-    have h_rhs_nn : 0 ≤ M * ‖z - α‖ ^ 2 := by positivity
     calc ‖Rz‖ ^ 2 ≤ (M * ‖z - α‖ ^ 2) ^ 2 := by
           apply sq_le_sq' _ hRz_bd
           linarith
