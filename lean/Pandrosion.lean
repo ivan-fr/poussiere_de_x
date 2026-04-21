@@ -19,3 +19,4 @@ import Pandrosion.Core.DynamicalConvergence
 import Pandrosion.Core.LinearAsymptotics
 import Pandrosion.Core.QuadraticBound
 import Pandrosion.Core.SteffensenQuadraticBound
+import Pandrosion.Core.SteffensenMcMullenAE
