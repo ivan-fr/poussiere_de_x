@@ -21,3 +21,4 @@ import Pandrosion.Core.QuadraticBound
 import Pandrosion.Core.SteffensenQuadraticBound
 import Pandrosion.Core.SteffensenMcMullenAE
 import Pandrosion.Core.SteffensenExplicitRate
+import Pandrosion.Core.SteffensenGlobalLoglog
