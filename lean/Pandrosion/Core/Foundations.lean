@@ -12,6 +12,7 @@
     §4  Pandrosion iteration in ℂ
     §5  Pandrosion + Steffensen acceleration                   [ℂ]
     §6  Scaling + Steffensen in ℂ
+    §7  Optimal start + Scaling + Steffensen in ℂ (grand master)
 -/
 
 import Mathlib.Algebra.BigOperators.Basic
@@ -381,5 +382,59 @@ theorem scaling_steffensen_C
   · exact scaling_factorization_C α β hβ
 
 end ScalingComplex
+
+/-! ============================================================
+  §7. Optimal start + Scaling + Steffensen in ℂ  (grand master)
+
+  The most powerful packaging in the library: combines Proposition
+  12 (Optimal starting point, eq. 23 of the PDF), Proposition 14
+  (Scaling optimization), and Theorem 13 (Steffensen acceleration),
+  all in ℂ. Three independent speed-ups stack:
+    • Scaling reduces the target `x` to `x/A` close to 1,
+    • `s0_opt_C = h(1)` minimises the initial residual,
+    • Steffensen turns linear into quadratic convergence.
+============================================================ -/
+
+section OptimalScalingSteffensenComplex
+
+/-- Complex optimal starting point `s_0^opt := 1 − (x−1)/(x·p)`. -/
+noncomputable def pandrosion_s0_opt_C (x : ℂ) (p : ℕ) : ℂ :=
+  1 - (x - 1) / (x * p)
+
+/-- `s_0^opt = h_C(1)`. One Pandrosion iterate from `s = 1`. -/
+theorem pandrosion_s0_opt_C_eq_h_one (x : ℂ) (p : ℕ) :
+    pandrosion_s0_opt_C x p = pandrosion_h_C x p 1 := by
+  unfold pandrosion_s0_opt_C pandrosion_h_C
+  rw [Sp_C_at_one]
+
+/-- **Grand master formula.** The full optimal-start + scaling +
+    Steffensen pipeline in ℂ. Given:
+      • a scaling `(α, β)` with `α^p = x`, `β^p = A`,
+      • a complex root `γ` of the reduced problem `y = x/A`
+        (i.e. `γ^p = A/x`, hence `γ^p = 1/y`),
+    we obtain simultaneously:
+      1. the reduced target identity `(α/β)^p = x/A`,
+      2. the reconstruction `α = β · (α/β)`,
+      3. Steffensen fixes `γ`: `T_y(γ) = γ`,
+      4. the complex optimal start `s0_opt_C(y) = h_C(y,1)`. -/
+theorem optimal_scaling_steffensen_C
+    (α β γ x A : ℂ) (p : ℕ)
+    (hx : x ≠ 0) (hβ : β ≠ 0) (hA : A ≠ 0)
+    (hα : α ^ p = x) (hβpow : β ^ p = A)
+    (hSp : Sp_C p γ ≠ 0)
+    (hγ_fp : γ ^ p = A / x) :
+    (α / β) ^ p = x / A ∧
+    α = β * (α / β) ∧
+    steffensen_step_C (x / A) p γ = γ ∧
+    pandrosion_s0_opt_C (x / A) p = pandrosion_h_C (x / A) p 1 := by
+  have hxA : (x / A) ≠ 0 := div_ne_zero hx hA
+  have hfp : γ ^ p = 1 / (x / A) := by rw [hγ_fp]; field_simp
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact scaling_power_C α β x A p hα hβpow
+  · exact scaling_factorization_C α β hβ
+  · exact steffensen_step_C_fixed_point (x / A) hxA p γ hSp hfp
+  · exact pandrosion_s0_opt_C_eq_h_one (x / A) p
+
+end OptimalScalingSteffensenComplex
 
 end Pandrosion
