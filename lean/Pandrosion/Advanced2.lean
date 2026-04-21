@@ -27,6 +27,7 @@
   and depends only on Core, Advanced, and Mathlib primitives.
 -/
 import Mathlib.Topology.MetricSpace.Basic
+import Mathlib.Topology.MetricSpace.Contracting
 import Mathlib.Topology.Instances.Real
 import Mathlib.Topology.Order.Basic
 import Mathlib.Tactic
@@ -750,6 +751,169 @@ theorem advanced2_super_certificate
   · exact voronoi_cell_finite_open r0 anchors
   · exact (pell_iterate_strict_growth X hX (A, B) hA hB n).1
   · exact pandrosion_map_lipschitz_pairwise_p2 x r s t hr h_root hs ht
+
+/-! ## §XIII. Banach Fixed-Point Theorem via Mathlib (#G)
+
+Using `pandrosion_map_lipschitz_pairwise_p2` (§XI), we lift the
+Babylonian map to the closed basin `{s : ℝ // r ≤ s}` and
+instantiate Mathlib's `ContractingWith (1/2 : ℝ≥0)` typeclass.
+
+The basin is:
+  * **Nonempty** — it contains `r`.
+  * **Complete** — it's a closed subset of the complete space ℝ.
+  * **Closed under the map** — `F : Basin → Basin` by §I.
+  * **Contracting** — Lipschitz-½ by §XI.
+
+Mathlib's Banach fixed-point theorem then delivers:
+  * Existence and uniqueness of a fixed point.
+  * Its identification with `r`.
+  * Convergence of the iteration `F^[n] s₀ → r` in the metric
+    topology, for every starting point `s₀ ∈ Basin`.
+-/
+
+section BanachFixedPoint
+
+open Topology Filter
+
+/-- **The basin as a subtype**, marked `abbrev` so instance
+    inference flows through to MetricSpace / Nonempty / CompleteSpace. -/
+abbrev PandrosionBasin (r : ℝ) := {s : ℝ // r ≤ s}
+
+/-- The basin contains `r` itself. -/
+instance instNonemptyPandrosionBasin (r : ℝ) : Nonempty (PandrosionBasin r) :=
+  ⟨⟨r, le_refl r⟩⟩
+
+/-- The basin is a closed subset of ℝ, hence complete. -/
+instance instCompletePandrosionBasin (r : ℝ) : CompleteSpace (PandrosionBasin r) := by
+  have h : IsClosed (Set.Ici r) := isClosed_Ici
+  exact h.completeSpace_coe
+
+/-- The distinguished basin element `r`. -/
+def rBasin (r : ℝ) : PandrosionBasin r := ⟨r, le_refl r⟩
+
+/-- **The Babylonian map lifted to the basin.**
+    §I's `basin_preserved_p2` plus `pandrosion_p2_identity`
+    guarantee `F(s) ≥ r` for any `s ≥ r > 0`. -/
+noncomputable def babylonianOnBasin
+    (x r : ℝ) (hr : r > 0) (h_root : r ^ 2 = x) :
+    PandrosionBasin r → PandrosionBasin r :=
+  fun s => ⟨pandrosion_map 2 x s.val, by
+    have hs_pos : 0 < s.val := lt_of_lt_of_le hr s.property
+    have hid := pandrosion_p2_identity x r s.val hs_pos h_root
+    have h_nn : 0 ≤ (s.val - r) ^ 2 / (2 * s.val) :=
+      div_nonneg (sq_nonneg _) (by linarith)
+    linarith⟩
+
+/-- **`r` is a fixed point** of the lifted map. -/
+theorem babylonianOnBasin_fixed_r
+    (x r : ℝ) (hr : r > 0) (h_root : r ^ 2 = x) :
+    babylonianOnBasin x r hr h_root (rBasin r) = rBasin r := by
+  apply Subtype.ext
+  show pandrosion_map 2 x r = r
+  have hid := pandrosion_p2_identity x r r hr h_root
+  have h_zero : (r - r : ℝ) ^ 2 / (2 * r) = 0 := by
+    rw [sub_self, pow_two, zero_mul, zero_div]
+  linarith
+
+/-- **Lipschitz-½ on the basin**, pulled back from §XI. -/
+theorem babylonianOnBasin_lipschitz
+    (x r : ℝ) (hr : r > 0) (h_root : r ^ 2 = x) :
+    LipschitzWith (1/2 : NNReal) (babylonianOnBasin x r hr h_root) := by
+  apply LipschitzWith.of_dist_le_mul
+  intro s t
+  show dist (babylonianOnBasin x r hr h_root s).val
+            (babylonianOnBasin x r hr h_root t).val
+       ≤ ↑(1/2 : NNReal) * dist s.val t.val
+  rw [Real.dist_eq, Real.dist_eq]
+  have h_lip := pandrosion_map_lipschitz_pairwise_p2 x r s.val t.val
+                  hr h_root s.property t.property
+  have h_coe : ((1/2 : NNReal) : ℝ) = 1/2 := by
+    simp [NNReal.coe_div]
+  rw [h_coe]
+  exact h_lip
+
+/-- **The Babylonian map is a Mathlib `ContractingWith (1/2)`.** -/
+theorem babylonianOnBasin_contracting
+    (x r : ℝ) (hr : r > 0) (h_root : r ^ 2 = x) :
+    ContractingWith (1/2 : NNReal) (babylonianOnBasin x r hr h_root) := by
+  refine ⟨?_, babylonianOnBasin_lipschitz x r hr h_root⟩
+  rw [← NNReal.coe_lt_coe]
+  push_cast
+  norm_num
+
+/-- **Uniqueness of the fixed point (Banach).**
+    Any fixed point of `babylonianOnBasin` is necessarily `rBasin`. -/
+theorem babylonianOnBasin_fixed_unique
+    (x r : ℝ) (hr : r > 0) (h_root : r ^ 2 = x) (s : PandrosionBasin r)
+    (hs : babylonianOnBasin x r hr h_root s = s) : s = rBasin r := by
+  have h_r_fixed := babylonianOnBasin_fixed_r x r hr h_root
+  have hF_s : pandrosion_map 2 x s.val = s.val := congrArg Subtype.val hs
+  have hF_r : pandrosion_map 2 x r = r := congrArg Subtype.val h_r_fixed
+  have h_pair := pandrosion_map_lipschitz_pairwise_p2 x r s.val r
+                   hr h_root s.property (le_refl r)
+  rw [hF_s, hF_r] at h_pair
+  have h_abs_nn : 0 ≤ |s.val - r| := abs_nonneg _
+  have h_half : |s.val - r| ≤ 0 := by linarith
+  have h_zero : |s.val - r| = 0 := le_antisymm h_half h_abs_nn
+  have h_val_eq : s.val = r := by
+    have := abs_eq_zero.mp h_zero
+    linarith
+  exact Subtype.ext h_val_eq
+
+/-- **Convergence of iterates to `rBasin` (Banach).**
+    For any starting point `s ∈ Basin`, the sequence `F^[n] s`
+    converges to `rBasin` in the metric topology. -/
+theorem babylonianOnBasin_tendsto_rBasin
+    (x r : ℝ) (hr : r > 0) (h_root : r ^ 2 = x) (s : PandrosionBasin r) :
+    Tendsto
+      (fun n : ℕ => (babylonianOnBasin x r hr h_root)^[n] s)
+      atTop (𝓝 (rBasin r)) := by
+  set F := babylonianOnBasin x r hr h_root
+  have hc : ContractingWith (1/2 : NNReal) F := babylonianOnBasin_contracting x r hr h_root
+  have h_edist_ne : edist s (F s) ≠ ⊤ := by
+    rw [edist_dist]; exact ENNReal.ofReal_ne_top
+  have h_tendsto :
+      Tendsto (fun n : ℕ => F^[n] s) atTop
+        (𝓝 (ContractingWith.efixedPoint F hc s h_edist_ne)) :=
+    ContractingWith.tendsto_iterate_efixedPoint hc h_edist_ne
+  have h_fp :=
+    ContractingWith.efixedPoint_isFixedPt (f := F) hc h_edist_ne
+  have h_eq : ContractingWith.efixedPoint F hc s h_edist_ne = rBasin r :=
+    babylonianOnBasin_fixed_unique x r hr h_root _ h_fp
+  rw [h_eq] at h_tendsto
+  exact h_tendsto
+
+/-- **Existence-and-uniqueness wrapper** (the full Banach content). -/
+theorem babylonian_banach_fixed_point
+    (x r : ℝ) (hr : r > 0) (h_root : r ^ 2 = x) :
+    ∃! s : PandrosionBasin r, babylonianOnBasin x r hr h_root s = s := by
+  refine ⟨rBasin r, babylonianOnBasin_fixed_r x r hr h_root, ?_⟩
+  intro s hs
+  exact babylonianOnBasin_fixed_unique x r hr h_root s hs
+
+/-- **Geometric `edist` rate bound on the basin** (Banach).
+    The distance of the `n`-th iterate to the fixed point `rBasin`
+    decays at rate `(1/2)^n / (1 - 1/2) = 2 · (1/2)^n`, starting
+    from `edist s (F s)`. This is `apriori_edist_iterate_efixedPoint_le`
+    specialized to the Babylonian contraction. -/
+theorem babylonianOnBasin_edist_iterate_rate
+    (x r : ℝ) (hr : r > 0) (h_root : r ^ 2 = x) (s : PandrosionBasin r) (n : ℕ) :
+    edist ((babylonianOnBasin x r hr h_root)^[n] s) (rBasin r)
+      ≤ edist s (babylonianOnBasin x r hr h_root s)
+          * ((1/2 : NNReal) : ENNReal) ^ n / (1 - (1/2 : NNReal)) := by
+  set F := babylonianOnBasin x r hr h_root
+  have hc : ContractingWith (1/2 : NNReal) F := babylonianOnBasin_contracting x r hr h_root
+  have h_edist_ne : edist s (F s) ≠ ⊤ := by
+    rw [edist_dist]; exact ENNReal.ofReal_ne_top
+  have h_bound := ContractingWith.apriori_edist_iterate_efixedPoint_le hc h_edist_ne n
+  have h_fp :=
+    ContractingWith.efixedPoint_isFixedPt (f := F) hc h_edist_ne
+  have h_eq : ContractingWith.efixedPoint F hc s h_edist_ne = rBasin r :=
+    babylonianOnBasin_fixed_unique x r hr h_root _ h_fp
+  rw [h_eq] at h_bound
+  exact h_bound
+
+end BanachFixedPoint
 
 end Advanced2
 
