@@ -202,4 +202,61 @@ theorem constructive_mcmullen_ae
 
 end ConstructiveMcMullenAE
 
+/-! ============================================================
+  §18.4  Proper measure-theoretic AE form
+============================================================ -/
+
+section ConstructiveMcMullenAEProper
+
+/-- **★ Almost-everywhere well-defined Voronoï selector.**
+    Stated with the `∀ᵐ z₀ ∂volume` measure-theoretic quantifier:
+    for Lebesgue-almost every query point `z₀ ∈ ℂ`, the nearest-anchor
+    selector is unambiguously defined (exists and is unique).
+
+    **Proof.** From `constructive_mcmullen`, uniqueness holds for every
+    `z₀ ∉ VoronoiBoundary γ`. From `voronoiBoundary_volume_zero`, the
+    boundary is Lebesgue-null. Hence the set of points where uniqueness
+    fails is contained in a null set, so uniqueness holds almost
+    everywhere. -/
+theorem voronoi_selector_unique_ae
+    {p : ℕ} (hp : 0 < p) (x A : ℂ) (hx : x ≠ 0) (hA : A ≠ 0)
+    (γ : Fin p → ℂ) (h_inj : Function.Injective γ)
+    (hSp : ∀ s, Sp_C p (γ s) ≠ 0)
+    (hfp : ∀ s, (γ s) ^ p = A / x) :
+    ∀ᵐ z₀ : ℂ ∂volume,
+      ∃! s : Fin p, ∀ t : Fin p, ‖γ s - z₀‖ ≤ ‖γ t - z₀‖ := by
+  obtain ⟨_, _, hunique, _⟩ :=
+    constructive_mcmullen hp x A hx hA γ h_inj hSp hfp
+  -- The off-boundary predicate holds AE because the boundary is null.
+  have h_bdy_null : volume (VoronoiBoundary γ) = 0 :=
+    voronoiBoundary_volume_zero γ h_inj
+  have h_ae_off : ∀ᵐ z₀ : ℂ ∂volume, z₀ ∉ VoronoiBoundary γ := by
+    rw [ae_iff]
+    have h_eq : {z₀ : ℂ | ¬ (z₀ ∉ VoronoiBoundary γ)} = VoronoiBoundary γ := by
+      ext z; simp
+    rw [h_eq]
+    exact h_bdy_null
+  exact h_ae_off.mono hunique
+
+/-- **★ Almost-everywhere constructive McMullen — full statement.**
+    The complete conclusion (Voronoï uniqueness + fixed-point property)
+    valid for Lebesgue-almost every query point `z₀`.
+
+    The fixed-point property `steffensen_step_C (x/A) p (γ s) = γ s`
+    is universal (holds for every `s`, independent of `z₀`), so the
+    AE quantifier only binds to the uniqueness conjunct. -/
+theorem constructive_mcmullen_ae_proper
+    {p : ℕ} (hp : 0 < p) (x A : ℂ) (hx : x ≠ 0) (hA : A ≠ 0)
+    (γ : Fin p → ℂ) (h_inj : Function.Injective γ)
+    (hSp : ∀ s, Sp_C p (γ s) ≠ 0)
+    (hfp : ∀ s, (γ s) ^ p = A / x) :
+    (∀ s : Fin p, steffensen_step_C (x / A) p (γ s) = γ s) ∧
+    ∀ᵐ z₀ : ℂ ∂volume,
+      ∃! s : Fin p, ∀ t : Fin p, ‖γ s - z₀‖ ≤ ‖γ t - z₀‖ := by
+  obtain ⟨_, _, _, hfix⟩ :=
+    constructive_mcmullen hp x A hx hA γ h_inj hSp hfp
+  exact ⟨hfix, voronoi_selector_unique_ae hp x A hx hA γ h_inj hSp hfp⟩
+
+end ConstructiveMcMullenAEProper
+
 end Pandrosion
