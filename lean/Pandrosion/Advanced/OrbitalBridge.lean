@@ -955,32 +955,6 @@ theorem anti_mcmullen_certificate
     |fz - r| < |fz - r'| :=
   basin_stability r r' fz z c hc0 h_contract h_deep
 
-/-! ## §C. Shub–Smale α·γ < 1/2 certificate (p = 2)
-
-For the Babylonian iteration (p = 2), the certificate reduces to
-a clean algebraic identity established in `pandrosion_p2_identity`
-and `contraction_step_p2`:
-    |F(s) − r| ≤ (1/2) · |s − r|.
-
-Interpretation in the Shub–Smale language:
-  α(F, s)  ≤ 1/2 · β(F, s)   (one-step contraction)
-  γ(F, s)  ≤ 1                (derivative-free setting)
-  ⇒ α · γ ≤ 1/2 · β, giving an *approximate zero* certificate
-  whenever the basin condition `|s − r| ≤ s` holds.
--/
-
-/-- **(C) Shub–Smale α·γ-certificate (p = 2).**
-    For any `s > 0` inside the Pandrosion basin (`|s - r| ≤ s`) of
-    the square-root fixed point `r`, the one-step contraction
-    bound `|F(s) − r| ≤ (1/2) · |s − r|` holds. This is the
-    concrete `α · γ < 1/2` certificate of Shub–Smale in the
-    derivative-free case. -/
-theorem shub_smale_alpha_gamma_certificate
-    (x r s : ℝ) (hx : x > 0) (hr : r > 0) (hs : s > 0)
-    (h_root : r ^ 2 = x) (h_basin : |s - r| ≤ s) :
-    error (pandrosion_map 2 x s) r ≤ (1 / 2) * error s r :=
-  contraction_step_p2 x r s hx hr hs h_root h_basin
-
 /-! ## §D. T3 quadratic-rate certificate
 
 `T3_rate` provides `((p-1)/p)^3 < 1`. Combined with the
@@ -1034,35 +1008,29 @@ Smale-17 bound, an anti-McMullen topology statement, a Shub–Smale
 termination guarantee.
 -/
 
-/-- **(F) Deep-Five Grand Certificate.**
+/-- **(F) Deep-Five Grand Certificate (Pandrosion-only).**
     For any degree `d ≥ 2`, initial error `ε₀ > 0`, target
-    accuracy `0 < ε ≤ ε₀`, the following five classical
+    accuracy `0 < ε ≤ ε₀`, the following four classical
     certificates simultaneously hold:
 
       (A) Average-case Smale 17:
           `n ≥ ln(ε₀/ε) ⇒ ((d-1)/d)^(d·n) · ε₀ ≤ ε`
       (B) Voronoï convexity (anti-McMullen topology)
-      (C) Shub–Smale α·γ ≤ 1/2 (p = 2 case, in the basin)
       (D) T3 quadratic rate with Steffensen constant 5/12
       (E) Finite-time universal termination.
 -/
 theorem deep_five_grand_certificate
     (d : ℕ) (hd : d ≥ 2)
     (ε₀ ε : ℝ) (hε₀ : ε₀ > 0) (hε : ε > 0) (hεε₀ : ε ≤ ε₀)
-    (n : ℕ) (hn : (n : ℝ) ≥ Real.log (ε₀ / ε))
-    (x r s : ℝ) (hx : x > 0) (hr : r > 0) (hs : s > 0)
-    (h_root : r ^ 2 = x) (h_basin : |s - r| ≤ s) :
+    (n : ℕ) (hn : (n : ℝ) ≥ Real.log (ε₀ / ε)) :
     -- (A)
     ((((d - 1 : ℝ) / d) ^ d) ^ n * ε₀ ≤ ε) ∧
-    -- (C)  Shub–Smale α·γ bound for p = 2
-    (error (pandrosion_map 2 x s) r ≤ (1 / 2) * error s r) ∧
     -- (D)
     ((((d : ℝ) - 1) / d) ^ 3 < 1) ∧
     -- (E)
     (∃ N : ℕ, (((d : ℝ) - 1) / d) ^ N < ε) := by
-  refine ⟨?_, ?_, ?_, ?_⟩
+  refine ⟨?_, ?_, ?_⟩
   · exact average_case_smale_17 d hd ε₀ ε hε₀ hε hεε₀ n hn
-  · exact shub_smale_alpha_gamma_certificate x r s hx hr hs h_root h_basin
   · exact t3_cubic_rate d hd
   · exact finite_time_universal_termination d hd ε hε
 end DeepFiveTheorems
