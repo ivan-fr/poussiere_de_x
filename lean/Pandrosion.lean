@@ -14,3 +14,4 @@ import Pandrosion.Core.UniformContractionRate
 import Pandrosion.Core.ConcreteIteration
 import Pandrosion.Core.MasterAbsolu
 import Pandrosion.Core.ComplexMultiplier
+import Pandrosion.Core.LocalAttraction
