@@ -1,14 +1,8 @@
 /-
   Universitas Pandrosion — Root module
-  Two-file consolidation: Core (foundations) + Advanced (sharp theorems).
+  Pandrosion iteration only (Newton-family content removed).
 -/
 import Pandrosion.Core
 import Pandrosion.Diophantine
-import Pandrosion.Basin.BabylonianContraction
-import Pandrosion.Basin.PellCone
 import Pandrosion.Basin.Voronoi
-import Pandrosion.BasinCertificates
 import Pandrosion.PrimeRootIrrationality
-import Pandrosion.MultiStartP
-import Pandrosion.MultiStartPSharp
-import Pandrosion.MultiStartPContraction
