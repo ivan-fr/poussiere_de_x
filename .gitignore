@@ -5,6 +5,18 @@
 ._*
 .Spotlight-V100
 .Trashes
+.devcontainer
+.claude
+.cursor
+.gemini
+.agent
+.vscode
+.idea
+.env
+.env.local
+.env.example
+.env.prod
+.env.dev
 
 # LaTeX Build Files
 *.aux

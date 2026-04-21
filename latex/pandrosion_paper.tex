@@ -35,7 +35,7 @@
 \definecolor{leankw}{rgb}{0.5, 0.0, 0.3}
 \definecolor{leancomment}{rgb}{0.4, 0.5, 0.4}
 \lstdefinelanguage{lean}{
-  morekeywords={theorem, lemma, def, let, fun, by, exact, calc, rw, simp, ring, intros, intro, have, import, namespace, end, open, sorry},
+  morekeywords={theorem, lemma, def, let, fun, by, exact, calc, rw, simp, ring, intros, intro, have, import, namespace, end, open, sorry, noncomputable, structure, axiom, forall, exists},
   sensitive=true,
   morecomment=[l]{--},
   morecomment=[s]{/-}{-/},
@@ -60,12 +60,12 @@
 }
 
 \DeclareMathOperator{\rad}{rad}
-\DeclareMathOperator{\Spec}{Spec}
-\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\vol}{vol}
 
-\title{\Huge \textbf{The Pandrosion-Steffensen Iteration}\\[0.4cm]
-\Large Formal Verification of a Rational Root-Finding Map in Lean 4\\[0.2cm]
-\normalsize \textit{Machine-checked in Lean~4 with zero \texttt{sorry} declarations}}
+\title{\Huge \textbf{Universitas Pandrosion}\\[0.4cm]
+\Large A Formally Verified Multi-Start Steffensen Algorithm\\
+for the Complex Equation $z^p = x$\\[0.2cm]
+\normalsize \textit{Machine-checked in Lean~4 / Mathlib~v4.7.0, zero \texttt{sorry} declarations in the main spine}}
 \author{Ivan Besevic \\
 \small \textit{Independent Mathematical Research} \\
 \small \texttt{github.com/ivan-fr/poussiere\_de\_x}}
@@ -76,7 +76,11 @@
 \maketitle
 
 \begin{abstract}
-We present a formally verified case study in Lean~4 of a general rational iteration for computing arbitrary roots $\sqrt[p]{X}$, alongside an exhaustive extraction of structural identities for the cubic specialisation $s \mapsto s(s^3+4X)/(3s^3+2X)$. This cubic base iteration converges linearly with a universal rate of exactly $1/5$, independently of~$X$ (formally proved). When composed with Steffensen acceleration (Aitken $\Delta^2$~\cite{aitken, steffensen}) into the \emph{Pandrosion-Steffensen} algorithm, the method achieves stable quadratic convergence. Rather than proposing this as an operational substitute for Newton's root extraction, we develop a systematic corpus of \emph{exact algebraic identities} governing this base map across several mathematical structures to illustrate formal verification capacity. The formally certified properties include: (i)~a residual conservation identity with exact polynomial factorisation, (ii)~exact integer sequence amplifications over $\mathbb{Z}$, (iii)~coprimality isolation identities, (iv)~commutativity and Hermitian preservation for matrix operators, (v)~a formal proof that the iteration functionally excludes the generalized Chebyshev--Halley family, (vi)~a basin stability theorem proving that Vorono\"i cells are convex and that contractive maps preserve cell membership under a quantitative depth condition, and (vii)~a formal proof that all periodic orbits are excluded by the contraction. The entire corpus (385 theorems across 53 modules, zero \texttt{sorry} declarations) serves as a machine-checked pedagogical model for numerical recurrences.
+We present a formally verified Lean~4 / Mathlib~v4.7.0 development of the \emph{Pandrosion-Steffensen algorithm} for solving the complex equation $z^p = x$ with $x > 1$. The core of the method is the rational iteration $h_{p,x}(z) = 1 - (x-1)/(x \cdot S_p(z))$, where $S_p$ is the geometric sum $\sum_{k=0}^{p-1} z^k$; its fixed points are exactly the $p$-th roots of $1/x$. Composed with the Aitken-Steffensen $\Delta^2$ accelerator, the method becomes derivative-free and of quadratic order.
+
+The formalization consists of 15 Lean modules in \texttt{Pandrosion.Core.*} that build, in order: (i)~the geometric-sum identity $S_p(s)(1-s) = 1 - s^p$ and the fixed-point characterisation $h(s) = s \Leftrightarrow s^p = 1/x$ (real and complex); (ii)~the multi-start Pandrosion-Steffensen algorithm with a Voronoï nearest-anchor selector; (iii)~a constructive McMullen global-coverage theorem establishing that the selector uniquely assigns every $z_0 \in \mathbb{C}$ off a measure-zero Voronoï boundary; (iv)~the cyclotomic anchor family $\gamma_k = \alpha \cdot e^{2\pi i k/p}$, whose anchors are pairwise distinct roots of $1/x$ and fixed points of the Steffensen iterator; (v)~a closed-form linear contraction rate $\lambda_{p,x} = 1 - p \cdot \alpha^{p-1}/S_p(\alpha)$ together with a $p$-uniform complexity bound; (vi)~Kung-Traub optimality for the derivative-free order-2 efficiency index; (vii)~the complex multiplier $h'(\alpha)$ in closed form; (viii)~local dynamical attraction on a disk around each anchor; and (ix)~an almost-everywhere dynamical convergence theorem in the Lebesgue sense.
+
+The 15-module spine compiles with zero \texttt{sorry} in the main theorems and is stitched by a single master-theorem statement, \texttt{master\_absolu}, that asserts all five load-bearing pillars simultaneously. Where analytic content is deferred (the local super-attracting quadratic bound; global trajectory entry into the basin), hypotheses are stated explicitly so the reader can follow which pieces are unconditional and which are conditional.
 \end{abstract}
 
 \tableofcontents
@@ -84,1233 +88,657 @@ We present a formally verified case study in Lean~4 of a general rational iterat
 
 %===========================================================
 \section{Introduction}
+\label{sec:intro}
 %===========================================================
 
-\subsection{The Pandrosion Iteration}
-The Pandrosion iteration for $p$-th roots is defined via the geometric sum $S_p(s) = \sum_{k=0}^{p-1} s^k$ and the map
+\subsection{The Pandrosion iteration}
+
+Given a positive real $x$ and a natural $p \geq 1$, the \emph{Pandrosion iteration} is the rational map
 \begin{equation}\label{eq:pandrosion_general}
-  h(s) \;=\; 1 \;-\; \frac{x - 1}{x \cdot S_p(s)}\,,
+  h_{p,x}(s) \;=\; 1 \;-\; \frac{x - 1}{x \cdot S_p(s)}, \qquad
+  S_p(s) \;=\; \sum_{k=0}^{p-1} s^k .
 \end{equation}
-whose fixed points satisfy $h(s) = s \iff s^p = 1/x$ (formally verified in Lean~4, see Theorem~\ref{thm:general_fp} below). For the cubic case $p = 3$, setting $X = 1/x$ and rewriting in terms of $s \mapsto s'$ yields the equivalent form
-\begin{equation}\label{eq:pandrosion}
-  s' \;=\; \frac{U(s)}{V(s)} \;=\; s\,\frac{s^3 + 4X}{3s^3 + 2X}\,,
-\end{equation}
-where $X$ is the target whose cube root $\sqrt[3]{X}$ is sought. The historical namesake of this method pays homage to Pappus of Alexandria's record of Pandrosion~\cite{pappus}, whose ancient geometric construction for cube duplication relied upon a sum of three spatial segments, mirroring the $3s^3 + 2X$ geometric sum polynomial structure in the denominator. While structurally reminiscent of Halley's method~\cite{halley} and the Householder family~\cite{householder, traub}, the Pandrosion iteration is algebraically \emph{distinct} from both (see Section~\ref{sec:classical}). Once derived, the formula is a closed-form rational expression requiring no symbolic derivatives at evaluation time. The remainder of this paper focuses on the cubic specialisation~\eqref{eq:pandrosion}, where the algebraic structure is richest.
+It is defined on $\{s : S_p(s) \neq 0\}$ (both over $\mathbb{R}$ and over $\mathbb{C}$) and is derivative-free: no symbolic differentiation is required at evaluation time. The historical namesake honours Pappus of Alexandria's record of Pandrosion's geometric cube-duplication construction~\cite{pappus}; structurally, the map is reminiscent of Householder-type root-finders~\cite{householder, traub} but is algebraically distinct from Newton and Halley.
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[>=Stealth, scale=0.9]
-  % Axes
-  \draw[->, thick, gray] (-0.5,0) -- (7,0) node[right] {$s$};
-  \draw[->, thick, gray] (0,-0.5) -- (0,5.5) node[above] {$\mathcal{P}_X(s)$};
-  % Diagonal y=x
-  \draw[dashed, gray!60] (0,0) -- (5.5,5.5);
-  % The iteration curve (schematic)
-  \draw[domain=0.3:6.5, smooth, variable=\x, blue!70!black, very thick, samples=80]
-    plot ({\x}, {\x * (\x*\x*\x + 4*2) / (3*\x*\x*\x + 2*2)});
-  % Fixed point
-  \filldraw[red!70!black] ({2^(1/3)}, {2^(1/3)}) circle (3pt);
-  \node[anchor=south west, red!70!black] at ({2^(1/3)+0.1}, {2^(1/3)+0.1}) {$s^* = \sqrt[3]{X}$};
-  % Cobweb iteration from s0
-  \def\sz{2.5}
-  \pgfmathsetmacro{\sone}{\sz * (\sz*\sz*\sz + 8) / (3*\sz*\sz*\sz + 4)}
-  \pgfmathsetmacro{\stwo}{\sone * (\sone*\sone*\sone + 8) / (3*\sone*\sone*\sone + 4)}
-  \pgfmathsetmacro{\sthree}{\stwo * (\stwo*\stwo*\stwo + 8) / (3*\stwo*\stwo*\stwo + 4)}
-  \draw[orange!80!black, thick, ->] (\sz,0) -- (\sz,\sone);
-  \draw[orange!80!black, thick, ->] (\sz,\sone) -- (\sone,\sone);
-  \draw[orange!80!black, thick, ->] (\sone,\sone) -- (\sone,\stwo);
-  \draw[orange!80!black, thick, ->] (\sone,\stwo) -- (\stwo,\stwo);
-  \draw[orange!80!black, thick, ->] (\stwo,\stwo) -- (\stwo,\sthree);
-  \draw[orange!80!black, thick, ->] (\stwo,\sthree) -- (\sthree,\sthree);
-  \node[below, orange!80!black] at (\sz,0) {$s_0$};
-  % Labels
-  \node[blue!70!black, anchor=west] at (5,2) {$y = \mathcal{P}_X(s)$};
-  \node[gray, anchor=west] at (4,4.5) {$y = s$};
-\end{tikzpicture}
-\caption{\textbf{Cobweb diagram} for $X=2$. The iteration $s \mapsto \mathcal{P}_X(s)$ contracts monotonically toward the unique attracting fixed point $s^* = \sqrt[3]{2}$. Theorem~\ref{thm:sterility} proves that the only fixed points are $\{0\} \cup \{s : s^3 = X\}$.}
-\label{fig:cobweb}
-\end{figure}
+The central algebraic fact is:
+\[
+  h_{p,x}(s) = s \;\;\Longleftrightarrow\;\; s^p = \frac{1}{x}\,.
+\]
+Thus the fixed points of~\eqref{eq:pandrosion_general} are exactly the $p$-th roots of $1/x$. For $x > 1$ this is $p$ distinct complex numbers on the circle $|s| = x^{-1/p} < 1$. The Pandrosion-Steffensen algorithm is this map composed with the Aitken $\Delta^2$ accelerator of Aitken~\cite{aitken} and Steffensen~\cite{steffensen}; the accelerator turns the linear contraction of~\eqref{eq:pandrosion_general} into quadratic convergence without any derivative, and attains the Kung-Traub efficiency bound~\cite{kung_traub} for derivative-free methods with two evaluations per step.
 
-\subsection{The General Fixed Point Theorem}
-The foundational result of the Pandrosion framework, formally verified in \texttt{Deep.lean}, characterises the fixed points of the general $p$-th root iteration~\eqref{eq:pandrosion_general}:
+\subsection{What this paper proves}
 
-\begin{theorem}[General Fixed Point, \texttt{Deep.lean}]\label{thm:general_fp}
+The paper documents a \textbf{15-module Lean~4 formalization} living in\\
+\texttt{Pandrosion/Core/*}, built against Mathlib~v4.7.0, with zero \texttt{sorry} in the main spine. The narrative follows the Lean module order exactly:
+\begin{enumerate}
+  \item \textbf{Algebraic foundations} (\S\ref{sec:foundations}): geometric-sum identities, fixed-point characterisation (real and complex), Pandrosion-Steffensen accelerator, scaling invariance.
+  \item \textbf{Multi-start architecture} (\S\ref{sec:multistart}): Voronoï half-plane basins, multi-start grand-master theorem, constructive McMullen global coverage, Voronoï boundary is Lebesgue-null, cyclotomic anchor family, unconditional McMullen.
+  \item \textbf{Rates and complexity} (\S\ref{sec:rates}): closed-form linear rate $\lambda_{p,x}$, Aitken-Steffensen quadratic-rate skeleton, $p$-uniform two-phase complexity bound, Kung-Traub efficiency optimality.
+  \item \textbf{Complex dynamics} (\S\ref{sec:dynamics}): complex multiplier at the fixed point in closed form, local dynamical attraction around each anchor (conditional on a local quadratic bound), almost-everywhere dynamical convergence (crown jewel).
+  \item \textbf{Master Absolu} (\S\ref{sec:master}): the top-level stitching theorem combining five load-bearing pillars.
+\end{enumerate}
+
+\subsection{What this paper does \emph{not} claim}
+
+Two pieces of genuinely analytic content are \emph{deferred} and taken as explicit hypotheses in the relevant theorems:
+\begin{itemize}
+  \item A \textbf{local quadratic bound} $\lVert \sigma(z) - \gamma_k \rVert \leq K_k \lVert z - \gamma_k \rVert^2$ on a neighbourhood of each cyclotomic anchor $\gamma_k$, where $\sigma$ is the Steffensen iterator. This is the super-attracting content of Steffensen's method (the multiplier at a Steffensen fixed point vanishes); it is stated in the literature and used here as a hypothesis.
+  \item An \textbf{almost-everywhere trajectory entry} statement: for a.e. $z_0 \in \mathbb{C}$, some iterate $\sigma^{k_0}(z_0)$ lies in the local disk of some anchor $\gamma_k$. This is the Fatou-type global dynamical content and is again used as a hypothesis.
+\end{itemize}
+Both hypotheses appear explicitly in the relevant theorem statements (\S\ref{sec:local_attraction}, \S\ref{sec:dynamical_convergence}); no hidden axioms are smuggled into the master theorem. The \emph{algebraic} and \emph{measure-theoretic} spine from foundations through Kung-Traub optimality is unconditional.
+
+%===========================================================
+\section{Algebraic Foundations (\texttt{Foundations.lean})}
+\label{sec:foundations}
+%===========================================================
+
+The file \texttt{Pandrosion/Core/Foundations.lean} (\S\S1-8 of the Lean development) provides the algebraic scaffolding on which every subsequent section builds.
+
+\subsection{The geometric sum}
+
+\begin{definition}[Geometric sum]
+For $p \in \mathbb{N}$ and $s \in \mathbb{R}$ (resp. $\mathbb{C}$),
+\[
+  S_p(s) \;:=\; \sum_{k=0}^{p-1} s^k .
+\]
+\end{definition}
+
+\begin{lemma}[Geometric-sum identity, \texttt{Sp\_mul\_one\_sub}]\label{lem:geom}
+For every $p$ and every $s$ (real or complex),
+\[
+  S_p(s) \cdot (1 - s) \;=\; 1 - s^p .
+\]
+\end{lemma}
+
+\begin{lemma}[Positivity, \texttt{Sp\_pos}]\label{lem:sp_pos}
+For $p \geq 1$ and $s \geq 0$ (real), $S_p(s) > 0$.
+\end{lemma}
+
+\subsection{The Pandrosion map and its fixed-point theorem}
+
+\begin{definition}[Pandrosion iterator]\label{def:pan_h}
+For $x \neq 0$, $p \in \mathbb{N}$, and $s$ with $S_p(s) \neq 0$,
+\[
+  h_{p,x}(s) \;:=\; 1 - \frac{x-1}{x \cdot S_p(s)}.
+\]
+Its \emph{residual} is $f_{p,x}(s) := 1 - x \cdot s^p$.
+\end{definition}
+
+\begin{theorem}[Fixed-point characterisation, real case --- \texttt{pandrosion\_fixed\_point\_iff}]\label{thm:fp_real}
 For $x > 0$, $p \geq 1$, $s \geq 0$, $s \neq 1$:
 \[
-  h(s) = s \;\;\Longleftrightarrow\;\; s^p = \frac{1}{x}\,.
+  h_{p,x}(s) \;=\; s \;\;\Longleftrightarrow\;\; s^p \;=\; \frac{1}{x}.
 \]
 \end{theorem}
 
-\begin{proof}[Proof sketch (full proof machine-checked in Lean~4)]
-$h(s) = s \iff (x-1)/(x \cdot S_p(s)) = 1-s \iff x-1 = x \cdot S_p(s) \cdot (1-s)$. By the geometric sum identity $S_p(s) \cdot (1-s) = 1-s^p$, this becomes $x-1 = x(1-s^p)$, i.e.\ $x \cdot s^p = 1$.
+\begin{theorem}[Fixed-point characterisation, complex case --- \texttt{pandrosion\_h\_C\_fixed\_point\_iff}]\label{thm:fp_complex}
+For $x \in \mathbb{C}$ with $x \neq 0$, $p \in \mathbb{N}$, and $s \in \mathbb{C}$ with $S_p(s) \neq 0$ and $s \neq 1$:
+\[
+  h_{p,x}(s) \;=\; s \;\;\Longleftrightarrow\;\; s^p \;=\; \frac{1}{x}.
+\]
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+$h(s) = s$ rearranges to $(x-1) = x \cdot S_p(s)(1-s)$. By Lemma~\ref{lem:geom}, $S_p(s)(1-s) = 1 - s^p$, giving $x \cdot s^p = 1$. Machine-checked via a direct \texttt{linarith} / \texttt{field\_simp} script.
 \end{proof}
 
-Additional results in \texttt{Deep.lean} include:
-\begin{itemize}
-  \item $S_p(s) > 0$ for $s \geq 0$ and $p \geq 1$ (positivity of the geometric sum),
-  \item $h(s) < 1$ for $s \geq 0$ and $x > 1$ (the image stays below~1),
-  \item $h(s) > 0$ for $s \in [0,1]$, $x > 1$, $p \geq 2$ (the image stays above~0),
-\end{itemize}
-establishing that $h$ maps $[0,1]$ into itself for $x > 1$, $p \geq 2$.
+The \emph{quasi-Newton identity} $h_{p,x}(s) = s + f_{p,x}(s)/(x \cdot S_p(s))$ (\texttt{pandrosion\_quasi\_newton}) exhibits $h$ as a Newton-like correction to the residual $f$, but without the symbolic derivative.
 
-\begin{lstlisting}[caption={Deep.lean: General Fixed Point Theorem (Lean 4, zero sorry)}]
-theorem fixed_point_iff (x : R) (hx : x > 0) (p : N) (hp : p >= 1)
-    (s : R) (hs : 0 <= s) (_hs1 : s != 1) :
+\begin{lstlisting}[caption={\texttt{Foundations.lean}: real fixed-point characterisation}]
+theorem pandrosion_fixed_point_iff
+    (x : R) (hx : 0 < x) (p : N) (hp : 1 <= p)
+    (s : R) (hs : 0 <= s) (hs1 : s != 1) :
     pandrosion_h x p s = s <-> s ^ p = 1 / x := by
-  have hS : Sp p s > 0 := Sp_pos p hp s hs
-  have hxS : x * Sp p s > 0 := mul_pos hx hS
-  have hxS_ne : x * Sp p s != 0 := ne_of_gt hxS
-  unfold pandrosion_h
-  constructor
-  . intro heq   -- Forward: h(s) = s -> s^p = 1/x
-    have h1 : (x - 1) / (x * Sp p s) = 1 - s := by linarith
-    have h2 : x - 1 = (1 - s) * (x * Sp p s) := by
-      rw [<- h1]; exact (div_mul_cancel (x - 1) hxS_ne).symm
-    rw [Sp_mul_one_sub] at h2
-    have h5 : x * s ^ p = 1 := by linarith
-    rw [eq_div_iff (ne_of_gt hx)]; linarith
-  . intro heq   -- Backward: s^p = 1/x -> h(s) = s
-    have h1 : x * s ^ p = 1 := by rw [heq]; field_simp
-    suffices (x - 1) / (x * Sp p s) = 1 - s by linarith
-    rw [div_eq_iff hxS_ne, Sp_mul_one_sub]; linarith
-\end{lstlisting}
-
-%===========================================================
-\section{Relationship to Classical Methods}
-\label{sec:classical}
-%===========================================================
-
-A natural question is whether~\eqref{eq:pandrosion} coincides with classical cube-root iterations. We prove formally that it does not.
-
-\subsection{Pandrosion $\neq$ Newton $\neq$ Halley}
-Newton's method applied to $f(s) = s^3 - X$ gives
-\[
-  N(s) = \frac{2s^3 + X}{3s^2}\,,
-\]
-and Halley's method gives
-\[
-  H(s) = \frac{s(s^3 + 2X)}{2s^3 + X}\,.
-\]
-These are both \emph{different} from the Pandrosion iteration $\mathcal{P}_X(s) = s(s^3+4X)/(3s^3+2X)$. Compare the coefficient pairs: Newton has $(2,1)/(3,0)$; Halley has $(1,2)/(2,1)$; Pandrosion has $(1,4)/(3,2)$. The exact polynomial differences are:
-
-\begin{theorem}[Pandrosion $\neq$ Newton, \texttt{HalleyComparison.lean}]\label{thm:pn}
-\[
-  \mathcal{P}_X(s) \cdot 3s^2 - N(s) \cdot (3s^3+2X) \;=\; -(3s^3-2X)(s^3-X).
-\]
-\end{theorem}
-
-\begin{theorem}[Pandrosion $\neq$ Halley, \texttt{HalleyComparison.lean}]\label{thm:ph}
-\[
-  \mathcal{P}_X(s) \cdot (2s^3+X) - H(s) \cdot (3s^3+2X) \;=\; -s^4(s^3-X).
-\]
-\end{theorem}
-
-Both differences vanish \emph{only} when $s^3 = X$ (or $s = 0$). The three iterations agree at the root and disagree everywhere else.
-
-\begin{remark}[Chebyshev--Halley Exclusion]
-Theorems~\ref{thm:pn} and~\ref{thm:ph} show that Pandrosion differs from both Newton and Halley: the asymptotic error constants differ ($-1/5$ vs $0$), the convergence orders differ (linear vs cubic), and the trajectories diverge for any $s_0 \neq \sqrt[3]{X}$. More generally, module \texttt{ChebyshevHalleyExclusion.lean} formally certifies that the Pandrosion map does not correspond to \emph{any} member of the one-parameter Chebyshev--Halley family~\cite{traub} ($\alpha \in \mathbb{R}$). Cross-multiplying the Pandrosion rational form against the generic CH$_\alpha$ form for $f(s)=s^3-X$ yields two matching conditions on $\alpha$: the $s^6$ coefficients require $\alpha = 1/2$, while the $s^3X$ coefficients require $\alpha = 2/5$. Since $1/2 \neq 2/5$, no value of $\alpha$ can match Pandrosion.
-\end{remark}
-
-\begin{lstlisting}[caption={ChebyshevHalleyExclusion.lean: Exclusion Proof}]
-theorem pandrosion_not_in_chebyshev_halley :
-    ~ exists (a : R), 6 * (3 - 2 * a) = 15 - 6 * a /\ 12 * a = 4 + 2 * a := by
-  intro <a, h1, h2>
-  have _ha1 : a = 1 / 2 := chebyshev_halley_coeff_s6 a h1
-  have _ha2 : a = 2 / 5 := chebyshev_halley_coeff_s3X a h2
-  linarith
-\end{lstlisting}
-
-\subsection{The Universal Derivative Identity}
-The convergence order is determined by the derivative at the fixed point. For $\mathcal{P}_X(s) = U(s)/V(s)$ with $U = s^4 + 4sX$, $V = 3s^3 + 2X$:
-
-\begin{theorem}[Universal Convergence Rate, \texttt{HalleyComparison.lean}]\label{thm:derivative}
-For all $r \neq 0$ with $r^3 = X$:
-\begin{align*}
-  U'(r)V(r) - U(r)V'(r) &= -5r^6\,, \\
-  V(r)^2 &= 25r^6\,,
-\end{align*}
-and therefore $\mathcal{P}'_X(r) = -\tfrac{1}{5}$, independently of~$X$.
-\end{theorem}
-
-Since $\mathcal{P}'_X(r) = -1/5 \neq 0$, the Pandrosion iteration converges \textbf{linearly} with rate $1/5$. By contrast, Newton satisfies $N'(r) = 0$ (quadratic convergence), and Halley satisfies $H'(r) = H''(r) = 0$ (cubic convergence).
-
-\begin{center}
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{lccc}
-\hline
-\textbf{Method} & \textbf{Formula} & \textbf{Needs derivatives} & \textbf{Order} \\
-\hline
-Pandrosion & $s(s^3{+}4X)/(3s^3{+}2X)$ & None & 1 \\
-Pandrosion-T3 & $\frac{sP_X(P_X(s)) - P_X(s)^2}{s - 2P_X(s) + P_X(P_X(s))}$ & None & 2 \\
-Newton & $(2s^3{+}X)/(3s^2)$ & $f'$ & 2 \\
-Halley & $s(s^3{+}2X)/(2s^3{+}X)$ & $f',f''$ & 3 \\
-\hline
-\end{tabular}
-\end{center}
-
-The negative sign $\mathcal{P}'_X(r) = -1/5$ explains the characteristic alternating approach pattern observed numerically (Theorem~\ref{thm:oscillation}). Because of this predictable sign oscillation, applying Steffensen acceleration (Aitken $\Delta^2$) is highly effective. This synthesized variant, which we denote as \emph{Pandrosion-T3}, structurally converts the linear sequence to strict quadratic analytical order without any derivative evaluations (see \texttt{SteffensenAcceleration.lean}).
-
-%===========================================================
-\section{Residual Factorisation and Convergence}
-\label{sec:residual}
-%===========================================================
-
-\subsection{The Conservation Identity}
-The central algebraic identity governing the iteration is the following \emph{residual factorisation}: if $G = \mathcal{P}_X(s)$, then
-\begin{equation}\label{eq:conservation}
-  \boxed{G^3 - X \;=\; \frac{(s^3 - X)\,(s^9 - 14\,s^6 X - 20\,s^3 X^2 + 8X^3)}{(3s^3 + 2X)^3}\,.}
-\end{equation}
-This factorisation shows that every residual $G^3 - X$ is an \emph{exact algebraic multiple} of the previous residual $s^3 - X$. When evaluating the limit as $s \to \sqrt[3]{X}$, the ratio of the residuals strictly approaches $-1/5$, firmly establishing the unaccelerated linear convergence nature of the map while maintaining its exact polynomial tracking properties.
-
-\begin{remark}[Topological Basin Structure]
-When extended to multiple roots, tracking the residual decay computationally leads to the problem of basin boundaries. The exact polynomial factorization (3) ensures that the map is rigorously contractive when sufficiently close to the discrete roots. For the fully generalized algorithm with multi-start anchoring, we formally prove that the Vorono\"i partitions of these attraction basins remain convex (affine half-planes), preventing the fractal chaos typical of unconstrained rational methods.
-\end{remark}
-
-\begin{lstlisting}[caption={Deep 25: Kinematic Error Conservation (Lean 4, zero sorry)}]
-theorem pandrosion_kinematic_conservation (X s : R) (hs : 3 * s^3 + 2 * X != 0) :
-    let G := s * (s^3 + 4 * X) / (3 * s^3 + 2 * X)
-    G^3 - X = (s^3 - X) * (s^9 - 14 * s^6 * X - 20 * s^3 * X^2 + 8 * X^3)
-              / ((3 * s^3 + 2 * X)^3) := by
   ...
-  calc (A / B)^3 - X
-    _ = A^3 / B^3 - X := by rw [div_pow]
-    _ = (A^3 - X * B^3) / B^3 := by ...
-    _ = (s^3 - X) * (...) / B^3 := by have h_alg : ... := by ring; rw [h_alg]
 \end{lstlisting}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}
-  \begin{axis}[
-    width=12cm, height=6cm,
-    xlabel={Iteration $n$},
-    ylabel={$\log_{10}|s_n^3 - X|$},
-    xmin=0, xmax=12, ymin=-35, ymax=0.5,
-    grid=both,
-    grid style={gray!20},
-    legend pos=north east,
-    title={\textbf{Residual Decay Profile}},
-    thick,
-  ]
-  % Pandrosion linear convergence (rate 1/5), enhanced by Steffensen to quadratic
-  \addplot[blue!70!black, mark=*, mark size=1.5pt, very thick] coordinates {
-    (0, 0) (1, -1.2) (2, -4.8) (3, -15.6) (4, -32)
-  };
-  \addlegendentry{Pandrosion+Steffensen $|G^3-X|$}
-  % Newton quadratic
-  \addplot[red!70!black, mark=square*, mark size=1.5pt, very thick, dashed] coordinates {
-    (0, 0) (1, -0.8) (2, -2.4) (3, -5.6) (4, -12) (5, -25)
-  };
-  \addlegendentry{Newton $|N^3-X|$}
-  % Bisection linear
-  \addplot[green!60!black, mark=triangle*, mark size=1.5pt, thick, dotted] coordinates {
-    (0, 0) (1, -0.3) (2, -0.6) (3, -0.9) (4, -1.2) (5, -1.5) (6, -1.8) (7, -2.1) (8, -2.4) (9, -2.7) (10, -3.0) (11, -3.3) (12, -3.6)
-  };
-  \addlegendentry{Bisection}
-  \end{axis}
-\end{tikzpicture}
-\caption{\textbf{Residual decay comparison} for $X=2$. Raw Pandrosion converges linearly with rate $1/5$ per step (Theorem~\ref{thm:derivative}). After Steffensen acceleration (T3), it achieves quadratic convergence without requiring any derivative. Newton achieves quadratic convergence but needs $f'(s)$. Bisection converges linearly.}
-\label{fig:residual}
-\end{figure}
+\subsection{The Pandrosion-Steffensen accelerator}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_kinematic_3d.pdf}
-\caption{\textbf{3D Kinematic Conservation Surface.} The residual ratio $\Phi(s,X)/(3s^3+2X)^3$ governs the error decay at each step. The surface crosses zero along the curve $s^3 = X$ (the exact roots), confirming that the iteration converges from both directions. At the root, this ratio equals exactly $-1/5$ (Theorem~\ref{thm:derivative}), consistent with the linear convergence rate.}
-\label{fig:kinematic3d}
-\end{figure}
-
-\subsection{Fixed Point Characterisation}
-\begin{theorem}[Fixed Points of $\mathcal{P}_X$]\label{thm:sterility}
-For any $X$ and any $s$ with $3s^3 + 2X \neq 0$, the fixed points of $\mathcal{P}_X$ are exactly $\{0\} \cup \{s : s^3 = X\}$.
-\end{theorem}
-
-This is proved by showing $\mathcal{P}_X(s) = s \iff 2s(X - s^3) = 0$ (Deep~25, Deep~29). The absence of periodic orbits of any period $n \geq 2$ is a formal consequence of contractivity:
-
-\begin{theorem}[\texttt{NoCycles.lean}: No Periodic Orbits Under Contraction]\label{thm:nocycles}
-Let $f : \mathbb{R} \to \mathbb{R}$ satisfy $|f(s) - r| \leq c \cdot |s - r|$ for all $s$, with $0 \leq c < 1$. Then for any $n \geq 1$:
-$$f^{\circ n}(s) = s \;\Longrightarrow\; s = r.$$
-\end{theorem}
-
-The proof is elementary: by induction, $|f^{\circ n}(s) - r| \leq c^n |s - r|$. If $f^{\circ n}(s) = s$ and $s \neq r$, then $|s - r| \leq c^n |s - r| < |s - r|$ (since $c^n < 1$), a contradiction. Applied to the Pandrosion iteration with $c = (x-1)/x < 1$ (from \texttt{GeneralContractionAll.lean}), this formally excludes 2-cycles, 3-cycles, and all higher periodic behaviour for every $p \geq 2$.
-
-\subsection{The Contraction Identity}
-The convergence of the Pandrosion iteration is not merely numerical: it can be established through an \emph{exact contraction identity}. For the square root case ($p=2$), the iteration $h(s) = 1 - (x-1)/(x(1+s))$ satisfies:
-
-\begin{theorem}[Contraction Identity, \texttt{ContractionIdentity.lean}]\label{thm:contraction}
-For all $s, t \geq 0$ with $1+s \neq 0$, $1+t \neq 0$, $x \neq 0$:
-\begin{equation}\label{eq:contraction}
-  h(s) - h(t) \;=\; \frac{(x-1)(s-t)}{x(1+s)(1+t)}\,.
+Composing Pandrosion with the Aitken $\Delta^2$ extrapolation~\cite{aitken, steffensen} gives a derivative-free accelerator $\sigma := \mathcal{S}[h_{p,x}]$:
+\begin{equation}\label{eq:steffensen}
+  \sigma(s) \;=\;
+  \begin{cases}
+    s & \text{if } D(s) = 0 \\
+    s - \dfrac{(h(s) - s)^2}{D(s)} & \text{otherwise}
+  \end{cases},
+  \qquad D(s) := h(h(s)) - 2 h(s) + s .
 \end{equation}
+The piecewise branch is non-cosmetic: at a fixed point $s^\star$ of $h$, both numerator and denominator vanish, so the piecewise-extension is needed to make $\sigma(s^\star) = s^\star$ honest.
+
+\begin{theorem}[Steffensen preserves every Pandrosion fixed point --- \texttt{steffensen\_step\_C\_fixed\_point}]\label{thm:stef_fp}
+For $x \in \mathbb{C}$ with $x \neq 0$, $p \in \mathbb{N}$, $s \in \mathbb{C}$ with $S_p(s) \neq 0$ and $s^p = 1/x$:
+\[
+  \sigma(s) \;=\; s .
+\]
 \end{theorem}
 
-\begin{proof}[Proof (machine-checked)]
-Direct algebraic simplification: $h(s) - h(t) = \frac{x-1}{x(1+t)} - \frac{x-1}{x(1+s)} = \frac{(x-1)[(1+s)-(1+t)]}{x(1+s)(1+t)}$.
+\subsection{Scaling invariance and the optimal starting point}
+
+The rescaling $s \mapsto \alpha \cdot s / \beta$ carries the problem $z^p = x$ to $z^p = x/A$ for an explicit $A$; the identity $\alpha = \beta \cdot (\alpha/\beta)$ (\texttt{scaling\_factorization\_C}) ensures the inverse scaling is exact.
+
+\begin{definition}[Optimal initial point]
+$\displaystyle s_0^{\mathrm{opt}}(x, p) := 1 - \frac{x-1}{x \cdot p}$.
+\end{definition}
+
+\begin{theorem}[Optimal start is $h(1)$ --- \texttt{pandrosion\_s0\_opt\_C\_eq\_h\_one}]
+$s_0^{\mathrm{opt}}(x, p) = h_{p,x}(1)$.
+\end{theorem}
+
+\subsection{The multi-start grand-master theorem}
+
+\begin{theorem}[Grand master formula --- \texttt{multi\_start\_grand\_master}]\label{thm:grand_master}
+Fix $x, A \in \mathbb{C}$ with $x, A \neq 0$ and $x/A \neq 0$. Let $p \in \mathbb{N}$, $p \geq 1$. For any family of anchors $\gamma : \mathrm{Fin}\,p \to \mathbb{C}$ such that each $\gamma_s$ satisfies $S_p(\gamma_s) \neq 0$ and $\gamma_s^p = A/x$, and for any $\beta \in \mathbb{C}^\ast$ with $\beta^p = A$, one has simultaneously:
+\begin{enumerate}
+  \item $\sigma_{x/A, p}(\gamma_s) = \gamma_s$ for every selector $s$;
+  \item the scaling identity $(\beta \cdot \gamma_s)^p = x$;
+  \item reconstruction: $\beta \cdot (\gamma_s/\beta)$ equals $\gamma_s$ for $\beta \neq 0$;
+  \item the optimal-start equality $s_0^{\mathrm{opt}}(x/A, p) = h_{p, x/A}(1)$.
+\end{enumerate}
+\end{theorem}
+
+This is the algebraic heart of the multi-start architecture: given any valid family of anchors, Pandrosion-Steffensen fixes them, and the scaling $\beta$ transports the solutions back to the original problem $z^p = x$.
+
+%===========================================================
+\section{Multi-Start Architecture: Basins, Coverage, Cyclotomic Anchors}
+\label{sec:multistart}
+%===========================================================
+
+\subsection{Voronoï basins (\texttt{MultiStartBasins.lean})}
+
+Given a family $\gamma : \mathrm{Fin}\,p \to \mathbb{C}$, the \emph{basin} of anchor $\gamma_k$ is the Voronoï cell
+\[
+  \mathrm{basin}(\gamma, k) \;=\; \bigcap_{j \neq k} \{z \in \mathbb{C} : \lVert \gamma_k - z \rVert \leq \lVert \gamma_j - z \rVert\}.
+\]
+
+\begin{theorem}[Structural properties of basins --- \texttt{MultiStartBasins.lean}]\label{thm:basin_struct}
+For any family of $p$ anchors $\gamma$:
+\begin{enumerate}
+  \item Each basin is the intersection of closed half-planes, hence \emph{convex} and \emph{closed} (\texttt{basin\_convex}, \texttt{basin\_isClosed}).
+  \item Each basin is nonempty (contains its own anchor) and connected (\texttt{basin\_nonempty}, \texttt{basin\_isConnected}).
+  \item The frontier of a basin is contained in a finite union of perpendicular bisectors between pairs of distinct anchors (\texttt{basin\_frontier\_on\_bisector}, \texttt{basin\_boundary\_finite\_union}).
+  \item For injective $\gamma$, the anchor lies in the interior of its own basin (\texttt{basin\_anchor\_mem\_interior}).
+\end{enumerate}
+\end{theorem}
+
+This is the formal multi-start analogue of the statement ``Pandrosion basins have flat boundaries'': the assignment $z_0 \mapsto \arg\min_k \lVert \gamma_k - z_0 \rVert$ partitions $\mathbb{C}$ into closed convex polygons, whose boundaries are straight lines. It contrasts sharply with the Newton fractal Julia sets.
+
+\subsection{Constructive global coverage}
+
+The \emph{Voronoï boundary} is
+\[
+  \mathcal{B}(\gamma) \;:=\; \{z_0 \in \mathbb{C} : \exists\, s \neq t,\; \lVert \gamma_s - z_0 \rVert = \lVert \gamma_t - z_0 \rVert\} ,
+\]
+the set of query points equidistant to two distinct anchors.
+
+\begin{theorem}[Constructive McMullen --- \texttt{voronoi\_unique\_off\_boundary}]\label{thm:mcmullen_constructive}
+For injective $\gamma : \mathrm{Fin}\,p \to \mathbb{C}$ and every $z_0 \notin \mathcal{B}(\gamma)$, there exists a \emph{unique} nearest-anchor selector:
+\[
+  \exists!\, s : \mathrm{Fin}\,p,\; \forall\, t,\; \lVert \gamma_s - z_0 \rVert \;\leq\; \lVert \gamma_t - z_0 \rVert .
+\]
+\end{theorem}
+
+\subsection{Voronoï boundary has Lebesgue measure zero (\texttt{VoronoiMeasure.lean})}
+
+The statement above is upgraded from ``off the boundary'' to ``almost everywhere'' by the following theorem of 2D Lebesgue measure.
+
+\begin{theorem}[Voronoï boundary is Lebesgue-null --- \texttt{voronoiBoundary\_volume\_zero}]\label{thm:vor_null}
+For any injective anchor family $\gamma : \mathrm{Fin}\,p \to \mathbb{C}$,
+\[
+  \vol\bigl(\mathcal{B}(\gamma)\bigr) \;=\; 0
+\]
+in the 2-dimensional Lebesgue measure on $\mathbb{C}$.
+\end{theorem}
+
+\begin{proof}[Proof (formalized in Lean)]
+Each perpendicular bisector between two distinct anchors $a \neq b$ is a strict affine subspace of $\mathbb{C}$ (an affine line), hence has 2-dimensional Lebesgue measure zero. The boundary $\mathcal{B}(\gamma)$ is contained in a \emph{finite} union of such bisectors, hence itself has measure zero.
 \end{proof}
 
-This identity makes convergence \emph{quantitative}: since the contraction factor $\lambda = (x-1)/[x(1+s)(1+s^*)]$ satisfies $0 < \lambda < 1$ for $s \geq 0$ and $x > 1$, every iteration step strictly decreases the distance to the fixed point.
+\begin{corollary}[A.e. Voronoï uniqueness]
+For a.e. $z_0 \in \mathbb{C}$, the unique nearest anchor $s(z_0)$ is well-defined.
+\end{corollary}
 
-\begin{theorem}[Distance Decrease, \texttt{ContractionIdentity.lean}]\label{thm:distance}
-For $x > 1$, $s^* > 0$ with $(s^*)^2 = 1/x$, and any $s \geq 0$, $s \neq s^*$:
+\subsection{The cyclotomic anchor family (\texttt{CyclotomicMcMullen.lean})}
+
+A canonical choice of $p$ anchors is obtained by multiplying a single $p$-th root $\alpha$ of $1/x$ by the $p$-th roots of unity.
+
+\begin{definition}[Cyclotomic anchors]
+For $\alpha \in \mathbb{C}$, $p \in \mathbb{N}$, and $k \in \mathrm{Fin}\,p$:
 \[
-  |h(s) - s^*| \;<\; |s - s^*|\,.
+  \gamma_k(\alpha, p) \;:=\; \alpha \cdot \exp\!\bigl(2\pi i \cdot k / p\bigr) .
+\]
+\end{definition}
+
+\begin{theorem}[Cyclotomic anchor properties --- \texttt{CyclotomicMcMullen.lean}]
+\[
+  \gamma_k(\alpha, p)^p \;=\; \alpha^p \qquad (\texttt{cycAnchor\_pow}).
+\]
+If $\alpha \neq 0$ and $p \geq 1$, then $k \mapsto \gamma_k(\alpha, p)$ is injective (\texttt{cycAnchor\_injective}).
+\end{theorem}
+
+Thus, given $\alpha^p = 1/x$, the family $\{\gamma_0, \dots, \gamma_{p-1}\}$ is exactly the set of $p$ distinct complex $p$-th roots of $1/x$.
+
+\begin{theorem}[Unconditional constructive McMullen for $z^p = x$ --- \texttt{unconditional\_mcmullen}]\label{thm:unc_mcm}
+Fix $p \geq 1$, $x \in \mathbb{C}^\ast$, $\alpha \in \mathbb{C}^\ast$ with $\alpha^p = 1/x$, and assume $S_p(\gamma_k) \neq 0$ for every $k \in \mathrm{Fin}\,p$. Then for every $z_0 \notin \mathcal{B}(\gamma)$ there is a unique nearest-anchor selector, and that anchor is a Pandrosion-Steffensen fixed point.
+\end{theorem}
+
+Combining with Theorem~\ref{thm:vor_null} yields the a.e. version used in the Master Absolu (\S\ref{sec:master}).
+
+%===========================================================
+\section{Convergence Rates and Complexity}
+\label{sec:rates}
+%===========================================================
+
+\subsection{Closed-form linear contraction rate (\texttt{Foundations.lean}, \texttt{UniformContractionRate.lean})}
+
+\begin{definition}[Closed-form rate]
+For $p \in \mathbb{N}$ and $\alpha \in \mathbb{R}_{> 0}$ with $S_p(\alpha) \neq 0$:
+\[
+  \lambda_{p,x} \;:=\; 1 - \frac{p}{S_p(\alpha)} ,
+\]
+where $\alpha$ is the real positive $p$-th root of $1/x$.
+\end{definition}
+
+\begin{theorem}[Closed-form rate is in $(0,1)$ --- \texttt{lambda\_closed\_pos}, \texttt{lambda\_closed\_lt\_one}]
+For $\alpha > 1$ (equivalently, $x > 1$) and $p \geq 2$, $0 < \lambda_{p,x} < 1$. Consequently the real Pandrosion map is a strict contraction at its real fixed point.
+\end{theorem}
+
+For the analysis of $p$-uniform behaviour, we introduce a closed-form model.
+
+\begin{definition}[Uniform model of $\lambda$]\label{def:lam_model}
+$\displaystyle \lambda^{\mathrm{model}}_p(x) \;:=\; 1 - \frac{p}{\alpha_p(x) \cdot S_p(\alpha_p(x))}$,
+where $\alpha_p(x)$ is a positive closed-form approximation to $x^{-1/p}$.
+\end{definition}
+
+\begin{theorem}[Model agrees with the true rate at the fixed point --- \texttt{lamModel\_eq\_lambda\_fp}, \texttt{lamModel\_eq\_lambda\_closed}]
+$\lambda^{\mathrm{model}}_p(x) = \lambda_{p,x}$ whenever $\alpha_p(x)^p = 1/x$.
+\end{theorem}
+
+\begin{theorem}[Taylor bound for the model --- \texttt{lamModel\_taylor\_bound}]
+For every $x > 1$, the sequence $\{\lambda^{\mathrm{model}}_p(x)\}_{p \geq 1}$ converges to an explicit limit $\lambda_\infty(x) \in (0, 1)$ with an effective closed-form residue bound.
+\end{theorem}
+
+\subsection{Aitken-Steffensen quadratic-rate skeleton (\texttt{QuadraticRate.lean})}
+
+The algebraic skeleton of the quadratic rate of Aitken-Steffensen acceleration is captured by abstract two-phase bounds: given any sequence $(e_k)$ satisfying a linear bound $e_{k+1} \leq \lambda \cdot e_k$ with $\lambda \in (0,1)$ and a quadratic bound $e_{k+1} \leq K \cdot e_k^2$, one obtains effective convergence-to-$\varepsilon$ bounds. These abstract skeletons are used downstream in \S\ref{sec:uniform} without being specialized to a particular analytic multiplier calculation.
+
+\subsection{Kung-Traub efficiency optimality (\texttt{KungTraub.lean})}
+
+The \emph{efficiency index} of an iterative method with convergence order $q$ and $c$ evaluations per step is
+\[
+  E(q, c) \;:=\; q^{1/c}.
+\]
+The Kung-Traub conjecture~\cite{kung_traub} states that any derivative-free method with $c$ evaluations per step satisfies $q \leq 2^{c-1}$, hence $E(q, c) \leq 2^{(c-1)/c} =: \mathrm{KT}(c)$. The bound is attained.
+
+\begin{theorem}[Pandrosion attains the Kung-Traub bound --- \texttt{pandrosion\_attains\_kung\_traub}]\label{thm:kt_attain}
+\[
+  E(2, 2) \;=\; \mathrm{KT}(2) \;=\; \sqrt{2} .
 \]
 \end{theorem}
 
-\begin{remark}[Computational Singularity]
-Note that the denominator $V(s) = 3s^3 + 2X$ vanishes for $s = -\sqrt[3]{2X/3}$. This real pole induces a singularity, meaning the iteration is strictly constrained to domains avoiding this negative boundary. For strictly positive targets $X > 0$ and starts $s > 0$, the sum components remain strictly positive, guaranteeing $P_X(s) > 0$ and shielding the orbit globally from this pole.
+\begin{theorem}[Kung-Traub optimality, converse direction --- \texttt{pandrosion\_kung\_traub\_optimal}]\label{thm:kt_converse}
+Assume the Kung-Traub conjecture for $c = 2$ as a formal axiom on abstract derivative-free methods. Then for every such method $M$ with $c = 2$ evaluations per step,
+\[
+  E(M.q, M.c) \;\leq\; E(2, 2) \;=\; \mathrm{KT}(2).
+\]
+\end{theorem}
+
+The Kung-Traub conjecture is stated in the Lean file as an explicit axiom (\texttt{kung\_traub\_conjecture}), making the conditional nature of the optimality theorem honest and auditable.
+
+\begin{theorem}[Pandrosion-Steffensen beats Newton --- \texttt{pandrosion\_const\_lt\_newton}]
+With respect to the natural quadratic-rate constants for $p$-th-root extraction, the Pandrosion-Steffensen constant is strictly smaller than the Newton constant for every $p \geq 2$ and every real positive fixed point $\alpha$.
+\end{theorem}
+
+\subsection{$p$-uniform complexity bound (\texttt{SuperGrandMaster.lean}, \texttt{UniformContractionRate.lean})}
+\label{sec:uniform}
+
+The goal is a single iteration count $N = N(x, M, \varepsilon)$ such that every $p$ in a tail $p \geq p_0$ reaches error $\varepsilon$ in at most $N$ steps.
+
+\begin{theorem}[Super grand master, uniform closed-form --- \texttt{super\_grand\_master\_uniform\_closed\_form}]\label{thm:super_gm}
+Fix $x > 1$, $M > 0$, $\rho \in (0,1)$, $\delta > 0$. Given abstract error sequences $(K_{p'}, R_{p'}, e_{p'})_{p'}$ with:
+\begin{itemize}
+  \item nonnegativity $e_{p'}(k) \geq 0$;
+  \item base case $e_{p'}(0) \leq R_{p'}$;
+  \item per-$p'$ linear bound $e_{p'}(k+1) \leq \lambda^{\mathrm{model}}_{p'}(x) \cdot e_{p'}(k)$;
+  \item per-$p'$ quadratic bound $e_{p'}(k+1) \leq K_{p'} \cdot e_{p'}(k)^2$;
+  \item uniform scaled error $K_{p'} \cdot R_{p'} \leq M$,
+\end{itemize}
+there exist an integer threshold $p_0 \geq 1$ and a $p$-\emph{uniform} iteration count $N$ (depending only on $x, M, \rho, \delta$) such that for every $p' \geq p_0$ and every $k \geq N$,
+\[
+  K_{p'} \cdot e_{p'}(k) \;\leq\; \delta .
+\]
+\end{theorem}
+
+This delivers the complexity content: for the bounded regime $x > 1$, the scaled error decays below $\delta$ in a number of steps that does not grow with $p$.
+
+%===========================================================
+\section{Complex Dynamics}
+\label{sec:dynamics}
+%===========================================================
+
+\subsection{The complex multiplier at a fixed point (\texttt{ComplexMultiplier.lean})}
+
+For Julia-style analysis, the multiplier $h'(\alpha)$ determines the local dynamics.
+
+\begin{definition}[Derivative of the geometric sum, and the multiplier]
+\[
+  S_p'(\alpha) \;:=\; \sum_{k=0}^{p-1} k \cdot \alpha^{k-1},
+  \qquad
+  h'_{p,x}(\alpha) \;:=\; \frac{(x-1) \cdot x \cdot S_p'(\alpha)}{(x \cdot S_p(\alpha))^2} .
+\]
+\end{definition}
+
+\begin{theorem}[$h$ is differentiable with the stated multiplier --- \texttt{pandrosion\_h\_C\_hasDerivAt}]
+For $x \in \mathbb{C}^\ast$, $p \in \mathbb{N}$, $\alpha \in \mathbb{C}$ with $S_p(\alpha) \neq 0$,
+\[
+  \mathrm{HasDerivAt}\;\; h_{p,x}\;\; h'_{p,x}(\alpha) \;\; \alpha .
+\]
+\end{theorem}
+
+\begin{theorem}[Closed form of the multiplier at a fixed point --- \texttt{hMultC\_eq\_lambdaClosedC\_at\_fp}]\label{thm:mult_closed}
+If $\alpha^p = 1/x$ and $S_p(\alpha) \neq 0$, then
+\[
+  h'_{p,x}(\alpha) \;=\; 1 - \frac{p \cdot \alpha^{p-1}}{S_p(\alpha)} .
+\]
+\end{theorem}
+
+\begin{proof}[Proof (formalized)]
+Differentiating the geometric-sum identity $S_p(s)(1-s) = 1 - s^p$ at $s = \alpha$ and uniquely identifying derivatives (via \texttt{HasDerivAt.unique}) yields the Leibniz identity
+\[
+  S_p'(\alpha)(1 - \alpha) \;=\; S_p(\alpha) - p \cdot \alpha^{p-1}.
+\]
+A single \texttt{linear\_combination} step using this identity, the geometric identity, and $x \cdot \alpha^p = 1$ reduces the claim to \texttt{field\_simp}/\texttt{ring}.
+\end{proof}
+
+\subsection{Local dynamical attraction (\texttt{LocalAttraction.lean})}
+\label{sec:local_attraction}
+
+\begin{theorem}[Abstract local attraction --- \texttt{local\_contraction\_iterate\_converges}]\label{thm:abstract_local}
+Let $f : \mathbb{C} \to \mathbb{C}$, $\alpha \in \mathbb{C}$, $r, q \in \mathbb{R}$ with $r > 0$ and $q \in [0, 1)$. If $f(\alpha) = \alpha$ and $\lVert f(z) - \alpha \rVert \leq q \cdot \lVert z - \alpha \rVert$ for every $z$ with $\lVert z - \alpha \rVert < r$, then for every $z_0$ in the disk $B(\alpha, r)$ the iterates $f^{[k]}(z_0)$ converge to $\alpha$.
+\end{theorem}
+
+\begin{theorem}[Quadratic bound $\Rightarrow$ contraction $\Rightarrow$ convergence --- \texttt{local\_quadratic\_iterate\_converges}]\label{thm:local_quad}
+Let $f, \alpha, r, K$ with $r, K > 0$ and $K \cdot r \leq 1/2$. If $f(\alpha) = \alpha$ and
+\[
+  \lVert f(z) - \alpha \rVert \;\leq\; K \cdot \lVert z - \alpha \rVert^2 \qquad (\lVert z - \alpha \rVert < r),
+\]
+then $f^{[k]}(z_0) \to \alpha$ for every $z_0 \in B(\alpha, r)$.
+\end{theorem}
+
+\begin{theorem}[Steffensen local attraction (conditional) --- \texttt{steffensen\_local\_attraction}]\label{thm:steff_local}
+Let $x \in \mathbb{C}^\ast$, $p \in \mathbb{N}$, $\alpha \in \mathbb{C}$ with $S_p(\alpha) \neq 0$ and $\alpha^p = 1/x$. Let $r, K > 0$ with $K \cdot r \leq 1/2$, and assume a local quadratic bound
+\[
+  \lVert \sigma_{p,x}(z) - \alpha \rVert \;\leq\; K \cdot \lVert z - \alpha \rVert^2 \qquad (\lVert z - \alpha \rVert < r).
+\]
+Then for every $z_0 \in B(\alpha, r)$, $\sigma_{p,x}^{[k]}(z_0) \to \alpha$.
+\end{theorem}
+
+The quadratic-bound hypothesis is the super-attracting content of the Steffensen iterator. It is standard in the Steffensen-acceleration literature; here it is an explicit hypothesis rather than a hidden lemma.
+
+\subsection{Almost-everywhere dynamical convergence (\texttt{DynamicalConvergence.lean})}
+\label{sec:dynamical_convergence}
+
+This is the crown jewel: the measure-theoretic statement that the Steffensen orbit converges for almost every initial point $z_0 \in \mathbb{C}$.
+
+\begin{lemma}[Tail-shift invariance of iteration limits --- \texttt{tendsto\_iterate\_of\_tail}]\label{lem:tail}
+For $f : \mathbb{C} \to \mathbb{C}$, $\alpha \in \mathbb{C}$, $z_0 \in \mathbb{C}$, $k_0 \in \mathbb{N}$: if $f^{[k]}(f^{[k_0]}(z_0)) \to \alpha$ as $k \to \infty$, then $f^{[k]}(z_0) \to \alpha$.
+\end{lemma}
+
+\begin{theorem}[Pointwise dynamical convergence from entry --- \texttt{steffensen\_dynamical\_convergence\_pointwise}]\label{thm:dyn_pointwise}
+With the assumptions of Theorem~\ref{thm:steff_local}, if the orbit of $z_0$ enters $B(\alpha, r)$ at some time $k_0$ --- i.e.,
+\[
+  \lVert \sigma_{p,x}^{[k_0]}(z_0) - \alpha \rVert \;<\; r
+\]
+--- then $\sigma_{p,x}^{[k]}(z_0) \to \alpha$ as $k \to \infty$.
+\end{theorem}
+
+\begin{theorem}[\textbf{$\bigstar\bigstar\bigstar$ Almost-everywhere dynamical convergence} --- \texttt{steffensen\_dynamical\_convergence\_ae}]\label{thm:dyn_ae}
+Fix $p \geq 1$, $x \in \mathbb{C}^\ast$, $\alpha \in \mathbb{C}^\ast$ with $\alpha^p = 1/x$. Assume, for every cyclotomic anchor $\gamma_k := \gamma_k(\alpha, p)$:
+\begin{itemize}
+  \item $S_p(\gamma_k) \neq 0$;
+  \item a local quadratic bound $\lVert \sigma(z) - \gamma_k \rVert \leq K_k \lVert z - \gamma_k \rVert^2$ on $B(\gamma_k, r_k)$ with $K_k \cdot r_k \leq 1/2$;
+  \item \emph{a.e. trajectory entry}: for a.e. $z_0 \in \mathbb{C}$, there exist $s \in \mathrm{Fin}\,p$ and $k_0 \in \mathbb{N}$ with
+\[
+  \lVert \sigma^{[k_0]}(z_0) - \gamma_s \rVert \;<\; r_s .
+\]
+\end{itemize}
+Then for almost every $z_0 \in \mathbb{C}$ (Lebesgue),
+\[
+  \exists\, s \in \mathrm{Fin}\,p,\qquad \sigma_{p,x}^{[k]}(z_0) \;\xrightarrow[k \to \infty]{}\; \gamma_s .
+\]
+\end{theorem}
+
+This is an honest measure-theoretic statement: for a.e. starting point, the Steffensen orbit converges \emph{in $\mathbb{C}$} to one of the $p$ cyclotomic anchors, conditional on the two hypotheses explicitly stated.
+
+\begin{lstlisting}[caption={\texttt{DynamicalConvergence.lean}: a.e. convergence (signature excerpt)}]
+theorem steffensen_dynamical_convergence_ae
+    (p : N) (hp : 1 <= p) (x : C) (hx : x != 0)
+    (alpha : C) (halpha_pow : alpha ^ p = 1 / x)
+    (hSp : forall s : Fin p, Sp_C p (cycAnchor alpha p s) != 0)
+    (r K : Fin p -> R)
+    (hr : forall s, 0 < r s) (hK_pos : forall s, 0 < K s)
+    (h_small : forall s, K s * r s <= 1 / 2)
+    (h_quadratic : forall s : Fin p, forall z : C,
+      ||z - cycAnchor alpha p s|| < r s ->
+      ||steffensen_step_C x p z - cycAnchor alpha p s||
+        <= K s * ||z - cycAnchor alpha p s|| ^ 2)
+    (h_entry : forall^m z_0 : C d volume,
+      exists s : Fin p, exists k_0 : N,
+        ||(steffensen_step_C x p)^[k_0] z_0 - cycAnchor alpha p s|| < r s) :
+    forall^m z_0 : C d volume,
+      exists s : Fin p,
+        Tendsto (fun k => (steffensen_step_C x p)^[k] z_0) atTop
+          (nhds (cycAnchor alpha p s)) := ...
+\end{lstlisting}
+
+%===========================================================
+\section{Master Absolu: The Top-Level Stitching Theorem (\texttt{MasterAbsolu.lean})}
+\label{sec:master}
+%===========================================================
+
+The file \texttt{MasterAbsolu.lean} introduces no new lemmas: it is pure stitching of five load-bearing pillars into a single paper-citable statement.
+
+\begin{theorem}[$\bigstar\bigstar\bigstar$ \textbf{Master Absolu} --- \texttt{master\_absolu}]\label{thm:master}
+Fix $x \in \mathbb{R}$ with $x > 1$, $p \geq 1$, $\alpha \in \mathbb{C}^\ast$ with $\alpha^p = 1/x$, and assume $S_p(\gamma_k) \neq 0$ for every cyclotomic anchor $\gamma_k = \gamma_k(\alpha, p)$. Then the following five conjuncts hold simultaneously:
+\begin{enumerate}
+  \item \textbf{(A) Structural distinctness.} The anchors $\gamma_0, \dots, \gamma_{p-1}$ are pairwise distinct.
+  \item \textbf{(B) Fixed-point property.} For every $s \in \mathrm{Fin}\,p$, $\sigma_{p, x}(\gamma_s) = \gamma_s$.
+  \item \textbf{(C) A.e. Voronoï selector uniqueness.} For a.e. $z_0 \in \mathbb{C}$ (Lebesgue), there is a unique nearest anchor.
+  \item \textbf{(D) $p$-uniform complexity.} Given abstract two-phase error sequences with uniform scaled bound $K_{p'} \cdot R_{p'} \leq M$ and the closed-form rate $\lambda^{\mathrm{model}}_{p'}(x)$ (\S\ref{def:lam_model}), there exist a threshold $p_0$ and an iteration count $N$ (depending only on $x, M, \rho, \delta$) with $K_{p'} \cdot e_{p'}(k) \leq \delta$ for every $p' \geq p_0$ and $k \geq N$.
+  \item \textbf{(E) Kung-Traub optimality.} $E(2, 2) = \mathrm{KT}(2)$.
+\end{enumerate}
+\end{theorem}
+
+\begin{remark}[What Master Absolu does not include]
+Master Absolu is an \emph{unconditional} statement: no local-quadratic-bound hypothesis, no trajectory-entry hypothesis. It does \emph{not} include the dynamical-convergence statement of \S\ref{sec:dynamical_convergence}, because the latter depends on the two analytic hypotheses honestly flagged there. The intended reading is: Master Absolu is the fully certified algebraic-and-measure-theoretic spine, and Theorem~\ref{thm:dyn_ae} is its dynamical upgrade \emph{conditional} on the deferred pieces.
 \end{remark}
 
-The analogous contraction identity for $p=3$ (the cubic case central to this paper) replaces Eq.~\eqref{eq:contraction} with a rigorous general polynomial form:
-\begin{equation}
-   P_X(s) - P_X(t) \;=\; \frac{(s-t)\,\Psi(s,t,X)}{V(s)V(t)}
-\end{equation}
-where $V(s) = 3s^3+2X$ and $\Psi(s,t,X) = 2 \bigl(X - st(s+t)\bigr) \bigl(3st(s^2+st+t^2) + 2X\bigr)$. This explicit degree-4 separation establishes the contractive formal mechanism driving the monotonic convergence of the Pandrosion cube root iteration. We display the $p=2$ contraction identity above strictly for typographical brevity, since both are unconditionally proven in the \texttt{ContractionIdentity.lean} formal codebase.
-
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{fig_contraction.pdf}
-\caption{\textbf{Left:} The contraction factor $\lambda(s) = (x-1)/[x(1+s)(1+s^*)]$ as a function of $s$ for several values of $x$. The factor stays strictly below~1 (green zone), guaranteeing contraction at every step. Dashed lines mark the fixed point $s^*$. \textbf{Right:} Distance decrease for $x=2$ (Theorem~\ref{thm:distance}): the blue curve lies entirely below the diagonal $y=x$, confirming $|h(s)-s^*| < |s-s^*|$.}
-\label{fig:contraction}
+\begin{tikzpicture}[>=Stealth, scale=0.85]
+  % Central node
+  \node[draw, circle, very thick, fill=orange!25, minimum size=3cm, font=\bfseries\small, text width=2.6cm, align=center] (ma) at (0,0) {Master\\Absolu\\{\scriptsize (\S24)}};
+
+  % Five pillars, clockwise from 12 o'clock
+  \foreach \angle/\col/\lab/\src in {
+      90/red!15/{\textbf{(B) Fixed points}\\{\scriptsize \texttt{steffensen\_step\_C\_fixed\_point}}}/{\scriptsize Foundations},
+      18/purple!15/{\textbf{(C) A.e. Voronoï}\\{\scriptsize \texttt{voronoiBoundary\_volume\_zero}}}/{\scriptsize VoronoiMeasure},
+     -54/blue!15/{\textbf{(D) $p$-uniform}\\{\scriptsize \texttt{super\_grand\_master\_uniform}}}/{\scriptsize UniformContractionRate},
+    -126/green!15/{\textbf{(E) Kung-Traub}\\{\scriptsize \texttt{pandrosion\_attains\_kung\_traub}}}/{\scriptsize KungTraub},
+     162/yellow!15/{\textbf{(A) Distinct anchors}\\{\scriptsize \texttt{cycAnchor\_injective}}}/{\scriptsize CyclotomicMcMullen}
+  } {
+    \node[draw, rounded corners, fill=\col, minimum width=4cm, minimum height=1.2cm, text width=3.7cm, align=center, font=\footnotesize]
+        at (\angle:5.2) {\lab};
+    \draw[->, thick] (ma) -- (\angle:4.1);
+  }
+\end{tikzpicture}
+\caption{\textbf{Master Absolu stitching.} The top-level theorem combines five independently formalized pillars across the modules \texttt{Foundations}, \texttt{VoronoiMeasure}, \texttt{UniformContractionRate}, \texttt{KungTraub}, and \texttt{CyclotomicMcMullen}. No new lemmas are introduced in \texttt{MasterAbsolu.lean}.}
+\label{fig:master_stitching}
 \end{figure}
 
-\subsection{Orbit Invariance}
-A further structural property is that the iteration preserves the unit interval:
+%===========================================================
+\section{Module Map of the Formalization}
+\label{sec:module_map}
+%===========================================================
 
-\begin{theorem}[Orbit Invariance, \texttt{ContractionIdentity.lean}]\label{thm:orbit}
-For $x > 1$, $p \geq 2$, and $s_0 \in [0,1]$: $\;h^n(s_0) \in (0,1)$ for all $n \geq 1$.
-\end{theorem}
-
-This is proved by induction on $n$, using $h(s) > 0$ and $h(s) < 1$ for $s \in [0,1]$ (both certified in \texttt{FixedPointGeneral.lean}). Combined with the distance-decreasing property (Theorem~\ref{thm:distance}), it gives a complete formal picture: the orbit stays bounded and converges.
-
-\subsection{The Oscillation Signature}
-A distinctive feature of the Pandrosion iteration near the root is its \emph{alternating approach}: the approximants oscillate around the fixed point, overshooting and undershooting in alternation. The exact polynomial structure behind this phenomenon is:
-
-\begin{theorem}[Oscillation Identity, \texttt{OscillationIdentity.lean}]\label{thm:oscillation}
-For $r^3 = X$ and $3s^3+2X \neq 0$:
-\begin{equation}\label{eq:oscillation}
-  \mathcal{P}_X(s) - r \;=\; \frac{(s-r)\,(s^3 - 2rs^2 - 2r^2 s + 2r^3)}{3s^3 + 2X}\,.
-\end{equation}
-\end{theorem}
-
-The quartic factor $\Psi(s) = s^3 - 2rs^2 - 2r^2 s + 2r^3$ satisfies $\Psi(r) = -r^3$. Near $s = r$, this gives a local contraction ratio $\lambda_3 = -r^3/(3r^3+2r^3) = -1/5$, confirming the universal linear convergence rate of Theorem~\ref{thm:derivative}. The negative sign explains the characteristic alternating approach pattern. When Steffensen acceleration is applied (Section~\ref{sec:classical}), this linear rate is converted to quadratic convergence.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{fig_orbit_oscillation.pdf}
-\caption{\textbf{Left:} Orbit invariance (Theorem~\ref{thm:orbit}). For $p=2$ and several values of $x$, every orbit starting in $[0,1]$ remains in $(0,1)$ and converges to $s^* = x^{-1/2}$ (dashed lines). \textbf{Right:} Oscillation signature for $p=3$, $X=2$ (Theorem~\ref{thm:oscillation}). The signed error $s_n - \sqrt[3]{2}$ alternates in sign. The empirical initial-step ratio yields $\lambda \approx -0.080$ strictly due to the initial structural $s_0$ scaling, converging uniformly into the formally proven asymptotic limit ratio $-1/5$ as $s_n \to \sqrt[3]{2}$.}
-\label{fig:orbit_oscillation}
-\end{figure}
-
-\subsection{Numerical Considerations}
-We acknowledge upfront that for the specific problem of computing $\sqrt[3]{X}$, Newton's method is operationally superior: the derivative $f'(s) = 3s^2$ is trivial to evaluate, and standard Newton requires only 4~multiplications, 1~addition, and 1~division per step --- versus 5/2/1 for the unaccelerated Pandrosion map.
-
-The interest of the Pandrosion iteration is therefore not as a practical competitor to Newton for scalar cube roots, but as a structurally distinct object whose algebraic identities are amenable to exhaustive formal verification. In particular:
-\begin{itemize}
-    \item \textbf{Convergence:} The base map converges linearly with rate $1/5$. Composing it with Aitken~$\Delta^2$ acceleration~\cite{aitken, steffensen} (the Pandrosion-T3 variant) achieves quadratic convergence. However, each T3 cycle evaluates the base map three times plus the Aitken extrapolation, so the total FLOP cost per cycle is roughly~$3\times$ that of a single Newton step.
-    \item \textbf{Floating-Point Stability:} The denominator $3s^3+2X$ is positive for $X > 0, s > 0$, ensuring no cancellation risk. The singular locus $s = -\sqrt[3]{2X/3}$ lies outside the positive real domain.
-\end{itemize}
+The table below collects all 15 Lean modules in the dependency order induced by \texttt{Pandrosion.lean}.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}lcccc@{}}
+\small
+\begin{tabular}{@{}p{3.9cm}p{7.3cm}p{3.6cm}@{}}
 \toprule
-\textbf{Method} & \textbf{$s_0 = 1$} & \textbf{$s_0 = 10$} & \textbf{$s_0 = 0.1$} & \textbf{Est. FLOPs ($s_0=1$)} \\ \midrule
-Newton ($f'$) & 6 iter & 10 iter & 12 iter & $\sim$36 \\
-Pandrosion-T3 & 5 cycles & 9 cycles & 11 cycles & $\sim$120 \\
+\textbf{Module (\texttt{Pandrosion.Core.*})} & \textbf{Content} & \textbf{Main theorem(s)} \\ \midrule
+\texttt{Foundations}            & $S_p$, real \& complex fixed-point characterisation, Steffensen accelerator, scaling, multi-start grand master & \ref{thm:fp_real}, \ref{thm:fp_complex}, \ref{thm:stef_fp}, \ref{thm:grand_master} \\
+\texttt{MultiStartBasins}       & Voronoï basins: convexity, connectedness, frontier on finite bisector union, anchor in basin interior; constructive McMullen off the boundary & \ref{thm:basin_struct}, \ref{thm:mcmullen_constructive} \\
+\texttt{QuadraticRate}          & Algebraic skeleton of Aitken-Steffensen quadratic rate (abstract two-phase bounds) & (abstract) \\
+\texttt{QuadraticComplexity}    & Convergence-to-$\varepsilon$ bounds from the abstract skeleton & (abstract) \\
+\texttt{VoronoiMeasure}         & Voronoï boundary has 2D Lebesgue measure zero; a.e. unique nearest anchor & \ref{thm:vor_null} \\
+\texttt{CyclotomicMcMullen}     & Cyclotomic anchor family: $p$-th root of $\alpha^p$, injectivity, unconditional constructive McMullen & \ref{thm:unc_mcm} \\
+\texttt{KungTraub}              & Efficiency index; Pandrosion attains $\mathrm{KT}(2)$; converse optimality (conditional on KT axiom) & \ref{thm:kt_attain}, \ref{thm:kt_converse} \\
+\texttt{UniformComplexity}      & Uniform complexity skeleton for ensembles of two-phase sequences & (abstract) \\
+\texttt{SuperGrandMaster}       & Abstract super-grand-master: bounded regime, uniform scaled-error threshold $\delta$ & (abstract) \\
+\texttt{UniformContractionRate} & Closed-form model $\lambda^{\mathrm{model}}_p(x)$, Taylor residue bound, closed-form super-grand-master & \ref{thm:super_gm} \\
+\texttt{ConcreteIteration}      & Concrete instantiation of the abstract complexity layer on Pandrosion-Steffensen sequences & (specialization) \\
+\texttt{MasterAbsolu}           & Top-level stitching; no new lemmas & \ref{thm:master} \\
+\texttt{ComplexMultiplier}      & $S_p'(\alpha)$, $h$ is differentiable; closed-form multiplier $1 - p \alpha^{p-1}/S_p(\alpha)$ at the fixed point & \ref{thm:mult_closed} \\
+\texttt{LocalAttraction}        & Abstract local attraction from a linear contraction; quadratic $\Rightarrow$ contraction reducer; Steffensen local attraction (conditional) & \ref{thm:abstract_local}, \ref{thm:local_quad}, \ref{thm:steff_local} \\
+\texttt{DynamicalConvergence}   & Tail-shift invariance; pointwise convergence from entry; a.e. dynamical convergence (crown jewel, conditional) & \ref{lem:tail}, \ref{thm:dyn_pointwise}, \ref{thm:dyn_ae} \\
 \bottomrule
 \end{tabular}
-\caption{Iterations to reach $10^{-15}$ precision for $\sqrt[3]{2}$. Newton is lighter ($\sim$36 vs $\sim$120 FLOPs for $s_0=1$). The Pandrosion map is studied here for its algebraic structure, not as an operational replacement.}
+\caption{\textbf{15-module Lean spine of Universitas Pandrosion.} Dependency order top-to-bottom.}
+\label{tab:modules}
 \end{table}
 
-%===========================================================
-\section{Integer Specialisation and Sequence Amplification}
-\label{sec:diophantine}
-%===========================================================
-
-\subsection{Exact Integer Sequences}
-When $(A,B) \in \mathbb{Z}^2$ and $X \in \mathbb{Z}$, the iteration produces integer sequences:
-\[
-  A' = A(A^3 + 4XB^3), \qquad B' = B(3A^3 + 2XB^3).
-\]
-Crucially, the integer residual $M_n = A_n^3 - X B_n^3$ has a \emph{multiplicative} structure:
-
-\begin{theorem}[Integer Amplification Identity, \texttt{PellDiophantine.lean}]\label{thm:pell}
-For all $X, A, B \in \mathbb{Z}$:
-\begin{equation}\label{eq:pell}
-  A_{n+1}^3 - X\, B_{n+1}^3 \;=\; (A_n^3 - X B_n^3) \cdot \bigl(A_n^9 - 14X A_n^6 B_n^3 - 20X^2 A_n^3 B_n^6 + 8X^3 B_n^9\bigr).
-\end{equation}
-\end{theorem}
-
-This establishes that the integer difference $A^3 - XB^3$ is \emph{multiplicative}. Each iteration multiplies the error mechanically by a degree-9 cross-factor. In other words, if $A_0^3 - X B_0^3 = M_0$, then $M_n = M_0 \cdot \prod_{k=0}^{n-1} \Phi_k$, where each $\Phi_k$ is an explicit polynomial evaluating the current state. This provides an exact tracking sequence for discrete scalar representations.
-
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{fig_pell_identity.pdf}
-\caption{\textbf{Left:} Growth of $|M_n| = |A_n^3 - 2B_n^3|$ on a logarithmic scale. Each iteration approximately \textbf{quadruples} the number of digits, consistent with the exact quartic factor amplification defined in Theorem~\ref{thm:pell}. \textbf{Right:} The polynomial factor $|\Phi_n|$ at each step, showing that the multiplicative amplification grows explosively while keeping the factorisation algebraically exact.}
-\label{fig:pell}
-\end{figure}
-
-The progression is structurally defined by the unified mapping:
-\begin{equation}\label{eq:thue}
-  \boxed{(A')^3 - X(B')^3 \;=\; (A^3 - XB^3) \cdot (A^9 - 14\,A^6 X B^3 - 20\,A^3 X^2 B^6 + 8X^3 B^9).}
-\end{equation}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[>=Stealth, scale=0.85]
-  % Title
-  \node[font=\bfseries] at (6, 5.5) {Integer Iteration Tower};
-  
-  % Levels
-  \foreach \i/\lab/\val in {0/{$(A_0, B_0)$}/{$M_0 = A_0^3 - XB_0^3$}, 1/{$(A_1, B_1)$}/{$M_1 = M_0 \cdot \Phi_0$}, 2/{$(A_2, B_2)$}/{$M_2 = M_1 \cdot \Phi_1$}, 3/{$(A_3, B_3)$}/{$M_3 = M_2 \cdot \Phi_2$}} {
-    \pgfmathsetmacro{\ypos}{4.5 - \i * 1.4}
-    \node[draw, rounded corners, fill=blue!8, minimum width=4cm, minimum height=0.8cm] (L\i) at (3, \ypos) {\lab};
-    \node[draw, rounded corners, fill=orange!10, minimum width=5.5cm, minimum height=0.8cm] (R\i) at (9.5, \ypos) {\footnotesize \val};
-    \draw[->, thick, blue!60!black] (L\i.east) -- (R\i.west);
-  }
-  % Vertical arrows
-  \foreach \i in {0,1,2} {
-    \pgfmathtruncatemacro{\j}{\i+1}
-    \draw[->, very thick, red!60!black] (L\i.south) -- (L\j.north) node[midway, left, font=\footnotesize] {$\mathcal{P}_X$};
-    \draw[->, thick, orange!70!black] (R\i.south) -- (R\j.north) node[midway, right, font=\footnotesize] {$\times \Phi_\i$};
-  }
-  
-  % Explosion note
-  \node[draw, dashed, rounded corners, fill=yellow!10, font=\footnotesize, text width=5cm, align=center] at (9.5, -0.8) {Each $\Phi_i$ is a degree-9 polynomial.\\ $|A_n|, |B_n|$ grow as $\sim |A_0|^{4^n}$\\ --- \textbf{quartic amplification!}};
-\end{tikzpicture}
-\caption{\textbf{The Sequence Amplification Tower.} Each application of the Pandrosion map strictly multiplies the integer separation $M = A^3 - XB^3$ by an explicit degree-9 polynomial $\Phi$, creating a cascading infinite tower of nested approximations.}
-\label{fig:thue_tower}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.92\textwidth]{fig_abc_growth.pdf}
-\caption{\textbf{Diophantine digit explosion.} Starting from $(A_0, B_0) = (1, 1)$ with $X = 2$, the digit counts of $|A_n|$ and $|B_n|$ grow quartically at each iteration since $A'$ and $B'$ contain degree-$4$ cross-combinations. Despite this explosive computational growth, Deep~33 proves that the set of prime factors entering the fractions remains algebraically bounded by the isolation identities $5A^4B$ and $10XAB^4$.}
-\label{fig:abc_growth}
-\end{figure}
-
-\subsection{Coprimality Isolation Identities}
-The following identities show how the Pandrosion iteration constrains prime factor propagation through explicit algebraic relations.
-
-\begin{theorem}[Deep 33: Coprimality Isolation Identities]
-Over any commutative ring $\alpha$:
-\begin{align}
-  B \cdot A' - A \cdot B' &= 2AB(XB^3 - A^3), \label{eq:abc1}\\
-  2A \cdot B' - B \cdot A' &= 5A^4 B, \label{eq:abc2}\\
-  3B \cdot A' - A \cdot B' &= 10XAB^4. \label{eq:abc3}
-\end{align}
-\end{theorem}
-
-\begin{corollary}[Prime Isolation Bound]
-If a prime $p$ divides both $A'$ and $B'$, then by \eqref{eq:abc2} and \eqref{eq:abc3}, $p$ must simultaneously divide $5A^4B$ and $10XAB^4$. Without assuming strict coprimality of $A$ and $B$, this implies $p \mid 5A \lor p \mid 10XB \lor p \mid \gcd(A,B)$, limiting the propagation of new common prime factors at each discrete step of the integer sequences.
-\end{corollary}
-
-%===========================================================
-\section{Complex Plane Dynamics}
-\label{sec:julia}
-%===========================================================
-
-When extended to $\mathbb{C}$, classical root-finding iterations (Newton, Halley) produce intricate fractal basin boundaries --- the Julia sets. A natural question is whether the Pandrosion iteration exhibits similar fractal complexity.
-
-\begin{theorem}[Deep 29: Fixed Point Characterisation on $\mathbb{C}$]\label{thm:julia}
-For any $X, z \in \mathbb{C}$ with $3z^3 + 2X \neq 0$:
-\[
-  \mathcal{P}_X(z) = z \;\;\Longleftrightarrow\;\; z = 0 \;\;\lor\;\; z^3 = X.
-\]
-\end{theorem}
-
-This result proves there are no \emph{spurious fixed points}: the only period-1 attractors are the true roots and the origin. The numerical basin plots (Figures~\ref{fig:newton_fractal}--\ref{fig:heatmap}) provide empirical evidence that the Pandrosion iteration produces smoother basin boundaries on $\mathbb{C}$ than Newton's method. However, this smoothness is strictly a \emph{numerical observation}, not a formal theorem. Formally proven convex (half-plane) basin boundaries are established only for the multi-start nearest-root assignment over $\mathbb{R}^2$ (see \texttt{MultiStart.lean} and Theorem~5.3 below).
-
-\begin{theorem}[Deep 29: Conjugate Symmetry]\label{thm:conjugate}
-For $X \in \mathbb{R}$ and $z \in \mathbb{C}$: $\;\mathcal{P}_X(\bar{z}) = \overline{\mathcal{P}_X(z)}$.
-\end{theorem}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.75\textwidth]{fig_newton_fractal.pdf}
-\caption{\textbf{Newton's method boundaries} for $z^3 - 1$ on $\mathbb{C}$. The three attraction basins (red, blue, green) are naturally separated by highly intricate analytical boundaries --- the unconstrained Julia set.}
-\label{fig:newton_fractal}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.75\textwidth]{fig_pandrosion_fractal.pdf}
-\caption{\textbf{Pandrosion iteration basins} for $z^3 - 1$ on $\mathbb{C}$ (numerical). The basins appear separated by smooth, straight rays emanating from the origin, with no visible fractal structure. Theorem~\ref{thm:julia} certifies the absence of spurious fixed points; the smoothness of basin boundaries is a \emph{numerical observation}, not yet a formal theorem.}
-\label{fig:pandrosion_fractal}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{fig_julia_sidebyside.pdf}
-\caption{\textbf{High-resolution side-by-side comparison.} \emph{Left:} Newton's method for $z^3 - 1$ creates intricate fractal filaments at every basin boundary. \emph{Right:} The Pandrosion iteration for the same polynomial produces visually smooth boundaries. This contrast is a numerical observation; the formal result (Theorem~\ref{thm:julia}) establishes the absence of spurious fixed points, not the smoothness of basin boundaries. White stars mark the cube roots of unity.}
-\label{fig:julia_sidebyside}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.75\textwidth]{fig_julia_zoom.pdf}
-\caption{\textbf{Zoomed Newton fractal boundary.} A close-up of the central region where all three Newton basins meet. The boundary exhibits self-similar fractal complexity at arbitrarily fine scales. In numerical experiments, the Pandrosion iteration does not exhibit any analogous fractal structure at this scale, though this smoothness has not been formally proven.}
-\label{fig:julia_zoom}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.75\textwidth]{fig_julia_classic.pdf}
-\caption{\textbf{Classical Julia Set} for $z \mapsto z^2 + c$ with $c = -0.7 + 0.27i$. This iconic fractal illustrates the fractal complexity barrier in iterative dynamics on $\mathbb{C}$: the boundary between convergent and divergent orbits is infinitely intricate. Numerical experiments suggest that the Pandrosion map does not produce such boundaries, consistent with its simpler fixed-point structure (Theorem~\ref{thm:julia}).}
-\label{fig:julia_classic}
-\end{figure}
-
-\subsection{Multi-Start Vorono\"i Partitions}
-The multi-start strategy assigns each starting point $z_0$ to the nearest root via Euclidean distance. This nearest-root assignment partitions $\mathbb{C}$ into Vorono\"i cells, whose boundaries are by construction intersections of affine half-planes. Lean formally verifies the canonical bisector equation:
-
-\begin{theorem}[\texttt{MultiStart.lean}: Vorono\"i Bisector Identity]\label{thm:voronoi}
-For any $r_1, r_2, z \in \mathbb{C}$:
-$$|z - r_1|^2 \leq |z - r_2|^2 \;\;\Longleftrightarrow\;\; 2(z_{\mathrm{re}}(r_{2,\mathrm{re}} - r_{1,\mathrm{re}}) + z_{\mathrm{im}}(r_{2,\mathrm{im}} - r_{1,\mathrm{im}})) \leq |r_2|^2 - |r_1|^2.$$
-\end{theorem}
-
-Theorem~\ref{thm:voronoi} is a standard result in computational geometry: Vorono\"i cells are convex polytopes bounded by affine hyperplanes. We go beyond this elementary identity by proving two non-trivial structural consequences.
-
-\begin{theorem}[\texttt{VoronoiInvariance.lean}: Half-Plane Convexity]\label{thm:voronoi_convex}
-If $z_1, z_2 \in \mathbb{R}^2$ both satisfy $|z_i - r_1|^2 \leq |z_i - r_2|^2$, then for any $t \in [0,1]$:
-$$|(1-t)z_1 + tz_2 - r_1|^2 \leq |(1-t)z_1 + tz_2 - r_2|^2.$$
-\end{theorem}
-
-The proof uses the algebraic identity that the squared-distance difference $D(z) := |z - r_1|^2 - |z - r_2|^2$ is \emph{affine} in $z$ (the quadratic terms cancel), so $D((1-t)z_1 + tz_2) = (1-t)D(z_1) + tD(z_2)$. Since both $D(z_i) \leq 0$ and the weights are non-negative, the convex combination satisfies $D \leq 0$. This establishes that Vorono\"i cells are convex, hence connected --- in contrast to Newton's fractal basins.
-
-More importantly, we prove a \emph{basin stability theorem} that connects the Pandrosion contraction rate (proved in \texttt{GeneralContractionAll.lean} for all $p \geq 2$) to the geometric persistence of Vorono\"i cell membership:
-
-\begin{theorem}[\texttt{VoronoiInvariance.lean}: Basin Stability Under Contraction]\label{thm:basin_stability}
-Let $f$ be a map satisfying $|f(z) - r| \leq c \cdot |z - r|$ for some $c \geq 0$ (contraction toward $r$). If $z$ satisfies the quantitative depth condition
-$$(1 + 2c) \cdot |z - r| < |z - r'|,$$
-then $|f(z) - r| < |f(z) - r'|$; that is, $f(z)$ remains in the Vorono\"i cell of~$r$.
-\end{theorem}
-
-The proof applies the triangle inequality twice: first to bound $|f(z) - z| \leq (1+c)|z - r|$ (the step size), then to lower-bound $|f(z) - r'| \geq |z - r'| - |f(z) - z|$, and finally chains the inequalities via the depth condition. For the Pandrosion iteration, the formally verified general contraction theorem (\texttt{contraction\_general} in \texttt{GeneralContractionAll.lean}) establishes the rate $c = (x-1)/x$ for \emph{all} $p \geq 2$, not only the cubic case. The depth condition then becomes $(3x-2)/x \cdot |z-r| < |z-r'|$. Since $(3x-2)/x > 1$ for $x > 1$, the condition is satisfiable whenever $z$ is moderately closer to its target root than to any competing root.
-
-This is the key structural advantage of the multi-start Pandrosion architecture over unconstrained Newton iteration: \emph{Newton has no analogous basin stability guarantee}, because its basins have fractal boundaries that can eject iterates arbitrarily close to the target root. The Pandrosion contraction, combined with the convexity of Vorono\"i cells, ensures that sufficiently deep starting points produce convergent orbits that never leave their assigned basin.
-
-\begin{remark}[Sharpness]
-The constant $1 + 2c$ in Theorem~\ref{thm:basin_stability} is sharp: if equality holds (i.e., $(1+2c)|z - r| = |z - r'|$), the iterate $f(z)$ may lie exactly on the Vorono\"i bisector between $r$ and $r'$. Formally, the proof yields only the weak conclusion $|f(z) - r| \leq |f(z) - r'|$ at equality, so strict inequality in the hypothesis is necessary.
-\end{remark}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{fig_convergence_heatmap.pdf}
-\caption{\textbf{Convergence speed landscape} for $\sqrt[3]{2}$ across the complex plane (numerical). Colour encodes the number of Pandrosion iterations required to reach the real cube root within tolerance $10^{-8}$. The smooth, radially symmetric structure is consistent with the absence of fractal basin boundaries observed in the other figures. The white star marks the target root $\sqrt[3]{2} \approx 1.26$.}
-\label{fig:heatmap}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[scale=1.1]
-  \draw[->, thick, gray] (-3.5,0) -- (3.5,0) node[right] {$\Re$};
-  \draw[->, thick, gray] (0,-3) -- (0,3) node[above] {$\Im$};
-  
-  % Conjugation symmetry visualization
-  \fill[blue!8] (-3.2,0) rectangle (3.2,2.8);
-  \fill[red!8] (-3.2,0) rectangle (3.2,-2.8);
-  \node[blue!50!black, font=\small] at (2.5, 2.3) {Upper half-plane};
-  \node[red!50!black, font=\small] at (2.5, -2.3) {Lower half-plane};
-  
-  % Iteration trajectory in upper half
-  \draw[blue!70!black, very thick, ->, decorate, decoration={markings, mark=at position 0.5 with {\arrow{>}}}]
-    (2.5, 1.5) to[out=200, in=50] (1.8, 0.8) to[out=230, in=60] (1.4, 0.3);
-  \filldraw[blue!70!black] (2.5, 1.5) circle (2pt) node[above right, font=\footnotesize] {$z_0$};
-  \filldraw[blue!70!black] (1.4, 0.3) circle (2pt) node[above, font=\footnotesize] {$z_n \to \sqrt[3]{X}$};
-  
-  % Mirror trajectory in lower half
-  \draw[red!70!black, very thick, ->, decorate, decoration={markings, mark=at position 0.5 with {\arrow{>}}}]
-    (2.5, -1.5) to[out=160, in=-50] (1.8, -0.8) to[out=130, in=-60] (1.4, -0.3);
-  \filldraw[red!70!black] (2.5, -1.5) circle (2pt) node[below right, font=\footnotesize] {$\bar{z}_0$};
-  \filldraw[red!70!black] (1.4, -0.3) circle (2pt) node[below, font=\footnotesize] {$\bar{z}_n \to \sqrt[3]{X}$};
-  
-  % Mirror axis
-  \draw[very thick, orange!80!black] (-3.2,0) -- (3.2,0);
-  \node[orange!80!black, font=\small\bfseries, anchor=west] at (-3.2, 0.2) {Real Axis (Mirror)};
-  
-  % Symmetry arrows
-  \draw[<->, thick, dashed, purple!60!black] (2.5, 1.3) -- (2.5, -1.3) node[midway, right, font=\footnotesize] {$\overline{\mathcal{P}_X(z)} = \mathcal{P}_X(\bar{z})$};
-\end{tikzpicture}
-\caption{\textbf{Conjugate symmetry} (Deep~29). Every trajectory $z_0 \to z_n$ in the upper half-plane is mirrored perfectly by $\bar{z}_0 \to \bar{z}_n$ in the lower half-plane. This symmetry is consistent with the observed smooth basin boundaries, though it does not by itself prove their smoothness.}
-\label{fig:conjugate}
-\end{figure}
-
-\subsection{Numerical Observations on Basin Boundaries}
-
-When extended to $\mathbb{C}$, classical root-finding iterations (Newton, Halley) are known to produce intricate fractal basin boundaries --- the Julia sets. If a starting point lands on this boundary, it diverges or cycles erratically.
-
-The Pandrosion map $P_X(s)$ is a rational map specialised for the extraction of $p$-th roots. While a full topological study of its global convergence on $\mathbb{C}$ lies outside the scope of this formal algebraic work, numerical evaluations (e.g., Figures~\ref{fig:julia_zoom} and~\ref{fig:heatmap}) suggest that the basin boundaries in the complex plane may possess a simpler structure than the highly fractal boundaries of Newton's method. 
-
-We have verified a necessary algebraic condition underlying this difference: the critical points of $P_X$ on $\mathbb{C}$ are given by the roots of $3s^6 - 16Xs^3 + 8X^2 = 0$. Unlike super-attracting Newton maps, the derivative at the root is formally verified to be $P'_X(\sqrt[3]{X}) = -1/5 \neq 0$ (linear contraction). The exact global topological properties of its boundaries on $\mathbb{C}$ remain an interesting subject for future numerical and analytical study.
-
-%===========================================================
-\section{Thue Bridge: Norm Amplification and Diophantine Consequences}
-\label{sec:thue_bridge}
-%===========================================================
-
-\subsection{The Norm Amplification Identity}
-
-The Pandrosion iteration preserves a multiplicative structure on the cubic norm $d = A^3 - XB^3$. After one step $(A, B) \mapsto (A', B')$, the norm transforms as:
-$$d' = A'^3 - XB'^3 = d \cdot \Phi(A, B, X)$$
-where the \emph{amplification factor} $\Phi$ is the degree-9 polynomial:
-$$\Phi(A, B, X) = A^9 - 14XA^6B^3 - 20X^2A^3B^6 + 8X^3B^9.$$
-
-\begin{theorem}[\texttt{ThueBridge.lean}: Norm Amplification]\label{thm:norm_amp}
-For any $A, B, X \in \mathbb{Z}$, with $A' = A(A^3 + 4XB^3)$ and $B' = B(3A^3 + 2XB^3)$:
-$$A'^3 - XB'^3 = (A^3 - XB^3) \cdot \Phi(A, B, X).$$
-\end{theorem}
-\begin{proof}
-Pure polynomial identity, verified by \texttt{ring} in Lean~4.
-\end{proof}
-
-\subsection{The Cross-Determinant Identity}
-
-The arithmetic separation between consecutive Pandrosion approximants is controlled by:
-\begin{theorem}[\texttt{ThueBridge.lean}: Cross-Determinant]\label{thm:cross_det}
-$A \cdot B' - B \cdot A' = 2AB(A^3 - XB^3) = 2AB \cdot d.$
-\end{theorem}
-This identity connects directly to the theory of Thue equations: the determinant of consecutive rational approximants to $\sqrt[3]{X}$ is an explicit multiple of the cubic norm, ensuring that the approximants are arithmetically well-separated.
-
-\subsection{Geometric Norm Growth}
-
-When $|\Phi(A_n, B_n, X)| \geq 2$ at every step (verified for $X = 2$ at the initial step with $\Phi(1,1,2) = -43$), the norm grows geometrically:
-
-\begin{theorem}[\texttt{ThueBridge.lean}: Geometric Growth]\label{thm:geom_growth}
-If $|{\Phi_n}| \geq 2$ for all $n$ and $d_0 \neq 0$, then:
-$$|d_n| \geq |d_0| \cdot 2^n.$$
-In particular, the norm values $\{|d_n|\}_{n \geq 0}$ are strictly increasing and pairwise distinct.
-\end{theorem}
-
-\subsection{Strengthened Effective Bound}
-
-The standard Liouville bound (\S\ref{sec:effective_irrationality}) uses $|d| \geq 1$ (discreteness of $\mathbb{Z}$):
-$$\left|\frac{A}{B} - \sqrt[3]{X}\right| \geq \frac{1}{A^2 + A\sqrt[3]{X}\cdot B + \sqrt[3]{X^2}\cdot B^2}.$$
-
-The norm amplification replaces $1$ by $|d_n| \geq 2^n$:
-
-\begin{theorem}[\texttt{ThueBridge.lean}: Amplified Distance Bound]\label{thm:amplified}
-If $|d| \geq K$ for some $K \in \mathbb{Z}$, then:
-$$|A - \sqrt[3]{X}\cdot B| \geq \frac{K}{A^2 + A\sqrt[3]{X}\cdot B + (\sqrt[3]{X} \cdot B)^2}.$$
-\end{theorem}
-
-For the Pandrosion orbit targeting $\sqrt[3]{2}$ starting from $(1,1)$: after one step, $(A_1, B_1) = (9, 7)$ with $d_1 = 43$, the amplified bound is 43 times stronger than Liouville. After $n$ steps, it is $2^n$ times stronger.
-
-\begin{remark}[Thue--Siegel Bridge]
-This amplification applies to the \emph{Pandrosion approximants themselves}. For \emph{arbitrary} rationals $p/q$, achieving an irrationality exponent $\mu < 3$ would require the Thue--Siegel auxiliary polynomial method or Baker's theory of linear forms in logarithms. The norm amplification identity provides the exact algebraic scaffolding that feeds into such arguments: it produces explicit polynomial auxiliary forms of degree 9 whose integer evaluations are controlled by the multiplicative law $d' = d \cdot \Phi$.
-\end{remark}
-
-\subsection{Effective Orbital Finiteness for Thue Equations}
-
-The strict monotonicity of $\{|d_n|\}$ (Theorem~\ref{thm:geom_growth}) has a striking Diophantine consequence. Since $|d_n|$ is a strictly increasing sequence of nonneg integers, consecutive values differ by at least~1, giving a \emph{linear} lower bound:
-
-\begin{theorem}[\texttt{ThueFiniteness.lean}: Linear Norm Bound]\label{thm:linear_bound}
-$|d_n| \geq |d_0| + n$ for all $n \geq 0$.
-\end{theorem}
-
-This yields an effective finiteness certificate:
-
-\begin{theorem}[\texttt{ThueFiniteness.lean}: Orbital Uniqueness]\label{thm:thue_unique}
-For any $c \in \mathbb{Z}$, the equation $d_n = c$ has \textbf{at most one} solution $n$ in any Pandrosion orbit. Moreover, $|d_m| = |d_n|$ implies $m = n$.
-\end{theorem}
-\begin{proof}
-If $d_m = d_n$ with $m < n$, then $|d_m| < |d_n|$ by strict monotonicity, contradicting $|c| < |c|$.
-\end{proof}
-
-\begin{corollary}[\texttt{ThueFiniteness.lean}: Bounded Orbital Solutions]\label{cor:thue_bound}
-If $|d_n| \leq M$, then $n \leq M - |d_0|$. For $X = 2$ with $(A_0, B_0) = (1, 1)$ (so $|d_0| = 1$): the cubic Thue equation $A^3 - 2B^3 = c$ with $|c| \leq M$ has at most $M$ solutions $(A_n, B_n)$ in the Pandrosion orbit.
-\end{corollary}
-
-This is the first formally verified \emph{effective orbital finiteness} result for cubic Thue equations via an explicit iterative descent argument.
-
-\subsection{Generalization to All Degrees $p \geq 2$}
-
-The Pandrosion integer iteration generalizes to all degrees $p \geq 2$ via the pattern:
-$$A' = A(A^p + 2(p-1)XB^p), \qquad B' = B(pA^p + (p-1)XB^p).$$
-
-The cross-determinant obeys a universal law, verified by \texttt{ring} for $p = 2, 3, 4, 5$:
-\begin{theorem}[\texttt{ThueGeneral.lean}: Universal Cross-Determinant]\label{thm:cross_det_gen}
-$A \cdot B' - B \cdot A' = (p-1) \cdot AB \cdot (A^p - XB^p).$
-\end{theorem}
-
-The norm amplification also generalizes. For $p = 2$ (Pell connection):
-$$d' = A'^2 - XB'^2 = (A^2 - XB^2) \cdot \underbrace{(A^4 + XA^2B^2 + X^2B^4)}_{\Phi_2 \geq 0}.$$
-
-A key structural observation: $\Phi_2$ is always nonneg for $X \geq 0$, reflecting the fact that Pell equations ($p = 2$) have infinitely many solutions. In contrast, $\Phi_3$ can be negative (e.g., $\Phi_3(1,1,2) = {-43}$), consistent with the finiteness of solutions for $p \geq 3$ (Thue, 1909). The orbital finiteness theorem applies uniformly to all $p$.
-
-\subsection{Effective Size Bound}
-
-The Pandrosion denominator sequence $B_n$ grows exponentially. For $A \geq 0$, $B \geq 1$, $X \geq 1$:
-$$B_{n+1} = B_n(3A_n^3 + 2XB_n^3) \geq 2X \cdot B_n,$$
-yielding $B_n \geq (2X)^n$ by induction.
-
-\begin{theorem}[\texttt{BakerDavenport.lean}: Effective Size Bound]\label{thm:baker}
-If $(A_n, B_n)$ is the $n$-th Pandrosion iterate for $\sqrt[3]{X}$ starting from $(1,1)$, and $|A_n^3 - XB_n^3| \leq M$, then:
-$$n \leq M - 1 \quad \text{and} \quad B_n \leq (2X)^{M-1}.$$
-For $X = 2$: $B_n \leq 4^{M-1}$. In particular, for $M = 10$, all orbital solutions have $B \leq 4^9 = 262144$.
-\end{theorem}
-
-This is weaker in scope than Baker's general theorem (it applies only to orbital solutions, not all integer solutions), but \textbf{stronger in effectivity}: the constants are fully explicit with no hidden dependencies. It is also the first such bound with machine-checked certification.
-
-\subsection{Absence of Periodic Norms}
-
-Because the Pandrosion norm orbit $\{d_n\}$ is strictly monotonic in magnitude (Theorem \ref{thm:geom_growth}), it never loops.
-
-\begin{theorem}[\texttt{MortonSilverman.lean}: No Periodic Orbits]\label{thm:morton}
-The Pandrosion norm orbit $\{d_n\}$ is \textbf{wandering}: $d_m = d_n \Rightarrow m = n$. In particular:
-\begin{enumerate}
-\item The orbit function $n \mapsto d_n$ is injective.
-\item There are no periodic norms: $\neg \exists\, n \geq 1,\; d_n = d_0$.
-\end{enumerate}
-\end{theorem}
-\begin{proof}
-By Theorem~\ref{thm:thue_unique}, $d_m = d_n$ implies $m = n$.
-\end{proof}
-
-Since the map is deterministic, equal iterates $\phi^m(P) = \phi^n(P)$ would give $d_m = d_n$, hence $m = n$. Therefore, there are no periodically cycling rational points generated by the iteration over $\mathbb{Z}$.
-
-\section{Matrix Algebra: Commutativity and Hermitian Invariance}
-\label{sec:matrix_algebra}
-%===========================================================
-
-\subsection{Commutativity Preservation}
-When $S$ and $X$ are $n \times n$ complex matrices with $[S, X] = 0$, the Pandrosion components $U = S(S^3 + 4X)$ and $V = 3S^3 + 2X$ define matrix operators. Their mutual commutativity is essential for the fraction $U V^{-1}$ to be well-defined as a matrix operation.
-
-\begin{theorem}[Deep 30: Commutativity Propagation]\label{thm:bbp}
-If $\mathrm{Commute}(S, X)$, then $\mathrm{Commute}(U, V)$.
-\end{theorem}
-
-This means that the iteration is well-posed in any simultaneously diagonalisable matrix algebra: if $S$ and $X$ are co-diagonalisable, so are $U$ and $V$, and the iteration acts independently on each eigenvalue.
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[>=Stealth, scale=0.85]
-  % Left: non-commutative chaos
-  \begin{scope}[xshift=-5cm]
-    \node[font=\bfseries] at (0, 3.2) {Generic Operators: $UV \neq VU$};
-    \draw[thick, gray] (-2.5, -2.5) rectangle (2.5, 2.5);
-    
-    % Chaotic eigenvalue scatter
-    \foreach \i in {1,...,25} {
-      \pgfmathsetmacro{\rx}{-2 + 4*rnd}
-      \pgfmathsetmacro{\ry}{-2 + 4*rnd}
-      \fill[red!70!black, opacity=0.7] (\rx, \ry) circle (2pt);
-    }
-    
-    \draw[->, gray] (-2.5,0) -- (2.5,0) node[right, font=\scriptsize] {$\Re(\lambda)$};
-    \draw[->, gray] (0,-2.5) -- (0,2.5) node[above, font=\scriptsize] {$\Im(\lambda)$};
-    
-    \node[font=\footnotesize, red!60!black, text width=3cm, align=center] at (0,-3.3) {Eigenvalues scatter\\across $\mathbb{C}$};
-  \end{scope}
-  
-  % Right: Pandrosion locked
-  \begin{scope}[xshift=5cm]
-    \node[font=\bfseries] at (0, 3.2) {Pandrosion: $UV = VU$};
-    \draw[thick, gray] (-2.5, -2.5) rectangle (2.5, 2.5);
-    
-    % Eigenvalues aligned on real axis
-    \foreach \x in {-1.8, -1.0, -0.3, 0.5, 1.2, 1.9} {
-      \fill[blue!70!black] (\x, 0) circle (3pt);
-    }
-    
-    % Real axis highlighted
-    \draw[very thick, orange!80!black] (-2.5,0) -- (2.5,0) node[right, font=\scriptsize] {$\Re(\lambda)$};
-    \draw[->, gray] (0,-2.5) -- (0,2.5) node[above, font=\scriptsize] {$\Im(\lambda)$};
-    
-    \node[font=\footnotesize, blue!60!black, text width=3cm, align=center] at (0,-3.3) {Eigenvalues confined\\to $\mathbb{R}$};
-  \end{scope}
-  
-  \node[font=\Huge\bfseries, gray] at (0,0) {vs};
-\end{tikzpicture}
-\caption{\textbf{Commutativity and spectral structure (schematic).} \emph{Left:} For generic non-commuting operators, eigenvalues of $UV$ are distributed across $\mathbb{C}$. \emph{Right:} When $U, V$ commute (as proven in Deep~30), they share an eigenbasis; combined with Hermitian inputs, this confines eigenvalues to $\mathbb{R}$.}
-\label{fig:phaselocking}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{fig_eigenvalue_spectrum.pdf}
-\caption{\textbf{Numerical eigenvalue experiment} ($50 \times 50$ matrices). \emph{Left:} A generic random complex matrix scatters its 50 eigenvalues across $\mathbb{C}$. \emph{Right:} The Pandrosion product $UV$ constructed from Hermitian inputs $S = S^*$, $X = X^*$ confines all 50 eigenvalues exactly onto the real axis ($\Im(\lambda) = 0$), confirming the Hermitian invariance proven in Deep~31.}
-\label{fig:eigenvalue_numerical}
-\end{figure}
-
-\subsection{Hermitian Preservation}
-
-\begin{theorem}[Deep 31: Hermitian Invariance]\label{thm:hermitian}
-If $S^* = S$, $X^* = X$, and $[S,X] = 0$, then
-\[
-  (UV)^* = UV.
-\]
-That is, the composed Pandrosion operator $UV$ is self-adjoint (Hermitian).
-\end{theorem}
-
-This is a natural algebraic consequence: the product of commuting Hermitian polynomial expressions in Hermitian variables remains Hermitian.
-
-\begin{lstlisting}[caption={Deep 31: Hermitian Invariant (Lean 4)}]
-theorem hermitian_invariant {n : Type*} [Fintype n] [DecidableEq n]
-    (X S : Matrix n n C) (h_comm : Commute S X)
-    (hX_herm : star X = X) (hS_herm : star S = S) :
-    let U := S * (S^3 + 4 * X)
-    let V := 3 * S^3 + 2 * X
-    star (U * V) = U * V := by
-  ...
-  calc star (U * V) = star V * star U := StarMul.star_mul U V
-    _ = V * U := by rw [h_star_V, h_star_U]
-    _ = U * V := h_UV_comm.symm.eq
-\end{lstlisting}
-
-
-%===========================================================
-\section{Matrilinear Error Factorization}
-\label{sec:matrix}
-%===========================================================
-
-The classical scalar identity $U - s^* V = 2(s - s^*)(X - s^3)$ generalizes to non-commutative rings:
-
-\begin{theorem}[Deep 24: Matrilinear Oscillation]
-Over any ring $\alpha$ with $R^3 = X$ and $[S, R] = 0$:
-\begin{equation}\label{eq:matrilinear}
-  U - R \cdot V \;=\; (S - R)\,(S^3 - 2RS^2 - 2R^2S + 2R^3).
-\end{equation}
-\end{theorem}
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[>=Stealth, scale=0.85]
-  \node[font=\bfseries] at (0, 4) {Error Propagation Through Algebraic Dimensions};
-  
-  % Dimension boxes
-  \node[draw, rounded corners, fill=green!10, minimum width=3.5cm, minimum height=1.2cm, align=center] (real) at (-4, 2) {\textbf{Scalars $\mathbb{R}$}\\Deep 25};
-  \node[draw, rounded corners, fill=blue!10, minimum width=3.5cm, minimum height=1.2cm, align=center] (int) at (0, 2) {\textbf{Integers $\mathbb{Z}$}\\Deep 26};
-  \node[draw, rounded corners, fill=purple!10, minimum width=3.5cm, minimum height=1.2cm, align=center] (complex) at (4, 2) {\textbf{Complex $\mathbb{C}$}\\Deep 29};
-  
-  % Matrix level
-  \node[draw, rounded corners, fill=orange!10, minimum width=3.5cm, minimum height=1.2cm, align=center] (ring) at (-4, -0.5) {\textbf{Rings}\\Deep 24};
-  \node[draw, rounded corners, fill=red!10, minimum width=3.5cm, minimum height=1.2cm, align=center] (matrix) at (0, -0.5) {\textbf{$M_n(\mathbb{C})$}\\Deep 27, 30, 31};
-  \node[draw, rounded corners, fill=yellow!10, minimum width=3.5cm, minimum height=1.2cm, align=center] (commring) at (4, -0.5) {\textbf{CommRing}\\Deep 32, 33};
-  
+\begin{tikzpicture}[>=Stealth, scale=0.9, font=\scriptsize, node distance=0.5cm and 0.5cm]
+  \tikzstyle{mod}=[draw, rounded corners, minimum width=3.4cm, minimum height=0.7cm]
+  % Row 1: Foundations
+  \node[mod, fill=blue!10] (F)  at (0, 5) {\texttt{Foundations}};
+  % Row 2: MultiStartBasins
+  \node[mod, fill=blue!10] (MSB) at (0, 4) {\texttt{MultiStartBasins}};
+  % Row 3: QuadraticRate / QuadraticComplexity
+  \node[mod, fill=green!10] (QR) at (-3.7, 3) {\texttt{QuadraticRate}};
+  \node[mod, fill=green!10] (QC) at (0, 3) {\texttt{QuadraticComplexity}};
+  \node[mod, fill=purple!10] (VM) at (3.7, 3) {\texttt{VoronoiMeasure}};
+  % Row 4
+  \node[mod, fill=purple!10] (CM) at (3.7, 2) {\texttt{CyclotomicMcMullen}};
+  \node[mod, fill=yellow!15] (KT) at (-3.7, 2) {\texttt{KungTraub}};
+  \node[mod, fill=green!10] (UC) at (0, 2) {\texttt{UniformComplexity}};
+  % Row 5
+  \node[mod, fill=green!10] (SGM) at (-3.7, 1) {\texttt{SuperGrandMaster}};
+  \node[mod, fill=green!10] (UCR) at (0, 1) {\texttt{UniformContractionRate}};
+  \node[mod, fill=green!10] (CI) at (3.7, 1) {\texttt{ConcreteIteration}};
+  % Row 6
+  \node[mod, fill=orange!25] (MA) at (0, 0) {\texttt{MasterAbsolu}};
+  % Row 7
+  \node[mod, fill=red!10] (CMlt) at (-3.7, -1) {\texttt{ComplexMultiplier}};
+  \node[mod, fill=red!10] (LA) at (0, -1) {\texttt{LocalAttraction}};
+  \node[mod, fill=red!15] (DC) at (3.7, -1) {\texttt{DynamicalConvergence}};
   % Arrows
-  \draw[->, thick] (real) -- (ring);
-  \draw[->, thick] (int) -- (ring);
-  \draw[->, thick] (complex) -- (matrix);
-  \draw[->, thick] (ring) -- (matrix);
-  \draw[->, thick] (matrix) -- (commring);
-  
-  % Central identity
-  \node[draw, very thick, rounded corners, fill=white, minimum width=9cm, minimum height=1.2cm, align=center, font=\small] at (0, -2.8) {
-    \textbf{Universal Identity:} $U - R \cdot V = (S - R) \cdot \Psi(S, R)$\\
-    \textit{Valid across all algebraic structures}
-  };
-  \draw[->, very thick, red!60!black] (ring.south) -- (-2, -2.2);
-  \draw[->, very thick, red!60!black] (matrix.south) -- (0, -2.2);
-  \draw[->, very thick, red!60!black] (commring.south) -- (2, -2.2);
+  \draw[->] (F) -- (MSB);
+  \draw[->] (MSB) -- (QR);
+  \draw[->] (MSB) -- (QC);
+  \draw[->] (MSB) -- (VM);
+  \draw[->] (VM) -- (CM);
+  \draw[->] (QR) -- (KT);
+  \draw[->] (QC) -- (UC);
+  \draw[->] (UC) -- (SGM);
+  \draw[->] (UC) -- (UCR);
+  \draw[->] (UCR) -- (CI);
+  \draw[->] (KT) -- (MA);
+  \draw[->] (SGM) -- (MA);
+  \draw[->] (UCR) -- (MA);
+  \draw[->] (CM) -- (MA);
+  \draw[->] (F) -- (CMlt);
+  \draw[->] (CMlt) -- (LA);
+  \draw[->] (LA) -- (DC);
+  \draw[->] (CM) -- (DC);
 \end{tikzpicture}
-\caption{\textbf{The Algebraic Hierarchy.} The Pandrosion error identity propagates across every level of the algebraic tower: from real scalars through integers and complex numbers to arbitrary rings and matrix algebras. Each generalization is certified independently in Lean~4.}
-\label{fig:hierarchy}
+\caption{\textbf{Module dependency graph.} Blue = algebraic foundations; purple = measure/cyclotomic; green = complexity; yellow = optimality; orange = stitching; red = complex dynamics.}
+\label{fig:dep_graph}
 \end{figure}
 
 %===========================================================
-\section{Lipschitz-Type Cross-State Factorisation}
-\label{sec:lipschitz}
+\section{What Is Proven and What Is Deferred}
+\label{sec:summary}
 %===========================================================
 
-\subsection{Algebraic Stability Under Perturbation}
-A natural question for any iteration is: how does the output change when the input is perturbed? If $A$ and $B$ are two initial states, we can study the ``cross-difference'' $U(A)V(B) - U(B)V(A)$ to understand how the iteration separates or contracts nearby trajectories.
+\subsection{Unconditionally proven (zero \texttt{sorry})}
 
-\begin{theorem}[Deep 32: Cross-State Factorisation]
-Over any commutative ring:
-\begin{equation}\label{eq:lipschitz}
-  \boxed{U(A) \cdot V(B) - U(B) \cdot V(A) \;=\; (A - B) \cdot \Phi(A, B, X),}
-\end{equation}
-where $\Phi(A,B,X) = 3A^3B^3 + 2X(A^3 + A^2B + AB^2 + B^3) - 12XAB(A+B) + 8X^2$.
-\end{theorem}
+\begin{itemize}
+  \item Real and complex fixed-point characterisation $h(s) = s \Leftrightarrow s^p = 1/x$ (Theorems~\ref{thm:fp_real}, \ref{thm:fp_complex}).
+  \item Steffensen preserves every Pandrosion fixed point (Theorem~\ref{thm:stef_fp}).
+  \item Multi-start grand master (Theorem~\ref{thm:grand_master}).
+  \item Voronoï basins are convex, closed, nonempty, connected; frontier on finite bisector union (Theorem~\ref{thm:basin_struct}).
+  \item Constructive McMullen off the boundary (Theorem~\ref{thm:mcmullen_constructive}).
+  \item Voronoï boundary has Lebesgue measure zero (Theorem~\ref{thm:vor_null}).
+  \item Cyclotomic anchors are injective and are $p$-th roots of $\alpha^p$; unconditional constructive McMullen for $z^p = x$ (Theorem~\ref{thm:unc_mcm}).
+  \item Closed-form rate $\lambda_{p,x} \in (0, 1)$; closed-form model $\lambda^{\mathrm{model}}_p$ agrees at the fixed point, with Taylor residue bound.
+  \item Kung-Traub attainment $E(2,2) = \mathrm{KT}(2)$ (Theorem~\ref{thm:kt_attain}).
+  \item $p$-uniform complexity bound via the closed-form model (Theorem~\ref{thm:super_gm}).
+  \item Complex multiplier in closed form at every fixed point (Theorem~\ref{thm:mult_closed}).
+  \item Master Absolu: (A)+(B)+(C)+(D)+(E) simultaneously (Theorem~\ref{thm:master}).
+  \item Abstract local attraction and its quadratic-bound reducer (Theorems~\ref{thm:abstract_local}, \ref{thm:local_quad}).
+  \item Tail-shift invariance of iteration limits (Lemma~\ref{lem:tail}).
+\end{itemize}
 
-This identity shows that the cross-difference is always divisible by $(A-B)$, with the quotient being an explicit polynomial. When specialised to $\mathbb{R}$ (with $V$ non-vanishing), it implies that the rational map $s \mapsto U(s)/V(s)$ is locally Lipschitz bounded by a polynomial of the state parameters, ensuring analytic smoothness.
+\subsection{Proven conditional on an explicit axiom}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{fig_lipschitz_map.pdf}
-\caption{\textbf{Cross-state polynomial factor} $\Phi(A,B,X)$ for $X = 2$, plotted as a heatmap. The diagonal $A = B$ (white dashed) corresponds to zero cross-difference, consistent with the factorisation through $(A-B)$. The smooth structure of $\Phi$ across the domain illustrates the algebraic regularity established by Identity~\eqref{eq:lipschitz}. The white star marks the fixed point $\sqrt[3]{2}$.}
-\label{fig:lipschitz_map}
-\end{figure}
+\begin{itemize}
+  \item Kung-Traub converse for $c = 2$ (Theorem~\ref{thm:kt_converse}) --- conditional on the Kung-Traub 1974 conjecture, stated as an explicit \texttt{axiom} in \texttt{KungTraub.lean}.
+\end{itemize}
 
-%===========================================================
-\section{Effective Irrationality Measure}
-\label{sec:irrationality}
-%===========================================================
+\subsection{Proven conditional on explicit hypotheses (no new axioms)}
 
-The conservation identity~\eqref{eq:conservation}, when lifted to the integer sequence $(A_n, B_n)$ of Section~4, produces a multiplicative norm propagation over~$\mathbb{Z}$:
+\begin{itemize}
+  \item Steffensen local attraction (Theorem~\ref{thm:steff_local}) --- conditional on a local quadratic bound $K \cdot r \leq 1/2$ on $B(\alpha, r)$.
+  \item Pointwise dynamical convergence from entry (Theorem~\ref{thm:dyn_pointwise}) --- same hypothesis, plus a first-entry time $k_0$.
+  \item $\bigstar\bigstar\bigstar$ Almost-everywhere dynamical convergence (Theorem~\ref{thm:dyn_ae}) --- conditional on (i) per-anchor local quadratic bounds and (ii) a.e. trajectory entry.
+\end{itemize}
 
-\begin{equation}\label{eq:irrationality}
-  A_{n+1}^3 - X \cdot B_{n+1}^3 \;=\; (A_n^3 - X \cdot B_n^3) \cdot \Phi_n\,,
-\end{equation}
-where $\Phi_n = A_n^9 - 14X A_n^6 B_n^3 - 20X^2 A_n^3 B_n^6 + 8X^3 B_n^9$ (proved in \texttt{PellDiophantine.lean}). This multiplicative structure, combined with a classical factorization argument, yields a formally verified \emph{effective irrationality measure} for $\sqrt[3]{X}$:
+\subsection{Not claimed}
 
-\begin{theorem}[\texttt{EffectiveIrrationality.lean}: Effective Distance Bound]\label{thm:effective}
-Let $A, r, B \in \mathbb{R}$ with $A > 0$, $rB > 0$, and suppose $A^3 - (rB)^3 = d$ for some $d \in \mathbb{Z} \setminus \{0\}$. Then:
-$$|A - rB| \;\geq\; \frac{1}{A^2 + A \cdot rB + (rB)^2}\,.$$
-\end{theorem}
-
-\begin{proof}[Proof (machine-checked)]
-The cubic factorization $A^3 - (rB)^3 = (A - rB)(A^2 + A \cdot rB + (rB)^2)$ is verified by \texttt{ring}. The quadratic form $A^2 + A \cdot rB + (rB)^2 > 0$ follows from \texttt{nlinarith} applied to the squares $A^2$ and $(rB)^2$ and the product $A \cdot rB > 0$. Since $d \in \mathbb{Z} \setminus \{0\}$, the integer non-vanishing lemma gives $|d| \geq 1$. Taking absolute values in the factorization: $|A - rB| \cdot (A^2 + A \cdot rB + (rB)^2) = |d| \geq 1$, and dividing by the positive form yields the bound.
-\end{proof}
-
-Applied to a rational approximation $A/B$ to $r = \sqrt[3]{X}$ (with $r^3 = X$ and $X$ a non-cube integer), this gives the \emph{Liouville-type bound}:
-$$\left|\frac{A}{B} - \sqrt[3]{X}\right| \;\geq\; \frac{1}{B \cdot (A^2 + A \cdot \sqrt[3]{X} \cdot B + X^{2/3} \cdot B^2)}\,.$$
-Near the root (where $A \approx \sqrt[3]{X} \cdot B$), the denominator scales as $3 X^{2/3} B^3$, recovering the Liouville exponent $\mu = 3$ for degree-3 algebraic numbers.
-
-\begin{remark}[Connection to Classical Results]
-The exponent $\mu = 3$ matches the Liouville bound $\mu \leq \deg(\alpha)$ for algebraic $\alpha$ of degree~3. Thue~(1909) improved this to $\mu \leq 5/2$; Roth~\cite{roth} established $\mu = 2 + \varepsilon$ for all algebraic irrationals (Fields Medal, 1958). Our contribution is not an improvement of the exponent, but a \emph{formally verified effective construction}: the Pandrosion integer sequence provides explicit convergents with machine-checked norm tracking at every step.
-\end{remark}
-
-The norm propagation~\eqref{eq:irrationality} ensures that this bound applies at \emph{every} step of the Pandrosion sequence: if $A_0^3 - X B_0^3 \neq 0$ and $\Phi_n \neq 0$, then $A_n^3 - X B_n^3 \neq 0$ for all $n$, so the sequence never reaches $\sqrt[3]{X}$ exactly. For $(A_0, B_0) = (1,1)$ targeting $\sqrt[3]{2}$: the initial norm is $1 - 2 = -1 \neq 0$, the amplification factor is $\Phi_0 = -43 \neq 0$, and the first norm is $(-1) \cdot (-43) = 43$ (all verified by \texttt{norm\_num}).
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}
-  \begin{axis}[
-    width=12cm, height=5.5cm,
-    xlabel={Approximation quality $q = B^{2+\epsilon}$},
-    ylabel={$\left|\frac{A}{B} - \sqrt[3]{X}\right|$},
-    xmin=1, xmax=1000, ymin=0.00001, ymax=1,
-    xmode=log, ymode=log,
-    grid=both,
-    grid style={gray!15},
-    legend pos=south west,
-    title={\textbf{Explicit Rational Bounds}},
-  ]
-  % Pandrosion effective trajectory
-  \addplot[blue!70!black, very thick, mark=*, mark size=1.5pt] coordinates {
-    (1, 0.5) (3, 0.05) (10, 0.001) (30, 0.00005) (100, 0.000001) (300, 0.00000005) (1000, 0.0000000001)
-  };
-  \addlegendentry{Pandrosion trajectory (effective)}
-  \end{axis}
-\end{tikzpicture}
-\caption{\textbf{Effective contraction bound (schematic).} The Pandrosion sequence (blue) achieves an explicit algebraic recurrence governing the decay of $|A/B - \sqrt[3]{X}|$ within its own iterates.}
-\label{fig:irrationality}
-\end{figure}
+\begin{itemize}
+  \item An unconditional, fully Lean-certified proof that $\sigma$ is locally super-attracting at each anchor (the quadratic bound is currently stated; its analytic proof is a deferred project).
+  \item An unconditional, fully Lean-certified a.e. trajectory-entry theorem (the Fatou-type McMullen global dynamics).
+  \item Any claim regarding classical open problems (Riemann hypothesis, BSD, Faltings, etc.). Previous speculative sections of this paper have been removed.
+\end{itemize}
 
 %===========================================================
-\section{Extensions in the Lean Corpus: Algebraic Finiteness and Growth}
-\label{sec:diophantine_dynamics}
+\section{Reproducibility and Tooling}
 %===========================================================
 
-The geometric growth of the Pandrosion norm sequence $|d_n| \geq 2^n$ (Theorem~\ref{thm:norm_amp}) combined with its algebraic separation properties unlocks a broad array of additional, purely algebraic constraints on the discrete orbit. The expanded Lean corpus (\texttt{Pandrosion.lean}) formalizes several extended bounding theorems:
+The complete Lean source lives in \texttt{lean/Pandrosion/Core/*.lean} with the root module \texttt{Pandrosion.lean} importing all 15 files. The development targets Lean~4 with Mathlib~v4.7.0 and is built with a Docker-based incremental pipeline:
+\begin{lstlisting}[caption={Incremental build command}, language=lean]
+docker compose run --rm lean-incremental
+\end{lstlisting}
+On a clean tree, the full 15-module spine compiles successfully; on an incremental rebuild after a single-file edit, only the changed module and its downstream dependents are rebuilt. The repository records a passing build with the output \texttt{\char`\${\char`\`\$}OK -- 15 modules compiled}.
 
-\begin{enumerate}
-    \item \textbf{Sparse Subsequences Integration}: The geometric escape ensures that no finite set of prime factors can support the norm sequence indefinitely, proving the unbounded growth of the greatest prime factor strictly along the orbit.
-    \item \textbf{Exact Radical Formulations}: The multiplicative factorization $d_n = d_0 \prod_{k<n} \Phi_k$ acts as a formally verified, exact constraint on the orbital variables, avoiding the necessity for external Diophantine radical bounding.
-    \item \textbf{Explicit Spectral Separation}: The explicit discriminant relation completely separates the evaluation from zero, certifying the algebraic isolation required for continued fraction properties of the sequence.
-    \item \textbf{Projective Vector Bounds}: Formally establishes multi-dimensional height bounds for the iterations, proving that the maximum absolute value of the coordinates strictly diverts from any bounding box without looping.
-    \item \textbf{Matrix Diophantine Bounds} (\texttt{MatrixDiophantineOrbital.lean}): Certifies that the exact algebraic factorisation applies unconditionally to commuting matrices, bridging discrete Diophantine isolation onto the arbitrary eigen-spectra of macroscopic operators.
-    \item \textbf{Orbital $p$-adic Segregation} (\texttt{PadicHenselOrbital.lean}): Formally bounds prime divisibility via the invariant coprimality identity, establishing an exact arithmetic equivalent to Hensel's topological lifting independently of real valuations.
-    \item \textbf{Global Vorono\"i Density} (\texttt{VoronoiGlobalDensity.lean}): Establishes a total, fractional polynomial descent mapping on the real axis, replacing abstract functional dynamics with an absolute pointwise distance reduction for any arbitrary scaling.
-    \item \textbf{Pad\'e Hypergeometric Limit} (\texttt{PadeEquivalenceOrbital.lean}): Algebraically demonstrates that the sequence natively factorises precisely along the degree boundaries of high-order Pad\'e diagonal approximants, unifying the Diophantine scheme with transcendental hypergeometric functions.
-    \item \textbf{Non-Archimedean Valuations} (\texttt{NonArchimedeanOrbital.lean}): Elevates the fractional extraction to abstract formal power series rings, proving that the exact factorisation multiplies discrete valuation bounds identically, defining a certified algorithm for Berkovich analytic spaces.
-    \item \textbf{Telescopic Z\^eta Function} (\texttt{TelescopicZetaOrbital.lean}): Establishes the exact algebraic Jacobian linking two successive states via the Diophantine error $A_{n+1} B_n - A_n B_{n+1} = -2 A_n B_n (A_n^3 - X B_n^3)$, proving the sequence generates absolute hypergeometric fractional series.
-    \item \textbf{Hyper-Elliptic Polynomial Isogenies} (\texttt{HyperEllipticOrbital.lean}): Unlocks higher-genus generalisations by substituting the scalar core with an arbitrary degree algebraic curve model ($X = F(y)$), mapping the Diophantine factorisation directly onto the polynomial invariant ring of Abelian geometries.
-\end{enumerate}
-
-These supplementary modules confirm that the strict contraction proven over $\mathbb{R}$ translates into robust arithmetic divergence over $\mathbb{Z}$, certified entirely via the foundational polynomial identities without appealing to unproven conjectures.
-
-%===========================================================
-\section{Certified Step Complexity}
-\label{sec:smale}
-%===========================================================
-
-For the base iteration, the contraction rate is $c = (p-1)/p$. The number of steps $N$ required to reach an error $\varepsilon > 0$ from an initial error $e_0$ is completely determined by this contraction factor. In our Lean formalization, we have certified this continuous ceiling:
-
-\begin{theorem}[\texttt{BaseComplexity.lean}: Strict Logarithmic Bound]\label{thm:complexity}
-If $0 < c < 1$ and $e_0 > 0$, then for any $\varepsilon > 0$, the sequence of errors $e_n \leq c^n e_0$ satisfies $e_n \leq \varepsilon$ for all $n$ such that:
-$$n \;\geq\; \frac{\log(e_0/\varepsilon)}{\log(1/c)}$$
-\end{theorem}
-
-For the Pandrosion base map applied to $p$-th roots ($c = (p-1)/p$), this proves the worst-case step complexity:
-$$N = O\left(\frac{\log(1/\varepsilon)}{\log(p/(p-1))}\right)$$
-When composed with Steffensen's acceleration (Aitken $\Delta^2$), the method achieves quadratic convergence. Although the acceleration operator itself remains to be fully formalized in Lean, analytically this yields an operational complexity of:
-$$N = O\left(\log\log\frac{1}{\varepsilon}\right) \text{ Steffensen cycles}$$
-
-Providing a \emph{formally verified worst-case bound} for the base rational iteration demonstrates a clear path toward fully certified asymptotic complexity measures in numerical analysis.
+The source code is publicly available at \url{github.com/ivan-fr/poussiere_de_x}.
 
 %===========================================================
 \section{Conclusion}
 \label{sec:conclusion}
 %===========================================================
 
-We have presented a formally verified study of the Pandrosion iteration, an original rational map for computing $p$-th roots (with detailed analysis for $p=3$). The key contribution is methodological: by formalising every identity in Lean~4, we provide a fully machine-verified foundation with zero unproven assertions.
+This paper documents a 15-module Lean~4 / Mathlib~v4.7.0 development of the Pandrosion-Steffensen algorithm for $z^p = x$. The narrative follows the Lean module order and presents, in sequence: algebraic foundations, multi-start Voronoï architecture, measure-theoretic a.e. coverage, cyclotomic anchor family, closed-form linear contraction rate, $p$-uniform complexity, Kung-Traub efficiency optimality, complex multiplier in closed form, conditional local attraction, and the crown-jewel a.e. dynamical convergence theorem.
 
-\subsection*{What has been proven}
-The certified identities include: residual factorisation over $\mathbb{R}$ (Deep~25), integer sequence amplification over $\mathbb{Z}$ (Deep~26), matrilinear error factorisation over rings (Deep~24), fractional contraction bounds (Deep~28), fixed-point characterisation on $\mathbb{C}$ (Deep~29), commutativity preservation for matrices (Deep~30), Hermitian preservation (Deep~31), cross-state factorisation (Deep~32), coprimality isolation (Deep~33), the general contraction theorem for all $p \geq 2$ (Deep~IX), effective irrationality measures (Theorem~\ref{thm:effective}), formally verified step complexity bounds (Theorem~\ref{thm:complexity}), and the geometric growth of the integer sequence guaranteeing the absence of periodic cycles over $\mathbb{Z}$.
-
-\subsection*{What has not been proven}
-We do \emph{not} claim to have resolved any globally open problem. The smoothness of Pandrosion basin boundaries on $\mathbb{C}$ is a numerical observation, not a formal theorem. Newton's method remains operationally superior for practical scalar cube root computations (see Section~3.6). The basin stability theorem (Theorem~\ref{thm:basin_stability}) requires a quantitative depth condition rather than establishing global scale-invariant stability. The Steffensen acceleration phase is analytically understood but fully rigorous formalization in Lean of its quadratic limit remains an open project.
-
-\subsection*{The value of the work}
-The genuine contribution lies in: (1)~a rational root-finding iteration, algebraically distinct from Newton, Halley, and the entire Chebyshev--Halley family; (2)~a rich algebraic structure propagating cleanly across real, integer, complex, ring, and matrix domains; (3)~explicit contraction proofs for all $p \geq 2$; (4)~a formally verified basin stability theorem connecting contraction dynamics to geometric depth; and (5)~a methodology demonstrating how formal verification computation can be systematically applied to iterative numerical analysis, establishing a corpus of \textbf{93 zero-sorry modules} verifying the rational iteration and its exact integer constraints.
-
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[>=Stealth, scale=0.8]
-  % Central node
-  \node[draw, circle, very thick, fill=orange!20, minimum size=3cm, font=\bfseries\large, text width=2.5cm, align=center] (center) at (0,0) {Pandrosion\\Iteration};
-  
-  % Surrounding theorems
-  \def\radius{5}
-  \foreach \angle/\label/\col/\deep in {
-     90/{Hermitian\\Preservation}/red!15/31,
-    45/{Commutativity\\Propagation}/purple!15/30,
-    0/{Cross-State\\Factorisation}/blue!15/32,
-    -45/{Coprimality\\Isolation}/green!15/33,
-    -90/{Integer Sequence\\Amplification}/yellow!15/26,
-    -135/{Fractional\\Contraction}/orange!15/28,
-    180/{Complex Fixed\\Points}/cyan!15/29,
-    135/{Matrilinear\\Error}/pink!15/24%
-  } {
-    \node[draw, rounded corners, fill=\col, minimum width=2.5cm, minimum height=1cm, 
-          text width=2.3cm, align=center, font=\footnotesize]
-      (T\angle) at (\angle:\radius) {\label\\{\tiny Deep \deep}};
-    \draw[->, thick] (center) -- (T\angle);
-  }
-\end{tikzpicture}
-\caption{\textbf{The Pandrosion Iteration:} a single rational map whose algebraic structure has been formally verified across eight domains. Arrows indicate thematic connections, not claimed resolutions of open problems.}
-\label{fig:universitas}
-\end{figure}
-
-The complete Lean~4 corpus comprises \textbf{100~modules}, \textbf{399~theorems}, and \textbf{zero \texttt{sorry} declarations}, built against Mathlib~\cite{mathlib}. The source code is publicly available and fully reproducible.
-
-%===========================================================
-\section*{Final Proof Gallery: Ten Certified Highlights}
-\addcontentsline{toc}{section}{Final Proof Gallery: Ten Certified Highlights}
-%===========================================================
-
-The following gallery collects ten of the most structurally significant Lean-certified arguments in the corpus. The figures are visual summaries only; the formal content is the corresponding Lean theorem chain.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{fig_proof_gallery_01_universal_rate.pdf}
-\caption{\textbf{Universal derivative certificate.} Theorem~\ref{thm:derivative} and \texttt{HalleyComparison.lean} prove that the local multiplier of the cubic Pandrosion map at every nonzero cube root is exactly $-1/5$, independently of the target~$X$. The negative sign explains the alternating approach pattern; the absolute value gives a certified contraction rate.}
-\label{fig:proof_gallery_universal_rate}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{fig_proof_gallery_02_ch_exclusion.pdf}
-\caption{\textbf{Chebyshev--Halley exclusion.} \texttt{ChebyshevHalleyExclusion.lean} proves that matching Pandrosion to the one-parameter Chebyshev--Halley family would force two incompatible values of the same parameter: $\alpha=1/2$ from the $s^6$ coefficient and $\alpha=2/5$ from the $s^3X$ coefficient. Hence Pandrosion is not any member of that classical family.}
-\label{fig:proof_gallery_ch_exclusion}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{fig_proof_gallery_03_residual_conservation.pdf}
-\caption{\textbf{Kinematic residual conservation.} \texttt{ResidualConservation.lean} certifies the exact factorisation
-$G^3-X=(s^3-X)\Phi(s,X)/(3s^3+2X)^3$. The plotted multiplier for $X=2$ crosses the fixed point with limiting value $-1/5$, matching the derivative theorem and giving the residual-level explanation of the convergence mechanism.}
-\label{fig:proof_gallery_residual_conservation}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{fig_proof_gallery_04_no_cycles.pdf}
-\caption{\textbf{No periodic orbits under contraction.} \texttt{NoCycles.lean} proves that if $|f(s)-r|\leq c|s-r|$ with $0\leq c<1$, then any finite periodic return $f^{\circ n}(s)=s$ forces $s=r$. The figure shows why: every composed contraction multiplies the nonzero distance by $c^n<1$, contradicting exact return.}
-\label{fig:proof_gallery_no_cycles}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{fig_proof_gallery_05_integer_amplification.pdf}
-\caption{\textbf{Pell--Pandrosion integer amplification.} Theorem~\ref{thm:pell} and \texttt{ThueBridge.lean} prove the exact law $d_{n+1}=d_n\Phi_n$ for $d_n=A_n^3-XB_n^3$. For $X=2$, the logarithmic growth of both the norm and the amplification factor becomes enormous after only a few certified integer steps.}
-\label{fig:proof_gallery_integer_amplification}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{fig_proof_gallery_06_cross_determinant.pdf}
-\caption{\textbf{Cross-determinant separation.} Theorem~\ref{thm:cross_det} proves $AB'-BA'=2AB(A^3-XB^3)$. This locks the separation of consecutive rational approximants to the same cubic norm that drives the Thue-style amplification, so distinctness is carried by an explicit polynomial certificate.}
-\label{fig:proof_gallery_cross_determinant}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.75\textwidth]{fig_proof_gallery_07_voronoi_stability.pdf}
-\caption{\textbf{Voronoi basin stability.} This schematic combines the 2D convexity of Voronoi half-planes from \texttt{VoronoiInvariance.lean} with the distance inequality of Theorem~\ref{thm:basin_stability}: if $z$ is deep enough in the cell of $r$, then a contraction toward $r$ leaves the next point closer to $r$ than to a competing anchor $r'$. The formal basin-stability theorem is stated as a real distance inequality; the displayed plane is the geometric interpretation used by the multi-start architecture.}
-\label{fig:proof_gallery_voronoi_stability}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{fig_proof_gallery_08_hermitian_preservation.pdf}
-\caption{\textbf{Hermitian preservation.} Theorem~\ref{thm:hermitian} and \texttt{HermitianPreservation.lean} prove that the Pandrosion numerator and denominator product preserves the Hermitian condition when the inputs are Hermitian and commute. The visual consequence is spectral confinement to the real axis, unlike a generic complex product.}
-\label{fig:proof_gallery_hermitian_preservation}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.72\textwidth]{fig_proof_gallery_09_dft_spectral.pdf}
-\caption{\textbf{DFT character orthogonality.} \texttt{DFTDecomposition.lean} proves the roots-of-unity cancellation law: $\sum_{j=0}^{p-1}\omega^{jm}$ is $p$ when $p\mid m$ and $0$ otherwise. This supplies the spectral bookkeeping used by the Fourier and descent modules.}
-\label{fig:proof_gallery_dft_spectral}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{fig_proof_gallery_10_effective_irrationality.pdf}
-\caption{\textbf{Effective irrationality bound.} Theorem~\ref{thm:effective} in \texttt{EffectiveIrrationality.lean} turns the cubic factorisation
-$A^3-(rB)^3=(A-rB)(A^2+A\,rB+(rB)^2)$ and the discreteness of nonzero integers into an explicit lower bound for $|A-rB|$; dividing by $B$ gives the corresponding rational approximation bound for $|A/B-r|$. The Pandrosion norm propagation keeps this bound applicable along the integer orbit.}
-\label{fig:proof_gallery_effective_irrationality}
-\end{figure}
-
-\section{Deep Grand Synthesis (Theorems 11--15)}
-
-The final crowning achievements of the Pandrosion formalization are synthesized in the deep theorems modules (\texttt{DeepThirteenTheorems.lean} and \texttt{DeepFifteenTheorems.lean}). 
-These statements bypass purely structural recursion and secure global geometric and Diophantine bounds of unconditional stature.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{deep_theorem_14_smale.pdf}
-\caption{\textbf{Smale 17 Universal Descent (Theorem 14).} The unconditional transition from conditional to guaranteed iteration complexity. The figure demonstrates the geometry of the Pandrosion structural mapping: the global Cauchy entry boundary (Phase 1, dashed limits) effectively captures all orbits, before mapping them to the exponential descent locus (Phase 2, dotted bounds), naturally breaking any algebraic structural symmetry completely.}
-\label{fig:deep_theorem_14}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1.0\textwidth]{deep_theorem_15_vojta.pdf}
-\caption{\textbf{Thue Amplification \& Vojta Orbital Height (Theorems 11, 13, 15).} Orbital mapping of height bounds $h(d_n) = \log_{10} |d_n|$. The graph traces multiple starting seeds converging exponentially. As guaranteed by the rigid formal proofs, the geometric lower bounds unconditionally enforce the arithmetic Vojta height increment, effectively sealing the proof for algebraic sections inside the target Bombieri-Pila varieties.}
-\label{fig:deep_theorem_15}
-\end{figure}
-
-\subsection{The Grand Quartet (Theorems 106--109)}
-
-The absolute climax of the Universitas Pandrosion corpus resolves the boundaries of four historic Diophantine and topological conjectures through metric execution.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1.0\textwidth]{grand_theorem_abc.pdf}
-\caption{\textbf{Topological ABC Embedding (Theorem 106).} The Masser-Oesterlé triple mapped as a geometric particle inside the Pandrosion attractor basin. The gravitational fluid well is strictly bounded by the radical limit surface $\operatorname{rad}(abc)^{1+\epsilon}$ (gold line), reducing the full global ABC Conjecture to a fractional orbit constraint.}
-\label{fig:grand_abc}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1.0\textwidth]{grand_theorem_smale_tensor.pdf}
-\caption{\textbf{N-Dimensional Smale Tensor Majority (Theorem 107).} The descent metric computed natively without orthogonal topological bounds. Randomly scattered chaotic multispectral Jacobian states (red space) mapped iteratively into the exact origin, driven by an algebraically pure polynomial tensor descent mapping overriding dimensionality scaling limitations.}
-\label{fig:grand_smale_tensor}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1.0\textwidth]{grand_theorem_faltings.pdf}
-\caption{\textbf{Effective Faltings Boundaries (Theorem 108).} The execution visualization of the rigorous \texttt{faltings\_search\_bound}. The projective jumps represent rational-point subsets accumulating before being abruptly forced into structural extinction. Halting predictability renders the classical non-effective Siegel limits fully Turing-resolvable.}
-\label{fig:grand_faltings}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1.0\textwidth]{grand_theorem_pisot_salem.pdf}
-\caption{\textbf{Pisot-Salem Strict Accumulation (Theorem 109).} Traces of Salem elements treated as geometrical errors under extreme epoch scaling. No algebraic phase accumulation is locally continuous; rather, trace perturbations plunge geometrically to 0, forcing discrete accumulation strictly bounding around non-degenerate integer Pisot grids without topological smear.}
-\label{fig:grand_pisot_salem}
-\end{figure}
+The contribution is methodological and structural: a complete derivation in a proof assistant of a derivative-free iteration with quadratic convergence and optimal efficiency, from the geometric-sum identity up to a measure-theoretic dynamical-systems statement. Where genuinely analytic content is deferred (super-attracting quadratic bound; a.e. trajectory entry), the hypotheses are explicit and auditable.
 
 \bigskip
 
-\clearpage
-\section*{Epilogue: Universitas Pandrosion Part II (The Visionary Horizon)}
-
-This manuscript formally established the Phase 1 and Phase 2 contraction ratios for Universitas Pandrosion across 109 verified modules. However, the ultimate reach of this continuous geometric abstraction lies in the resolution of the ``Millennium-class'' topological problems unified in our final four modules (The Visionary Horizon, Modules 110--113).
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{vision_riemann_gyroscope.pdf}
-    \caption{\textbf{Th. 110: Riemann Gyroscopic Attractor.} The Riemann Hypothesis transposed into matrix topology. The central $1/2$ line acts as the only globally stable gyroscopic balance metric. Any trajectory outside the perfect symmetry line explodes uncontrollably via the Smale tensor. Lean 4 proves that structural symmetry forces all strictly stable spectrums to reside exactly on $\Re(s) = 1/2$.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{vision_bsd_rank.pdf}
-    \caption{\textbf{Th. 111: Birch and Swinnerton-Dyer Symmetry.} The analytic order of vanishing of the L-series mapped strictly against the topological Faltings-Mordell geometric sinks. By proving the Pandrosion tensor is semi-simple, Algebraic Multiplicity ($r_{analytic}$) is rigorously locked to the Topological Geometric Multiplicity ($r_{algebraic}$).}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{vision_collatz_extinction.pdf}
-    \caption{\textbf{Th. 112: Collatz Extinction Absorption.} Syracuse $3x+1$ sequences modeled as a mixed $p$-adic fluid tree tracing an absolute topological envelope. Because the globally-averaged density favors contraction over expansion, the overarching Faltings Turing Boundary ($M_{min}$) must eventually intersect all trajectories, structurally forcing total absorption into the absolute 4-2-1 center.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{vision_szemeredi_waves.pdf}
-    \caption{\textbf{Th. 113: Szemer\'edi Ergodic Standing Waves.} Combinatorial integer subsets of strictly positive density treated as incompressible topological fluids. Space curvature forces the fluid to assemble into perfect harmonic standing waves to resist dynamic gravity destruction. The projection of these stationary eigenvalues ($\lambda=1$) results in pure discrete Arithmetic Progressions over $\mathbb{N}$.}
-\end{figure}
-
-\clearpage
-\section*{Epilogue: Universitas Pandrosion Part III (The Absolute Native Trinity)}
-
-The mathematical architectures of the Millennium problems inherently relied upon interpreting models of equations as physical constraints. However, there exist theorems of equal profundity that are intrinsically synonymous with the exact internal mechanisms of Universitas Pandrosion sequences. These final three proofs are established with 100\% absolute formal purity, utilizing strictly phase-space bounding axioms.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{absolute_sml_extinction.pdf}
-    \caption{\textbf{Th. 114: Skolem-Mahler-Lech Finiteness.} A native proof mapping the analytic intersections of a recurrence trace. When evaluating discrete roots, the Faltings Granularity Horizon acts as a structural ceiling. Past depth $N_{horizon}$, exponential collision errors mathematically vanish, meaning dynamic zeroes are definitively extinguished. Only the perfectly periodic Szemer\'edi harmonic resonances survive indefinitely.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{absolute_roth_bound.pdf}
-    \caption{\textbf{Th. 115: Liouville-Roth Bound (Fields Medal).} The algebraic non-degeneracy of the continuous polynomial invariant forces the trace Phase-Space to resist infinite volumetric compression. An approximation fraction $p/q$ attempting to out-scale precision lower than $1/q^2$ structurally collapses the Jacobian tensor, generating an unconditionally forbidden spatial topology.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{absolute_lehmer_void.pdf}
-    \caption{\textbf{Th. 116: Lehmer's Spectral Void.} The Mahler Measure evaluated exactly as the fractional Phase 1 trace dust. Because non-cyclotomic geometric expansions carry intrinsic, non-decaying threshold gaps (the Pisot gap), the spectral energy inherently cannot approach continuity around the origin. A rigid Topological Empty Space (Lehmer's Limit $c = 1.17\dots$) isolates purely resonant invariants from the expansive chaotic domain.}
-\end{figure}
-
-\clearpage
-\section*{Epilogue: Universitas Pandrosion Part IV (The Diophantine Quintology)}
-
-Moving beyond spectral voids and compression limits, we now formalize five classical theorems spanning cyclotomic classification, equidistribution, transcendence, effective logarithmic bounds, and higher-dimensional subspace decomposition. Each theorem is a direct native consequence of the Pandrosion Phase 1/Phase 2 tensor architecture.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{part4_kronecker.pdf}
-    \caption{\textbf{Th. 117: Kronecker's Roots of Unity.} Every algebraic integer whose conjugates all lie on the unit circle must be a root of unity. This is a direct corollary of Lehmer's Spectral Void (Th. 116): Mahler measure $= 1$ forces the asymmetric dust volume to vanish identically, collapsing the polynomial onto the cyclotomic lattice. The green nodes are the only permitted algebraic integers on the golden circle.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{part4_weyl.pdf}
-    \caption{\textbf{Th. 118: Weyl Equidistribution.} The irrational orbital sequence $(n\varphi \bmod 1)$ distributes uniformly across $[0,1)$. In the Pandrosion framework, any non-uniform accumulation would violate the Smale tensor volume conservation law. The histogram confirms that the observed density matches the expected uniform distribution exactly.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{part4_gelfond.pdf}
-    \caption{\textbf{Th. 119: Gelfond-Schneider Transcendence.} If $\alpha$ is algebraic $\neq 0,1$ and $\beta$ is algebraic irrational, then $\alpha^\beta$ is transcendental. The exponential tower generates approximation sequences whose compression rate (green) systematically exceeds the algebraic Roth limit (magenta). This structural violation of the Jacobian tensor bound forces transcendence unconditionally.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{part4_baker.pdf}
-    \caption{\textbf{Th. 120: Baker's Linear Forms in Logarithms.} Effective lower bounds for $|b_1 \log \alpha_1 + \cdots + b_n \log \alpha_n|$ as a function of the coefficient height $B$. Each logarithmic term represents an independent Phase 1 orbital direction. The multi-dimensional Jacobian tensor product imposes calculable floor bounds that prevent vanishing.}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{part4_schmidt.pdf}
-    \caption{\textbf{Th. 121: Schmidt's Subspace Theorem.} The higher-dimensional generalization of Roth's bound: integer solutions to simultaneous linear inequalities with algebraic coefficients collapse onto a finite union of proper linear subspaces (gold lines). Full-rank solutions (red crosses) are provably finite. The tensor conservation law forbids full-dimensional compression.}
-\end{figure}
-
-\clearpage
-\bigskip
-
-\bibliographystyle{plain}
 \begin{thebibliography}{99}
 \bibitem{leanprover} de Moura, L., Ullrich, S., \textit{The Lean 4 Theorem Prover and Programming Language}, CADE-28, Springer LNCS (2021).
+\bibitem{mathlib} The Mathlib Community, \textit{Mathlib: A unified library of mathematics formalized}, \url{https://github.com/leanprover-community/mathlib4}.
 \bibitem{pappus} Pappus of Alexandria, \textit{Collectio}, Book III, ca.\ 340 CE.
-\bibitem{halley} Halley, E., \textit{A New, Exact and Easy Method of Finding Roots of any Equations Generally, and that without any Previous Reduction}, Phil.\ Trans.\ Royal Soc.\ 18 (1694), 136--148.
-\bibitem{traub} Traub, J.F., \textit{Iterative Methods for the Solution of Equations}, Prentice-Hall (1964).
-\bibitem{householder} Householder, A.S., \textit{The Numerical Treatment of a Single Nonlinear Equation}, McGraw-Hill (1970).
-\bibitem{mathlib} The Mathlib Community, \textit{Mathlib: A unified library of mathematics formalized}, available at \url{https://github.com/leanprover-community/mathlib4}.
 \bibitem{aitken} Aitken, A.C., \textit{On Bernoulli's Numerical Solution of Algebraic Equations}, Proc.\ Royal Soc.\ Edinburgh 46 (1926), 289--305.
 \bibitem{steffensen} Steffensen, J.F., \textit{Remarks on Iteration}, Skandinavisk Aktuarietidskrift 16 (1933), 64--72.
+\bibitem{householder} Householder, A.S., \textit{The Numerical Treatment of a Single Nonlinear Equation}, McGraw-Hill (1970).
+\bibitem{traub} Traub, J.F., \textit{Iterative Methods for the Solution of Equations}, Prentice-Hall (1964).
 \bibitem{kung_traub} Kung, H.T., Traub, J.F., \textit{Optimal Order of One-Point and Multipoint Iteration}, J.\ ACM 21 (1974), 643--651.
 \bibitem{ostrowski} Ostrowski, A.M., \textit{Solution of Equations in Euclidean and Banach Spaces}, Academic Press (1973).
+\bibitem{mcmullen} McMullen, C., \textit{Families of rational maps and iterative root-finding algorithms}, Annals of Mathematics 125 (1987), 467--493.
 \bibitem{boldo_melquiond} Boldo, S., Melquiond, G., \textit{Computer Arithmetic and Formal Proofs}, ISTE Press (2017).
 \end{thebibliography}
 
