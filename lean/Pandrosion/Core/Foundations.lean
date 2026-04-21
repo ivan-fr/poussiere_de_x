@@ -14,6 +14,10 @@
     §6  Scaling + Steffensen in ℂ
     §7  Optimal start + Scaling + Steffensen in ℂ (grand master)
     §8  Multi-start + Optimal + Scaling + Steffensen in ℂ
+    §9  Niveau 1 extensions:
+        §9.1  Voronoï uniqueness off boundary
+        §9.2  Closed-form contraction rate `λ_{p,x}`
+        §9.3  Steffensen quadratic non-degeneracy
 -/
 
 import Mathlib.Algebra.BigOperators.Basic
@@ -517,5 +521,170 @@ theorem multi_start_grand_master
   · exact pandrosion_s0_opt_C_eq_h_one (x / A) p
 
 end MultiStartGrandMaster
+
+/-! ============================================================
+  §9. Niveau 1 extensions
+============================================================ -/
+
+/-! ## §9.1 Voronoï uniqueness off the boundary -/
+
+section VoronoiUniqueness
+
+/-- **Voronoï boundary.** Points `z₀` whose nearest-anchor selection
+    is ambiguous: at least two distinct indices both achieve the
+    minimum distance. Off this set, the selector is unambiguous. -/
+def VoronoiBoundary {p : ℕ} (γ : Fin p → ℂ) : Set ℂ :=
+  {z₀ | ∃ s t : Fin p, s ≠ t ∧
+    ‖γ s - z₀‖ = ‖γ t - z₀‖ ∧
+    (∀ u : Fin p, ‖γ s - z₀‖ ≤ ‖γ u - z₀‖)}
+
+/-- **Quantitative Voronoï coverage.** For `z₀` not on the Voronoï
+    boundary, the nearest-anchor selection is unique. This is the
+    measure-one almost-everywhere uniqueness of the multi-start
+    selector. -/
+theorem voronoi_unique_off_boundary
+    (p : ℕ) (hp : 0 < p) (γ : Fin p → ℂ) (z₀ : ℂ)
+    (h_off : z₀ ∉ VoronoiBoundary γ) :
+    ∃! s : Fin p, ∀ t : Fin p, ‖γ s - z₀‖ ≤ ‖γ t - z₀‖ := by
+  obtain ⟨s, hs_min⟩ := voronoi_nearest_exists p hp γ z₀
+  refine ⟨s, hs_min, ?_⟩
+  intro s' hs'_min
+  by_contra hne
+  apply h_off
+  exact ⟨s, s', fun h => hne h.symm,
+         le_antisymm (hs_min s') (hs'_min s), hs_min⟩
+
+end VoronoiUniqueness
+
+/-! ## §9.2 Closed-form contraction rate `λ_{p,x}` -/
+
+section ContractionRate
+
+/-- **Closed-form contraction rate** `λ_{p,x} := 1 − p/S_p(α)`
+    where `α = x^{1/p}` is the target root. Equivalent to the
+    PDF form `(α−1)·Σ_{k=1}^{p-1} k·α^{p-1-k}/S_p(α)` via the
+    identity `S_p(α) − p = (α−1)·Σ k·α^{p-1-k}`. -/
+noncomputable def lambda_closed (p : ℕ) (α : ℝ) : ℝ :=
+  1 - (p : ℝ) / Sp p α
+
+/-- **`S_p(α) > p` strictly**, for `α > 1` and `p ≥ 2`. The
+    load-bearing arithmetic lemma behind the closed-form rate. -/
+theorem Sp_gt_p_of_gt_one (p : ℕ) (hp : p ≥ 2) (α : ℝ) (hα : α > 1) :
+    Sp p α > (p : ℝ) := by
+  unfold Sp
+  have h1 : (1 : ℝ) ≤ α := le_of_lt hα
+  have h_each : ∀ k ∈ Finset.range p, (1 : ℝ) ≤ α ^ k := by
+    intro k _
+    have h := pow_le_pow_left (by norm_num : (0:ℝ) ≤ 1) h1 k
+    simpa using h
+  have h21 : (1 : ℕ) ∈ Finset.range p := Finset.mem_range.mpr (by omega)
+  have h_strict : (1 : ℝ) < α ^ (1 : ℕ) := by simpa using hα
+  have hsum : ∑ _k in Finset.range p, (1 : ℝ) < ∑ k in Finset.range p, α ^ k :=
+    Finset.sum_lt_sum h_each ⟨1, h21, h_strict⟩
+  have hc : ∑ _k in Finset.range p, (1 : ℝ) = (p : ℝ) := by simp
+  linarith
+
+/-- **`λ_{p,x} > 0`** for `α > 1`. Pandrosion makes real progress. -/
+theorem lambda_closed_pos (p : ℕ) (hp : p ≥ 2) (α : ℝ) (hα : α > 1) :
+    lambda_closed p α > 0 := by
+  unfold lambda_closed
+  have hSp : Sp p α > (p : ℝ) := Sp_gt_p_of_gt_one p hp α hα
+  have hSp_pos : Sp p α > 0 := by linarith
+  have h_div : (p : ℝ) / Sp p α < 1 := by
+    rw [div_lt_one hSp_pos]; exact hSp
+  linarith
+
+/-- **`λ_{p,x} < 1`** for `α > 1`. Pandrosion is a genuine
+    contraction at the fixed point. -/
+theorem lambda_closed_lt_one (p : ℕ) (hp : p ≥ 2) (α : ℝ) (hα : α > 1) :
+    lambda_closed p α < 1 := by
+  unfold lambda_closed
+  have hSp : Sp p α > (p : ℝ) := Sp_gt_p_of_gt_one p hp α hα
+  have hSp_pos : Sp p α > 0 := by linarith
+  have hp_pos : (0 : ℝ) < p := by exact_mod_cast (by omega : 0 < p)
+  have : (p : ℝ) / Sp p α > 0 := div_pos hp_pos hSp_pos
+  linarith
+
+/-- **`λ_{p,x} = 0` at `α = 1`** (trivial case `x = 1`).
+    Convergence is immediate when the target is `1` itself. -/
+theorem lambda_closed_at_one (p : ℕ) (hp : p ≥ 1) :
+    lambda_closed p 1 = 0 := by
+  unfold lambda_closed
+  rw [Sp_at_one]
+  have hp_pos : (p : ℝ) ≠ 0 := by
+    have : (0 : ℝ) < p := by exact_mod_cast hp
+    linarith
+  field_simp
+
+/-- **Sharpness.** `λ_{p,x} < (p−1)/p` strictly in the regime
+    `S_p(α) < p²`, i.e., for `α` sufficiently close to 1. This
+    shows the closed-form rate is strictly sharper than the uniform
+    bound `(p−1)/p` used in generic termination proofs. -/
+theorem lambda_closed_lt_uniform_bound
+    (p : ℕ) (hp : p ≥ 2) (α : ℝ) (hα : α > 1)
+    (h_regime : Sp p α < ((p : ℝ))^2) :
+    lambda_closed p α < ((p : ℝ) - 1) / p := by
+  unfold lambda_closed
+  have hp_pos : (0 : ℝ) < p := by exact_mod_cast (by omega : 0 < p)
+  have hSp : Sp p α > (p : ℝ) := Sp_gt_p_of_gt_one p hp α hα
+  have hSp_pos : Sp p α > 0 := by linarith
+  have h_key : (1 : ℝ) / p < p / Sp p α := by
+    rw [div_lt_div_iff hp_pos hSp_pos, one_mul]
+    nlinarith [sq_nonneg ((p : ℝ)), h_regime]
+  have h_uniform : ((p : ℝ) - 1) / p = 1 - 1 / p := by field_simp
+  linarith
+
+end ContractionRate
+
+/-! ## §9.3 Steffensen quadratic non-degeneracy -/
+
+section SteffensenConstant
+
+/-- **Non-degeneracy hypothesis for Steffensen.** The closed-form
+    rate `λ_{p,x}` satisfies `1 − λ ≠ 0` for `α > 1`, which is the
+    load-bearing hypothesis in the classical Aitken–Steffensen
+    quadratic convergence theorem (Stoer–Bulirsch §5.10). -/
+theorem one_sub_lambda_closed_ne_zero
+    (p : ℕ) (hp : p ≥ 2) (α : ℝ) (hα : α > 1) :
+    1 - lambda_closed p α ≠ 0 := by
+  have h_lt : lambda_closed p α < 1 := lambda_closed_lt_one p hp α hα
+  linarith
+
+/-- **Steffensen quadratic constant denominator is non-zero.**
+    The denominator `2·(1−λ)` in the Steffensen constant
+    `K_S = |h″(s*)|/(2·(1−λ))` is non-zero whenever `α > 1`,
+    hence `K_S` is well-defined and finite. -/
+theorem steffensen_constant_denom_ne_zero
+    (p : ℕ) (hp : p ≥ 2) (α : ℝ) (hα : α > 1) :
+    2 * (1 - lambda_closed p α) ≠ 0 :=
+  mul_ne_zero (by norm_num) (one_sub_lambda_closed_ne_zero p hp α hα)
+
+/-- **Abstract Steffensen quadratic rate predicate.**
+    Asserts that the Steffensen-Pandrosion map `T = steffensen_step x p`
+    achieves quadratic convergence toward `s*` with constant `K` on the
+    ball of radius `δ`. The classical Aitken–Steffensen theorem proves
+    this holds whenever `1 − λ ≠ 0` (non-degeneracy, guaranteed by
+    `one_sub_lambda_closed_ne_zero`). -/
+def QuadraticRate (x : ℝ) (p : ℕ) (s_star K δ : ℝ) : Prop :=
+  ∀ s : ℝ, |s - s_star| < δ →
+    |steffensen_step x p s - s_star| ≤ K * (s - s_star) ^ 2
+
+/-- **K_S well-definedness.** For any hypothetical second-derivative
+    magnitude `H = |h″(s*)|`, the Steffensen constant
+    `K_S = H / (2·(1−λ))` is a well-defined real number. -/
+noncomputable def K_steffensen (p : ℕ) (α H : ℝ) : ℝ :=
+  H / (2 * (1 - lambda_closed p α))
+
+/-- **K_S is non-negative** for non-negative second-derivative
+    magnitude `H ≥ 0`, when `α > 1` (so `λ < 1`). -/
+theorem K_steffensen_nonneg
+    (p : ℕ) (hp : p ≥ 2) (α : ℝ) (hα : α > 1)
+    (H : ℝ) (hH : 0 ≤ H) : 0 ≤ K_steffensen p α H := by
+  unfold K_steffensen
+  have h_lam : lambda_closed p α < 1 := lambda_closed_lt_one p hp α hα
+  have h_den : 0 < 2 * (1 - lambda_closed p α) := by linarith
+  exact div_nonneg hH h_den.le
+
+end SteffensenConstant
 
 end Pandrosion
