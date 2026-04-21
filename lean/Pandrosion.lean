@@ -11,3 +11,4 @@ import Pandrosion.BasinCertificates
 import Pandrosion.PrimeRootIrrationality
 import Pandrosion.MultiStartP
 import Pandrosion.MultiStartPSharp
+import Pandrosion.MultiStartPContraction
