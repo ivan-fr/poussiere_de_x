@@ -239,4 +239,14 @@ import Pandrosion
 #print axioms Pandrosion.steffensen_dynamical_convergence_pointwise
 #print axioms Pandrosion.steffensen_dynamical_convergence_ae
 
+/-! ================================================================
+  §16  LinearAsymptotics
+================================================================ -/
+
+#print axioms Pandrosion.lambdaClosedC_ne_one_at_fp
+#print axioms Pandrosion.cycAnchor_ne_zero
+#print axioms Pandrosion.cycAnchor_lambdaClosedC_ne_one
+#print axioms Pandrosion.pandrosion_h_C_locally_lipschitz_at_fp
+#print axioms Pandrosion.pandrosion_h_C_strict_contraction_when_abs_lt_one
+
 -- END GENERATED AXIOM AUDIT

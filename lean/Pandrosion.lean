@@ -16,3 +16,4 @@ import Pandrosion.Core.MasterAbsolu
 import Pandrosion.Core.ComplexMultiplier
 import Pandrosion.Core.LocalAttraction
 import Pandrosion.Core.DynamicalConvergence
+import Pandrosion.Core.LinearAsymptotics
