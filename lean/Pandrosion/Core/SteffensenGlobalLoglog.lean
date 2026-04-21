@@ -156,7 +156,8 @@ theorem steffensen_global_loglog_ae_mod_mcmullen
     (p : ℕ) (hp : 1 ≤ p)
     (x : ℂ) (hx : x ≠ 0)
     (α : ℂ) (hα : α ≠ 0) (hα_pow : α ^ p = 1 / x)
-    (hSp : ∀ s : Fin p, Sp_C p (cycAnchor α p s) ≠ 0) :
+    (hSp : ∀ s : Fin p, Sp_C p (cycAnchor α p s) ≠ 0)
+    (hMcM : McMullenAEEntry p x α) :
     ∀ᵐ z₀ : ℂ ∂volume, ∀ ε > 0, ∃ N : ℕ,
       ∀ k ≥ N, ∃ s : Fin p,
         ‖(steffensen_step_C x p)^[k] z₀ - cycAnchor α p s‖ ≤ ε := by
@@ -168,8 +169,7 @@ theorem steffensen_global_loglog_ae_mod_mcmullen
   have hr_fn_pos : ∀ s, 0 < r_fn s := fun s =>
     steffensenR_of_fp_pos x hx p hp (cycAnchor α p s)
       (cycAnchor_ne_zero hα p s) (hSp s) _
-  have h_entry :=
-    pandrosion_steffensen_mcmullen_ae p hp x hx α hα hα_pow hSp r_fn hr_fn_pos
+  have h_entry := hMcM r_fn hr_fn_pos
   filter_upwards [h_entry] with z₀ hz₀
   obtain ⟨s, k₀, h_enter⟩ := hz₀
   intro ε hε_pos

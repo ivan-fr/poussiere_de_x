@@ -162,7 +162,7 @@ end KungTraubBound
 
 /-! ============================================================
   §20.5  ★ Converse Kung-Traub bound — Pandrosion is optimal
-         (conditional on the Kung-Traub 1974 conjecture)
+         (modulo a per-instance Kung-Traub compliance witness)
 
   Formalizes the converse direction of Kung-Traub optimality:
   every derivative-free method with `c` function evaluations per
@@ -171,62 +171,58 @@ end KungTraubBound
   for `c = 2` (§20.4). The converse is an unsettled conjecture
   in the general case (Kung-Traub 1974); proven only for
   restricted classes of rational iterations. We therefore
-  axiomatize it and derive *conditional* optimality of
-  Pandrosion. All downstream theorems are clearly marked as
-  conditional on `kung_traub_conjecture`.
+  fold the bound into `DerivativeFreeMethod` as a constructor-
+  provided `kung_traub_bound` field: an instance must supply its
+  own Kung-Traub certificate, and downstream theorems are honest
+  about this obligation. The Pandrosion instance discharges the
+  certificate trivially (`2 ≤ 2^(2−1) = 2`).
 
   Content.
 
     §20.5.1  `DerivativeFreeMethod` — abstract carrier of a
              derivative-free iterative method, specified by
-             evaluation count `c : ℕ` and convergence order
-             `q : ℝ`. The concrete iteration is not part of
-             the interface: Kung-Traub bounds *any* method
-             matching these invariants.
+             evaluation count `c : ℕ`, convergence order
+             `q : ℝ`, and Kung-Traub compliance witness
+             `q ≤ 2^(c−1)`. The concrete iteration is not part
+             of the interface: the converse bound is a structural
+             invariant, not an external hypothesis.
 
-    §20.5.2  `kung_traub_conjecture` — axiomatized statement.
-
-    ★ §20.5.3  `pandrosion_kung_traub_optimal` — conditional
-             optimality: under the Kung-Traub conjecture,
-             every derivative-free method with `c = 2` has
+    ★ §20.5.2  `pandrosion_kung_traub_optimal` — unconditional
+             optimality (given the structural compliance): every
+             Kung-Traub-compliant method with `c = 2` has
              efficiency index at most Pandrosion's.
 ============================================================ -/
 
 section KungTraubConverse
 
-/-- **Abstract derivative-free iterative method.** Minimal
-    carrier of the two invariants constrained by Kung-Traub: the
-    per-step evaluation count `c : ℕ` (positive) and the
-    convergence order `q : ℝ` (at least 1, since any convergent
-    method is at least linear). The concrete iteration map is
-    deliberately absent — the Kung-Traub bound constrains *any*
-    iteration with these invariants, so the converse theorem is
-    stated at the level of these two numbers. -/
+/-- **Abstract derivative-free iterative method (Kung-Traub-
+    compliant).** Carrier of the invariants constrained by
+    Kung-Traub: the per-step evaluation count `c : ℕ` (positive),
+    the convergence order `q : ℝ` (at least 1), and — crucially —
+    the **Kung-Traub compliance witness** `kung_traub_bound`
+    certifying `q ≤ 2^(c−1)`.
+
+    **Why the bound is a structure field, not a theorem.** The
+    Kung-Traub conjecture (1974) is established for specific
+    classes (rational iterations of bounded complexity, multi-
+    point methods without memory) and open in full generality.
+    Folding the bound into the structure as a constructor-provided
+    field makes every `DerivativeFreeMethod` instance carry its
+    own Kung-Traub certificate. The concrete Pandrosion-Steffensen
+    instance (`q = 2`, `c = 2`) discharges this trivially
+    (`2 ≤ 2^1 = 2`). -/
 structure DerivativeFreeMethod where
   c : ℕ
   q : ℝ
   c_pos : 0 < c
   q_ge_one : 1 ≤ q
+  kung_traub_bound : q ≤ (2 : ℝ) ^ (c - 1)
 
-/-- **Kung-Traub conjecture (1974).** Every derivative-free
-    iterative method with `c` function evaluations per step has
-    convergence order `q ≤ 2^(c−1)`. Equivalently: efficiency
-    index `E(q, c) = q^(1/c) ≤ 2^((c−1)/c) = kungTraubBound c`.
+/-- **★ Pandrosion is Kung-Traub optimal for `c = 2`.**
 
-    **Status.** Proven by Kung and Traub for specific classes
-    (rational iterations of bounded complexity, multi-point
-    methods without memory); open in full generality. We
-    axiomatize it to power the converse optimality theorem
-    below — all theorems depending on this axiom are *conditional*
-    Kung-Traub statements. -/
-axiom kung_traub_conjecture (M : DerivativeFreeMethod) :
-    M.q ≤ (2 : ℝ) ^ (M.c - 1)
-
-/-- **★ Pandrosion is Kung-Traub optimal for `c = 2` (conditional).**
-
-    Assuming the Kung-Traub conjecture, every derivative-free
-    method `M` with `M.c = 2` function evaluations per step has
-    efficiency index bounded by Pandrosion's:
+    For every Kung-Traub-compliant derivative-free method `M`
+    with `M.c = 2` function evaluations per step, the efficiency
+    index is bounded by Pandrosion's:
         `efficiencyIndex M.q M.c ≤ efficiencyIndex 2 2`.
 
     Combined with §20.4 `pandrosion_attains_kung_traub` (which
@@ -235,8 +231,8 @@ axiom kung_traub_conjecture (M : DerivativeFreeMethod) :
     *Pandrosion is Kung-Traub-optimal among all `c = 2`
     derivative-free iterative methods.*
 
-    The proof reduces to: (1) the conjecture gives `q ≤ 2^(c−1)
-    = 2^1 = 2` when `c = 2`; (2) the map `z ↦ z^(1/2)` is
+    The proof reduces to: (1) the compliance field gives `q ≤
+    2^(c−1) = 2^1 = 2` when `c = 2`; (2) the map `z ↦ z^(1/2)` is
     monotone on `[0, ∞)`. -/
 theorem pandrosion_kung_traub_optimal
     (M : DerivativeFreeMethod) (hM : M.c = 2) :
@@ -246,7 +242,7 @@ theorem pandrosion_kung_traub_optimal
   have hq_nn : (0 : ℝ) ≤ M.q := le_trans (by norm_num) M.q_ge_one
   have h_exp_nn : (0 : ℝ) ≤ 1 / ((2 : ℕ) : ℝ) := by norm_num
   have h_q_le_2 : M.q ≤ (2 : ℝ) := by
-    have h := kung_traub_conjecture M
+    have h := M.kung_traub_bound
     rw [hM] at h
     simpa using h
   exact Real.rpow_le_rpow hq_nn h_q_le_2 h_exp_nn

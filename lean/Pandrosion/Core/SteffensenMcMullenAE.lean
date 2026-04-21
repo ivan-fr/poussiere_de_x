@@ -18,25 +18,24 @@
   theory, distortion estimates, post-critical-finite dynamics,
   Lyubich-Minsky laminations, …) not yet formalised in Mathlib.
   We therefore isolate the specific consequence we need as a
-  named axiom, following the same **conditional-on-classical-
-  result** pattern already used for `kung_traub_conjecture`
-  (§22). Every theorem depending on §32 is thus explicitly a
-  *conditional* McMullen statement.
+  named `Prop` and thread it as an explicit hypothesis through
+  every theorem that depends on it. No `axiom` keyword is used:
+  downstream consumers must supply the McMullen property at the
+  call site, making the dependency fully auditable.
 
   Content.
 
-    §32.1  axiom `pandrosion_steffensen_mcmullen_ae`
-           — the specific a.e. trajectory-entry statement for the
-           canonical cyclotomic anchor family of `z^p = 1/x`.
+    §32.1  `McMullenAEEntry` — named `Prop` bundling the a.e.
+           trajectory-entry statement for the canonical cyclotomic
+           anchor family of `z^p = 1/x`.
 
     §32.2  `steffensen_solves_ae_mod_mcmullen`
-           — the final end-to-end theorem: modulo §32.1, for
-           Lebesgue-almost every `z₀`, the Pandrosion-Steffensen
-           iterates converge in ℂ to one of the cyclotomic roots
-           `γ_s`. Chains §31.3 (§31
-           `steffensen_step_C_quadratic_bound` ∘ §28.3) with the
-           McMullen axiom to discharge the last remaining
-           hypothesis of `steffensen_dynamical_convergence_ae`.
+           — the final end-to-end theorem: given the McMullen
+           hypothesis, for Lebesgue-almost every `z₀`, the
+           Pandrosion-Steffensen iterates converge in ℂ to one of
+           the cyclotomic roots `γ_s`. Chains §31.3 with the
+           McMullen hypothesis to discharge the last remaining
+           premise of `steffensen_dynamical_convergence_ae`.
 -/
 
 import Pandrosion.Core.SteffensenQuadraticBound
@@ -46,12 +45,12 @@ namespace Pandrosion
 open Filter Topology MeasureTheory Complex
 
 /-! ============================================================
-  §32.1  McMullen a.e. trajectory-entry (axiom)
+  §32.1  McMullen a.e. trajectory-entry (named hypothesis)
 ============================================================ -/
 
-section McMullenAxiom
+section McMullenHypothesis
 
-/-- **★★★ McMullen almost-everywhere trajectory-entry axiom.**
+/-- **★★★ McMullen almost-everywhere trajectory-entry property.**
 
     For the Pandrosion-Steffensen iterator `steffensen_step_C x p`
     on `z^p = 1/x`, and any choice of positive radii
@@ -67,30 +66,25 @@ section McMullenAxiom
     zero, hence a.e. orbit accumulates at the post-critical set
     (here, the `p` roots).
 
-    **Why axiomatised.** McMullen's proof combines (i) a general
-    theorem of Lyubich that Julia sets of rational maps satisfy a
-    measure-zero dichotomy, (ii) distortion estimates that rule
-    out positive-measure Julia sets for root-finding iterations of
-    `z^p − x`, (iii) post-critical-finite dynamics. None of
-    Mathlib currently formalises this apparatus; isolating the
-    specific consequence as an axiom keeps the dependency explicit
-    and auditable. Every downstream theorem depending on §32.1 is
-    *conditional on McMullen's theorem*.
-
-    **Precedent.** `kung_traub_conjecture` (§22) follows the same
-    convention: a named, clearly-documented classical axiom that
-    lets the Lean corpus express conditional consequences cleanly. -/
-axiom pandrosion_steffensen_mcmullen_ae
-    (p : ℕ) (_hp : 1 ≤ p)
-    (x : ℂ) (_hx : x ≠ 0)
-    (α : ℂ) (_hα : α ≠ 0) (_hα_pow : α ^ p = 1 / x)
-    (_hSp : ∀ s : Fin p, Sp_C p (cycAnchor α p s) ≠ 0)
-    (r : Fin p → ℝ) (_hr : ∀ s, 0 < r s) :
+    **Why a named `Prop`, not an axiom.** McMullen's proof
+    combines (i) Lyubich's general measure-zero dichotomy for
+    Julia sets of rational maps, (ii) distortion estimates that
+    rule out positive-measure Julia sets for root-finding
+    iterations of `z^p − x`, (iii) post-critical-finite dynamics
+    — none of which Mathlib currently formalises. Instead of
+    sealing this behind an `axiom` keyword, we expose the precise
+    statement as a named `Prop` that downstream theorems take as
+    an explicit hypothesis. Consumers are obligated to supply a
+    proof (via external machinery) or to instantiate the
+    dependency-chain conditionally. -/
+def McMullenAEEntry
+    (p : ℕ) (x : ℂ) (α : ℂ) : Prop :=
+  ∀ (r : Fin p → ℝ), (∀ s, 0 < r s) →
     ∀ᵐ z₀ : ℂ ∂volume,
       ∃ s : Fin p, ∃ k₀ : ℕ,
         ‖(steffensen_step_C x p)^[k₀] z₀ - cycAnchor α p s‖ < r s
 
-end McMullenAxiom
+end McMullenHypothesis
 
 /-! ============================================================
   §32.2  Final theorem — Pandrosion-Steffensen solves a.e.
@@ -106,10 +100,11 @@ section SolvesAE
     p s` (generic non-degeneracy — fails only on a proper algebraic
     subvariety of `x`).
 
-    Modulo the McMullen axiom `pandrosion_steffensen_mcmullen_ae`,
-    for Lebesgue-almost every initial point `z₀ ∈ ℂ`, there exists
-    an anchor index `s : Fin p` such that the Pandrosion-Steffensen
-    iterates converge in ℂ to the cyclotomic root `γ_s`:
+    Given the McMullen hypothesis `hMcM : McMullenAEEntry p x α`
+    (§32.1), for Lebesgue-almost every initial point `z₀ ∈ ℂ`,
+    there exists an anchor index `s : Fin p` such that the
+    Pandrosion-Steffensen iterates converge in ℂ to the cyclotomic
+    root `γ_s`:
         `(steffensen_step_C x p)^[k] z₀  →  γ_s  as k → ∞`.
 
     This is the **paper-citable global result**: combining
@@ -124,7 +119,8 @@ theorem steffensen_solves_ae_mod_mcmullen
     (p : ℕ) (hp : 1 ≤ p)
     (x : ℂ) (hx : x ≠ 0)
     (α : ℂ) (hα : α ≠ 0) (hα_pow : α ^ p = 1 / x)
-    (hSp : ∀ s : Fin p, Sp_C p (cycAnchor α p s) ≠ 0) :
+    (hSp : ∀ s : Fin p, Sp_C p (cycAnchor α p s) ≠ 0)
+    (hMcM : McMullenAEEntry p x α) :
     ∀ᵐ z₀ : ℂ ∂volume,
       ∃ s : Fin p,
         Tendsto (fun k => (steffensen_step_C x p)^[k] z₀) atTop
@@ -133,10 +129,8 @@ theorem steffensen_solves_ae_mod_mcmullen
   obtain ⟨r_fn, hr_pos, h_chain⟩ :=
     steffensen_dynamical_convergence_ae_unconditional
       p hp x hx α hα hα_pow hSp
-  -- Discharge the a.e. trajectory-entry hypothesis via the McMullen axiom.
-  have h_entry :=
-    pandrosion_steffensen_mcmullen_ae p hp x hx α hα hα_pow hSp r_fn hr_pos
-  exact h_chain h_entry
+  -- Discharge the a.e. trajectory-entry hypothesis via McMullen.
+  exact h_chain (hMcM r_fn hr_pos)
 
 end SolvesAE
 
