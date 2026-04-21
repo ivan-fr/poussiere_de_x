@@ -13,3 +13,4 @@ import Pandrosion.Core.SuperGrandMaster
 import Pandrosion.Core.UniformContractionRate
 import Pandrosion.Core.ConcreteIteration
 import Pandrosion.Core.MasterAbsolu
+import Pandrosion.Core.ComplexMultiplier
