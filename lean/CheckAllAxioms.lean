@@ -249,4 +249,19 @@ import Pandrosion
 #print axioms Pandrosion.pandrosion_h_C_locally_lipschitz_at_fp
 #print axioms Pandrosion.pandrosion_h_C_strict_contraction_when_abs_lt_one
 
+/-! ================================================================
+  §17  QuadraticBound
+================================================================ -/
+
+#print axioms Pandrosion.pandrosion_h_C_factorization
+#print axioms Pandrosion.hFactorAux_at_alpha
+#print axioms Pandrosion.hFactor_at_alpha
+#print axioms Pandrosion.Sp_C_analyticAt
+#print axioms Pandrosion.hFactorAux_analyticAt
+#print axioms Pandrosion.hFactor_analyticAt
+#print axioms Pandrosion.pandrosion_h_C_analyticAt
+#print axioms Pandrosion.hFactor_isBigO_sub_at_fp
+#print axioms Pandrosion.pandrosion_h_C_quadratic_bound
+#print axioms Pandrosion.pandrosion_h_C_quadratic_bound_with_small
+
 -- END GENERATED AXIOM AUDIT
