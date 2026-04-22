@@ -57,6 +57,7 @@
 #print axioms Pandrosion.aitken_pandrosion_denominator
 #print axioms Pandrosion.aitken_perfect_extrapolation
 #print axioms Pandrosion.allows
+#print axioms Pandrosion.alphaHitSet_volume_zero
 #print axioms Pandrosion.alphaP_pos
 #print axioms Pandrosion.alphaP_times_x_minus_one_lb
 #print axioms Pandrosion.anchor_fixed_point
@@ -195,6 +196,7 @@
 #print axioms Pandrosion.lambda_fp_eq_lambda_closed
 #print axioms Pandrosion.lambda_fp_eq_quotient
 #print axioms Pandrosion.lambda_fp_mul_Sp
+#print axioms Pandrosion.linearTowerAux_bound
 #print axioms Pandrosion.linear_decay_bound
 #print axioms Pandrosion.local_contraction_iterate_converges
 #print axioms Pandrosion.local_quadratic_iterate_converges
@@ -209,6 +211,7 @@
 #print axioms Pandrosion.matrix_phase_lock_UV
 #print axioms Pandrosion.matrix_phase_lock_V
 #print axioms Pandrosion.mcmullen_p2_complex_effective
+#print axioms Pandrosion.mcmullen_p2_complex_measure_uniform
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
@@ -311,6 +314,7 @@
 #print axioms Pandrosion.product_descent_bound
 #print axioms Pandrosion.quadratic_deviation_at_fp
 #print axioms Pandrosion.quadratic_loglog_complexity
+#print axioms Pandrosion.quadratic_loglog_complexity_effective
 #print axioms Pandrosion.quadratic_loglog_from_basin
 #print axioms Pandrosion.quadratic_tower_bound
 #print axioms Pandrosion.re_nontrivial_sum
@@ -339,6 +343,7 @@
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared_C
 #print axioms Pandrosion.slowSet_iInter_eq_juliaSetP
+#print axioms Pandrosion.slowSet_iff_norm_v
 #print axioms Pandrosion.slowSet_measurable
 #print axioms Pandrosion.slowSet_seq_antitone
 #print axioms Pandrosion.slow_set_decay_qualitative
@@ -469,6 +474,7 @@ import Pandrosion
 #print axioms Pandrosion.aitken_pandrosion_denominator
 #print axioms Pandrosion.aitken_perfect_extrapolation
 #print axioms Pandrosion.allows
+#print axioms Pandrosion.alphaHitSet_volume_zero
 #print axioms Pandrosion.alphaP_pos
 #print axioms Pandrosion.alphaP_times_x_minus_one_lb
 #print axioms Pandrosion.anchor_fixed_point
@@ -607,6 +613,7 @@ import Pandrosion
 #print axioms Pandrosion.lambda_fp_eq_lambda_closed
 #print axioms Pandrosion.lambda_fp_eq_quotient
 #print axioms Pandrosion.lambda_fp_mul_Sp
+#print axioms Pandrosion.linearTowerAux_bound
 #print axioms Pandrosion.linear_decay_bound
 #print axioms Pandrosion.local_contraction_iterate_converges
 #print axioms Pandrosion.local_quadratic_iterate_converges
@@ -621,6 +628,7 @@ import Pandrosion
 #print axioms Pandrosion.matrix_phase_lock_UV
 #print axioms Pandrosion.matrix_phase_lock_V
 #print axioms Pandrosion.mcmullen_p2_complex_effective
+#print axioms Pandrosion.mcmullen_p2_complex_measure_uniform
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
@@ -723,6 +731,7 @@ import Pandrosion
 #print axioms Pandrosion.product_descent_bound
 #print axioms Pandrosion.quadratic_deviation_at_fp
 #print axioms Pandrosion.quadratic_loglog_complexity
+#print axioms Pandrosion.quadratic_loglog_complexity_effective
 #print axioms Pandrosion.quadratic_loglog_from_basin
 #print axioms Pandrosion.quadratic_tower_bound
 #print axioms Pandrosion.re_nontrivial_sum
@@ -751,6 +760,7 @@ import Pandrosion
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared_C
 #print axioms Pandrosion.slowSet_iInter_eq_juliaSetP
+#print axioms Pandrosion.slowSet_iff_norm_v
 #print axioms Pandrosion.slowSet_measurable
 #print axioms Pandrosion.slowSet_seq_antitone
 #print axioms Pandrosion.slow_set_decay_qualitative

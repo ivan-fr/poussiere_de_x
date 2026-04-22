@@ -31,4 +31,6 @@ import Pandrosion.Core.ComplexMcMullenP2EffectiveRate
 import Pandrosion.Core.ComplexMcMullenP3Conditional
 import Pandrosion.Core.SteffensenGlobalLoglogP2Unconditional
 import Pandrosion.Core.ComplexJuliaSlowSetDecay
+import Pandrosion.Core.QuadraticComplexityEffective
+import Pandrosion.Core.MeasureUniformComplexityP2
 import Pandrosion.Legacy
