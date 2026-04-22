@@ -77,9 +77,11 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
 
 ### Extensions p ≥ 3 (priorité #3)
 
-- [ ] **§80 HalfPlaneContractionPk — p = 4** : généraliser §57 à
-  `p = 4` avec `Sp_C 4 z = 1 + z + z² + z³`. Même structure
-  algébrique, degrés bumped.
+- [x] **§80 HalfPlaneContractionP4** : généralisation partielle.
+  Identité polynomiale exacte pour `‖Sp_C 4 z‖²` prouvée. Borne
+  `‖Sp_C 4 z‖² ≥ (1+a+a²+a³)²` prouvée pour **`Re z ≥ 1`** (PAS pour
+  `Re z ≥ 1/2` — contre-exemple à `z = 1/2 + i`). Décomposition
+  ring-identity + factorisation `(a-1)·(...)` pour les coefficients.
 
 - [ ] **§81 BanachX4Concrete** : analogue §64 à `x = 2, p = 4`.
   `α₀ = 2^{-1/4} ≈ 0.841`.

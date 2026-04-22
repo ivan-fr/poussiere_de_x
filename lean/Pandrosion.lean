@@ -64,4 +64,5 @@ import Pandrosion.Core.FarFieldX2
 import Pandrosion.Core.NamedPointsX2
 import Pandrosion.Core.SigmaStepBoundX2
 import Pandrosion.Core.IterCountX2
+import Pandrosion.Core.HalfPlaneContractionP4
 import Pandrosion.Legacy
