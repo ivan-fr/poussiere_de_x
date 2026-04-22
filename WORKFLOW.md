@@ -37,16 +37,126 @@ Use the normal file-editing tools. Do **not** run `lake build` locally.
 
 ```bash
 cd /Users/ivanbesevic/Documents/poussiere
-docker compose run --rm lean-incremental
+bash scripts/lean-incremental.sh
 ```
 
-The `lean-incremental` service already handles lock-purge and phantom-dir
-cleanup itself. No pre-step is required.
+**Always use the wrapper, not `docker compose run --rm lean-incremental`
+directly.** The wrapper:
+
+1. Kills any lingering `poussiere-lean-incremental-run-*` containers from
+   prior interrupted runs (Ctrl+C, broken pipes, orphaned Claude subprocesses).
+2. Removes stopped containers from the same service.
+3. Only then invokes `docker compose run --rm lean-incremental`.
+
+**Why this matters.** A 4+ minute build has happened because 7 stale
+containers piled up over a session, each one holding `.lake` volumes and
+CPU. The wrapper guarantees a clean slate and brings builds back to ~15 s.
+
+The service itself also clears Lake locks and phantom sync dirs on start.
 
 **Expected duration:** a few seconds per touched module (typically
 **under 50 seconds** for incremental edits).
 
-**If duration > 50 seconds, investigate immediately:**
+### ⏱️ If duration > 50 seconds → BREAK and IMPROVE THE PROOF
+
+**This is a hard rule.** If `lean-incremental` exceeds 50 seconds,
+**stop the build** and rewrite the slow module before re-running.
+Slow builds usually mean one of:
+
+- A `nlinarith` with too many hints (OOM / slow fallback) — **see
+  below: avoid `nlinarith` whenever possible.**
+- A `field_simp` on a large expression — factor manually with
+  `div_mul_cancel₀` / `mul_div_assoc`.
+- Polynomial proofs with high-degree `sq_nonneg` chains — split into
+  smaller helper lemmas.
+- `simp` with too many lemmas — use `simp only [...]` with a tight
+  whitelist.
+- Heavy `Classical.choose` unfolding — keep it abstract.
+
+**Fast build = tight proof.** A proof that needs more than 50 s of
+Lean time is almost always over-engineered; there's a cleaner
+algebraic path. Refactor first, re-run second.
+
+### 🚫 Avoid `nlinarith` — use `ring` + `linarith` instead
+
+`nlinarith` is Lean's Positivstellensatz-style solver. It searches
+for nonneg-combination certificates of polynomial inequalities. That
+search is **expensive and unpredictable**: a single call can take
+seconds to minutes, or OOM with exit code 137. It's the **#1 cause
+of slow builds** in this corpus.
+
+**Preferred pattern — explicit sum-of-nonneg-squares decomposition:**
+
+```lean
+-- Goal: P ≤ Q  (polynomial in real variables, nonneg terms)
+have h_id : Q - P = <SUM_OF_NONNEG_TERMS> := by ring
+-- Then prove each term ≥ 0 manually:
+have h_t1 : 0 ≤ <term1> := sq_nonneg _
+have h_t2 : 0 ≤ <term2> := mul_nonneg h_a h_b
+have h_t3 : 0 ≤ <term3> := by linarith
+linarith
+```
+
+This is **predictable and fast**: `ring` closes the identity
+instantly, each `mul_nonneg` / `sq_nonneg` is O(1), and the final
+`linarith` handles only additive combinations.
+
+**Concrete examples from the corpus:**
+
+- **Instead of** `nlinarith [hα_ge_34, sq_nonneg (α - 3/4)]` to prove
+  `37/16 ≤ 1 + α + α²`:
+  ```lean
+  have h_id : 1 + α + α^2 - 37/16 = (α - 3/4)^2 + (5/2)*(α - 3/4) := by ring
+  have h1 : 0 ≤ (α - 3/4)^2 := sq_nonneg _
+  have h2 : 0 ≤ (5/2) * (α - 3/4) := by linarith
+  linarith
+  ```
+
+- **Instead of** `nlinarith [hz, sq_nonneg b, sq_nonneg (a - 1/2)]`
+  to prove `1/2 ≤ 2a² + 2a - 1 + b²` on `a ≥ 1/2`:
+  ```lean
+  have h_id : 2*a^2 + 2*a - 1 + b^2 - 1/2
+            = 2*(a - 1/2)^2 + 4*(a - 1/2) + b^2 := by ring
+  have h1 : 0 ≤ 2*(a - 1/2)^2 := by
+    have : 0 ≤ (a - 1/2)^2 := sq_nonneg _; linarith
+  have h2 : 0 ≤ 4*(a - 1/2) := by linarith
+  have h3 : 0 ≤ b^2 := sq_nonneg _
+  linarith
+  ```
+
+**When `nlinarith` IS acceptable:**
+
+- Small, single-shot inequalities (3–5 variables, no hint list or
+  a 1–2 item hint list).
+- Genuinely multivariate nonlinear chaining where no obvious
+  decomposition exists.
+- As a fallback when you've already confirmed the inequality holds
+  and want a one-liner — but time the build, and if it's > 5 s for
+  one call, decompose manually.
+
+**Rule of thumb:** if your `nlinarith` takes more than ~2 hints, it
+likely won't close — decompose. And never provide more than ~5 hints;
+the search space explodes.
+
+### The `ring` identity hunt
+
+The hardest step in a `ring + linarith` proof is finding the
+right sum-of-nonneg decomposition. Strategy:
+
+1. **Move everything to one side.** Write `Q - P` or `P - Q` as a
+   polynomial expression.
+2. **Expand fully.** Check which monomials appear and with what signs.
+3. **Group by "obviously nonneg" terms.** Under the hypothesis bounds,
+   collect terms that become nonneg (squares, products of nonneg
+   factors, linear in a hypothesized-nonneg variable).
+4. **Write the decomposition and verify with `ring`.** If `ring`
+   closes the identity, the algebra is correct. If not, iterate.
+
+Python (numpy/sympy) is extremely useful for step 1–3: symbolically
+expand, factor, and check at sample points before committing to
+Lean.
+
+**Only after ruling out proof-level issues**, investigate infra:
 - Docker daemon stuck? → `docker ps -a` and restart Docker Desktop.
 - Stale Lake locks? → The service clears them on start, but a prior
   crash may have left `.lake/lakefile.olean.lock` held by a dead pid.
@@ -97,7 +207,7 @@ from the repo root does nothing — it silently no-ops.
 ```bash
 rm -rf /Users/ivanbesevic/Documents/poussiere/lean/.lake/build
 cd /Users/ivanbesevic/Documents/poussiere
-docker compose run --rm lean-incremental
+bash scripts/lean-incremental.sh
 ```
 
 Note: with no cache, this rebuilds everything from scratch — same
@@ -184,7 +294,7 @@ module.
 When adding a new `Pandrosion/Core/<NewModule>.lean`:
 
 1. Write the module. Don't touch `Pandrosion.lean` yet.
-2. `docker compose run --rm lean-incremental`.
+2. `bash scripts/lean-incremental.sh`.
    - Note: `lean-incremental` won't build modules unreachable from
      `Pandrosion.lean`. To test the new module solo:
 
@@ -196,5 +306,5 @@ When adding a new `Pandrosion/Core/<NewModule>.lean`:
 
 3. Once clean, add `import Pandrosion.Core.<NewModule>` to
    `Pandrosion.lean`.
-4. `docker compose run --rm lean-incremental` again.
+4. `bash scripts/lean-incremental.sh` again.
 5. **Stop here.** Hand off to the user for `lean-check` (Step 3 above).
