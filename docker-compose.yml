@@ -69,6 +69,9 @@ services:
       bash -c '
         set -eo pipefail &&
         echo "=== Pandrosion Lean Incremental (trust mode) ===" &&
+        echo "Purging stale Lake locks..." &&
+        find .lake -name "*.lock" -type f -delete 2>/dev/null || true &&
+        find .lake/packages -name "index.lock" -type f -delete 2>/dev/null || true &&
         lake build Pandrosion 2>&1 &&
         SRC=$$(find Pandrosion/ -name "*.lean" | wc -l | tr -d " ") &&
         OLE=$$(find .lake/build/lib/Pandrosion -name "*.olean" 2>/dev/null | wc -l | tr -d " ") &&

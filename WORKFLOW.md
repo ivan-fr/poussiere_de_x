@@ -33,43 +33,38 @@ themselves from their terminal.
 
 Use the normal file-editing tools. Do **not** run `lake build` locally.
 
-### Step 2 — Pre-build macOS sync cleanup
-
-Before every Docker build, purge macOS-sync phantom directories:
-
-```bash
-find /Users/ivanbesevic/Documents/poussiere/lean/.lake/build \
-  -maxdepth 5 \( -name "Core [0-9]*" -o -name "Legacy [0-9]*" \
-    -o -name "* [0-9]" \) -exec rm -rf {} + 2>/dev/null
-mkdir -p /Users/ivanbesevic/Documents/poussiere/lean/.lake/build/lib/Pandrosion/Core
-mkdir -p /Users/ivanbesevic/Documents/poussiere/lean/.lake/build/lib/Pandrosion/Legacy
-mkdir -p /Users/ivanbesevic/Documents/poussiere/lean/.lake/build/ir/Pandrosion/Core
-mkdir -p /Users/ivanbesevic/Documents/poussiere/lean/.lake/build/ir/Pandrosion/Legacy
-```
-
-### Step 3 — Trust mode (fast, Claude's only build path)
+### Step 2 — Build (single command)
 
 ```bash
 cd /Users/ivanbesevic/Documents/poussiere
 docker compose run --rm lean-incremental
 ```
 
-**What it does:**
-- Reuses `.lake/` cache (no clean rebuild).
-- Compiles only modules with dirty dependencies.
-- Reports `✅ INCREMENTAL OK — N modules compiled` or `❌ FAILED modules: <list>`.
-- **Does NOT** run the axiom audit — that is the user's `lean-check`
-  responsibility.
+The `lean-incremental` service already handles lock-purge and phantom-dir
+cleanup itself. No pre-step is required.
 
-**When `lean-incremental` reports `❌ FAILED modules`:**
-1. Check the error log (Docker prints it in the `error: stderr:` section).
-2. Fix the offending module.
-3. **Re-run step 2 + step 3** (cleanup + incremental).
+**Expected duration:** a few seconds per touched module (typically
+**under 50 seconds** for incremental edits).
 
-### Step 4 — Hand-off to the user
+**If duration > 50 seconds, investigate immediately:**
+- Docker daemon stuck? → `docker ps -a` and restart Docker Desktop.
+- Stale Lake locks? → The service clears them on start, but a prior
+  crash may have left `.lake/lakefile.olean.lock` held by a dead pid.
+- macOS-sync phantom dirs (`Core 2`, `Legacy 3`, `* [0-9]`)?
+  → Purge them:
 
-When `lean-incremental` reports ✅ green, Claude's job is done on the
-build side. Tell the user:
+  ```bash
+  find /Users/ivanbesevic/Documents/poussiere/lean/.lake/build \
+    -maxdepth 5 \( -name "Core [0-9]*" -o -name "Legacy [0-9]*" \
+      -o -name "* [0-9]" \) -exec rm -rf {} + 2>/dev/null
+  ```
+
+- Full cache corruption? → Emergency reset (see below).
+
+### Step 3 — Hand-off to the user
+
+When `lean-incremental` reports `✅ INCREMENTAL OK — N modules compiled`,
+Claude's job is done on the build side. Tell the user:
 
 > Ready for strict check. Run from your terminal:
 >
@@ -87,7 +82,6 @@ The user will then decide whether to run the authoritative gate
 - Never run `docker compose run --rm lean-check` from Claude.
 - Never run `docker compose run --rm lean-build` from Claude
   (also a clean rebuild, same reason).
-- Never skip Step 2 (cleanup) before Docker builds.
 - Never add a new module to `Pandrosion.lean` until it compiles solo
   via `lean-incremental` (test solo via the `lean` service — see
   module-add checklist).
@@ -98,38 +92,23 @@ The user will then decide whether to run the authoritative gate
 `lean/.lake/build`, **not** at the repo root. A naive `rm -rf .lake/build`
 from the repo root does nothing — it silently no-ops.
 
-**Claude's emergency action: purge + incremental.**
+**Claude's emergency action: full purge + incremental.**
 
 ```bash
-# Full .lake/build purge (correct path):
 rm -rf /Users/ivanbesevic/Documents/poussiere/lean/.lake/build
-
-# Then from the repo root:
 cd /Users/ivanbesevic/Documents/poussiere
-docker compose run --rm lean-incremental   # Claude's full rebuild
+docker compose run --rm lean-incremental
 ```
 
-Note: `lean-incremental` with no cache rebuilds everything from
-scratch, same effective cost as `lean-check` but without the strict
-audit. This is Claude's correct emergency reset path.
-
-**If incremental rebuild fails with `Directory not empty` during
-Lake's own writes:** macOS sync left phantoms. Purge them first:
-
-```bash
-find /Users/ivanbesevic/Documents/poussiere/lean/.lake/build \
-  -maxdepth 5 \( -name "Core [0-9]*" -o -name "Legacy [0-9]*" \
-    -o -name "* [0-9]" \) -exec rm -rf {} + 2>/dev/null
-```
-
-Then retry `docker compose run --rm lean-incremental`.
+Note: with no cache, this rebuilds everything from scratch — same
+effective cost as `lean-check` but without the strict audit.
 
 ## 📜 Module-add checklist
 
 When adding a new `Pandrosion/Core/<NewModule>.lean`:
 
 1. Write the module. Don't touch `Pandrosion.lean` yet.
-2. Cleanup (step 2) + `docker compose run --rm lean-incremental`.
+2. `docker compose run --rm lean-incremental`.
    - Note: `lean-incremental` won't build modules unreachable from
      `Pandrosion.lean`. To test the new module solo:
 
@@ -141,5 +120,5 @@ When adding a new `Pandrosion/Core/<NewModule>.lean`:
 
 3. Once clean, add `import Pandrosion.Core.<NewModule>` to
    `Pandrosion.lean`.
-4. Cleanup (step 2) + `docker compose run --rm lean-incremental` again.
-5. **Stop here.** Hand off to the user for `lean-check` (Step 4 above).
+4. `docker compose run --rm lean-incremental` again.
+5. **Stop here.** Hand off to the user for `lean-check` (Step 3 above).

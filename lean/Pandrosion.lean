@@ -44,4 +44,8 @@ import Pandrosion.Core.PandrosionRealUniversalContraction
 import Pandrosion.Core.HalfPlaneContractionP3
 import Pandrosion.Core.Rpow34Bound
 import Pandrosion.Core.HalfPlaneContractionP3Complete
+import Pandrosion.Core.HalfPlaneContractionP3Final
+import Pandrosion.Core.HalfPlaneContractionP3Ratio
+import Pandrosion.Core.SteffensenP3Loglog
+import Pandrosion.Core.UniversalConjectureC
 import Pandrosion.Legacy
