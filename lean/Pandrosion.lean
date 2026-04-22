@@ -63,4 +63,5 @@ import Pandrosion.Core.SigmaClosedFormX2
 import Pandrosion.Core.FarFieldX2
 import Pandrosion.Core.NamedPointsX2
 import Pandrosion.Core.SigmaStepBoundX2
+import Pandrosion.Core.IterCountX2
 import Pandrosion.Legacy

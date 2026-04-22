@@ -101,8 +101,10 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   concrète (ex: `R_σ ≥ 1/100`). Débloque §70
   `SteffensenRadiusAtLeast14` (ou version affaiblie).
 
-- [ ] **§86 Explicit iteration count at x=2** : formaliser
-  `N(ε) = ⌈log(1/(4ε)) / log(259/104)⌉`. Chaîne §64.5 + `Real.log`.
+- [x] **§86 IterCountX2** : compte d'itérations pour `ε`-précision.
+  Forme existentielle `∃ N, ∀ n ≥ N, ‖h^n z − α₀‖ ≤ ε` + forme
+  géométrique explicite `(104/259)^N · (1/4) ≤ ε ⟹ N suffit`. La
+  forme `Real.log`-exacte reste pour §86b future.
 
 - [ ] **§87 Böttcher formal series attempt** : tenter une version
   formelle de §68's `ψ` via série de puissances tronquée, preuve
