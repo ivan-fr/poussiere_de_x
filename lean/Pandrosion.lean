@@ -66,4 +66,5 @@ import Pandrosion.Core.SigmaStepBoundX2
 import Pandrosion.Core.IterCountX2
 import Pandrosion.Core.HalfPlaneContractionP4
 import Pandrosion.Core.AlphaX2P4
+import Pandrosion.Core.AlphaGenericX
 import Pandrosion.Legacy

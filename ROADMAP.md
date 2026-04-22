@@ -93,8 +93,11 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
 
 ### Extensions x ≠ 2 (priorité #4)
 
-- [ ] **§83 Banach generic x ∈ (1, 8)** : généraliser §64 à tout
-  `x ∈ (1, 8)` réel. `α₀(x) = x^{-1/3}`. Rate dépend de `x`.
+- [x] **§83 AlphaGenericX** : ancre paramétrée `α(x) := x^{-1/3}`
+  pour `x > 0`. Identités clefs : `α(x)^3 = 1/x`, `α(x) ≤ 1` pour
+  `x ≥ 1` (strict pour `x > 1`), `α(x) ≥ 1/2` pour `0 < x ≤ 8`.
+  Théorème Banach paramétré sur x downscope (demande paramétrer
+  toutes les bornes polynomiales sur x, hors budget).
 
 - [ ] **§84 HalfPlane generic x** : généraliser §67.
 
