@@ -25,3 +25,4 @@ import Pandrosion.Core.SteffensenGlobalLoglog
 import Pandrosion.Core.SteffensenRealP2
 import Pandrosion.Core.SteffensenRealMcMullenP2
 import Pandrosion.Core.SteffensenRealMcMullenP2Unconditional
+import Pandrosion.Legacy
