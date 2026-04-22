@@ -12,3 +12,6 @@ import Pandrosion.Legacy.UniversalContraction
 import Pandrosion.Legacy.Derivative
 import Pandrosion.Legacy.NoCycles
 import Pandrosion.Legacy.VoronoiAffine
+import Pandrosion.Legacy.Descent
+import Pandrosion.Legacy.CubeRoot
+import Pandrosion.Legacy.AnchorStep
