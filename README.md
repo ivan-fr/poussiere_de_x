@@ -1,13 +1,13 @@
 # Pandrosion Lean 4 Corpus
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19662877.svg)](https://doi.org/10.5281/zenodo.19662877)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19689482.svg)](https://doi.org/10.5281/zenodo.19689482)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![Universitas Pandrosion CI](https://github.com/ivan-fr/poussiere_de_x/actions/workflows/ci.yml/badge.svg)](https://github.com/ivan-fr/poussiere_de_x/actions)
 
 Formal verification and numerical illustration of the Pandrosion rational
 root-finding map, with a compiled research paper and reproducible figures.
 
-**Cite this work:** DOI [10.5281/zenodo.19662877](https://zenodo.org/records/19662877)
+**Cite this work:** DOI [10.5281/zenodo.19689482](https://zenodo.org/records/19689482)
 
 The current primary artifact is:
 
@@ -32,11 +32,14 @@ evaluations per step.
 
 The repository contains:
 
-- the **`Pandrosion.Core` spine** — 15 Lean 4 modules in `lean/Pandrosion/Core/`
+- the **`Pandrosion.Core` spine** — 24 Lean 4 modules in `lean/Pandrosion/Core/`
   that build, in dependency order, the algebraic foundations, multi-start
   Voronoï architecture, closed-form linear rate, Kung-Traub optimality,
-  complex multiplier, local attraction, and almost-everywhere dynamical
-  convergence of the Steffensen iterator;
+  complex multiplier, local attraction, almost-everywhere dynamical
+  convergence of the Steffensen iterator, the unconditional super-attracting
+  Steffensen spine (§§29-34), and the axiom-clean discharge of
+  `RealMcMullenP2` on `ℝ` at `p = 2`, `x > 1` via explicit Möbius conjugacy
+  `σ_{2,x} ~ μ²w²` and Böttcher-coordinate squaring-power dichotomy (§§35-37);
 - a broader **legacy corpus** of further Lean modules under `lean/Pandrosion/`
   exploring algebraic, Diophantine, matrix, and spectral identities;
 - a LaTeX research paper organized around the `Pandrosion.Core` spine;
@@ -63,9 +66,9 @@ dynamical case study, not as a claim to have resolved any open global problem.
 Some figures are numerical or schematic illustrations; the formal claims are
 the Lean theorem statements.
 
-## The `Pandrosion.Core` Spine (15 Modules)
+## The `Pandrosion.Core` Spine (24 Modules)
 
-The current paper is organized around the 15-module spine in
+The current paper is organized around the 24-module spine in
 `lean/Pandrosion/Core/`. Dependency order top-to-bottom:
 
 1. [`Foundations.lean`](lean/Pandrosion/Core/Foundations.lean) — `S_p`, real
@@ -104,11 +107,40 @@ The current paper is organized around the 15-module spine in
     local attraction and its quadratic-bound reducer; Steffensen local
     attraction conditional on a local quadratic bound.
 15. [`DynamicalConvergence.lean`](lean/Pandrosion/Core/DynamicalConvergence.lean) —
-    **crown jewel**: a.e. dynamical convergence of the Steffensen orbit to a
-    cyclotomic anchor, conditional on per-anchor quadratic bounds and a.e.
-    trajectory entry.
+    a.e. dynamical convergence of the Steffensen orbit to a cyclotomic anchor,
+    conditional on per-anchor quadratic bounds and a.e. trajectory entry.
 
-The spine builds with `Compiled: 15 / 15` via `docker compose run --rm
+**Unconditional Steffensen spine (§§29-34):**
+
+16. [`LinearAsymptotics.lean`](lean/Pandrosion/Core/LinearAsymptotics.lean) —
+    `λ_C ≠ 1` at every fixed point; quantitative linear-contraction modulus
+    for `h` near `α`.
+17. [`QuadraticBound.lean`](lean/Pandrosion/Core/QuadraticBound.lean) —
+    closed-form Taylor residue of `h_{p,x}` with explicit `(C_0, r_0)`.
+18. [`SteffensenQuadraticBound.lean`](lean/Pandrosion/Core/SteffensenQuadraticBound.lean) —
+    **unconditional local quadratic bound on `σ_{p,x}`**; discharges the
+    conditional hypothesis from §14/§15.
+19. [`SteffensenMcMullenAE.lean`](lean/Pandrosion/Core/SteffensenMcMullenAE.lean) —
+    named Prop `McMullenAEEntry`; a.e. solving `z^p = x` modulo McMullen.
+20. [`SteffensenExplicitRate.lean`](lean/Pandrosion/Core/SteffensenExplicitRate.lean) —
+    computable `(K_α, r_α)`; explicit super-attractive contraction certificate.
+21. [`SteffensenGlobalLoglog.lean`](lean/Pandrosion/Core/SteffensenGlobalLoglog.lean) —
+    loglog tail inside the basin; a.e. global loglog mod McMullen.
+
+**Real `p = 2` unconditional tower (§§35-37):**
+
+22. [`SteffensenRealP2.lean`](lean/Pandrosion/Core/SteffensenRealP2.lean) —
+    Möbius form of `h_{2,x}`; real closed-form multiplier `(1-α)/(1+α) ∈ (0,1)`;
+    named Prop `RealMcMullenP2`.
+23. [`SteffensenRealMcMullenP2.lean`](lean/Pandrosion/Core/SteffensenRealMcMullenP2.lean) —
+    **Möbius conjugacy `σ_{2,x} ~ μ²w²`, cleared form**; explicit rational
+    bridge `sigma_p2_explicit`.
+24. [`SteffensenRealMcMullenP2Unconditional.lean`](lean/Pandrosion/Core/SteffensenRealMcMullenP2Unconditional.lean) —
+    Böttcher coordinate `v`, iterated identity `v(σ^n) = v^(2^n)`, finite
+    Julia section on `ℝ`, convergence dichotomy, **unconditional axiom-clean
+    `RealMcMullenP2` modulo bad-set Lebesgue-null lemma**.
+
+The spine builds with `Compiled: 24 / 24` via `docker compose run --rm
 lean-incremental`.
 
 ## Repository Layout
@@ -145,8 +177,8 @@ docker compose run --rm lean-check
 Expected result for the `Pandrosion.Core` spine:
 
 ```text
-Compiled: 15 / 15
-✅ INCREMENTAL OK — 15 modules compiled
+Compiled: 24 / 24
+✅ INCREMENTAL OK — 24 modules compiled
 ```
 
 For a clean rebuild with cache cleanup and summary:
@@ -232,23 +264,33 @@ frontier), constructive McMullen off the boundary, Voronoï boundary has Lebesgu
 measure zero, cyclotomic anchor injectivity, unconditional constructive
 McMullen for `z^p = x`, closed-form rate `λ_{p,x} ∈ (0,1)`, complex multiplier
 `h'(α) = 1 - p·α^(p-1)/S_p(α)` at every fixed point, Kung-Traub attainment
-`E(2,2) = √2`, `p`-uniform complexity bound, Master Absolu.
+`E(2,2) = √2`, `p`-uniform complexity bound, Master Absolu, **unconditional
+local quadratic bound on the Steffensen iterator** (`SteffensenQuadraticBound`,
+§31) and its two corollaries (unconditional local attraction and a.e.
+dynamical convergence modulo McMullen), **explicit super-attractive rate**
+`K_α · r_α ≤ 1/2` with loglog tail inside the basin, **Möbius conjugacy
+`σ_{2,x} ~ μ²w²`** on `ℝ` at `p = 2` in cleared form, **iterated Böttcher
+identity** `v(σ^n(s)) = v(s)^(2^n)` and finite Julia section on `ℝ`, and the
+**convergence dichotomy off the real bad set** (`orbit_enters_basin_off_bad_set`)
+that discharges `RealMcMullenP2(x, α)` for `x > 1`, `α = 1/√x` modulo a
+standalone Lebesgue-null lemma for a countably-constructed bad set. All
+load-bearing theorems audit to the Lean core whitelist `{propext,
+Classical.choice, Quot.sound}`.
 
 **What is proven conditional on an explicit axiom:** Kung-Traub converse
 optimality (conditional on the Kung-Traub 1974 conjecture, stated as an
 explicit `axiom` in `KungTraub.lean`).
 
 **What is proven conditional on explicit hypotheses (no new axioms):**
-Steffensen local attraction, pointwise dynamical convergence from entry, and
-a.e. dynamical convergence — each conditional on a local quadratic bound
-`‖σ(z) - γ_k‖ ≤ K_k·‖z - γ_k‖²` on `B(γ_k, r_k)` (the super-attracting content
-of Steffensen's method) and, for the a.e. statement, on a.e. trajectory entry
-into some local disk.
+complex a.e. dynamical convergence at arbitrary `p` — conditional on the
+named Prop `McMullenAEEntry p x α` (Fatou-type a.e. trajectory entry into
+some local disk). In `ℝ` at `p = 2`, this hypothesis is discharged axiom-clean
+(see `SteffensenRealMcMullenP2Unconditional`, §37).
 
-**What is not claimed:** an unconditional, fully Lean-certified proof of the
-local quadratic bound; an unconditional a.e. trajectory-entry theorem; any
-resolution of classical open problems (Riemann hypothesis, BSD, Faltings,
-Smale's 17th, etc.).
+**What is not claimed:** an unconditional a.e. trajectory-entry theorem in
+`ℂ` at arbitrary `p` (the Fatou/McMullen global dynamics beyond the `ℝ`, `p=2`
+case); any resolution of classical open problems (Riemann hypothesis, BSD,
+Faltings, Smale's 17th, etc.).
 
 The value of the corpus is the exact algebraic identities, the measure-theoretic
 coverage theorem, and the dynamical-systems statement — for this particular
@@ -261,9 +303,9 @@ rational iteration, in a proof-assistant-checked form.
   title  = {Universitas Pandrosion: Formal Verification of a Rational Root-Finding Map and Diophantine Bridges in Lean 4},
   author = {Besevic, Ivan},
   year   = {2026},
-  doi    = {10.5281/zenodo.19662877},
-  url    = {https://zenodo.org/records/19662877},
-  note   = {120 Lean 4 modules, zero sorry}
+  doi    = {10.5281/zenodo.19689482},
+  url    = {https://zenodo.org/records/19689482},
+  note   = {24-module Pandrosion.Core spine, zero sorry; unconditional RealMcMullenP2 discharge on R at p=2}
 }
 ```
 
