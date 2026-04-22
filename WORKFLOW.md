@@ -289,6 +289,183 @@ The path that worked:
 That reduced a full-McMullen-strength claim to a 200-line algebraic
 module.
 
+## 🔁 Ambitious-theorem loop (recommended Claude iteration)
+
+The corpus grows fastest by iterating **one ambitious theorem at a time**
+with Claude. Use this 4-step loop:
+
+### Step 1 — Ask for a single ambitious target
+
+Prompt Claude with exactly:
+
+```
+basé sur les @lean/ files je veux attaquer une porte/théorème très
+ambitieux (donne moi uniquement une seule)
+```
+
+Claude will survey the corpus and propose **one** high-leverage target
+(not a menu of 4–5). The single-target constraint forces Claude to
+commit to the best option rather than hedge.
+
+### Step 2 — Full resolution to `✅ INCREMENTAL OK`
+
+Let Claude iterate:
+
+- Write the new module (or extension) with the target theorem.
+- Build via `bash scripts/lean-incremental.sh`.
+- Fix errors (type mismatches, unused variables, failed `ring`
+  identities, etc.).
+- Refactor slow proofs (>50 s rule above: avoid `nlinarith`, split
+  lemmas, switch to `ring`-identity + `linarith`).
+- Retry until the build is green.
+
+**Do not abort early.** If a theorem turns out to be too hard for one
+session, Claude should downgrade scope (weaker form, stub with named
+conjecture `Prop`, factor into atomic sub-lemmas) but still end the
+step with a green build.
+
+### Step 3 — Commit and push (NO `lean-check`)
+
+```bash
+cd /Users/ivanbesevic/Documents/poussiere
+git add lean/Pandrosion/Core/<NewModule>.lean lean/Pandrosion.lean
+git commit -m "feat(§N): <short theorem name>
+
+<1–3 sentences on what was proven and its role in the corpus>"
+git push
+```
+
+**Skip `lean-check` in the loop.** It takes 10–15 min and is reserved
+for periodic user-triggered audits (final gates before tagging a
+release, not every iteration).
+
+### Step 4 — Back to Step 1
+
+Ask Claude again for the next single ambitious target. The corpus
+state has advanced, so the proposal will be different.
+
+### Is this the optimal loop?
+
+**Strengths**:
+- **Single-target focus** prevents diffuse effort. Each loop adds one
+  concrete theorem, commit it, move on.
+- **Green incremental build** is an unambiguous success signal — no
+  "almost there" limbo.
+- **Skipping `lean-check`** keeps iteration latency low. Strict axiom
+  audit as periodic gate, not per-commit.
+- **`git push` after every loop** creates a linear progression trace.
+  If something breaks, the bad commit is easy to isolate.
+
+**Trade-offs to be aware of**:
+- **Scope drift**: Claude may accept weaker targets to close the loop.
+  If the "ambitious target" gets downgraded to a stub conjecture
+  three loops in a row, pause and re-plan with a harder prompt.
+- **No cross-module audit**: `lean-incremental` can hide axiom leaks
+  (e.g., a `sorry` used transitively). Run `lean-check` every ~5–10
+  commits as a sanity gate.
+- **Context accumulation**: Claude's context is bounded. After 10+
+  loops in one session, start a new session so Claude re-reads the
+  corpus fresh. This is also a natural checkpoint to review progress.
+- **Commit-message quality**: force Claude to name the theorem and its
+  role — it's the only persistent record of intent between loops.
+
+**Alternative loops (all autonomous — no human in the loop)**:
+
+The three variants below are designed so **Claude runs the entire
+decision process without user input**. Select the variant by the
+first prompt; subsequent loops run unattended until the session ends
+or Claude detects a stop condition.
+
+#### A. Planning loop (autonomous)
+
+Bias guard: prevents Claude from picking the easiest target.
+
+```
+Step 1 — Claude proposes 3 ambitious candidates with explicit
+         difficulty ranking (1 = hardest, 3 = easiest). Then Claude
+         picks rank 1 or 2 (never rank 3) and commits.
+Step 2 — Full resolution to ✅ INCREMENTAL OK (same as default).
+Step 3 — git commit and push (same as default).
+Step 4 — Back to Step 1.
+```
+
+Starter prompt:
+```
+Boucle autonome : à chaque itération, propose 3 théorèmes
+ambitieux classés par difficulté (1 = le plus dur), choisis
+toi-même rang 1 ou 2 (jamais rang 3), résous, commit, push.
+Recommence jusqu'à 10 itérations ou jusqu'à devoir downgrader
+deux fois de suite.
+```
+
+When to use: when default loop has drifted to stubbed conjectures.
+
+#### B. Python-first loop (autonomous)
+
+Empirical gate: catches dead-end conjectures before formalization.
+
+```
+Step 0 — Claude writes a Python script (/tmp/*.py) that tests the
+         target conjecture numerically (scan, cycle search, bound).
+         Runs it. If the conjecture fails empirically, Claude
+         down-scopes to the strongest surviving form.
+Step 1 — Formalizes the empirically-validated target in Lean.
+Step 2 — Full resolution to ✅ INCREMENTAL OK.
+Step 3 — git commit and push (including the Python script in
+         articles/ or referenced in module header).
+Step 4 — Back to Step 0.
+```
+
+Starter prompt:
+```
+Boucle autonome Python-first : à chaque itération, vérifie
+empiriquement (numpy/scipy) l'énoncé avant de formaliser. Si la
+conjecture échoue numériquement, downscope seul. Formalise,
+commit, push. Recommence.
+```
+
+When to use: when the target domain is speculative (new fractals,
+unclear convergence, unverified constants). §61 was the archetype.
+
+#### C. Refinement loop (autonomous, roadmap-driven)
+
+Direction from a stable file, not the user.
+
+```
+Pre-flight — Claude reads ROADMAP.md (list of ordered targets,
+             each with conditions of success).
+Step 1 — Picks the first unfinished target from ROADMAP.md.
+Step 2 — Full resolution to ✅ INCREMENTAL OK.
+Step 3 — Updates ROADMAP.md (checks off target, adds follow-ups
+         uncovered during proof), commits, pushes.
+Step 4 — Back to Step 1.
+```
+
+Starter prompt:
+```
+Boucle autonome roadmap : lis ROADMAP.md, prends la première
+cible non-finie, résous, commit avec mise à jour du fichier,
+push. Recommence jusqu'à ce que ROADMAP.md soit vide.
+```
+
+When to use: when you have a clear strategic direction and want
+Claude to burn through it. Requires a `ROADMAP.md` at repo root
+with targets like:
+```
+## P3 à x=2 — chemin vers Niveau 5
+
+- [ ] Prouver SigmaStepIntoBasinX2 (§70 C1)
+- [ ] Prouver SteffensenRadiusAtLeast14
+- [ ] Dériver HalfPlaneSigmaTendstoP3X2 (Niveau 1 inconditionnel)
+- [ ] Prouver HalfPlaneExhaustion
+- [ ] Fermer PrincipalDominanceP3X2 (Niveau 5)
+```
+
+**Bottom line**: all four loops (default + A/B/C) are autonomous.
+The user picks one starter prompt, then steps back. Claude decides
+targets, writes proofs, commits, pushes, repeats — with periodic
+session restarts to refresh context.
+
 ## 📜 Module-add checklist
 
 When adding a new `Pandrosion/Core/<NewModule>.lean`:
