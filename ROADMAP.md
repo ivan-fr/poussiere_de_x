@@ -57,10 +57,15 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
 
 ### Niveau 5 — Principal dominance (priorité #2)
 
-- [ ] **§77 HalfPlaneExhaustion — h version** : prouver que pour a.e.
-  `z ∈ ℂ` avec `Re z < 1/2`, il existe `k` avec `h^k(z).re ≥ 1/2`.
-  Empirique : vérifié Python sur `[-10, 1/2] × [-10, 10]`. Clef :
-  étudier l'image de h sur `Re z < 1/2`.
+- [x] **§77 FarFieldX2** : `|z| ≥ 2 ⟹ h^n(z) → α₀` inconditionnel.
+  Argument : `|Sp(z)| ≥ ‖z‖² − ‖z‖ − 1 ≥ 1` pour `‖z‖ ≥ 2`, donc
+  `Re h(z) ≥ 1/2`, puis §67 Tendsto conclut. Couvre **tout le
+  far-field** complexe inconditionnellement.
+
+- [ ] **§77b HalfPlaneExhaustion — région bornée** : prouver que pour
+  a.e. `z ∈ ℂ` avec `Re z < 1/2 ∧ |z| < 2`, il existe `k` avec
+  `h^k(z)` dans le demi-plan ou le far-field. Empirique : vérifié
+  Python sur `[-2, 1/2] × [-2, 2]` hors voisinages de ω, ω².
 
 - [ ] **§78 NonPrincipalBasin finite measure** : prouver que
   `⋃_{s≠0} CyclotomicBasinP3X2 s` est contenu dans un compact, donc

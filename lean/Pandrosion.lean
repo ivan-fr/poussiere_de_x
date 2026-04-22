@@ -60,4 +60,5 @@ import Pandrosion.Core.PrincipalDominanceP3X2
 import Pandrosion.Core.SigmaHalfPlaneP3X2
 import Pandrosion.Core.Niveau5Master
 import Pandrosion.Core.SigmaClosedFormX2
+import Pandrosion.Core.FarFieldX2
 import Pandrosion.Legacy
