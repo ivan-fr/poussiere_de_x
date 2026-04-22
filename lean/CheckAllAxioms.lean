@@ -166,6 +166,9 @@
 #print axioms Pandrosion.half_ne_two_fifths
 #print axioms Pandrosion.half_plane_contraction
 #print axioms Pandrosion.hasDerivAt_inv_one_add
+#print axioms Pandrosion.juliaSetP_measurable
+#print axioms Pandrosion.juliaSetP_subset_slowSet
+#print axioms Pandrosion.juliaSetP_volume_zero
 #print axioms Pandrosion.julia_excludes_neg_alpha
 #print axioms Pandrosion.julia_forward_invariant
 #print axioms Pandrosion.julia_section_complex_volume_zero
@@ -227,6 +230,8 @@
 #print axioms Pandrosion.newton_ratio_negative
 #print axioms Pandrosion.no_periodic_orbit
 #print axioms Pandrosion.no_two_cycle
+#print axioms Pandrosion.norm_sq_add_const_continuous
+#print axioms Pandrosion.norm_sq_sub_const_continuous
 #print axioms Pandrosion.normalized_descent_neg
 #print axioms Pandrosion.offset_monotone
 #print axioms Pandrosion.omega_ne_one
@@ -333,6 +338,10 @@
 #print axioms Pandrosion.sigma_p2_minus_alpha_cleared_C
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared_C
+#print axioms Pandrosion.slowSet_iInter_eq_juliaSetP
+#print axioms Pandrosion.slowSet_measurable
+#print axioms Pandrosion.slowSet_seq_antitone
+#print axioms Pandrosion.slow_set_decay_qualitative
 #print axioms Pandrosion.spectral_eigenvalue_sq
 #print axioms Pandrosion.spectral_left_half_plane
 #print axioms Pandrosion.standard_vs_anchor
@@ -350,6 +359,7 @@
 #print axioms Pandrosion.steffensen_eq_sigma_p2_iterate_of_orbit_good
 #print axioms Pandrosion.steffensen_explicit_super_attractive_rate
 #print axioms Pandrosion.steffensen_global_loglog_ae_mod_mcmullen
+#print axioms Pandrosion.steffensen_global_loglog_p2_complex_unconditional
 #print axioms Pandrosion.steffensen_local_attraction
 #print axioms Pandrosion.steffensen_local_attraction_explicit
 #print axioms Pandrosion.steffensen_local_attraction_unconditional
@@ -358,6 +368,7 @@
 #print axioms Pandrosion.steffensen_p2_ae_basin_entry_mod_real_mcmullen
 #print axioms Pandrosion.steffensen_p2_effective_rate_and_ae_entry
 #print axioms Pandrosion.steffensen_p2_solves_complex_unconditional
+#print axioms Pandrosion.steffensen_p2_solves_loglog_complex_unconditional
 #print axioms Pandrosion.steffensen_p3_solves_complex_mod_julia_null
 #print axioms Pandrosion.steffensen_quadratic_bound_explicit
 #print axioms Pandrosion.steffensen_rate_ne_one
@@ -391,6 +402,7 @@
 #print axioms Pandrosion.v_p2_sq_from_conjugacy
 #print axioms Pandrosion.v_p2_sq_from_conjugacy_C
 #print axioms Pandrosion.v_p2_z0_ne_one_of_not_bad_set
+#print axioms Pandrosion.volume_slowSet_inter_ball_tendsto_zero
 #print axioms Pandrosion.voronoiBoundary_volume_zero
 #print axioms Pandrosion.voronoi_halfplane_affine
 #print axioms Pandrosion.voronoi_nearest_exists
@@ -566,6 +578,9 @@ import Pandrosion
 #print axioms Pandrosion.half_ne_two_fifths
 #print axioms Pandrosion.half_plane_contraction
 #print axioms Pandrosion.hasDerivAt_inv_one_add
+#print axioms Pandrosion.juliaSetP_measurable
+#print axioms Pandrosion.juliaSetP_subset_slowSet
+#print axioms Pandrosion.juliaSetP_volume_zero
 #print axioms Pandrosion.julia_excludes_neg_alpha
 #print axioms Pandrosion.julia_forward_invariant
 #print axioms Pandrosion.julia_section_complex_volume_zero
@@ -627,6 +642,8 @@ import Pandrosion
 #print axioms Pandrosion.newton_ratio_negative
 #print axioms Pandrosion.no_periodic_orbit
 #print axioms Pandrosion.no_two_cycle
+#print axioms Pandrosion.norm_sq_add_const_continuous
+#print axioms Pandrosion.norm_sq_sub_const_continuous
 #print axioms Pandrosion.normalized_descent_neg
 #print axioms Pandrosion.offset_monotone
 #print axioms Pandrosion.omega_ne_one
@@ -733,6 +750,10 @@ import Pandrosion
 #print axioms Pandrosion.sigma_p2_minus_alpha_cleared_C
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared_C
+#print axioms Pandrosion.slowSet_iInter_eq_juliaSetP
+#print axioms Pandrosion.slowSet_measurable
+#print axioms Pandrosion.slowSet_seq_antitone
+#print axioms Pandrosion.slow_set_decay_qualitative
 #print axioms Pandrosion.spectral_eigenvalue_sq
 #print axioms Pandrosion.spectral_left_half_plane
 #print axioms Pandrosion.standard_vs_anchor
@@ -750,6 +771,7 @@ import Pandrosion
 #print axioms Pandrosion.steffensen_eq_sigma_p2_iterate_of_orbit_good
 #print axioms Pandrosion.steffensen_explicit_super_attractive_rate
 #print axioms Pandrosion.steffensen_global_loglog_ae_mod_mcmullen
+#print axioms Pandrosion.steffensen_global_loglog_p2_complex_unconditional
 #print axioms Pandrosion.steffensen_local_attraction
 #print axioms Pandrosion.steffensen_local_attraction_explicit
 #print axioms Pandrosion.steffensen_local_attraction_unconditional
@@ -758,6 +780,7 @@ import Pandrosion
 #print axioms Pandrosion.steffensen_p2_ae_basin_entry_mod_real_mcmullen
 #print axioms Pandrosion.steffensen_p2_effective_rate_and_ae_entry
 #print axioms Pandrosion.steffensen_p2_solves_complex_unconditional
+#print axioms Pandrosion.steffensen_p2_solves_loglog_complex_unconditional
 #print axioms Pandrosion.steffensen_p3_solves_complex_mod_julia_null
 #print axioms Pandrosion.steffensen_quadratic_bound_explicit
 #print axioms Pandrosion.steffensen_rate_ne_one
@@ -791,6 +814,7 @@ import Pandrosion
 #print axioms Pandrosion.v_p2_sq_from_conjugacy
 #print axioms Pandrosion.v_p2_sq_from_conjugacy_C
 #print axioms Pandrosion.v_p2_z0_ne_one_of_not_bad_set
+#print axioms Pandrosion.volume_slowSet_inter_ball_tendsto_zero
 #print axioms Pandrosion.voronoiBoundary_volume_zero
 #print axioms Pandrosion.voronoi_halfplane_affine
 #print axioms Pandrosion.voronoi_nearest_exists

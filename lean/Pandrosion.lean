@@ -29,4 +29,6 @@ import Pandrosion.Core.ComplexMobiusP2
 import Pandrosion.Core.ComplexMcMullenP2Unconditional
 import Pandrosion.Core.ComplexMcMullenP2EffectiveRate
 import Pandrosion.Core.ComplexMcMullenP3Conditional
+import Pandrosion.Core.SteffensenGlobalLoglogP2Unconditional
+import Pandrosion.Core.ComplexJuliaSlowSetDecay
 import Pandrosion.Legacy
