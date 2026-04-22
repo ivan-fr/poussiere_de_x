@@ -41,26 +41,32 @@ The repository contains:
   proof** of `RealMcMullenP2` on `ℝ` at `p = 2`, `x > 1` via explicit Möbius
   conjugacy `σ_{2,x} ~ μ²w²`, Böttcher-coordinate squaring-power dichotomy,
   and a formalised Lebesgue-null bad-set lemma (§§35-37);
-- a broader **legacy corpus** of further Lean modules under `lean/Pandrosion/`
-  exploring algebraic, Diophantine, matrix, and spectral identities;
-- a LaTeX research paper organized around the `Pandrosion.Core` spine;
+- the **`Pandrosion.Legacy` companion** — 9 Lean modules in
+  `lean/Pandrosion/Legacy/` (non-load-bearing, one-way dependency on `Core`)
+  that formalise range invariance of `h` on `[0,1]`, exact Aitken Δ²
+  extrapolation on geometric error, the `p = 2` contraction identity and
+  the universal `(x−1)/x` contraction bound for all `p ≥ 2`, `HasDerivAt`
+  facts for `S_p` and `h_{p,2}`, no-periodic-orbit under a contraction,
+  the affine form of the Voronoï bisector, the universal descent
+  `D_p < 0`, the cube-root derivatives `P'(r) = −1/5` and `P''(r) = −12/(25r)`,
+  the Chebyshev-Halley exclusion, and the anchor-based cube-root variant
+  `F_a(s)` with Newton as the degenerate case `a = s`;
+- a LaTeX research paper organized around the `Pandrosion.Core` spine plus a
+  `Pandrosion.Legacy` companion section;
 - Docker Compose tooling for reproducible Lean builds.
 
 ## Current Formal Status
 
-As of April 20, 2026:
+As of April 22, 2026:
 
 - Lean toolchain: `leanprover/lean4:v4.7.0`
 - Mathlib: `v4.7.0`
-- Lean modules under `lean/Pandrosion/`: `125`
-- Top-level `theorem` declarations under `lean/Pandrosion/` plus root import file: `740+`
-- `lake build Pandrosion` passes through Docker Compose.
-- No executable `sorry` terms were found in the corpus; the only `sorry` occurrence is in prose inside a comment.
-- No project-level `axiom` declarations remain under `lean/Pandrosion/`.
-- [`lean/Pandrosion/SpectralLimit.lean`](lean/Pandrosion/SpectralLimit.lean) keeps two classical analytic inputs as explicit Lean variables, used for spectral-limit statements:
-  - `integral_log_cos_eq`
-  - `D_eq_closed`
-  This makes the dependency honest and local: the convergence proof is formalized relative to the closed-form identity, while the identity itself is treated as a standard analytic input rather than a project-declared axiom.
+- Lean modules under `lean/Pandrosion/`: **34** (24 Core + 9 Legacy + 1 aggregator)
+- Total theorems/lemmas: **296** — all audited against the Lean whitelist
+- Definitions: **59**
+- `lake build Pandrosion` passes; `docker compose run --rm lean-check` passes the max-strict gate with `0 sorry, 0 admit, 0 raw axiom, 0 warning, 0 error, 0 sorryAx, 0 off-whitelist axiom`.
+- No executable `sorry` terms; no project-level `axiom` declarations.
+- Every declaration's axiom dependency set reduces to `{propext, Classical.choice, Quot.sound}`.
 
 The paper is therefore best read as a formally verified algebraic and
 dynamical case study, not as a claim to have resolved any open global problem.
@@ -159,7 +165,10 @@ lean-incremental`.
 │   └── fig_*.pdf                     # Paper figures
 ├── lean/
 │   ├── Pandrosion.lean               # Root import module
-│   ├── Pandrosion/                   # 125 Lean modules
+│   ├── Pandrosion/
+│   │   ├── Core/                     # 24 Lean modules (load-bearing spine)
+│   │   ├── Legacy/                   # 9 Lean modules (companion, audited)
+│   │   └── Legacy.lean               # Legacy aggregator
 │   ├── lakefile.lean
 │   ├── lake-manifest.json
 │   └── lean-toolchain
@@ -177,11 +186,21 @@ The easiest path is Docker Compose:
 docker compose run --rm lean-check
 ```
 
-Expected result for the `Pandrosion.Core` spine:
+Expected result for the full corpus (Core + Legacy):
 
 ```text
-Compiled: 24 / 24
-✅ INCREMENTAL OK — 24 modules compiled
+--- Source-tree scan (ALL lean/**/*.lean, comments stripped) ---
+  all .lean files (lean/):    37
+  Pandrosion/ modules:        34
+  .olean built (Pandrosion):  34
+  theorems+lemmas:            296
+  defs:                       59
+  sorry in source:            0
+  admit in source:            0
+  axiom in source:            0
+
+✅ MAX-STRICT CHECK PASSED — 34 modules, 296 theorems/lemmas, 59 defs, 296 audited
+   0 sorry, 0 admit, 0 raw axiom, 0 warning, 0 error, 0 sorryAx, 0 off-whitelist axiom
 ```
 
 For a clean rebuild with cache cleanup and summary:
@@ -219,38 +238,27 @@ From inside `latex/`, the equivalent copy command is:
 cp pandrosion_paper.pdf ../articles/pandrosion_paper.pdf
 ```
 
-## Useful Lean Modules (Legacy Corpus)
+## The `Pandrosion.Legacy` Companion (9 Modules)
 
-Beyond the `Pandrosion.Core` spine, the legacy corpus under `lean/Pandrosion/`
-contains further exploratory modules on the cubic specialization `P_X(s) =
-s(s^3+4X)/(3s^3+2X)` and on Diophantine / matrix / spectral identities. These
-are *not* included in the current paper's scope but remain in the repository:
+Alongside the Core spine, `lean/Pandrosion/Legacy/` collects 9 audited
+companion modules with strict one-way dependency (`Legacy` imports `Core`,
+never the reverse). They add 44 theorems and 7 definitions on top of the
+Core corpus and pass the same axiom-audit whitelist. Contents:
 
-- [`lean/Pandrosion/HalleyComparison.lean`](lean/Pandrosion/HalleyComparison.lean) - Newton/Halley comparison and universal derivative `-1/5`
-- [`lean/Pandrosion/ChebyshevHalleyExclusion.lean`](lean/Pandrosion/ChebyshevHalleyExclusion.lean) - exclusion from the Chebyshev-Halley family
-- [`lean/Pandrosion/ResidualConservation.lean`](lean/Pandrosion/ResidualConservation.lean) - kinematic residual conservation
-- [`lean/Pandrosion/NoCycles.lean`](lean/Pandrosion/NoCycles.lean) - no finite cycles under contraction
-- [`lean/Pandrosion/ThueBridge.lean`](lean/Pandrosion/ThueBridge.lean) - norm amplification and cross-determinants
-- [`lean/Pandrosion/VoronoiInvariance.lean`](lean/Pandrosion/VoronoiInvariance.lean) - Voronoi convexity and basin stability
-- [`lean/Pandrosion/HermitianPreservation.lean`](lean/Pandrosion/HermitianPreservation.lean) - Hermitian preservation for matrix products
-- [`lean/Pandrosion/DFTDecomposition.lean`](lean/Pandrosion/DFTDecomposition.lean) - roots-of-unity cancellation and DFT identities
-- [`lean/Pandrosion/EffectiveIrrationality.lean`](lean/Pandrosion/EffectiveIrrationality.lean) - effective Liouville-type lower bound
+- [`Legacy/Basic.lean`](lean/Pandrosion/Legacy/Basic.lean) — range invariance of `h` on `[0,1]` (`h_lt_one`, `h_pos`), orbit-in-`(0,1)` for `p ≥ 2`, exact Aitken Δ² extrapolation (`aitken_perfect_extrapolation`).
+- [`Legacy/ContractionP2.lean`](lean/Pandrosion/Legacy/ContractionP2.lean) — the `p = 2` contraction identity `h(s) − h(t) = (x−1)(s−t)/[x(1+s)(1+t)]`, strict distance decrease, monotonicity, uniqueness of the positive fixed point.
+- [`Legacy/UniversalContraction.lean`](lean/Pandrosion/Legacy/UniversalContraction.lean) — universal divided difference `Q_p` with `S_p(s) − S_p(t) = (s − t)·Q_p(s, t)`, the `(x−1)/x` contraction bound for every `p ≥ 2` (`contraction_general`), concrete factorisations for `p = 3, 4, 5`.
+- [`Legacy/Derivative.lean`](lean/Pandrosion/Legacy/Derivative.lean) — Mathlib-calculus bindings: `HasDerivAt` for `S_p` (all `p`) and for `h_{p,2}`, with closed-form asymptotic rate `h'(s*) = (x−1)/(x(1+s*)²) ∈ (0,1)`.
+- [`Legacy/NoCycles.lean`](lean/Pandrosion/Legacy/NoCycles.lean) — no periodic orbit under a contraction (`no_two_cycle`, `no_periodic_orbit`).
+- [`Legacy/VoronoiAffine.lean`](lean/Pandrosion/Legacy/VoronoiAffine.lean) — affine coordinate form of the Voronoï bisector; `Fin d` surjection is automatically bijective.
+- [`Legacy/Descent.lean`](lean/Pandrosion/Legacy/Descent.lean) — universal descent `D_p = (1/p)·∑ log(cos(kπ/(2p))) < 0` for every `p ≥ 2`, via strict `log cos` bounds on `(0, π/2)`.
+- [`Legacy/CubeRoot.lean`](lean/Pandrosion/Legacy/CubeRoot.lean) — cube-root iteration `P(s) = s(s³+4X)/(3s³+2X)`: universal linear rate `P'(r) = −1/5`, quadratic correction `P''(r) = −12/(25r)`, Pandrosion ≠ Newton / Halley / Chebyshev-Halley (polynomial cross-identities, exclusion from the `CH_α` family).
+- [`Legacy/AnchorStep.lean`](lean/Pandrosion/Legacy/AnchorStep.lean) — anchor-based cube-root step `F_a(s) = a − (a³−X)/Q(a,s)`, fixed-point at every cube root, Newton as the degenerate case `a = s`, reanchor-at-root, `multistart_step` full-pair fixed-point, `aitken_exact_geometric` variant.
 
-## Legacy Frontier Modules (April 2026)
-
-The following modules are part of the broader legacy corpus, not the current
-paper's scope. They remain in the repository as exploratory material:
-
-- [`lean/Pandrosion/LittlewoodSimultaneous.lean`](lean/Pandrosion/LittlewoodSimultaneous.lean) - Littlewood frontier `liminf n·‖nα‖·‖nβ‖ = 0` via Schmidt subspace + dim-2 Vojta
-- [`lean/Pandrosion/BealOrbital.lean`](lean/Pandrosion/BealOrbital.lean) - Beal / Fermat-Catalan frontier (coprime `A^x + B^y = C^z` with exponents ≥ 3) via abc global frontier + Catalan orbital + Bilu-Tichý
-- [`lean/Pandrosion/OppenheimErgodic.lean`](lean/Pandrosion/OppenheimErgodic.lean) - Oppenheim density of indefinite quadratic form values via Riemann gyroscopic attractor + Szemerédi ergodic resonance + Voronoi global density
-- [`lean/Pandrosion/LeopoldtPadic.lean`](lean/Pandrosion/LeopoldtPadic.lean) - Leopoldt non-vanishing of the p-adic regulator via p-adic Hensel + non-Archimedean orbital + Baker linear forms
-- [`lean/Pandrosion/VojtaMainFrontier.lean`](lean/Pandrosion/VojtaMainFrontier.lean) - Vojta Main Conjecture frontier unifying Roth, abc, Schmidt, Faltings, and Lang under one orbital roof
-- [`lean/Pandrosion/ArtinPrimitiveRoot.lean`](lean/Pandrosion/ArtinPrimitiveRoot.lean) - Artin primitive-root infinitude (GRH-conditional) via Riemann gyroscopic + DFT character orthogonality
-- [`lean/Pandrosion/LehmerTotient.lean`](lean/Pandrosion/LehmerTotient.lean) - Lehmer totient frontier (`φ(n) | n-1 ⇒ n` prime) via Lehmer spectral limit + Smyth orbital
-- [`lean/Pandrosion/GoldfeldAverageRank.lean`](lean/Pandrosion/GoldfeldAverageRank.lean) - Goldfeld average-rank 1/2 for quadratic twists via BSD attractor rank + Brauer-Siegel
-- [`lean/Pandrosion/TateAlgebraicCycles.lean`](lean/Pandrosion/TateAlgebraicCycles.lean) - Tate cycle-rank / Galois-invariant rank equality via effective Faltings + matrix Diophantine
-- [`lean/Pandrosion/MasonStothersFLT.lean`](lean/Pandrosion/MasonStothersFLT.lean) - Mason-Stothers polynomial abc and function-field FLT via abc global frontier + Thue bridge
+The companion is *not* part of the paper's load-bearing claims but serves as
+reusable infrastructure: range bounds, calculus hooks, explicit low-`p`
+identities, and the cube-root-specific comparison theorems routinely cited
+alongside the Pandrosion iteration.
 
 ## Scope Notes
 
@@ -314,7 +322,7 @@ rational iteration, in a proof-assistant-checked form.
   year   = {2026},
   doi    = {10.5281/zenodo.19689482},
   url    = {https://zenodo.org/records/19689482},
-  note   = {24-module Pandrosion.Core spine, zero sorry; fully unconditional axiom-clean RealMcMullenP2 on R at p=2, x>1 (bad-set Lebesgue-null lemma formalised via polynomial fiber-finiteness)}
+  note   = {24-module Pandrosion.Core spine + 9-module Pandrosion.Legacy companion; 296 theorems, 0 sorry, 0 off-whitelist axiom; fully unconditional axiom-clean RealMcMullenP2 on R at p=2, x>1 (bad-set Lebesgue-null lemma formalised via polynomial fiber-finiteness)}
 }
 ```
 
@@ -324,4 +332,4 @@ This work is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/
 
 ## Author
 
-Ivan Besevic, April 2026
+Ivan Besevic, April 2026 (last updated 2026-04-22).

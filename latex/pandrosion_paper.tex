@@ -78,9 +78,9 @@ for the Complex Equation $z^p = x$\\[0.2cm]
 \begin{abstract}
 We present a formally verified Lean~4 / Mathlib~v4.7.0 development of the \emph{Pandrosion-Steffensen algorithm} for solving the complex equation $z^p = x$ with $x > 1$. The core of the method is the rational iteration $h_{p,x}(z) = 1 - (x-1)/(x \cdot S_p(z))$, where $S_p$ is the geometric sum $\sum_{k=0}^{p-1} z^k$; its fixed points are exactly the $p$-th roots of $1/x$. Composed with the Aitken-Steffensen $\Delta^2$ accelerator, the method becomes derivative-free and of quadratic order.
 
-The formalization consists of 24 Lean modules in \texttt{Pandrosion.Core.*} that build, in order: (i)~the geometric-sum identity $S_p(s)(1-s) = 1 - s^p$ and the fixed-point characterisation $h(s) = s \Leftrightarrow s^p = 1/x$ (real and complex); (ii)~the multi-start Pandrosion-Steffensen algorithm with a Voronoï nearest-anchor selector; (iii)~a constructive McMullen global-coverage theorem establishing that the selector uniquely assigns every $z_0 \in \mathbb{C}$ off a measure-zero Voronoï boundary; (iv)~the cyclotomic anchor family $\gamma_k = \alpha \cdot e^{2\pi i k/p}$, whose anchors are pairwise distinct roots of $1/x$ and fixed points of the Steffensen iterator; (v)~a closed-form linear contraction rate $\lambda_{p,x} = 1 - p \cdot \alpha^{p-1}/S_p(\alpha)$ together with a $p$-uniform complexity bound; (vi)~Kung-Traub optimality for the derivative-free order-2 efficiency index; (vii)~the complex multiplier $h'(\alpha)$ in closed form; (viii)~local dynamical attraction on a disk around each anchor; (ix)~an \emph{unconditional} local quadratic bound on the Steffensen iterator via an explicit Taylor residue calculation, together with the downstream almost-everywhere dynamical convergence theorem; (x)~an explicit super-attractive rate with constants $(K, r)$ computed from $(p, \alpha)$; (xi)~a global loglog iteration bound valid for Lebesgue-almost every $z_0 \in \mathbb{C}$; and (xii)~\textbf{an unconditional, axiom-clean discharge of the sharpened real-line McMullen Prop \texttt{RealMcMullenP2} at $p = 2$, $x > 1$}, via an explicit Möbius conjugacy $\sigma_{2,x} \sim \mu^2 w^2$, the iterated Böttcher identity $v(\sigma^{[n]}(s)) = v(s)^{2^n}$, and a squaring-power dichotomy (modulo the measure-zero lemma for a countably-constructed bad set).
+The formalization consists of a 24-module \texttt{Pandrosion.Core} spine together with a 9-module \texttt{Pandrosion.Legacy} companion corpus (audited and axiom-clean, no \texttt{sorry}). The Core spine builds, in order: (i)~the geometric-sum identity $S_p(s)(1-s) = 1 - s^p$ and the fixed-point characterisation $h(s) = s \Leftrightarrow s^p = 1/x$ (real and complex); (ii)~the multi-start Pandrosion-Steffensen algorithm with a Voronoï nearest-anchor selector; (iii)~a constructive McMullen global-coverage theorem establishing that the selector uniquely assigns every $z_0 \in \mathbb{C}$ off a measure-zero Voronoï boundary; (iv)~the cyclotomic anchor family $\gamma_k = \alpha \cdot e^{2\pi i k/p}$, whose anchors are pairwise distinct roots of $1/x$ and fixed points of the Steffensen iterator; (v)~a closed-form linear contraction rate $\lambda_{p,x} = 1 - p \cdot \alpha^{p-1}/S_p(\alpha)$ together with a $p$-uniform complexity bound; (vi)~Kung-Traub optimality for the derivative-free order-2 efficiency index; (vii)~the complex multiplier $h'(\alpha)$ in closed form; (viii)~local dynamical attraction on a disk around each anchor; (ix)~an \emph{unconditional} local quadratic bound on the Steffensen iterator via an explicit Taylor residue calculation, together with the downstream almost-everywhere dynamical convergence theorem; (x)~an explicit super-attractive rate with constants $(K, r)$ computed from $(p, \alpha)$; (xi)~a global loglog iteration bound valid for Lebesgue-almost every $z_0 \in \mathbb{C}$; and (xii)~\textbf{an unconditional, axiom-clean discharge of the sharpened real-line McMullen Prop \texttt{RealMcMullenP2} at $p = 2$, $x > 1$}, via an explicit Möbius conjugacy $\sigma_{2,x} \sim \mu^2 w^2$, the iterated Böttcher identity $v(\sigma^{[n]}(s)) = v(s)^{2^n}$, and a squaring-power dichotomy (modulo the measure-zero lemma for a countably-constructed bad set).
 
-The 24-module spine compiles with zero \texttt{sorry} and zero raw \texttt{axiom} declarations in the main spine (the previous Kung-Traub 1974 axiom is folded into the \texttt{DerivativeFreeMethod} structure as a per-instance compliance certificate; the previous Fatou/McMullen a.e.-entry axiom is exposed as an explicit named \texttt{Prop} hypothesis, and \emph{unconditionally discharged on $\mathbb{R}$ at $p = 2$}). Every load-bearing theorem is audited: its dependency set reduces to the Lean whitelist $\{\texttt{propext},\, \texttt{Classical.choice},\, \texttt{Quot.sound}\}$.
+The 24-module Core spine compiles with zero \texttt{sorry} and zero raw \texttt{axiom} declarations in the main spine (the previous Kung-Traub 1974 axiom is folded into the \texttt{DerivativeFreeMethod} structure as a per-instance compliance certificate; the previous Fatou/McMullen a.e.-entry axiom is exposed as an explicit named \texttt{Prop} hypothesis, and \emph{unconditionally discharged on $\mathbb{R}$ at $p = 2$}). The 9-module \texttt{Pandrosion.Legacy} companion adds orthogonal but audited material: range invariance of $h$ on $[0,1]$, exact Aitken $\Delta^2$ extrapolation on geometric error, the $p=2$ contraction identity $h(s) - h(t) = (x-1)(s-t)/[x(1+s)(1+t)]$, the universal $(x-1)/x$ contraction bound for every $p \geq 2$ via a divided-difference $Q_p$, \texttt{HasDerivAt} facts for $S_p$ and $h_{p,2}$, the no-periodic-orbit principle, the anchor-based cube-root step $F_a$, the cube-root-specific derivative calculations $P'(r) = -1/5$ and $P''(r) = -12/(25r)$, the Chebyshev-Halley exclusion, and the universal descent $D_p < 0$ via logarithmic-cosine bounds. Every load-bearing theorem in both layers is audited: its dependency set reduces to the Lean whitelist $\{\texttt{propext},\, \texttt{Classical.choice},\, \texttt{Quot.sound}\}$. The full build reports $34$ modules, $296$ theorems/lemmas and $59$ definitions, zero \texttt{sorry} and zero off-whitelist axioms.
 \end{abstract}
 
 \tableofcontents
@@ -951,14 +951,159 @@ The table below collects all Lean modules in the dependency order induced by \te
 \end{itemize}
 
 %===========================================================
+\section{The \texttt{Pandrosion.Legacy} Companion Corpus}
+\label{sec:legacy}
+%===========================================================
+
+Alongside the \texttt{Core} spine, the development ships a 9-module companion under \texttt{lean/Pandrosion/Legacy/}. These modules are \emph{not} load-bearing for any Core theorem --- the dependency is strictly one-way, \texttt{Legacy} imports \texttt{Core} and not vice versa --- but they formalise material that is routinely cited alongside the Pandrosion iteration: range invariants, the Aitken exactness theorem, explicit low-$p$ contraction identities, a universal-in-$p$ contraction bound, calculus facts, the no-cycle principle, the anchor-based cube-root variant, and the universal-descent theorem. The companion adds $44$ theorems and $7$ definitions to the build; every theorem passes the same axiom audit as the Core spine.
+
+\subsection{\texttt{Legacy.Basic} --- range invariance and exact Aitken extrapolation}
+
+\begin{theorem}[Range invariance, \texttt{h\_lt\_one} / \texttt{h\_pos}]\label{thm:range_inv}
+For $x > 1$ and $p \geq 1$, $h_{p,x}$ maps $[0, 1]$ into $(-\infty, 1)$; for $p \geq 2$, it maps $[0, 1]$ into $(0, 1)$. Consequently, every iterate $h_{p,x}^{[n]}(s_0)$ starting from $s_0 \in [0, 1]$, $n \geq 1$, lies in $(0, 1)$ (\texttt{orbit\_in\_interval}).
+\end{theorem}
+
+\begin{theorem}[Exact Aitken extrapolation, \texttt{aitken\_perfect\_extrapolation}]\label{thm:aitken_exact}
+Let $s, \mathit{lam}, r \in \mathbb{R}$ with $\mathit{lam} \neq 1$ and $s \neq r$, and set $s_1 := r + \mathit{lam}(s - r)$, $s_2 := r + \mathit{lam}(s_1 - r)$. Then the denominator $s_2 - 2 s_1 + s = (s - r)(\mathit{lam} - 1)^2$ is non-zero, and
+\[
+  s - \frac{(s_1 - s)^2}{s_2 - 2 s_1 + s} \;=\; r
+\]
+\emph{exactly}, in a single step. The Aitken $\Delta^2$ accelerator is the identity recovery on any geometric error sequence with rate $\mathit{lam} \neq 1$.
+\end{theorem}
+
+\subsection{\texttt{Legacy.ContractionP2} --- the $p = 2$ contraction identity}
+
+\begin{theorem}[Explicit contraction identity, \texttt{contraction\_identity\_p2}]\label{thm:contr_p2}
+For $x \neq 0$ and $1 + s, 1 + t \neq 0$,
+\[
+  h_{2, x}(s) - h_{2, x}(t) \;=\; \frac{(x - 1)(s - t)}{x \, (1 + s)(1 + t)} .
+\]
+Specialised to $t = s^\star = 1/\sqrt x$ this gives \texttt{distance\_decreases\_p2} (strict decrease) and \texttt{h\_strict\_mono\_p2} (monotonicity); the combined monotone-from-above and monotone-from-below arguments yield \texttt{fixed\_point\_unique\_p2}.
+\end{theorem}
+
+\subsection{\texttt{Legacy.UniversalContraction} --- universal divided difference}
+
+\begin{definition}[Divided difference]\label{def:Qp}
+$\displaystyle Q_p(s, t) \;:=\; \sum_{k=0}^{p-1} \sum_{j=0}^{k-1} s^j \, t^{k-1-j}$.
+\end{definition}
+
+\begin{theorem}[Universal contraction bound, \texttt{contraction\_general}]\label{thm:contr_gen}
+For every $p \geq 2$, every $x > 1$, every $s \geq 0$ and every fixed point $s^\star \in (0, 1)$ with $(s^\star)^p = 1/x$,
+\[
+  \bigl|h_{p, x}(s) - s^\star\bigr| \;\leq\; \frac{x - 1}{x} \, \bigl|s - s^\star\bigr| .
+\]
+The proof factors $S_p(s) - S_p(s^\star) = (s - s^\star) Q_p(s, s^\star)$ and bounds $Q_p(s, s^\star) \leq S_p(s) \, S_p(s^\star)$ (\texttt{Qp\_le\_Sp\_mul}) via an explicit monomial-counting argument. Concrete instantiations at $p = 3, 4, 5$ are proved directly from the factorisations $\texttt{Sp3\_sub}$, $\texttt{Sp4\_sub}$, $\texttt{Sp5\_sub}$.
+\end{theorem}
+
+\subsection{\texttt{Legacy.Derivative} --- calculus of $S_p$ and $h_{p, x}$}
+
+\begin{theorem}[\texttt{HasDerivAt} for $S_p$, \texttt{Sp\_hasDerivAt}]\label{thm:sp_deriv}
+For every $p \in \mathbb{N}$ and every $s \in \mathbb{R}$, $S_p$ is differentiable at $s$ with derivative $S_p'(s) = \sum_{k<p} k \, s^{k-1}$. For $p \geq 2$, $S_p'(s) > 0$ whenever $s \geq 0$ (\texttt{Sp'\_pos}).
+\end{theorem}
+
+\begin{theorem}[\texttt{HasDerivAt} for $h_{p, x}$, \texttt{h\_hasDerivAt}]\label{thm:h_deriv}
+For $x > 0$, $p \geq 1$, $s \geq 0$,
+\[
+  h_{p, x}'(s) \;=\; \frac{(x - 1) \, S_p'(s)}{x \, S_p(s)^2} .
+\]
+In the square-root case $p = 2$ this simplifies to $h_{2, x}'(s) = (x - 1)/(x(1 + s)^2) \in (0, 1)$ (\texttt{h\_deriv\_p2}, \texttt{asymptotic\_rate\_in\_unit}).
+\end{theorem}
+
+\subsection{\texttt{Legacy.NoCycles} --- no periodic orbits}
+
+\begin{theorem}[No periodic orbit under a contraction, \texttt{no\_periodic\_orbit}]\label{thm:no_cycle}
+Let $f : \mathbb{R} \to \mathbb{R}$, $r \in \mathbb{R}$, $c \in [0, 1)$, and suppose $|f(s) - r| \leq c \, |s - r|$ for every $s$. Then $f^{[n]}(s) = s$ for some $n \geq 1$ implies $s = r$.
+\end{theorem}
+
+Specialised to $f = h_{p, x}$ via Theorem~\ref{thm:contr_gen}, this rules out every periodic orbit of the real Pandrosion iteration outside the fixed point --- an elementary but crisp dynamical statement.
+
+\subsection{\texttt{Legacy.VoronoiAffine} --- affine form of the Voronoï bisector}
+
+The coordinate-level statement underlying \texttt{Core.MultiStartBasins.halfPlane\_convex}:
+\[
+  \lVert z - r_1 \rVert^2 \;\leq\; \lVert z - r_2 \rVert^2
+  \;\Longleftrightarrow\;
+  2\, \bigl(z_\text{Re} (r_{2,\text{Re}} - r_{1,\text{Re}}) + z_\text{Im} (r_{2,\text{Im}} - r_{1,\text{Im}})\bigr)
+  \;\leq\;
+  \lVert r_2 \rVert^2 - \lVert r_1 \rVert^2 .
+\]
+The companion \texttt{multistart\_distinct\_roots\_guarantee} complements \texttt{Core.fin\_injective\_iff\_bijective}: on $\mathrm{Fin}\,d$, \emph{any} surjection is already a bijection.
+
+\subsection{\texttt{Legacy.Descent} --- universal descent $D_p < 0$}
+
+\begin{theorem}[Universal descent, \texttt{normalized\_descent\_neg}]\label{thm:descent}
+For every $p \geq 2$,
+\[
+  D_p \;:=\; \frac{1}{p} \sum_{k=1}^{p-1} \log\!\Bigl(\cos \tfrac{k \pi}{2 p}\Bigr) \;<\; 0 .
+\]
+\end{theorem}
+
+The proof is termwise: every angle $k\pi/(2p)$ with $1 \leq k \leq p - 1$ lies in $(0, \pi/2)$ (\texttt{descent\_angle\_in\_range}), on which $\cos$ takes values in $(0, 1)$ (\texttt{cos\_in\_unit\_interval}), hence $\log \cos$ is strictly negative (\texttt{log\_cos\_neg}). The $k = 0$ term contributes $\log 1 = 0$, so the average is strictly negative.
+
+\subsection{\texttt{Legacy.CubeRoot} --- cube-root specifics}
+
+\begin{theorem}[Cube-root derivatives, \texttt{pandrosion\_derivative\_value} \& \texttt{pandrosion\_second\_derivative\_value}]\label{thm:cube_derivs}
+Let $P(s) = s(s^3 + 4X)/(3 s^3 + 2X)$. For every real cube root $r$ of $X$ (so $r^3 = X$, $r \neq 0$),
+\[
+  P'(r) \;=\; -\tfrac{1}{5},
+  \qquad
+  P''(r) \;=\; -\tfrac{12}{25\,r} .
+\]
+In particular the Pandrosion cube-root iteration has a \emph{universal} linear rate $-1/5$ (independent of $X$), with Taylor expansion $P(r + \varepsilon) = r - \varepsilon/5 - 6\,\varepsilon^2/(25 r) + O(\varepsilon^3)$. Since $-1/5 \neq 1$, Aitken-Steffensen applies; since $-1/5 \neq 0$, convergence is strictly linear (not quadratic, unlike Newton).
+\end{theorem}
+
+\begin{theorem}[Pandrosion is neither Newton nor Halley nor Chebyshev-Halley]\label{thm:CH_exclusion}
+The polynomial cross-identities \texttt{pandrosion\_newton\_cross} and \texttt{pandrosion\_halley\_cross} yield $P - N \propto -(3 s^3 - 2 X)(s^3 - X)$ and $P - H \propto -s^4(s^3 - X)$ respectively: Pandrosion agrees with Newton and Halley only at the cube roots. Moreover, \texttt{pandrosion\_not\_in\_chebyshev\_halley} rules out the entire Chebyshev-Halley one-parameter family $CH_\alpha$: matching the $s^6$ and $s^3 X$ coefficients forces $\alpha = 1/2$ and $\alpha = 2/5$ respectively, which are incompatible.
+\end{theorem}
+
+\subsection{\texttt{Legacy.AnchorStep} --- anchor-based cube-root variant}
+
+For the cube-root problem $z^3 = X$, define the \emph{anchor step}
+\[
+  F_a(s) \;=\; a - \frac{a^3 - X}{Q(a, s)},
+  \qquad
+  Q(a, s) \;=\; s^2 + a \, s + a^2 \;=\; \frac{s^3 - a^3}{s - a} .
+\]
+
+\begin{theorem}[Anchor fixed-point, \texttt{anchor\_fixed\_point}]\label{thm:anchor_fp}
+For every anchor $a$ and every cube root $r$ of $X$ with $Q(a, r) \neq 0$, $F_a(r) = r$.
+\end{theorem}
+
+\begin{theorem}[Newton as degenerate case, \texttt{newton\_from\_pandrosion}]\label{thm:anchor_newton}
+For $a \neq 0$, the self-anchored step collapses to Newton: $F_a(a) = (2 a^3 + X)/(3 a^2)$.
+\end{theorem}
+
+A complete multi-start step $(a, s) \mapsto (\widehat{a}, s')$ composes three anchor iterations with an Aitken reanchoring. The full pair is a fixed point at every cube root (\texttt{multistart\_step\_at\_root}); \texttt{aitken\_exact\_geometric} gives the exact extrapolation form on a clean geometric orbit $(s, r + \lambda e, r + \lambda^2 e)$.
+
+\subsection{Module layout of \texttt{Pandrosion.Legacy}}
+
+\begin{center}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+\textbf{Module} & \textbf{LOC} & \textbf{Headline content} \\
+\midrule
+\texttt{Legacy.Basic}                 & 103 & range invariance, orbit in $(0,1)$, Aitken exactness \\
+\texttt{Legacy.ContractionP2}         & 169 & $p = 2$ contraction identity, monotonicity, uniqueness \\
+\texttt{Legacy.UniversalContraction}  & 367 & universal $Q_p$, $(x-1)/x$ bound, $p = 3, 4, 5$ \\
+\texttt{Legacy.Derivative}            & 173 & \texttt{HasDerivAt} for $S_p$, $h_{p,2}$; asymptotic rate \\
+\texttt{Legacy.NoCycles}              &  74 & no periodic orbit under a contraction \\
+\texttt{Legacy.VoronoiAffine}         &  57 & affine bisector form; surjective $\Rightarrow$ bijective on $\mathrm{Fin}\,d$ \\
+\texttt{Legacy.Descent}               & 122 & $D_p < 0$ via $\log \cos$ bounds \\
+\texttt{Legacy.CubeRoot}              & 173 & cube-root $P'(r) = -1/5$, $P''(r)$, Chebyshev-Halley exclusion \\
+\texttt{Legacy.AnchorStep}            & 223 & anchor step $F_a$, multistart, Newton as $a = s$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%===========================================================
 \section{Reproducibility and Tooling}
 %===========================================================
 
-The complete Lean source lives in \texttt{lean/Pandrosion/Core/*.lean} with the root module \texttt{Pandrosion.lean} importing all 24 files. The development targets Lean~4 with Mathlib~v4.7.0 and is built with a Docker-based incremental pipeline:
+The complete Lean source lives in \texttt{lean/Pandrosion/Core/*.lean} (24 files) and \texttt{lean/Pandrosion/Legacy/*.lean} (9 files), with the aggregator \texttt{Pandrosion/Legacy.lean} and the root module \texttt{Pandrosion.lean} importing both layers. The development targets Lean~4 with Mathlib~v4.7.0 and is built with a Docker-based incremental pipeline:
 \begin{lstlisting}[caption={Incremental build command}, language=lean]
 docker compose run --rm lean-incremental
 \end{lstlisting}
-On a clean tree, the full 24-module spine compiles successfully; on an incremental rebuild after a single-file edit, only the changed module and its downstream dependents are rebuilt.
+On a clean tree, the full $34$-module corpus compiles successfully (\texttt{296} theorems, \texttt{59} definitions, $0$ \texttt{sorry}, $0$ off-whitelist axioms); on an incremental rebuild after a single-file edit, only the changed module and its downstream dependents are rebuilt. The stricter service \texttt{docker compose run --rm lean-check} reruns the axiom audit on every declaration against the whitelist $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$.
 
 The source code is publicly available at \url{github.com/ivan-fr/poussiere_de_x}.
 
@@ -967,7 +1112,7 @@ The source code is publicly available at \url{github.com/ivan-fr/poussiere_de_x}
 \label{sec:conclusion}
 %===========================================================
 
-This paper documents a 24-module Lean~4 / Mathlib~v4.7.0 development of the Pandrosion-Steffensen algorithm for $z^p = x$. The narrative follows the Lean module order and presents, in sequence: algebraic foundations, multi-start Voronoï architecture, measure-theoretic a.e. coverage, cyclotomic anchor family, closed-form linear contraction rate, $p$-uniform complexity, Kung-Traub efficiency optimality, complex multiplier in closed form, conditional local attraction, the crown-jewel a.e. dynamical convergence theorem (mod McMullen), and --- as the most recent addition --- a \emph{fully unconditional} axiom-clean proof of the sharpened real-line McMullen statement at $p = 2$, $x > 1$, derived from an explicit Möbius conjugacy $\sigma_{2,x} \sim \mu^2 w^2$, a squaring-power dichotomy in the Böttcher-normalised coordinate, and a formalised Lebesgue-null lemma for the bad set (Theorem~\ref{thm:real_p2_fully_uncond}).
+This paper documents a Lean~4 / Mathlib~v4.7.0 development of the Pandrosion-Steffensen algorithm for $z^p = x$, consisting of a 24-module \texttt{Pandrosion.Core} spine and a 9-module \texttt{Pandrosion.Legacy} companion. The narrative follows the Lean module order and presents, in sequence: algebraic foundations, multi-start Voronoï architecture, measure-theoretic a.e. coverage, cyclotomic anchor family, closed-form linear contraction rate, $p$-uniform complexity, Kung-Traub efficiency optimality, complex multiplier in closed form, conditional local attraction, the crown-jewel a.e. dynamical convergence theorem (mod McMullen), and --- as the most recent addition --- a \emph{fully unconditional} axiom-clean proof of the sharpened real-line McMullen statement at $p = 2$, $x > 1$, derived from an explicit Möbius conjugacy $\sigma_{2,x} \sim \mu^2 w^2$, a squaring-power dichotomy in the Böttcher-normalised coordinate, and a formalised Lebesgue-null lemma for the bad set (Theorem~\ref{thm:real_p2_fully_uncond}).
 
 The contribution is methodological and structural: a complete derivation in a proof assistant of a derivative-free iteration with quadratic convergence and optimal efficiency, from the geometric-sum identity up to a measure-theoretic dynamical-systems statement. Where genuinely analytic content remains deferred at full generality (a.e.\ trajectory entry in $\mathbb{C}$ at arbitrary $p$), the hypotheses are explicit and auditable; the real-line $p = 2$ specialisation, by contrast, is now fully and unconditionally discharged, with the bad-set Lebesgue-null property itself proven via polynomial fiber-finiteness.
 
