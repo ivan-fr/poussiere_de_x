@@ -49,4 +49,5 @@ import Pandrosion.Core.HalfPlaneContractionP3Ratio
 import Pandrosion.Core.SteffensenP3Loglog
 import Pandrosion.Core.UniversalConjectureC
 import Pandrosion.Core.JuliaNullX2P3
+import Pandrosion.Core.JuliaNullX2P3Preimages
 import Pandrosion.Legacy
