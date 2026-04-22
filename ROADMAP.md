@@ -130,3 +130,41 @@ Quand tu stoppes, écris un résumé à la fin de ce fichier sous
 - Cibles downscopées (par numéro §, avec raison).
 - Cibles bloquées (par numéro §, avec point de friction).
 - Prochaine session : suggestion de prompt.
+
+---
+
+## Session 1 résumé (autonomous overnight setup)
+
+**État corpus début** : 73 modules verts (après §72 SigmaClosedFormX2).
+**État corpus fin** : 75 modules verts.
+
+### Cibles complétées
+- **§77 FarFieldX2** : `|z| ≥ 2 ⟹ h^n(z) → α₀` inconditionnel. Argument
+  triangle inverse + factorisation `(‖z‖-2)(‖z‖+1) ≥ 0`.
+- **§78 NamedPointsX2** : 7 points concrets dans le h-bassin
+  (z = 1, 2, 5, 10, -5, 3i, 1+i) via §67 + §77.
+
+### Cibles non-commencées (prochaine session)
+- **§73 SigmaStepIntoBasinX2** : bloqué par analyse polynomiale
+  complexe. Piste : commencer par `|z| ≥ 10` (régime asymptotique).
+- **§77b HalfPlaneExhaustion bounded** : région `{Re z < 1/2 ∧ |z| < 2}`.
+  Analyse dynamique complexe, hors portée d'une seule session.
+- **§80 p=4 extension** : demande réécriture de §57 pour `Sp_C 4`.
+
+### Observations pour la suite
+- Le pattern "ring-identity + linarith" fonctionne très bien pour les
+  inégalités polynomiales (§77 build en 9s).
+- Les corollaires "points nommés" (§78) sont utiles : ancres
+  démonstratives bon marché, mais n'avancent pas la recherche.
+- Attention : `rw [h_decomp]` avec h_decomp dont RHS contient le LHS
+  provoque un unfolding récursif. Utiliser `have h_norm_eq` sur les
+  normes et linarith.
+
+### Prochaine session : suggestion de prompt
+
+```
+Lis ROADMAP.md. Attaque §73 SigmaStepIntoBasinX2 pour |z| ≥ 10
+seulement (restriction asymptotique). Utilise sigma_x2_closed_pivot_identity
+de §72 pour borner le numérateur polynomialement. Si ça bloque,
+essaie §85 : dérouler steffensenR_of_fp à x=2 pour R_σ explicit.
+```
