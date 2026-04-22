@@ -211,3 +211,46 @@ Attaque §80 (p=4) car plus mécanique : générer §57 pour Sp_C 4.
 OU : si tu as Python sympy, essaie de calculer la factorisation
 polynomiale qui permet §73 full à la main d'abord, puis formalise.
 ```
+
+---
+
+## Session 3 résumé (autonomous, p=4 extensions)
+
+**État corpus début** : 77 modules verts.
+**État corpus fin** : 79 modules verts.
+
+### Cibles complétées (cette session)
+- **§80 HalfPlaneContractionP4** : identité polynomiale exacte pour
+  `‖Sp_C 4 z‖²` + borne `‖Sp_C 4 z‖² ≥ (1+a+a²+a³)²` pour **`Re z ≥ 1`**.
+  **Découverte importante** : la borne §54-style ne se généralise PAS
+  à `Re z ≥ 1/2` à p=4 (contre-exemple à `z = 1/2 + i`). Threshold
+  bumped : 1/2 → 1.
+- **§81 AlphaX2P4** : ancre `α₀ := 2^{-1/4}`, propriétés arithmétiques
+  (α₀^4 = 1/2, α₀ ≥ 3/4, α₀ ≤ 1).
+
+### Observations session 3
+- Le pattern §54.1 → §54.2 → §55 → §64 (p=3) ne peut pas être
+  bêtement copié à p=4 : la borne polynomiale change de seuil.
+- Pour p=4 le threshold "naturel" semble être `Re z ≥ 1` au lieu
+  de `Re z ≥ 1/2`. Probablement `Re z ≥ (p-1)/(p)` ou similaire en
+  général. À vérifier numériquement pour p ≥ 5.
+- La factorisation `polynom = constant_at_a=1 + (a-1)·(positive_poly)`
+  est très efficace pour les bornes lower : 2 instances dans §80
+  (b² coeff et b⁴ coeff).
+
+### Cibles non-commencées (session 4 future)
+- **§82 Generic p framework** : généraliser §80 à tout p ≥ 3 par
+  induction. Identité polynomiale et threshold `(p-2)/(p-1)` ?
+- **§83/§84 generic x** : x ∈ (1, 8) à p=3.
+- **§85 explicit Steffensen radius** : Classical.choose unfolding.
+- **§77b/§78/§79** : Niveau 5 closing — nécessite analyse dynamique.
+
+### Prochaine session : suggestion de prompt
+
+```
+Lis ROADMAP.md Session 3 résumé. Si Python sympy disponible :
+calcule l'identité polynomiale §80.2 généralisée pour p=5,
+trouve le threshold optimal pour la borne lower, puis formalise.
+Sinon : attaque §83 (Banach generic x ∈ (1, 8) à p=3) — paramétriser
+§64 sur x au lieu de fixer x=2.
+```
