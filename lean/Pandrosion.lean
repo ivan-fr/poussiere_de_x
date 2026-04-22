@@ -27,4 +27,6 @@ import Pandrosion.Core.SteffensenRealMcMullenP2
 import Pandrosion.Core.SteffensenRealMcMullenP2Unconditional
 import Pandrosion.Core.ComplexMobiusP2
 import Pandrosion.Core.ComplexMcMullenP2Unconditional
+import Pandrosion.Core.ComplexMcMullenP2EffectiveRate
+import Pandrosion.Core.ComplexMcMullenP3Conditional
 import Pandrosion.Legacy

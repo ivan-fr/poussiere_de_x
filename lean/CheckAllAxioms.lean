@@ -37,6 +37,7 @@
 #print axioms Pandrosion.Sp_C_hasDerivAt
 #print axioms Pandrosion.Sp_C_mul_one_sub
 #print axioms Pandrosion.Sp_C_p2
+#print axioms Pandrosion.Sp_C_p3
 #print axioms Pandrosion.Sp_at_one
 #print axioms Pandrosion.Sp_deriv
 #print axioms Pandrosion.Sp_differentiableAt
@@ -118,6 +119,9 @@
 #print axioms Pandrosion.cycAnchor_injective
 #print axioms Pandrosion.cycAnchor_lambdaClosedC_ne_one
 #print axioms Pandrosion.cycAnchor_ne_zero
+#print axioms Pandrosion.cycAnchor_p3_one
+#print axioms Pandrosion.cycAnchor_p3_two
+#print axioms Pandrosion.cycAnchor_p3_zero
 #print axioms Pandrosion.cycAnchor_pow
 #print axioms Pandrosion.descent_angle_in_range
 #print axioms Pandrosion.descent_eps_bound
@@ -130,11 +134,13 @@
 #print axioms Pandrosion.distance_decreases_p4
 #print axioms Pandrosion.distance_decreases_p5
 #print axioms Pandrosion.double_preconditioning
+#print axioms Pandrosion.effective_entry_time_plus_alpha
 #print axioms Pandrosion.efficiencyIndex_two_two
 #print axioms Pandrosion.eigenvalue_product
 #print axioms Pandrosion.energy_decreasing
 #print axioms Pandrosion.energy_excess_quadratic_decay
 #print axioms Pandrosion.energy_normalizes
+#print axioms Pandrosion.entryTimeAux_bound
 #print axioms Pandrosion.epoch_descent_equals_log_block
 #print axioms Pandrosion.epoch_descent_neg
 #print axioms Pandrosion.fin_injective_iff_bijective
@@ -200,6 +206,7 @@
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
+#print axioms Pandrosion.mcmullen_p3_complex_mod_julia_null
 #print axioms Pandrosion.midpoint_lt_one
 #print axioms Pandrosion.midpoint_pos_of_pos
 #print axioms Pandrosion.monotone_from_above_p2
@@ -246,6 +253,7 @@
 #print axioms Pandrosion.pandrosion_h_C_p2_hh_closed_form
 #print axioms Pandrosion.pandrosion_h_C_p2_minus_s
 #print axioms Pandrosion.pandrosion_h_C_p2_plus_one
+#print axioms Pandrosion.pandrosion_h_C_p3_closed_form
 #print axioms Pandrosion.pandrosion_h_C_quadratic_bound
 #print axioms Pandrosion.pandrosion_h_C_quadratic_bound_with_small
 #print axioms Pandrosion.pandrosion_h_C_quasi_newton
@@ -347,6 +355,7 @@
 #print axioms Pandrosion.steffensen_p2_ae_basin_entry_mod_real_mcmullen
 #print axioms Pandrosion.steffensen_p2_effective_rate_and_ae_entry
 #print axioms Pandrosion.steffensen_p2_solves_complex_unconditional
+#print axioms Pandrosion.steffensen_p3_solves_complex_mod_julia_null
 #print axioms Pandrosion.steffensen_quadratic_bound_explicit
 #print axioms Pandrosion.steffensen_rate_ne_one
 #print axioms Pandrosion.steffensen_solves_ae_mod_mcmullen
@@ -425,6 +434,7 @@ import Pandrosion
 #print axioms Pandrosion.Sp_C_hasDerivAt
 #print axioms Pandrosion.Sp_C_mul_one_sub
 #print axioms Pandrosion.Sp_C_p2
+#print axioms Pandrosion.Sp_C_p3
 #print axioms Pandrosion.Sp_at_one
 #print axioms Pandrosion.Sp_deriv
 #print axioms Pandrosion.Sp_differentiableAt
@@ -506,6 +516,9 @@ import Pandrosion
 #print axioms Pandrosion.cycAnchor_injective
 #print axioms Pandrosion.cycAnchor_lambdaClosedC_ne_one
 #print axioms Pandrosion.cycAnchor_ne_zero
+#print axioms Pandrosion.cycAnchor_p3_one
+#print axioms Pandrosion.cycAnchor_p3_two
+#print axioms Pandrosion.cycAnchor_p3_zero
 #print axioms Pandrosion.cycAnchor_pow
 #print axioms Pandrosion.descent_angle_in_range
 #print axioms Pandrosion.descent_eps_bound
@@ -518,11 +531,13 @@ import Pandrosion
 #print axioms Pandrosion.distance_decreases_p4
 #print axioms Pandrosion.distance_decreases_p5
 #print axioms Pandrosion.double_preconditioning
+#print axioms Pandrosion.effective_entry_time_plus_alpha
 #print axioms Pandrosion.efficiencyIndex_two_two
 #print axioms Pandrosion.eigenvalue_product
 #print axioms Pandrosion.energy_decreasing
 #print axioms Pandrosion.energy_excess_quadratic_decay
 #print axioms Pandrosion.energy_normalizes
+#print axioms Pandrosion.entryTimeAux_bound
 #print axioms Pandrosion.epoch_descent_equals_log_block
 #print axioms Pandrosion.epoch_descent_neg
 #print axioms Pandrosion.fin_injective_iff_bijective
@@ -588,6 +603,7 @@ import Pandrosion
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
+#print axioms Pandrosion.mcmullen_p3_complex_mod_julia_null
 #print axioms Pandrosion.midpoint_lt_one
 #print axioms Pandrosion.midpoint_pos_of_pos
 #print axioms Pandrosion.monotone_from_above_p2
@@ -634,6 +650,7 @@ import Pandrosion
 #print axioms Pandrosion.pandrosion_h_C_p2_hh_closed_form
 #print axioms Pandrosion.pandrosion_h_C_p2_minus_s
 #print axioms Pandrosion.pandrosion_h_C_p2_plus_one
+#print axioms Pandrosion.pandrosion_h_C_p3_closed_form
 #print axioms Pandrosion.pandrosion_h_C_quadratic_bound
 #print axioms Pandrosion.pandrosion_h_C_quadratic_bound_with_small
 #print axioms Pandrosion.pandrosion_h_C_quasi_newton
@@ -735,6 +752,7 @@ import Pandrosion
 #print axioms Pandrosion.steffensen_p2_ae_basin_entry_mod_real_mcmullen
 #print axioms Pandrosion.steffensen_p2_effective_rate_and_ae_entry
 #print axioms Pandrosion.steffensen_p2_solves_complex_unconditional
+#print axioms Pandrosion.steffensen_p3_solves_complex_mod_julia_null
 #print axioms Pandrosion.steffensen_quadratic_bound_explicit
 #print axioms Pandrosion.steffensen_rate_ne_one
 #print axioms Pandrosion.steffensen_solves_ae_mod_mcmullen
