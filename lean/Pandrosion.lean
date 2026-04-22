@@ -39,4 +39,9 @@ import Pandrosion.Core.ComplexJuliaGeometryP2
 import Pandrosion.Core.MeasureUniformEffectiveP2
 import Pandrosion.Core.MeasureUniformClosedFormP2
 import Pandrosion.Core.SlowSetQuantitativeDecayP2
+import Pandrosion.Core.ComplexSymmetryP3
+import Pandrosion.Core.PandrosionRealUniversalContraction
+import Pandrosion.Core.HalfPlaneContractionP3
+import Pandrosion.Core.Rpow34Bound
+import Pandrosion.Core.HalfPlaneContractionP3Complete
 import Pandrosion.Legacy
