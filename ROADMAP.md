@@ -83,8 +83,10 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   `Re z ≥ 1/2` — contre-exemple à `z = 1/2 + i`). Décomposition
   ring-identity + factorisation `(a-1)·(...)` pour les coefficients.
 
-- [ ] **§81 BanachX4Concrete** : analogue §64 à `x = 2, p = 4`.
-  `α₀ = 2^{-1/4} ≈ 0.841`.
+- [x] **§81 AlphaX2P4** : ancre `α₀ := 2^{-1/4}` à `x = 2, p = 4`.
+  Données arithmétiques : `α₀^4 = 1/2`, `α₀ ≥ 3/4` (via `(3/4)^4 = 81/256 ≤ 128/256`),
+  `α₀ ≤ 1`. Théorème Banach complet downscope (demande §56.3
+  généralisé pour Q_4 = 1+z+α+z²+zα+α²).
 
 - [ ] **§82 Generic p ≥ 3 framework** : paramétrer `x = 2` sur
   `p` variable. Prouver rate `K(p) < 1` par induction sur `p`.
