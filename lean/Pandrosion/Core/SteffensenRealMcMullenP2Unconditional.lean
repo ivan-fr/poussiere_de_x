@@ -36,6 +36,7 @@
 -/
 
 import Pandrosion.Core.SteffensenRealMcMullenP2
+import Mathlib.Data.Polynomial.RingDivision
 
 namespace Pandrosion
 
@@ -667,6 +668,304 @@ theorem orbit_enters_basin_off_bad_set
     rw [h_orbit_eq k, ← hs_k_def]
     exact h_final
 
+/-! ============================================================
+  §37.4.1  Polynomial fiber finiteness — quadratic zero sets
+============================================================ -/
+
+/-- **Zero set of a real polynomial of degree ≤ 2 is finite**
+    whenever either the leading or linear coefficient is nonzero.
+
+    The constant term `c` is free. The hypothesis `a ≠ 0 ∨ b ≠ 0`
+    excludes the degenerate case `a = b = 0` where the "equation"
+    degenerates to `c = 0` (which is vacuous or universal, not a
+    genuine level-set condition). -/
+theorem poly_deg_le_2_zero_set_finite (a b c : ℝ) (h : a ≠ 0 ∨ b ≠ 0) :
+    Set.Finite {s : ℝ | a * s ^ 2 + b * s + c = 0} := by
+  by_cases ha : a = 0
+  · have hb : b ≠ 0 := by
+      rcases h with ha' | hb'
+      · exact absurd ha ha'
+      · exact hb'
+    refine (Set.finite_singleton (-c/b)).subset ?_
+    intro s hs
+    simp only [Set.mem_setOf_eq] at hs
+    simp only [Set.mem_singleton_iff]
+    subst ha
+    simp only [zero_mul, zero_add] at hs
+    field_simp
+    linarith
+  · let P : Polynomial ℝ :=
+      Polynomial.C a * Polynomial.X ^ 2 + Polynomial.C b * Polynomial.X + Polynomial.C c
+    have hP_ne : P ≠ 0 := by
+      intro hP
+      have h_coeff2 : P.coeff 2 = a := by
+        simp [P, Polynomial.coeff_add, Polynomial.coeff_C_mul,
+              Polynomial.coeff_X_pow, Polynomial.coeff_X, Polynomial.coeff_C]
+      rw [hP, Polynomial.coeff_zero] at h_coeff2
+      exact ha h_coeff2.symm
+    have h_root_finite : Set.Finite {s : ℝ | P.IsRoot s} :=
+      Polynomial.finite_setOf_isRoot hP_ne
+    refine h_root_finite.subset ?_
+    intro s hs
+    simp only [Set.mem_setOf_eq] at hs
+    show P.IsRoot s
+    simp [Polynomial.IsRoot, P, Polynomial.eval_add, Polynomial.eval_mul,
+          Polynomial.eval_C, Polynomial.eval_X, Polynomial.eval_pow]
+    linarith
+
+/-- **Non-vanishing of the `sigma_p2_explicit` fiber polynomial
+    coefficients for `x > 1`.**
+
+    The level-set equation for `sigma_p2_explicit x α s = y` (with
+    `x·α² = 1` and after clearing denominators) reduces to
+    `A·s² + B·s + A/x = 0` with
+        `A = (x+1) - 2xy`,   `B = 4 - 2(x+1)y`.
+    For `x > 1`, `A = 0 ⟹ y = (x+1)/(2x) ⟹ B = -(x-1)²/x < 0`.
+    Hence `A ≠ 0 ∨ B ≠ 0` always holds. -/
+theorem sigma_p2_fiber_coeffs_nonzero (x y : ℝ) (hx : 1 < x) :
+    ((x + 1) - 2 * x * y) ≠ 0 ∨ (4 - 2 * (x + 1) * y) ≠ 0 := by
+  by_cases hA : (x + 1) - 2 * x * y = 0
+  · right
+    intro hB
+    have h1 : (x - 1) ^ 2 = 0 := by nlinarith [hA, hB]
+    have h2 : x - 1 = 0 := by nlinarith [sq_nonneg (x - 1), h1]
+    linarith
+  · left; exact hA
+
+/-! ============================================================
+  §37.4.2  `sigma_p2_explicit` fiber is finite
+============================================================ -/
+
+/-- **Fiber of `sigma_p2_explicit` at any `y ∈ ℝ` is finite.**
+
+    For `x > 1` and `xα² = 1`, the level set
+    `{s : ℝ | sigma_p2_explicit x α s = y}`
+    is finite: it is contained in the union of the 2-point
+    pole-set `{−1, −1/x}` and the ≤ 2-root zero set of the
+    reduced quadratic polynomial
+    `A·s² + B·s + A/x` (`A = (x+1)−2xy`, `B = 4−2(x+1)y`),
+    which is non-trivial by `sigma_p2_fiber_coeffs_nonzero`. -/
+theorem sigma_p2_explicit_fiber_finite
+    (x α y : ℝ) (hx : 1 < x) (hxα : x * α ^ 2 = 1) :
+    Set.Finite {s : ℝ | sigma_p2_explicit x α s = y} := by
+  have hx_pos : 0 < x := by linarith
+  have hx_ne : x ≠ 0 := ne_of_gt hx_pos
+  have h_bound : Set.Finite
+    (({(-1 : ℝ)} ∪ {(-1/x : ℝ)})
+      ∪ {s : ℝ | ((x+1) - 2*x*y) * s^2 + (4 - 2*(x+1)*y) * s + ((x+1)/x - 2*y) = 0}) := by
+    refine Set.Finite.union ?_ ?_
+    · exact (Set.finite_singleton (-1:ℝ)).union (Set.finite_singleton (-1/x:ℝ))
+    · exact poly_deg_le_2_zero_set_finite _ _ _ (sigma_p2_fiber_coeffs_nonzero x y hx)
+  refine h_bound.subset ?_
+  intro s hs
+  simp only [Set.mem_setOf_eq] at hs
+  by_cases hs1 : s + 1 = 0
+  · left; left
+    simp only [Set.mem_singleton_iff]
+    linarith
+  by_cases hxs1 : x * s + 1 = 0
+  · left; right
+    simp only [Set.mem_singleton_iff]
+    field_simp
+    linarith
+  · right
+    simp only [Set.mem_setOf_eq]
+    unfold sigma_p2_explicit at hs
+    have h_denom_ne : 2 * (s + 1) * (x * s + 1) ≠ 0 :=
+      mul_ne_zero (mul_ne_zero (by norm_num : (2:ℝ) ≠ 0) hs1) hxs1
+    have hs' : (s - y) * (2 * (s + 1) * (x * s + 1))
+              = (s - α) * (s + α) * (2 * x * s + x + 1) := by
+      have := hs
+      field_simp at this
+      linarith
+    have h_x_target : x * ((x + 1) - 2*x*y) * s^2 + x * (4 - 2*(x+1)*y) * s
+                     + ((x+1) - 2*x*y) = 0 := by
+      linear_combination x * hs' - (2*x*s + x + 1) * hxα
+    have h_target_form : x * (((x+1) - 2*x*y) * s^2 + (4 - 2*(x+1)*y) * s + ((x+1)/x - 2*y))
+                       = x * ((x + 1) - 2*x*y) * s^2 + x * (4 - 2*(x+1)*y) * s + ((x+1) - 2*x*y) := by
+      field_simp
+      ring
+    have h_x_zero : x * (((x+1) - 2*x*y) * s^2 + (4 - 2*(x+1)*y) * s + ((x+1)/x - 2*y)) = 0 := by
+      rw [h_target_form]; exact h_x_target
+    exact mul_left_cancel₀ hx_ne (h_x_zero.trans (mul_zero x).symm)
+
+/-! ============================================================
+  §37.4.3  `steffensen_step` fiber is finite (via bridge)
+============================================================ -/
+
+/-- **Fiber of `steffensen_step x 2` at any `y ∈ ℝ` is finite.**
+
+    For `x > 1` and `x·α² = 1`, the level set
+    `{s : ℝ | steffensen_step x 2 s = y}`
+    is finite: it is contained in the union of the 5-point
+    bridge-exclusion set `{−1, −1/x, −(x+1)/(2x), α, −α}` and the
+    finite fiber of `sigma_p2_explicit x α` at `y` (§37.4.2). At
+    bridge points, `steffensen_step` and `sigma_p2_explicit` agree
+    by §36.4. -/
+theorem steffensen_step_fiber_finite
+    (x α y : ℝ) (hx : 1 < x) (hxα : x * α ^ 2 = 1) :
+    Set.Finite {s : ℝ | steffensen_step x 2 s = y} := by
+  have hx_pos : 0 < x := by linarith
+  have hx_ne : x ≠ 0 := ne_of_gt hx_pos
+  have h_degen : Set.Finite
+      ({(-1 : ℝ), -1/x, -(x+1)/(2*x), α, -α} : Set ℝ) := by
+    apply Set.Finite.insert
+    apply Set.Finite.insert
+    apply Set.Finite.insert
+    apply Set.Finite.insert
+    exact Set.finite_singleton _
+  have h_sigma : Set.Finite {s : ℝ | sigma_p2_explicit x α s = y} :=
+    sigma_p2_explicit_fiber_finite x α y hx hxα
+  refine (h_degen.union h_sigma).subset ?_
+  intro s hs
+  simp only [Set.mem_setOf_eq] at hs
+  by_cases hs1 : s + 1 = 0
+  · left
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    left; linarith
+  by_cases hxs1 : x * s + 1 = 0
+  · left
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    right; left
+    field_simp; linarith
+  by_cases hq : 2 * x * s + x + 1 = 0
+  · left
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    right; right; left
+    have h2x_ne : (2 * x : ℝ) ≠ 0 := by positivity
+    field_simp
+    linarith
+  by_cases hsα : s = α
+  · left
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    right; right; right; left
+    exact hsα
+  by_cases hs_negα : s = -α
+  · left
+    simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+    right; right; right; right
+    exact hs_negα
+  · right
+    simp only [Set.mem_setOf_eq]
+    rw [← steffensen_step_p2_eq_sigma_p2_explicit x α hx_ne hxα s hs1 hxs1 hq hsα hs_negα]
+    exact hs
+
+/-! ============================================================
+  §37.4.4  Iterated `steffensen_step` fiber is finite
+============================================================ -/
+
+/-- **Fiber of `(steffensen_step x 2)^[n]` at any `y ∈ ℝ` is finite.**
+
+    Proof by induction on `n`. Base: `{z₀ : z₀ = y} = {y}`. Step:
+    `{z₀ : σⁿ⁺¹ z₀ = y} = ⋃_{y' ∈ σ⁻¹{y}} {z₀ : σⁿ z₀ = y'}`, a
+    finite union (σ⁻¹{y} finite by §37.4.3) of finite sets (inductive
+    hypothesis applied to each y'). -/
+theorem steffensen_step_iterate_fiber_finite
+    (x α : ℝ) (hx : 1 < x) (hxα : x * α ^ 2 = 1) (n : ℕ) :
+    ∀ y : ℝ, Set.Finite {z₀ : ℝ | (steffensen_step x 2)^[n] z₀ = y} := by
+  induction n with
+  | zero =>
+    intro y
+    simp only [Function.iterate_zero_apply]
+    refine (Set.finite_singleton y).subset ?_
+    intro z₀ hz₀
+    simp only [Set.mem_setOf_eq] at hz₀
+    exact hz₀
+  | succ k ih =>
+    intro y
+    have h_fiber_fin : Set.Finite {s : ℝ | steffensen_step x 2 s = y} :=
+      steffensen_step_fiber_finite x α y hx hxα
+    have h_union_fin : Set.Finite
+      (⋃ y' ∈ {s : ℝ | steffensen_step x 2 s = y},
+         {z₀ : ℝ | (steffensen_step x 2)^[k] z₀ = y'}) :=
+      h_fiber_fin.biUnion (fun y' _ => ih y')
+    refine h_union_fin.subset ?_
+    intro z₀ hz₀
+    simp only [Set.mem_setOf_eq] at hz₀
+    rw [Function.iterate_succ_apply'] at hz₀
+    rw [Set.mem_iUnion]
+    refine ⟨(steffensen_step x 2)^[k] z₀, ?_⟩
+    rw [Set.mem_iUnion]
+    exact ⟨hz₀, rfl⟩
+
+/-! ============================================================
+  §37.4.5  `real_bad_set` is countable
+============================================================ -/
+
+/-- **★★★ Real bad set is countable.**
+
+    The bad set decomposes as the countable union
+        `real_bad_set x α = ⋃ n, (σⁿ)⁻¹ (F ∪ J)`
+    where `F = {−1, −1/x, −(x+1)/(2x)}` (3-point explicit set) and
+    `J = {s : |v_{α}(s)| = 1}` (≤ 2-point Julia section by §37.3).
+    Each `(σⁿ)⁻¹(F ∪ J)` is a finite union of singletons under
+    `(σⁿ)⁻¹`, each of which is finite by §37.4.4. Thus the bad set
+    is a countable union of finite sets, i.e. countable. -/
+theorem real_bad_set_countable
+    (x : ℝ) (hx : 1 < x)
+    (α : ℝ) (hα_pos : 0 < α) (hα_pow : α ^ 2 = 1 / x) :
+    Set.Countable (real_bad_set x α) := by
+  have hx_pos : 0 < x := by linarith
+  have hx_ne : x ≠ 0 := ne_of_gt hx_pos
+  have hxα : x * α ^ 2 = 1 := by rw [hα_pow]; field_simp
+  have hα_ne_zero : α ≠ 0 := ne_of_gt hα_pos
+  have h1_plus_α_ne_0 : (1 + α : ℝ) ≠ 0 := by linarith
+  have h2x_ne_0 : (2 * x : ℝ) ≠ 0 := by positivity
+  set F : Set ℝ := ({(-1:ℝ), -1/x, -(x+1)/(2*x)} : Set ℝ) with hF_def
+  set J : Set ℝ := {s : ℝ | |v_p2 α s| = 1} with hJ_def
+  set K : Set ℝ := F ∪ J with hK_def
+  have hF_finite : F.Finite := ((Set.finite_singleton _).insert _).insert _
+  have hJ_finite : J.Finite := julia_section_real_finite α hα_ne_zero h1_plus_α_ne_0
+  have hK_finite : K.Finite := hF_finite.union hJ_finite
+  have h_iter_finite : ∀ n : ℕ, Set.Finite
+      {z₀ : ℝ | (steffensen_step x 2)^[n] z₀ ∈ K} := by
+    intro n
+    have h_union_form : {z₀ : ℝ | (steffensen_step x 2)^[n] z₀ ∈ K}
+                      = ⋃ y ∈ K, {z₀ : ℝ | (steffensen_step x 2)^[n] z₀ = y} := by
+      ext z₀
+      constructor
+      · intro hz
+        rw [Set.mem_iUnion₂]
+        exact ⟨(steffensen_step x 2)^[n] z₀, hz, rfl⟩
+      · intro hz
+        rw [Set.mem_iUnion₂] at hz
+        obtain ⟨y, hyK, hyz⟩ := hz
+        simp only [Set.mem_setOf_eq] at hyz
+        rw [Set.mem_setOf_eq, hyz]
+        exact hyK
+    rw [h_union_form]
+    exact hK_finite.biUnion (fun y _ => steffensen_step_iterate_fiber_finite x α hx hxα n y)
+  have h_bad_subset : real_bad_set x α ⊆
+      ⋃ n : ℕ, {z₀ : ℝ | (steffensen_step x 2)^[n] z₀ ∈ K} := by
+    intro z₀ hz₀
+    simp only [real_bad_set, Set.mem_setOf_eq] at hz₀
+    obtain ⟨n, hn⟩ := hz₀
+    rw [Set.mem_iUnion]
+    refine ⟨n, ?_⟩
+    simp only [Set.mem_setOf_eq, hK_def, Set.mem_union, hF_def, hJ_def,
+               Set.mem_insert_iff, Set.mem_singleton_iff]
+    rcases hn with h1 | h2 | h3 | h4
+    · left; left; exact h1
+    · left; right; left; exact h2
+    · left; right; right
+      have : 2 * x * ((steffensen_step x 2)^[n] z₀) = -(x + 1) := by linarith
+      field_simp
+      linarith
+    · right; exact h4
+  refine Set.Countable.mono h_bad_subset ?_
+  exact Set.countable_iUnion (fun n => (h_iter_finite n).countable)
+
+/-- **★★★★ Real bad set has Lebesgue measure zero.**
+
+    Immediate from `real_bad_set_countable` and the standard
+    lemma `Set.Countable.measure_zero` (Lebesgue on ℝ is
+    atomless). -/
+theorem real_bad_set_measure_zero
+    (x : ℝ) (hx : 1 < x)
+    (α : ℝ) (hα_pos : 0 < α) (hα_pow : α ^ 2 = 1 / x) :
+    volume (real_bad_set x α) = 0 :=
+  (real_bad_set_countable x hx α hα_pos hα_pow).measure_zero _
+
 /-- **★★★ Headline target: `mcmullen_p2_real_unconditional`.**
 
     For `x > 1` and the positive real fixed point `α = 1/√x`,
@@ -711,6 +1010,26 @@ theorem mcmullen_p2_real_unconditional_target
   by_contra hgood
   exact hz₀ (orbit_enters_basin_off_bad_set x hx α hα_pos hα_pow z₀
               hgood r_pos r_neg hr_pos hr_neg)
+
+/-- **★★★★★ Tier-S unconditional real McMullen at `p = 2`.**
+
+    For `x > 1` and the positive real fixed point `α = 1/√x`, the
+    §35.4 named `Prop` `RealMcMullenP2 x α` holds **fully
+    unconditionally**: Lebesgue-almost every `z₀ ∈ ℝ` eventually
+    lands in any prescribed neighbourhood of `+α` or `−α` under
+    `steffensen_step x 2`.
+
+    The bad set of exceptional `z₀` — where the orbit meets a pole
+    or lies on the Julia section — is countable (§37.4.5) and hence
+    Lebesgue-negligible (`real_bad_set_measure_zero`). Combined with
+    `mcmullen_p2_real_unconditional_target`, this closes the full
+    unconditional discharge. -/
+theorem mcmullen_p2_real_unconditional
+    (x : ℝ) (hx : 1 < x)
+    (α : ℝ) (hα_pos : 0 < α) (hα_pow : α ^ 2 = 1 / x) :
+    RealMcMullenP2 x α :=
+  mcmullen_p2_real_unconditional_target x hx α hα_pos hα_pow
+    (real_bad_set_measure_zero x hx α hα_pos hα_pow)
 
 end BadSetMeasureZero
 

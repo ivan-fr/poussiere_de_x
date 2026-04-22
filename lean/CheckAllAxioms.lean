@@ -90,6 +90,7 @@
 #print axioms Pandrosion.local_contraction_iterate_converges
 #print axioms Pandrosion.local_quadratic_iterate_converges
 #print axioms Pandrosion.master_absolu
+#print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
 #print axioms Pandrosion.midpoint_lt_one
 #print axioms Pandrosion.midpoint_pos_of_pos
@@ -145,12 +146,15 @@
 #print axioms Pandrosion.perpBisectorForm_apply
 #print axioms Pandrosion.perpBisectorForm_ne_zero_of_ne
 #print axioms Pandrosion.perpBisector_volume_zero
+#print axioms Pandrosion.poly_deg_le_2_zero_set_finite
 #print axioms Pandrosion.pos_fp_lt_one
 #print axioms Pandrosion.pow_sub_pow_factor
 #print axioms Pandrosion.quadratic_deviation_at_fp
 #print axioms Pandrosion.quadratic_loglog_complexity
 #print axioms Pandrosion.quadratic_loglog_from_basin
 #print axioms Pandrosion.quadratic_tower_bound
+#print axioms Pandrosion.real_bad_set_countable
+#print axioms Pandrosion.real_bad_set_measure_zero
 #print axioms Pandrosion.real_iterate_linear_from_quadratic
 #print axioms Pandrosion.real_iterate_scaled_basin_invariant
 #print axioms Pandrosion.scaled_basin_entry_time
@@ -161,6 +165,8 @@
 #print axioms Pandrosion.scaling_power_C
 #print axioms Pandrosion.scaling_steffensen_C
 #print axioms Pandrosion.sigma_p2_explicit_eq_universal
+#print axioms Pandrosion.sigma_p2_explicit_fiber_finite
+#print axioms Pandrosion.sigma_p2_fiber_coeffs_nonzero
 #print axioms Pandrosion.sigma_p2_minus_alpha_cleared
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared
 #print axioms Pandrosion.steffensenK_of_fp_pos
@@ -187,8 +193,10 @@
 #print axioms Pandrosion.steffensen_step_C_fixed_point
 #print axioms Pandrosion.steffensen_step_C_fixed_point_of_h
 #print axioms Pandrosion.steffensen_step_C_quadratic_bound
+#print axioms Pandrosion.steffensen_step_fiber_finite
 #print axioms Pandrosion.steffensen_step_fixed_point
 #print axioms Pandrosion.steffensen_step_fixed_point_of_h
+#print axioms Pandrosion.steffensen_step_iterate_fiber_finite
 #print axioms Pandrosion.steffensen_step_p2_eq_sigma_p2_explicit
 #print axioms Pandrosion.steffensen_step_p2_universal
 #print axioms Pandrosion.super_grand_master_uniform
@@ -301,6 +309,7 @@ import Pandrosion
 #print axioms Pandrosion.local_contraction_iterate_converges
 #print axioms Pandrosion.local_quadratic_iterate_converges
 #print axioms Pandrosion.master_absolu
+#print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
 #print axioms Pandrosion.midpoint_lt_one
 #print axioms Pandrosion.midpoint_pos_of_pos
@@ -356,12 +365,15 @@ import Pandrosion
 #print axioms Pandrosion.perpBisectorForm_apply
 #print axioms Pandrosion.perpBisectorForm_ne_zero_of_ne
 #print axioms Pandrosion.perpBisector_volume_zero
+#print axioms Pandrosion.poly_deg_le_2_zero_set_finite
 #print axioms Pandrosion.pos_fp_lt_one
 #print axioms Pandrosion.pow_sub_pow_factor
 #print axioms Pandrosion.quadratic_deviation_at_fp
 #print axioms Pandrosion.quadratic_loglog_complexity
 #print axioms Pandrosion.quadratic_loglog_from_basin
 #print axioms Pandrosion.quadratic_tower_bound
+#print axioms Pandrosion.real_bad_set_countable
+#print axioms Pandrosion.real_bad_set_measure_zero
 #print axioms Pandrosion.real_iterate_linear_from_quadratic
 #print axioms Pandrosion.real_iterate_scaled_basin_invariant
 #print axioms Pandrosion.scaled_basin_entry_time
@@ -372,6 +384,8 @@ import Pandrosion
 #print axioms Pandrosion.scaling_power_C
 #print axioms Pandrosion.scaling_steffensen_C
 #print axioms Pandrosion.sigma_p2_explicit_eq_universal
+#print axioms Pandrosion.sigma_p2_explicit_fiber_finite
+#print axioms Pandrosion.sigma_p2_fiber_coeffs_nonzero
 #print axioms Pandrosion.sigma_p2_minus_alpha_cleared
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared
 #print axioms Pandrosion.steffensenK_of_fp_pos
@@ -398,8 +412,10 @@ import Pandrosion
 #print axioms Pandrosion.steffensen_step_C_fixed_point
 #print axioms Pandrosion.steffensen_step_C_fixed_point_of_h
 #print axioms Pandrosion.steffensen_step_C_quadratic_bound
+#print axioms Pandrosion.steffensen_step_fiber_finite
 #print axioms Pandrosion.steffensen_step_fixed_point
 #print axioms Pandrosion.steffensen_step_fixed_point_of_h
+#print axioms Pandrosion.steffensen_step_iterate_fiber_finite
 #print axioms Pandrosion.steffensen_step_p2_eq_sigma_p2_explicit
 #print axioms Pandrosion.steffensen_step_p2_universal
 #print axioms Pandrosion.super_grand_master_uniform
