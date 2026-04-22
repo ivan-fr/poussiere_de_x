@@ -169,3 +169,41 @@ seulement (restriction asymptotique). Utilise sigma_x2_closed_pivot_identity
 de §72 pour borner le numérateur polynomialement. Si ça bloque,
 essaie §85 : dérouler steffensenR_of_fp à x=2 pour R_σ explicit.
 ```
+
+---
+
+## Session 2 résumé (autonomous)
+
+**État corpus début** : 75 modules verts.
+**État corpus fin** : 77 modules verts.
+
+### Cibles complétées (cette session)
+- **§73 SigmaStepBoundX2** (downscopé) : framework + cas trivial
+  `z = α₀`. Chaînage conditionnel vers §70 documenté. Preuve polynomiale
+  full sur demi-plan reste ouverte.
+- **§86 IterCountX2** : compte d'itérations ε-précision sous deux
+  formes : existentielle (direct depuis §64.3 Tendsto) + géométrique
+  explicite `(104/259)^N · (1/4) ≤ ε ⟹ N suffit`.
+- **§78 `tendsto_at_zero`** (ajout) : `h(0) = 1/2 ⟹ h^n(0) → α₀`.
+  Prouve que la gap `{Re < 1/2 ∧ |z| < 2}` contient des points qui
+  s'échappent vers le demi-plan en 1 itération.
+
+### Observations session 2
+- L'identité `h(0) = h(-1) = 1/2` est spéciale (Sp(0) = Sp(-1) = 1).
+  Tous les `z` avec Sp(z) = 1 mappent vers `1/2`, ancre pratique du
+  demi-plan.
+- Les downscopes sont inévitables pour §73/§74/§75 — l'analyse
+  polynomiale asymptotique nécessite un budget session dédié avec
+  outils Lean spéciaux (interval arithmetic?).
+- La forme existentielle §86 est triviale (déballage Tendsto) mais
+  utile comme API.
+
+### Prochaine session : suggestion de prompt
+
+```
+Lis ROADMAP.md Session 2 résumé. Cibles ouvertes restantes :
+§74 full σ-basin, §75 équivalence closed-form, §80 p=4 extension.
+Attaque §80 (p=4) car plus mécanique : générer §57 pour Sp_C 4.
+OU : si tu as Python sympy, essaie de calculer la factorisation
+polynomiale qui permet §73 full à la main d'abord, puis formalise.
+```
