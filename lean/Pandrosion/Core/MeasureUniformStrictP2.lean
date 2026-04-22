@@ -39,6 +39,15 @@ namespace Pandrosion
 
 open MeasureTheory Complex Filter Topology
 
+/-- **Closed-form uniform iteration count `mcmullen_K_star(α, r, N)`.**
+    `K* := max(entryTimeAlpha α r (1 − 1/(N+1)),
+                 entryTimeNegAlpha α r (1 + 1/(N+1)))`. Named
+    function form of the §46 uniform bound, usable downstream
+    (§50) for closed-form API. -/
+noncomputable def mcmullen_K_star (α : ℂ) (r : ℝ) (N : ℕ) : ℕ :=
+  max (entryTimeAlpha α r (1 - 1 / ((N : ℝ) + 1)))
+      (entryTimeNegAlpha α r (1 + 1 / ((N : ℝ) + 1)))
+
 /-! ============================================================
   §46.1  `entryTimeAux` monotonicity in `t`
 ============================================================ -/
@@ -217,7 +226,7 @@ theorem mcmullen_p2_complex_measure_uniform_strict
     (R : ℝ) (δ : ℝ) (hδ_pos : 0 < δ) (r : ℝ) (hr_pos : 0 < r)
     (hθ_lt_one : min (‖((1 - α) / (1 + α)) ^ 2‖ / 2)
                      (r * ‖((1 - α) / (1 + α)) ^ 2‖ / (4 * ‖α‖)) < 1) :
-    ∃ N : ℕ, ∃ K_star : ℕ,
+    ∃ N : ℕ,
       volume ((slowSet α (1 / ((N : ℝ) + 1)) ∩ Metric.ball (0 : ℂ) R)
               ∪ alphaHitSet x α
               ∪ complex_bad_set x α) < ENNReal.ofReal δ ∧
@@ -226,7 +235,7 @@ theorem mcmullen_p2_complex_measure_uniform_strict
         z₀ ∉ alphaHitSet x α →
         z₀ ∉ complex_bad_set x α →
         0 < ‖v_p2_C α z₀‖ →
-        ∃ s : Fin 2, ∀ k ≥ K_star,
+        ∃ s : Fin 2, ∀ k ≥ mcmullen_K_star α r N,
           ‖(steffensen_step_C x 2)^[k] z₀ - cycAnchor α 2 s‖ < r := by
   -- Pull the §45 result.
   obtain ⟨N, h_meas, h_entry⟩ :=
@@ -239,9 +248,14 @@ theorem mcmullen_p2_complex_measure_uniform_strict
     apply div_le_one_of_le
     · linarith [show (0 : ℝ) ≤ (N : ℝ) by positivity]
     · positivity
+  refine ⟨N, h_meas, ?_⟩
+  -- Unfold `mcmullen_K_star α r N` to the internal `max(…)` form.
+  have hK_unfold : mcmullen_K_star α r N =
+      max (entryTimeAlpha α r (1 - ε_N)) (entryTimeNegAlpha α r (1 + ε_N)) := by
+    unfold mcmullen_K_star; rw [hε_N_def]
+  simp_rw [hK_unfold]
   set K_star : ℕ :=
     max (entryTimeAlpha α r (1 - ε_N)) (entryTimeNegAlpha α r (1 + ε_N))
-  refine ⟨N, K_star, h_meas, ?_⟩
   intro z₀ h_not_slow h_not_α h_not_bad hv_pos
   -- z₀ ∉ alphaHitSet ⟹ z + α ≠ 0 (otherwise σ^0 z₀ = z₀ = -α).
   have h_z_α_ne : z₀ + α ≠ 0 := by

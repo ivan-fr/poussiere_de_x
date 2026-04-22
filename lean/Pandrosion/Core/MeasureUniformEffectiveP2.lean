@@ -71,7 +71,7 @@ theorem mcmullen_p2_complex_effective_uniform
     (R : ℝ) (δ : ℝ) (hδ_pos : 0 < δ) (r : ℝ) (hr_pos : 0 < r)
     (hθ_lt_one : min (‖((1 - α) / (1 + α)) ^ 2‖ / 2)
                      (r * ‖((1 - α) / (1 + α)) ^ 2‖ / (4 * ‖α‖)) < 1) :
-    ∃ N : ℕ, ∃ K_star : ℕ,
+    ∃ N : ℕ,
       volume ((slowSet α (1 / ((N : ℝ) + 1)) ∩ Metric.ball (0 : ℂ) R)
               ∪ alphaHitSet x α
               ∪ complex_bad_set x α) < ENNReal.ofReal δ ∧
@@ -80,7 +80,7 @@ theorem mcmullen_p2_complex_effective_uniform
         z₀ ∉ alphaHitSet x α →
         z₀ ∉ complex_bad_set x α →
         0 < ‖v_p2_C α z₀‖ →
-        ∃ s : Fin 2, ∀ k ≥ K_star,
+        ∃ s : Fin 2, ∀ k ≥ mcmullen_K_star α r N,
           ‖(steffensen_step_C x 2)^[k] z₀ - cycAnchor α 2 s‖ < r :=
   mcmullen_p2_complex_measure_uniform_strict x hx_ne hx_ne_one α hα_ne_zero
     hα_ne_neg_one hα_ne_one hα_pow R δ hδ_pos r hr_pos hθ_lt_one

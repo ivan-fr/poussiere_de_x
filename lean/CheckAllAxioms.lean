@@ -175,9 +175,12 @@
 #print axioms Pandrosion.juliaCenter_re
 #print axioms Pandrosion.juliaRadius_sq
 #print axioms Pandrosion.juliaSetP_measurable
+#print axioms Pandrosion.juliaSetP_subset_juliaSphere
 #print axioms Pandrosion.juliaSetP_subset_slowSet
 #print axioms Pandrosion.juliaSetP_volume_zero
+#print axioms Pandrosion.juliaSetP_volume_zero_via_sphere
 #print axioms Pandrosion.juliaSet_eq_sphere
+#print axioms Pandrosion.juliaSphere_subset_slowSet
 #print axioms Pandrosion.julia_apollonius_bridge
 #print axioms Pandrosion.julia_excludes_neg_alpha
 #print axioms Pandrosion.julia_forward_invariant
@@ -221,6 +224,7 @@
 #print axioms Pandrosion.matrix_phase_lock_U
 #print axioms Pandrosion.matrix_phase_lock_UV
 #print axioms Pandrosion.matrix_phase_lock_V
+#print axioms Pandrosion.mcmullen_p2_complex_closed_form
 #print axioms Pandrosion.mcmullen_p2_complex_effective
 #print axioms Pandrosion.mcmullen_p2_complex_effective_uniform
 #print axioms Pandrosion.mcmullen_p2_complex_measure_uniform
@@ -359,6 +363,7 @@
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared_C
 #print axioms Pandrosion.slowSet_iInter_eq_juliaSetP
+#print axioms Pandrosion.slowSet_iInter_subset_sphere
 #print axioms Pandrosion.slowSet_iff_norm_v
 #print axioms Pandrosion.slowSet_measurable
 #print axioms Pandrosion.slowSet_seq_antitone
@@ -430,6 +435,7 @@
 #print axioms Pandrosion.voronoi_nearest_exists
 #print axioms Pandrosion.voronoi_selector_unique_ae
 #print axioms Pandrosion.voronoi_unique_off_boundary
+#print axioms Pandrosion.with
            `-- END GENERATED AXIOM AUDIT`
 
        with one `#print axioms Pandrosion.<name>` line per declaration.
@@ -609,9 +615,12 @@ import Pandrosion
 #print axioms Pandrosion.juliaCenter_re
 #print axioms Pandrosion.juliaRadius_sq
 #print axioms Pandrosion.juliaSetP_measurable
+#print axioms Pandrosion.juliaSetP_subset_juliaSphere
 #print axioms Pandrosion.juliaSetP_subset_slowSet
 #print axioms Pandrosion.juliaSetP_volume_zero
+#print axioms Pandrosion.juliaSetP_volume_zero_via_sphere
 #print axioms Pandrosion.juliaSet_eq_sphere
+#print axioms Pandrosion.juliaSphere_subset_slowSet
 #print axioms Pandrosion.julia_apollonius_bridge
 #print axioms Pandrosion.julia_excludes_neg_alpha
 #print axioms Pandrosion.julia_forward_invariant
@@ -655,6 +664,7 @@ import Pandrosion
 #print axioms Pandrosion.matrix_phase_lock_U
 #print axioms Pandrosion.matrix_phase_lock_UV
 #print axioms Pandrosion.matrix_phase_lock_V
+#print axioms Pandrosion.mcmullen_p2_complex_closed_form
 #print axioms Pandrosion.mcmullen_p2_complex_effective
 #print axioms Pandrosion.mcmullen_p2_complex_effective_uniform
 #print axioms Pandrosion.mcmullen_p2_complex_measure_uniform
@@ -793,6 +803,7 @@ import Pandrosion
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared
 #print axioms Pandrosion.sigma_p2_plus_alpha_cleared_C
 #print axioms Pandrosion.slowSet_iInter_eq_juliaSetP
+#print axioms Pandrosion.slowSet_iInter_subset_sphere
 #print axioms Pandrosion.slowSet_iff_norm_v
 #print axioms Pandrosion.slowSet_measurable
 #print axioms Pandrosion.slowSet_seq_antitone
@@ -864,4 +875,5 @@ import Pandrosion
 #print axioms Pandrosion.voronoi_nearest_exists
 #print axioms Pandrosion.voronoi_selector_unique_ae
 #print axioms Pandrosion.voronoi_unique_off_boundary
+#print axioms Pandrosion.with
 -- END GENERATED AXIOM AUDIT
