@@ -222,6 +222,7 @@
 #print axioms Pandrosion.matrix_phase_lock_UV
 #print axioms Pandrosion.matrix_phase_lock_V
 #print axioms Pandrosion.mcmullen_p2_complex_effective
+#print axioms Pandrosion.mcmullen_p2_complex_effective_uniform
 #print axioms Pandrosion.mcmullen_p2_complex_measure_uniform
 #print axioms Pandrosion.mcmullen_p2_complex_measure_uniform_strict
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional
@@ -655,6 +656,7 @@ import Pandrosion
 #print axioms Pandrosion.matrix_phase_lock_UV
 #print axioms Pandrosion.matrix_phase_lock_V
 #print axioms Pandrosion.mcmullen_p2_complex_effective
+#print axioms Pandrosion.mcmullen_p2_complex_effective_uniform
 #print axioms Pandrosion.mcmullen_p2_complex_measure_uniform
 #print axioms Pandrosion.mcmullen_p2_complex_measure_uniform_strict
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional

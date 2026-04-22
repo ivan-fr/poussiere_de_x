@@ -36,4 +36,5 @@ import Pandrosion.Core.MeasureUniformComplexityP2
 import Pandrosion.Core.MeasureUniformStrictP2
 import Pandrosion.Core.SteffensenGlobalLoglogP2Effective
 import Pandrosion.Core.ComplexJuliaGeometryP2
+import Pandrosion.Core.MeasureUniformEffectiveP2
 import Pandrosion.Legacy
