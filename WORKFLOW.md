@@ -103,6 +103,82 @@ docker compose run --rm lean-incremental
 Note: with no cache, this rebuilds everything from scratch — same
 effective cost as `lean-check` but without the strict audit.
 
+## 🔬 Empirical exploration with Python (before formalization)
+
+**Strong recommendation:** before attempting to formalize an ambitious
+property in Lean, **test it numerically first** with Python. This has
+repeatedly caught dead-ends (false conjectures) and revealed the
+*minimal* structural claim that needs formalizing (e.g., reducing a
+"measure zero" claim to a "finite set" claim).
+
+### Python environment
+
+A venv with `numpy`, `scipy`, `matplotlib` is pre-provisioned at
+`/tmp/pandros_venv`. Recreate it if missing:
+
+```bash
+python3 -m venv /tmp/pandros_venv
+/tmp/pandros_venv/bin/pip install --quiet numpy scipy matplotlib
+```
+
+Run scripts via:
+
+```bash
+/tmp/pandros_venv/bin/python3 /tmp/your_script.py
+```
+
+Prefer `/tmp/` for exploratory scripts — they stay out of the repo.
+Promote a script to `articles/` or similar only if it becomes a
+reproducible artefact referenced from a module header.
+
+### When to use each library
+
+- **`numpy`** — vectorised scans of initial conditions (2D grids of
+  `z₀ ∈ ℂ`), iteration of `h`, `σ`, basin classification by distance
+  to the known roots. Foundation for "does the conjecture even look
+  true?".
+- **`scipy`** — root-finding (`scipy.optimize.brentq`, `newton`),
+  period-k cycle search, solving systems to locate repelling
+  periodic points. Useful when you suspect a Julia-set component
+  other than the super-attracting fixed points.
+- **`matplotlib`** — visualise basins of attraction, escape-time
+  fractals, level sets. Save figures to `/tmp/` and check them by
+  reading with the `Read` tool (it renders PNGs inline).
+
+### Typical exploration pattern
+
+1. **Formulate a candidate Lean theorem** (e.g., "the Julia set at
+   x=2, p=3 has Lebesgue measure zero").
+2. **Translate into a falsifiable numeric test**:
+   - Grid-scan a large window (say 600×600 on `[−3, 3]²`).
+   - Classify each `z₀` by final behaviour after `max_iter = 500`.
+   - Count divergent/cycling starts.
+3. **Interpret**:
+   - If the count is `~0` except at isolated points → the structural
+     obstacle is *finite* (or countable) — aim for a `.Finite` or
+     `.Countable` lemma in Lean.
+   - If the count scales with grid density → the obstacle has
+     positive measure; the conjecture is likely false as stated.
+4. **Refine the Lean target** based on what the numerics show is
+   achievable. Formalize only the *minimal* unconditional piece,
+   isolate the rest as a named `Prop` hypothesis.
+
+### Example (§61 `JuliaNullX2P3`)
+
+The path that worked:
+1. Hypothesis: Julia set of σ at `x=2, p=3` has measure zero.
+2. Python scan `[−3, 3]² @ 600×600, max_iter=500`: **zero
+   divergent starts** outside the two Sp-zeros `(−1 ± i√3)/2`.
+3. Zoom `radius ∈ {10⁻¹, …, 10⁻⁹}` around each Sp-zero: still zero
+   divergence except *exactly* on the singularity.
+4. scipy period-2 cycle search: **zero candidates**.
+5. Conclusion: the "bad set" is (conjecturally) the **countable**
+   orbit of Sp-zeros. Formalize the unconditional piece — the
+   Sp-zero set is `{ω, ω²}` (finite, measure zero).
+
+That reduced a full-McMullen-strength claim to a 200-line algebraic
+module.
+
 ## 📜 Module-add checklist
 
 When adding a new `Pandrosion/Core/<NewModule>.lean`:
