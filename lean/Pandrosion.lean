@@ -33,4 +33,6 @@ import Pandrosion.Core.SteffensenGlobalLoglogP2Unconditional
 import Pandrosion.Core.ComplexJuliaSlowSetDecay
 import Pandrosion.Core.QuadraticComplexityEffective
 import Pandrosion.Core.MeasureUniformComplexityP2
+import Pandrosion.Core.MeasureUniformStrictP2
+import Pandrosion.Core.SteffensenGlobalLoglogP2Effective
 import Pandrosion.Legacy

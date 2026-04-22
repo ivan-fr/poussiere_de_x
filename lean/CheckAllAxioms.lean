@@ -142,8 +142,12 @@
 #print axioms Pandrosion.energy_decreasing
 #print axioms Pandrosion.energy_excess_quadratic_decay
 #print axioms Pandrosion.energy_normalizes
+#print axioms Pandrosion.entryTimeAlpha_mono_t
 #print axioms Pandrosion.entryTimeAux_bound
+#print axioms Pandrosion.entryTimeAux_mono_t
+#print axioms Pandrosion.entryTimeGrowAux_antitone_t
 #print axioms Pandrosion.entryTimeGrowAux_bound
+#print axioms Pandrosion.entryTimeNegAlpha_antitone_t
 #print axioms Pandrosion.epoch_descent_equals_log_block
 #print axioms Pandrosion.epoch_descent_neg
 #print axioms Pandrosion.fin_injective_iff_bijective
@@ -212,6 +216,7 @@
 #print axioms Pandrosion.matrix_phase_lock_V
 #print axioms Pandrosion.mcmullen_p2_complex_effective
 #print axioms Pandrosion.mcmullen_p2_complex_measure_uniform
+#print axioms Pandrosion.mcmullen_p2_complex_measure_uniform_strict
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
@@ -316,6 +321,7 @@
 #print axioms Pandrosion.quadratic_loglog_complexity
 #print axioms Pandrosion.quadratic_loglog_complexity_effective
 #print axioms Pandrosion.quadratic_loglog_from_basin
+#print axioms Pandrosion.quadratic_loglog_from_basin_effective
 #print axioms Pandrosion.quadratic_tower_bound
 #print axioms Pandrosion.re_nontrivial_sum
 #print axioms Pandrosion.re_roots_sum_zero
@@ -373,6 +379,7 @@
 #print axioms Pandrosion.steffensen_p2_ae_basin_entry_mod_real_mcmullen
 #print axioms Pandrosion.steffensen_p2_effective_rate_and_ae_entry
 #print axioms Pandrosion.steffensen_p2_solves_complex_unconditional
+#print axioms Pandrosion.steffensen_p2_solves_loglog_complex_effective
 #print axioms Pandrosion.steffensen_p2_solves_loglog_complex_unconditional
 #print axioms Pandrosion.steffensen_p3_solves_complex_mod_julia_null
 #print axioms Pandrosion.steffensen_quadratic_bound_explicit
@@ -559,8 +566,12 @@ import Pandrosion
 #print axioms Pandrosion.energy_decreasing
 #print axioms Pandrosion.energy_excess_quadratic_decay
 #print axioms Pandrosion.energy_normalizes
+#print axioms Pandrosion.entryTimeAlpha_mono_t
 #print axioms Pandrosion.entryTimeAux_bound
+#print axioms Pandrosion.entryTimeAux_mono_t
+#print axioms Pandrosion.entryTimeGrowAux_antitone_t
 #print axioms Pandrosion.entryTimeGrowAux_bound
+#print axioms Pandrosion.entryTimeNegAlpha_antitone_t
 #print axioms Pandrosion.epoch_descent_equals_log_block
 #print axioms Pandrosion.epoch_descent_neg
 #print axioms Pandrosion.fin_injective_iff_bijective
@@ -629,6 +640,7 @@ import Pandrosion
 #print axioms Pandrosion.matrix_phase_lock_V
 #print axioms Pandrosion.mcmullen_p2_complex_effective
 #print axioms Pandrosion.mcmullen_p2_complex_measure_uniform
+#print axioms Pandrosion.mcmullen_p2_complex_measure_uniform_strict
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
@@ -733,6 +745,7 @@ import Pandrosion
 #print axioms Pandrosion.quadratic_loglog_complexity
 #print axioms Pandrosion.quadratic_loglog_complexity_effective
 #print axioms Pandrosion.quadratic_loglog_from_basin
+#print axioms Pandrosion.quadratic_loglog_from_basin_effective
 #print axioms Pandrosion.quadratic_tower_bound
 #print axioms Pandrosion.re_nontrivial_sum
 #print axioms Pandrosion.re_roots_sum_zero
@@ -790,6 +803,7 @@ import Pandrosion
 #print axioms Pandrosion.steffensen_p2_ae_basin_entry_mod_real_mcmullen
 #print axioms Pandrosion.steffensen_p2_effective_rate_and_ae_entry
 #print axioms Pandrosion.steffensen_p2_solves_complex_unconditional
+#print axioms Pandrosion.steffensen_p2_solves_loglog_complex_effective
 #print axioms Pandrosion.steffensen_p2_solves_loglog_complex_unconditional
 #print axioms Pandrosion.steffensen_p3_solves_complex_mod_julia_null
 #print axioms Pandrosion.steffensen_quadratic_bound_explicit
