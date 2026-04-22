@@ -87,4 +87,31 @@ theorem tendsto_at_one_plus_i :
   rw [Complex.add_re, Complex.one_re, Complex.I_re]
   norm_num
 
+/-! §78.5  Points dans la "gap" — récupérés via shift d'itération -/
+
+/-- **`h(0) = 1/2`.** Calcul direct : `1 − 1/(2·Sp(0)) = 1 − 1/2 = 1/2`. -/
+theorem h_at_zero : pandrosion_h_C (2 : ℂ) 3 (0 : ℂ) = ((1/2 : ℝ) : ℂ) := by
+  unfold pandrosion_h_C
+  rw [Sp_C_p3]
+  simp
+  norm_num
+
+/-- **`h^n(0) → α₀`.** `z = 0` est dans la gap (`Re 0 = 0 < 1/2 ∧ |0| < 2`)
+    mais `h(0) = 1/2` entre dans le demi-plan, puis §67. -/
+theorem tendsto_at_zero :
+    Tendsto (fun n : ℕ => (pandrosion_h_C (2 : ℂ) 3)^[n] (0 : ℂ))
+      atTop (𝓝 ((alphaX2 : ℝ) : ℂ)) := by
+  have h_half : Tendsto (fun n : ℕ => (pandrosion_h_C (2 : ℂ) 3)^[n]
+                          (((1/2 : ℝ) : ℂ))) atTop (𝓝 ((alphaX2 : ℝ) : ℂ)) := by
+    apply pandrosion_h_C_p3_tendsto_half_plane_x2
+    show (((1/2 : ℝ) : ℂ)).re ≥ 1/2
+    rw [Complex.ofReal_re]
+  rw [← h_at_zero] at h_half
+  have h_shift :
+      (fun n : ℕ => (pandrosion_h_C (2 : ℂ) 3)^[n] (pandrosion_h_C (2 : ℂ) 3 0))
+    = fun n : ℕ => (pandrosion_h_C (2 : ℂ) 3)^[n + 1] 0 := by
+    funext n; rw [Function.iterate_succ, Function.comp_apply]
+  rw [h_shift] at h_half
+  exact (Filter.tendsto_add_atTop_iff_nat 1).mp h_half
+
 end Pandrosion
