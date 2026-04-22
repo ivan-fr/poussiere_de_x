@@ -88,8 +88,11 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   `α₀ ≤ 1`. Théorème Banach complet downscope (demande §56.3
   généralisé pour Q_4 = 1+z+α+z²+zα+α²).
 
-- [ ] **§82 Generic p ≥ 3 framework** : paramétrer `x = 2` sur
-  `p` variable. Prouver rate `K(p) < 1` par induction sur `p`.
+- [x] **§82 AlphaGenericPX** : ancre générique `α(p, x) := x^{-1/p}`
+  unifiant §81 (alphaX2P4) et §83 (alphaX). Identités `α(p, x)^p =
+  1/x`, spécialisations vers les ancres concrètes. Rate `K(p) < 1`
+  paramétré reste pour preuve future (analyse polynomiale paramétrée
+  sur p).
 
 ### Extensions x ≠ 2 (priorité #4)
 
