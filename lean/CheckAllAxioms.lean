@@ -368,6 +368,33 @@
 import Pandrosion
 
 -- BEGIN GENERATED AXIOM AUDIT
+#print axioms Pandrosion.complex_bad_set_volume_zero
+#print axioms Pandrosion.complex_orbit_enters_basin_off_bad_set
+#print axioms Pandrosion.complex_orbit_non_degenerate_of_not_bad_set
+#print axioms Pandrosion.julia_excludes_neg_alpha
+#print axioms Pandrosion.julia_forward_invariant
+#print axioms Pandrosion.julia_section_complex_volume_zero
+#print axioms Pandrosion.julia_squared_apollonius
+#print axioms Pandrosion.julia_subset_perpBisector
+#print axioms Pandrosion.julia_subset_sphere
+#print axioms Pandrosion.mcmullen_p2_complex_unconditional
+#print axioms Pandrosion.poly_deg_le_2_zero_set_finite_C
+#print axioms Pandrosion.sigma_p2_explicit_C_eq_universal
+#print axioms Pandrosion.sigma_p2_explicit_C_fiber_finite
+#print axioms Pandrosion.sigma_p2_fiber_coeffs_nonzero_C
+#print axioms Pandrosion.sigma_p2_minus_alpha_cleared_C
+#print axioms Pandrosion.sigma_p2_plus_alpha_cleared_C
+#print axioms Pandrosion.steffensen_C_eq_sigma_p2_iterate_of_orbit_good
+#print axioms Pandrosion.steffensen_denom_C_p2_closed_form
+#print axioms Pandrosion.steffensen_mobius_conjugacy_p2_cleared_C
+#print axioms Pandrosion.steffensen_p2_solves_complex_unconditional
+#print axioms Pandrosion.steffensen_step_C_fiber_finite
+#print axioms Pandrosion.steffensen_step_C_iterate_fiber_finite
+#print axioms Pandrosion.steffensen_step_C_p2_eq_sigma_p2_explicit_C
+#print axioms Pandrosion.steffensen_step_C_p2_universal
+#print axioms Pandrosion.v_p2_C_norm_sq_eq
+#print axioms Pandrosion.v_p2_iterated_C
+#print axioms Pandrosion.v_p2_sq_from_conjugacy_C
 #print axioms Pandrosion.Fin.eq_of_int_diff_eq_mul_cast
 #print axioms Pandrosion.K_steffensen_nonneg
 #print axioms Pandrosion.Q_cubic_pos
