@@ -15,7 +15,19 @@ failed to write './.lake/build/lib/Pandrosion/Core/<Module>.olean': 2 No such fi
 **Rule:** all Lean compilation goes through the Docker services in
 `docker-compose.yml`. The Linux container has no macOS sync layer.
 
-## 🔁 Standard iteration cycle
+## ⛔ NEVER run `lean-check` (reserved for the user)
+
+**Claude's authorised build service: `lean-incremental` ONLY.**
+
+`lean-check` (clean-build + axiom audit) is **too slow** (10–15 min)
+for iterative Claude work and is reserved for the user's manual
+final-gate runs. Claude must never invoke it.
+
+If the user explicitly asks Claude to run the strict check, still
+only run `lean-incremental` and tell the user to run `lean-check`
+themselves from their terminal.
+
+## 🔁 Standard iteration cycle (Claude-only)
 
 ### Step 1 — Edit `.lean` files on macOS
 
@@ -27,14 +39,15 @@ Before every Docker build, purge macOS-sync phantom directories:
 
 ```bash
 find /Users/ivanbesevic/Documents/poussiere/lean/.lake/build \
-  -maxdepth 5 -name "*[ ][0-9]*" 2>/dev/null | xargs -I {} rm -rf {} 2>/dev/null
+  -maxdepth 5 \( -name "Core [0-9]*" -o -name "Legacy [0-9]*" \
+    -o -name "* [0-9]" \) -exec rm -rf {} + 2>/dev/null
 mkdir -p /Users/ivanbesevic/Documents/poussiere/lean/.lake/build/lib/Pandrosion/Core
 mkdir -p /Users/ivanbesevic/Documents/poussiere/lean/.lake/build/lib/Pandrosion/Legacy
 mkdir -p /Users/ivanbesevic/Documents/poussiere/lean/.lake/build/ir/Pandrosion/Core
 mkdir -p /Users/ivanbesevic/Documents/poussiere/lean/.lake/build/ir/Pandrosion/Legacy
 ```
 
-### Step 3 — Trust mode (fast, for iteration)
+### Step 3 — Trust mode (fast, Claude's only build path)
 
 ```bash
 cd /Users/ivanbesevic/Documents/poussiere
@@ -45,44 +58,39 @@ docker compose run --rm lean-incremental
 - Reuses `.lake/` cache (no clean rebuild).
 - Compiles only modules with dirty dependencies.
 - Reports `✅ INCREMENTAL OK — N modules compiled` or `❌ FAILED modules: <list>`.
-- **Does NOT** run the axiom audit — use `lean-check` for that.
+- **Does NOT** run the axiom audit — that is the user's `lean-check`
+  responsibility.
 
 **When `lean-incremental` reports `❌ FAILED modules`:**
 1. Check the error log (Docker prints it in the `error: stderr:` section).
 2. Fix the offending module.
 3. **Re-run step 2 + step 3** (cleanup + incremental).
 
-### Step 4 — Authoritative gate (strict, slow, once everything is green)
+### Step 4 — Hand-off to the user
 
-After `lean-incremental` passes clean:
+When `lean-incremental` reports ✅ green, Claude's job is done on the
+build side. Tell the user:
 
-```bash
-cd /Users/ivanbesevic/Documents/poussiere
-docker compose run --rm lean-check
-```
+> Ready for strict check. Run from your terminal:
+>
+> ```bash
+> cd /Users/ivanbesevic/Documents/poussiere
+> docker compose run --rm lean-check
+> ```
 
-**What it does:**
-- Clean build of all modules.
-- Enforces `-Kwarning.level=error -KlinterSorries=true`.
-- Runs the axiom audit: every Pandrosion.* theorem's axiom dependencies
-  must be in the whitelist `{propext, Classical.choice, Quot.sound}`.
-- Fails on: missing oleans, errors, warnings, `sorry`, `admit`, raw
-  `axiom`, `sorryAx` hits, off-whitelist axioms.
-
-**Only ship when `lean-check` prints:**
-
-```
-✅ MAX-STRICT CHECK PASSED — N modules, M theorems/lemmas, …
-   0 sorry, 0 admit, 0 raw axiom, 0 warning, 0 error, 0 sorryAx, 0 off-whitelist axiom
-```
+The user will then decide whether to run the authoritative gate
+(which enforces axiom whitelist and zero warnings/sorries).
 
 ## 🚫 Never-do list
 
 - Never `lake build …` directly (macOS sync corruption).
+- Never run `docker compose run --rm lean-check` from Claude.
+- Never run `docker compose run --rm lean-build` from Claude
+  (also a clean rebuild, same reason).
 - Never skip Step 2 (cleanup) before Docker builds.
 - Never add a new module to `Pandrosion.lean` until it compiles solo
-  via `lean-incremental`.
-- Never ship without `lean-check` ✅.
+  via `lean-incremental` (test solo via the `lean` service — see
+  module-add checklist).
 
 ## 🩹 Emergency: if the build state is corrupted
 
@@ -90,20 +98,23 @@ docker compose run --rm lean-check
 `lean/.lake/build`, **not** at the repo root. A naive `rm -rf .lake/build`
 from the repo root does nothing — it silently no-ops.
 
+**Claude's emergency action: purge + incremental.**
+
 ```bash
-# Full nuclear reset (correct path):
+# Full .lake/build purge (correct path):
 rm -rf /Users/ivanbesevic/Documents/poussiere/lean/.lake/build
 
 # Then from the repo root:
 cd /Users/ivanbesevic/Documents/poussiere
-docker compose run --rm lean-check   # full clean rebuild
+docker compose run --rm lean-incremental   # Claude's full rebuild
 ```
 
-This forces Lake to rebuild everything from scratch inside the Linux
-container. Takes ~10–15 min but guarantees a known-good state.
+Note: `lean-incremental` with no cache rebuilds everything from
+scratch, same effective cost as `lean-check` but without the strict
+audit. This is Claude's correct emergency reset path.
 
-**If the strict_check.sh clean step fails with `Directory not empty`:**
-macOS sync left phantoms. Purge them first:
+**If incremental rebuild fails with `Directory not empty` during
+Lake's own writes:** macOS sync left phantoms. Purge them first:
 
 ```bash
 find /Users/ivanbesevic/Documents/poussiere/lean/.lake/build \
@@ -111,7 +122,7 @@ find /Users/ivanbesevic/Documents/poussiere/lean/.lake/build \
     -o -name "* [0-9]" \) -exec rm -rf {} + 2>/dev/null
 ```
 
-Then retry the `docker compose run --rm lean-check`.
+Then retry `docker compose run --rm lean-incremental`.
 
 ## 📜 Module-add checklist
 
@@ -119,7 +130,7 @@ When adding a new `Pandrosion/Core/<NewModule>.lean`:
 
 1. Write the module. Don't touch `Pandrosion.lean` yet.
 2. Cleanup (step 2) + `docker compose run --rm lean-incremental`.
-   - Note: incremental won't build modules unreachable from
+   - Note: `lean-incremental` won't build modules unreachable from
      `Pandrosion.lean`. To test the new module solo:
 
      ```bash
@@ -131,4 +142,4 @@ When adding a new `Pandrosion/Core/<NewModule>.lean`:
 3. Once clean, add `import Pandrosion.Core.<NewModule>` to
    `Pandrosion.lean`.
 4. Cleanup (step 2) + `docker compose run --rm lean-incremental` again.
-5. Once clean, `docker compose run --rm lean-check` for the gate.
+5. **Stop here.** Hand off to the user for `lean-check` (Step 4 above).
