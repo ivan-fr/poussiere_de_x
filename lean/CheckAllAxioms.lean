@@ -171,9 +171,14 @@
 #print axioms Pandrosion.half_ne_two_fifths
 #print axioms Pandrosion.half_plane_contraction
 #print axioms Pandrosion.hasDerivAt_inv_one_add
+#print axioms Pandrosion.juliaCenter_im
+#print axioms Pandrosion.juliaCenter_re
+#print axioms Pandrosion.juliaRadius_sq
 #print axioms Pandrosion.juliaSetP_measurable
 #print axioms Pandrosion.juliaSetP_subset_slowSet
 #print axioms Pandrosion.juliaSetP_volume_zero
+#print axioms Pandrosion.juliaSet_eq_sphere
+#print axioms Pandrosion.julia_apollonius_bridge
 #print axioms Pandrosion.julia_excludes_neg_alpha
 #print axioms Pandrosion.julia_forward_invariant
 #print axioms Pandrosion.julia_section_complex_volume_zero
@@ -181,6 +186,8 @@
 #print axioms Pandrosion.julia_squared_apollonius
 #print axioms Pandrosion.julia_subset_perpBisector
 #print axioms Pandrosion.julia_subset_sphere
+#print axioms Pandrosion.k_sq_minus_one_nn
+#print axioms Pandrosion.k_times_m_minus_one
 #print axioms Pandrosion.lamInfty_lt_one_of_one_lt
 #print axioms Pandrosion.lamInfty_mem_Ioo
 #print axioms Pandrosion.lamInfty_pos_of_one_lt
@@ -231,6 +238,7 @@
 #print axioms Pandrosion.multistart_step_at_root
 #print axioms Pandrosion.nat_le_two_pow_self
 #print axioms Pandrosion.nat_le_two_pow_self_u
+#print axioms Pandrosion.neg_alpha_not_on_sphere
 #print axioms Pandrosion.newton_derivative_numerator
 #print axioms Pandrosion.newton_from_pandrosion
 #print axioms Pandrosion.newton_is_pandrosion_cross
@@ -239,6 +247,7 @@
 #print axioms Pandrosion.no_periodic_orbit
 #print axioms Pandrosion.no_two_cycle
 #print axioms Pandrosion.norm_sq_add_const_continuous
+#print axioms Pandrosion.norm_sq_re_im
 #print axioms Pandrosion.norm_sq_sub_const_continuous
 #print axioms Pandrosion.normalized_descent_neg
 #print axioms Pandrosion.offset_monotone
@@ -595,9 +604,14 @@ import Pandrosion
 #print axioms Pandrosion.half_ne_two_fifths
 #print axioms Pandrosion.half_plane_contraction
 #print axioms Pandrosion.hasDerivAt_inv_one_add
+#print axioms Pandrosion.juliaCenter_im
+#print axioms Pandrosion.juliaCenter_re
+#print axioms Pandrosion.juliaRadius_sq
 #print axioms Pandrosion.juliaSetP_measurable
 #print axioms Pandrosion.juliaSetP_subset_slowSet
 #print axioms Pandrosion.juliaSetP_volume_zero
+#print axioms Pandrosion.juliaSet_eq_sphere
+#print axioms Pandrosion.julia_apollonius_bridge
 #print axioms Pandrosion.julia_excludes_neg_alpha
 #print axioms Pandrosion.julia_forward_invariant
 #print axioms Pandrosion.julia_section_complex_volume_zero
@@ -605,6 +619,8 @@ import Pandrosion
 #print axioms Pandrosion.julia_squared_apollonius
 #print axioms Pandrosion.julia_subset_perpBisector
 #print axioms Pandrosion.julia_subset_sphere
+#print axioms Pandrosion.k_sq_minus_one_nn
+#print axioms Pandrosion.k_times_m_minus_one
 #print axioms Pandrosion.lamInfty_lt_one_of_one_lt
 #print axioms Pandrosion.lamInfty_mem_Ioo
 #print axioms Pandrosion.lamInfty_pos_of_one_lt
@@ -655,6 +671,7 @@ import Pandrosion
 #print axioms Pandrosion.multistart_step_at_root
 #print axioms Pandrosion.nat_le_two_pow_self
 #print axioms Pandrosion.nat_le_two_pow_self_u
+#print axioms Pandrosion.neg_alpha_not_on_sphere
 #print axioms Pandrosion.newton_derivative_numerator
 #print axioms Pandrosion.newton_from_pandrosion
 #print axioms Pandrosion.newton_is_pandrosion_cross
@@ -663,6 +680,7 @@ import Pandrosion
 #print axioms Pandrosion.no_periodic_orbit
 #print axioms Pandrosion.no_two_cycle
 #print axioms Pandrosion.norm_sq_add_const_continuous
+#print axioms Pandrosion.norm_sq_re_im
 #print axioms Pandrosion.norm_sq_sub_const_continuous
 #print axioms Pandrosion.normalized_descent_neg
 #print axioms Pandrosion.offset_monotone
