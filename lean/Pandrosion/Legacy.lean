@@ -15,3 +15,7 @@ import Pandrosion.Legacy.VoronoiAffine
 import Pandrosion.Legacy.Descent
 import Pandrosion.Legacy.CubeRoot
 import Pandrosion.Legacy.AnchorStep
+import Pandrosion.Legacy.RootsOfUnity
+import Pandrosion.Legacy.CubicConservation
+import Pandrosion.Legacy.BlockDescent
+import Pandrosion.Legacy.MatrixInvariance
