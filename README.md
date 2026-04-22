@@ -37,9 +37,10 @@ The repository contains:
   Voronoï architecture, closed-form linear rate, Kung-Traub optimality,
   complex multiplier, local attraction, almost-everywhere dynamical
   convergence of the Steffensen iterator, the unconditional super-attracting
-  Steffensen spine (§§29-34), and the axiom-clean discharge of
-  `RealMcMullenP2` on `ℝ` at `p = 2`, `x > 1` via explicit Möbius conjugacy
-  `σ_{2,x} ~ μ²w²` and Böttcher-coordinate squaring-power dichotomy (§§35-37);
+  Steffensen spine (§§29-34), and the **fully unconditional axiom-clean
+  proof** of `RealMcMullenP2` on `ℝ` at `p = 2`, `x > 1` via explicit Möbius
+  conjugacy `σ_{2,x} ~ μ²w²`, Böttcher-coordinate squaring-power dichotomy,
+  and a formalised Lebesgue-null bad-set lemma (§§35-37);
 - a broader **legacy corpus** of further Lean modules under `lean/Pandrosion/`
   exploring algebraic, Diophantine, matrix, and spectral identities;
 - a LaTeX research paper organized around the `Pandrosion.Core` spine;
@@ -137,8 +138,10 @@ The current paper is organized around the 24-module spine in
     bridge `sigma_p2_explicit`.
 24. [`SteffensenRealMcMullenP2Unconditional.lean`](lean/Pandrosion/Core/SteffensenRealMcMullenP2Unconditional.lean) —
     Böttcher coordinate `v`, iterated identity `v(σ^n) = v^(2^n)`, finite
-    Julia section on `ℝ`, convergence dichotomy, **unconditional axiom-clean
-    `RealMcMullenP2` modulo bad-set Lebesgue-null lemma**.
+    Julia section on `ℝ`, convergence dichotomy, bad-set countability via
+    polynomial fiber-finiteness, Lebesgue-null bad-set lemma, and the
+    **fully unconditional axiom-clean `RealMcMullenP2`** theorem
+    (`mcmullen_p2_real_unconditional`).
 
 The spine builds with `Compiled: 24 / 24` via `docker compose run --rm
 lean-incremental`.
@@ -270,12 +273,16 @@ local quadratic bound on the Steffensen iterator** (`SteffensenQuadraticBound`,
 dynamical convergence modulo McMullen), **explicit super-attractive rate**
 `K_α · r_α ≤ 1/2` with loglog tail inside the basin, **Möbius conjugacy
 `σ_{2,x} ~ μ²w²`** on `ℝ` at `p = 2` in cleared form, **iterated Böttcher
-identity** `v(σ^n(s)) = v(s)^(2^n)` and finite Julia section on `ℝ`, and the
-**convergence dichotomy off the real bad set** (`orbit_enters_basin_off_bad_set`)
-that discharges `RealMcMullenP2(x, α)` for `x > 1`, `α = 1/√x` modulo a
-standalone Lebesgue-null lemma for a countably-constructed bad set. All
-load-bearing theorems audit to the Lean core whitelist `{propext,
-Classical.choice, Quot.sound}`.
+identity** `v(σ^n(s)) = v(s)^(2^n)` and finite Julia section on `ℝ`, the
+**convergence dichotomy off the real bad set** (`orbit_enters_basin_off_bad_set`),
+**bad-set countability** (`real_bad_set_countable`) via polynomial
+fiber-finiteness (`Polynomial.finite_setOf_isRoot` on the quadratic
+`A s² + B s + A/x` obtained from the bridge), the corresponding
+**Lebesgue-null lemma** (`real_bad_set_measure_zero`), and therefore the
+**fully unconditional axiom-clean `RealMcMullenP2(x, α)`** theorem
+(`mcmullen_p2_real_unconditional`) for every `x > 1`, `α = 1/√x`, with no
+residual hypothesis. All load-bearing theorems audit to the Lean core
+whitelist `{propext, Classical.choice, Quot.sound}`.
 
 **What is proven conditional on an explicit axiom:** Kung-Traub converse
 optimality (conditional on the Kung-Traub 1974 conjecture, stated as an
@@ -284,8 +291,10 @@ explicit `axiom` in `KungTraub.lean`).
 **What is proven conditional on explicit hypotheses (no new axioms):**
 complex a.e. dynamical convergence at arbitrary `p` — conditional on the
 named Prop `McMullenAEEntry p x α` (Fatou-type a.e. trajectory entry into
-some local disk). In `ℝ` at `p = 2`, this hypothesis is discharged axiom-clean
-(see `SteffensenRealMcMullenP2Unconditional`, §37).
+some local disk). In `ℝ` at `p = 2`, this hypothesis is now **fully and
+unconditionally** discharged axiom-clean — including the bad-set
+Lebesgue-null premise — via `mcmullen_p2_real_unconditional` (see
+`SteffensenRealMcMullenP2Unconditional`, §37).
 
 **What is not claimed:** an unconditional a.e. trajectory-entry theorem in
 `ℂ` at arbitrary `p` (the Fatou/McMullen global dynamics beyond the `ℝ`, `p=2`
@@ -305,7 +314,7 @@ rational iteration, in a proof-assistant-checked form.
   year   = {2026},
   doi    = {10.5281/zenodo.19689482},
   url    = {https://zenodo.org/records/19689482},
-  note   = {24-module Pandrosion.Core spine, zero sorry; unconditional RealMcMullenP2 discharge on R at p=2}
+  note   = {24-module Pandrosion.Core spine, zero sorry; fully unconditional axiom-clean RealMcMullenP2 on R at p=2, x>1 (bad-set Lebesgue-null lemma formalised via polynomial fiber-finiteness)}
 }
 ```
 
