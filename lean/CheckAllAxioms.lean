@@ -134,6 +134,7 @@
 #print axioms Pandrosion.distance_decreases_p4
 #print axioms Pandrosion.distance_decreases_p5
 #print axioms Pandrosion.double_preconditioning
+#print axioms Pandrosion.effective_entry_time_neg_alpha
 #print axioms Pandrosion.effective_entry_time_plus_alpha
 #print axioms Pandrosion.efficiencyIndex_two_two
 #print axioms Pandrosion.eigenvalue_product
@@ -141,6 +142,7 @@
 #print axioms Pandrosion.energy_excess_quadratic_decay
 #print axioms Pandrosion.energy_normalizes
 #print axioms Pandrosion.entryTimeAux_bound
+#print axioms Pandrosion.entryTimeGrowAux_bound
 #print axioms Pandrosion.epoch_descent_equals_log_block
 #print axioms Pandrosion.epoch_descent_neg
 #print axioms Pandrosion.fin_injective_iff_bijective
@@ -203,6 +205,7 @@
 #print axioms Pandrosion.matrix_phase_lock_U
 #print axioms Pandrosion.matrix_phase_lock_UV
 #print axioms Pandrosion.matrix_phase_lock_V
+#print axioms Pandrosion.mcmullen_p2_complex_effective
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
@@ -531,6 +534,7 @@ import Pandrosion
 #print axioms Pandrosion.distance_decreases_p4
 #print axioms Pandrosion.distance_decreases_p5
 #print axioms Pandrosion.double_preconditioning
+#print axioms Pandrosion.effective_entry_time_neg_alpha
 #print axioms Pandrosion.effective_entry_time_plus_alpha
 #print axioms Pandrosion.efficiencyIndex_two_two
 #print axioms Pandrosion.eigenvalue_product
@@ -538,6 +542,7 @@ import Pandrosion
 #print axioms Pandrosion.energy_excess_quadratic_decay
 #print axioms Pandrosion.energy_normalizes
 #print axioms Pandrosion.entryTimeAux_bound
+#print axioms Pandrosion.entryTimeGrowAux_bound
 #print axioms Pandrosion.epoch_descent_equals_log_block
 #print axioms Pandrosion.epoch_descent_neg
 #print axioms Pandrosion.fin_injective_iff_bijective
@@ -600,6 +605,7 @@ import Pandrosion
 #print axioms Pandrosion.matrix_phase_lock_U
 #print axioms Pandrosion.matrix_phase_lock_UV
 #print axioms Pandrosion.matrix_phase_lock_V
+#print axioms Pandrosion.mcmullen_p2_complex_effective
 #print axioms Pandrosion.mcmullen_p2_complex_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional
 #print axioms Pandrosion.mcmullen_p2_real_unconditional_target
