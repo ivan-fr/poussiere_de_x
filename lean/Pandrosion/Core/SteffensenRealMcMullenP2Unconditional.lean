@@ -448,12 +448,12 @@ theorem orbit_enters_basin_off_bad_set
   -- whenever `s + α ≠ 0` and `α ≠ 0`.
   set μ_sq : ℝ := ((1 - α) / (1 + α)) ^ 2 with hμ_sq_def
   have h1_minus_α_pos : (0 : ℝ) < 1 - α := by linarith
-  have h1_minus_α_ne : (1 - α : ℝ) ≠ 0 := ne_of_gt h1_minus_α_pos
+  have _h1_minus_α_ne : (1 - α : ℝ) ≠ 0 := ne_of_gt h1_minus_α_pos
   have hμ_sq_pos : (0 : ℝ) < μ_sq := by
     rw [hμ_sq_def]; positivity
   have hμ_sq_ne_zero : μ_sq ≠ 0 := ne_of_gt hμ_sq_pos
   have hα_abs_pos : (0 : ℝ) < |α| := abs_pos.mpr hα_ne_zero
-  have hα_abs_ne : |α| ≠ 0 := ne_of_gt hα_abs_pos
+  have _hα_abs_ne : |α| ≠ 0 := ne_of_gt hα_abs_pos
   -- Algebraic identity for the Möbius inverse on the good set.
   have h_mobius_minus :
       ∀ s : ℝ, s + α ≠ 0 →
@@ -494,7 +494,7 @@ theorem orbit_enters_basin_off_bad_set
     --    Case |v(z₀)| < 1:  orbit converges to +α.
     -- ============================================================
     left
-    set v₀ : ℝ := v_p2 α z₀ with hv₀_def
+    set v₀ : ℝ := v_p2 α z₀
     have hv₀_abs_lt : |v₀| < 1 := h_v_lt
     have hv₀_abs_nonneg : (0 : ℝ) ≤ |v₀| := abs_nonneg _
     -- target threshold `δ > 0`:  `|v| < δ ⟹ |s - α| < r_pos`.
@@ -584,7 +584,7 @@ theorem orbit_enters_basin_off_bad_set
     --    Case |v(z₀)| > 1:  orbit converges to −α.
     -- ============================================================
     right
-    set v₀ : ℝ := v_p2 α z₀ with hv₀_def
+    set v₀ : ℝ := v_p2 α z₀
     have hv₀_abs_gt : 1 < |v₀| := h_v_gt
     -- target threshold `M` for "|v| > M  ⟹  |s + α| < r_neg".
     -- Using `|s + α| ≤ 4|α|μ²/|v|` when `|v| ≥ 2μ²`, set
