@@ -23,3 +23,4 @@ import Pandrosion.Core.SteffensenMcMullenAE
 import Pandrosion.Core.SteffensenExplicitRate
 import Pandrosion.Core.SteffensenGlobalLoglog
 import Pandrosion.Core.SteffensenRealP2
+import Pandrosion.Core.SteffensenRealMcMullenP2
