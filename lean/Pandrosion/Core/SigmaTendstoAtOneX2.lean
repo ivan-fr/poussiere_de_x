@@ -69,4 +69,37 @@ theorem sigma_tendsto_at_one_from_radius_at_least_quarter
   -- ‖σ_closed(1) - α₀‖ < 1/4 ≤ R_σ.
   exact lt_of_lt_of_le sigma_x2_closed_in_basin_at_one h_R
 
+/-! §76.2  Équivalence ponctuelle à `z = 2` (extension §75) -/
+
+/-- **`steffensen_step_C 2 3 (2) = sigma_x2_closed (2) = 5571/6888`.** -/
+theorem steffensen_step_C_p3_at_x2_eq_at_two :
+    steffensen_step_C (2 : ℂ) 3 (2 : ℂ) = sigma_x2_closed (2 : ℂ) := by
+  rw [sigma_x2_closed_at_two]
+  unfold steffensen_step_C steffensen_denom_C pandrosion_h_C
+  simp only [Sp_C_p3]
+  norm_num
+
+/-! §76.3  Chaînage conditionnel à `z = 2` -/
+
+/-- **Chaînage conditionnel `σⁿ(2) → α₀`** sous `R_σ ≥ 1/4`. -/
+theorem sigma_tendsto_at_two_from_radius_at_least_quarter
+    (h_R : steffensenR_at_x2 ≥ 1/4) :
+    Tendsto (fun n : ℕ => (steffensen_step_C (2 : ℂ) 3)^[n] (2 : ℂ))
+      atTop (𝓝 ((alphaX2 : ℝ) : ℂ)) := by
+  have h_R_local : ‖steffensen_step_C (2 : ℂ) 3 (2 : ℂ)
+                       - ((alphaX2 : ℝ) : ℂ)‖ < steffensenR_at_x2 := by
+    rw [steffensen_step_C_p3_at_x2_eq_at_two]
+    exact lt_of_lt_of_le sigma_x2_closed_in_basin_at_two h_R
+  -- σⁿ(σ(2)) → α₀ par §65.
+  have h_tendsto_shifted :=
+    steffensen_step_C_p3_tendsto_at_x2
+      (steffensen_step_C (2 : ℂ) 3 (2 : ℂ)) h_R_local
+  have h_comp :
+      (fun n : ℕ => (steffensen_step_C (2 : ℂ) 3)^[n]
+                       (steffensen_step_C (2 : ℂ) 3 (2 : ℂ)))
+    = fun n : ℕ => (steffensen_step_C (2 : ℂ) 3)^[n + 1] (2 : ℂ) := by
+    funext n; rw [Function.iterate_succ, Function.comp_apply]
+  rw [h_comp] at h_tendsto_shifted
+  exact (Filter.tendsto_add_atTop_iff_nat 1).mp h_tendsto_shifted
+
 end Pandrosion
