@@ -47,10 +47,10 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   `α₀ ∈ [3/4, 1]` + arithmétique linéaire). Building blocks pour
   preuve full future.
 
-- [ ] **§75 steffensen_step_C ↔ sigma_x2_closed** : prouver
-  l'équivalence formelle à `x = 2, p = 3` en factorisant la `field_simp`
-  en 3–4 étapes intermédiaires (éviter l'explosion degré 18). Clef :
-  passer par `steffensen_denom_C_p3_x2_closed`.
+- [x] **§75 SigmaEquivPointsX2** (downscope) : équivalence ponctuelle
+  à `z = 1` (`steffensen_step_C 2 3 (1) = sigma_x2_closed (1) = 353/444`).
+  Calcul direct via norm_num (évite field_simp degré 18+). Building
+  block pour preuve générale future.
 
 - [ ] **§76 HalfPlaneSigmaTendstoP3X2** : chaîner §74 + §75 + §65 +
   §70 `half_plane_sigma_tendsto_from_step_into_basin_v2`. Si §75 est
