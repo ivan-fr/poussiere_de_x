@@ -358,3 +358,49 @@ Lis ROADMAP.md Session 5 résumé. Cibles restantes :
 
 Recommandation : §76 conditionnel chain (10-15 min, faisable).
 ```
+
+---
+
+## Session 6 résumé (autonomous, chain conditionnel σ)
+
+**État corpus début** : 84 modules verts.
+**État corpus fin** : 85 modules verts.
+
+### Cibles complétées
+- **§76 SigmaTendstoAtOneX2** : chaînage conditionnel
+  σⁿ(z) → α₀ pour z ∈ {1, 2}, sous l'hypothèse `R_σ ≥ 1/4`
+  (§70 `SteffensenRadiusAtLeast14`). Trois théorèmes :
+    • `sigma_tendsto_at_one_conditional` (généralisé sur R_σ).
+    • `sigma_tendsto_at_one_from_radius_at_least_quarter`.
+    • `steffensen_step_C_p3_at_x2_eq_at_two` (équivalence z=2).
+    • `sigma_tendsto_at_two_from_radius_at_least_quarter`.
+
+### Pattern utilisé
+Pour chaque z avec :
+1. `σ_closed(z)` calculable explicitement (rationnel).
+2. `|σ_closed(z) - α₀| < 1/4`.
+3. `steffensen_step_C 2 3 z = σ_closed(z)`.
+
+⟹ Sous `R_σ ≥ 1/4`, σⁿ(z) → α₀ via §65 + shift.
+
+### Cibles restantes (toutes hors scope autonomous)
+- §77b §78 §79 §87 : dynamique complexe Mathlib.
+- §85 : Classical.choose unfold §33.
+
+### Prochaine session : suggestion de prompt
+
+```
+Lis ROADMAP.md Session 6 résumé. Toutes les cibles "downscopable"
+sont cochées. Restantes demandent :
+(a) §85 explicit Steffensen radius — refonte §33 ; nécessite 
+    travail sur Classical.choose, ~1-2 sessions de focus.
+(b) §77b §78 §79 §87 — formalisation Mathlib dynamics complexes,
+    out of scope autonomous.
+
+Recommandation utilisateur : la chaîne Niveau 1 → Niveau 5 est
+maintenant entièrement décomposée et toutes les briques mécaniques
+sont en place. La progression demande désormais validation directe
+de l'utilisateur sur les choix architecturaux pour Mathlib dynamics.
+
+Repos session 7 jusqu'à nouvelle direction.
+```
