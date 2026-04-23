@@ -108,10 +108,10 @@ with target-dependent $\varepsilon$ places any $z \in \mathbb{C}$
 inside the quadratic-contraction disk of a chosen anchor $\alpha$,
 providing a universal convergence theorem with closed-form iteration
 count $N_{\mathrm{eff}} \sim \log_2 \log(1/\varepsilon)$. A
-``Grand Master'' statement (Theorem~\ref{thm:grand-master}) bundles
-target selection, Steffensen fixing, scaling compatibility,
-reconstruction, and optimal seed into a single glue result that the
-downstream formalization cites by name.
+bundling theorem (Theorem~\ref{thm:grand-master}, the ``grand master''
+of the Lean formalization) collects target selection, Steffensen fixing,
+scaling compatibility, reconstruction, and optimal seed into a single
+glue result that downstream Lean modules cite by name.
 Unconditionally (without seeding), each anchor's basin of attraction
 contains an explicit disk of radius $R_\sigma(x, p, \gamma_k)$, giving
 the lower bound $\mathrm{vol}(\bigcup_k \Omega_k) \geq \sum_k \pi R_\sigma(x, p, \gamma_k)^2$
@@ -434,7 +434,15 @@ $(x-1)/(x\,S_p(s)) < (x-1)/x < 1$, which gives $h(s) > 0$. On the other hand $(x
 The fixed-point equation $h(s) = s$ rewrites as $x\,S_p(s)(1-s) = x - 1$, i.e.\ $x(1 - s^p) = x - 1$, i.e.\ $s^p = 1/x$. On $(0,1)$ this has the unique solution $s^* = x^{-1/p}$. In particular, the sign of $h(s) - s$ is constant on each of $(0, s^*)$ and $(s^*, 1)$.
 
 \textbf{Step 4: the sign of $h(s) - s$.}
-At $s = 1/x \in (0, s^*)$ (using $x > 1$ and $s^* = x^{-1/p} > 1/x$), $h(1/x) - 1/x = 1 - (x-1)/(x\,S_p(1/x)) - 1/x$. A short computation shows this is positive, so $h(s) > s$ on $(0, s^*)$ by Step~3. By symmetry, $h(s) < s$ on $(s^*, 1)$.
+At $s = 1/x \in (0, s^*)$ (using $x > 1$ and $s^* = x^{-1/p} > 1/x$), a one-line computation:
+\[
+  h(1/x) - 1/x
+  \;=\; 1 - \frac{x-1}{x\, S_p(1/x)} - \frac{1}{x}
+  \;=\; \frac{x-1}{x} - \frac{x-1}{x\, S_p(1/x)}
+  \;=\; \frac{x-1}{x} \cdot \frac{S_p(1/x) - 1}{S_p(1/x)}
+  \;>\; 0,
+\]
+since $S_p(1/x) > 1$ for $x > 1$ (the first term equals 1, the remaining terms are strictly positive). Hence $h(s) > s$ on $(0, s^*)$ by Step~3 (sign is constant on each sub-interval). By symmetry, $h(s) < s$ on $(s^*, 1)$.
 
 \textbf{Step 5: monotone convergence.}
 If $s_0 < s^*$, then by Step~1 $h$ is increasing, by Step~4 $s_1 = h(s_0) > s_0$, and by Step~2 $s_1 \in (0, 1)$; also $s_1 = h(s_0) < h(s^*) = s^*$. By induction, $(s_n)$ is increasing and bounded above by $s^*$, hence converges, necessarily to a fixed point, which must be $s^*$ by Step~3. The case $s_0 > s^*$ is symmetric.
@@ -704,7 +712,9 @@ For general $p \geq 2$, we combine the Taylor bound~\eqref{eq:taylor-bound} with
   \lambda_\infty'(x)
   = \frac{\ln x - (x-1)/x}{(x-1)^2}.
 \]
-The numerator equals $\ln x + 1/x - 1$. Its derivative is $1/x - 1/x^2 = (x-1)/x^2 > 0$ on $x > 1$, and its value at $x = 1$ is $0$; hence it is strictly positive on $(1, \infty)$, and $\lambda_\infty$ is strictly increasing there. As an independent check, the Taylor bound~\eqref{eq:taylor-bound} combined with the monotonicity of $\lambda_\infty$ on $(1, \infty)$ --- which follows from $\lambda_\infty'(x) = (\ln x - (x-1)/x)/(x-1)^2 > 0$, since $\ln x + 1/x - 1 > 0$ on $x > 1$ (value $0$ at $x = 1$, derivative $(x-1)/x^2 > 0$) --- recovers monotonicity in the large-$p$ regime: for $x_1 < x_2$ and $p \geq (C(x_1) + C(x_2))/(\lambda_\infty(x_2) - \lambda_\infty(x_1))$, $\lambda_{p,x_2} - \lambda_{p,x_1} \geq \lambda_\infty(x_2) - \lambda_\infty(x_1) - (C(x_1) + C(x_2))/p > 0$.
+The numerator equals $\ln x + 1/x - 1$. Its derivative is $1/x - 1/x^2 = (x-1)/x^2 > 0$ on $x > 1$, and its value at $x = 1$ is $0$; hence it is strictly positive on $(1, \infty)$, and $\lambda_\infty$ is strictly increasing there. \begin{remark}[Monotonicity of the asymptote]
+The asymptote $\lambda_\infty(x) = 1 - \ln(x)/(x-1)$ is itself strictly increasing on $(1, \infty)$: $\lambda_\infty'(x) = (\ln x - (x-1)/x)/(x-1)^2 > 0$ since $\ln x + 1/x - 1 > 0$ on $x > 1$ (value $0$ at $x = 1$, derivative $(x-1)/x^2 > 0$). This is a consistency check only; the finite-$p$ monotonicity is already established above via $P_p = p\,D_p'$, without appealing to the Taylor bound.
+\end{remark}
 
 \medskip
 
@@ -1111,7 +1121,7 @@ Setting $x' = x/A$, Pandrosion's method is now applied to the \emph{reduced rati
 \label{prop:scaling}
 Let $A = \lfloor x^{1/p} \rfloor^p$, so that $A^{1/p}$ is an integer and $x' = x/A \in [1, (1+1/\lfloor x^{1/p}\rfloor)^p)$. Then:
 \begin{enumerate}
-  \item The contraction ratio satisfies $\lambda_{p,x'} \ll \lambda_{p,x}$.
+  \item The contraction ratio satisfies $\lambda_{p,x'} < \lambda_{p,x}$, and $\lambda_{p,x'} \to 0$ as $x \to \infty$ (so $x' \to 1^+$), while $\lambda_{p,x} \to 1^-$.
   \item The number of iterations drops from $O(\ln(\eps_0/\delta) / \ln(1/\lambda_{p,x}))$ to $O(\ln(\eps'_0/\delta) / \ln(1/\lambda_{p,x'}))$.
   \item The final result is recovered as $x^{1/p} = \lfloor x^{1/p} \rfloor \cdot (x')^{1/p}$.
 \end{enumerate}
@@ -1376,12 +1386,12 @@ For every function $S : \mathbb{C} \to \mathrm{Fin}\,p$, every $z \in \mathbb{C}
 
 Three selectors are formalized: constant (\texttt{principal\_selector}), Voronoï-nearest (\texttt{nearest\_anchor\_selector}), angular sector.
 
-\subsection{The Grand Master multi-start theorem}
+\subsection{The multi-start bundle theorem}
 \label{sec:grand-master}
 
-The previous subsections have presented the ingredients of the multi-start pipeline separately: the seed (Definition~\ref{def:seed}), the universal convergence theorem (Theorem~\ref{thm:multistart}), the target selectors (Theorem~\ref{thm:galois-equiv}), and the real-line preconditionings of Part~I transported to the cyclotomic anchor family. The following theorem bundles all five into a single statement that the formalization refers to as the \emph{Grand Master multi-start theorem}. It is the unifying statement the downstream Lean modules cite.
+The previous subsections have presented the ingredients of the multi-start pipeline separately: the seed (Definition~\ref{def:seed}), the universal convergence theorem (Theorem~\ref{thm:multistart}), the target selectors (Theorem~\ref{thm:galois-equiv}), and the real-line preconditionings of Part~I transported to the cyclotomic anchor family. The following theorem bundles all five into a single statement. The Lean formalization refers to it as the ``multi-start grand master theorem'' (module \texttt{Foundations.multi\_start\_grand\_master}), a name we retain only to match the Lean naming convention; the theorem is a glue lemma, not a headline result.
 
-\begin{theorem}[Grand Master multi-start]\label{thm:grand-master}
+\begin{theorem}[Multi-start bundle, ``grand master'' in Lean]\label{thm:grand-master}
 Let $x \in \mathbb{C}^\ast$, $A \in \mathbb{C}^\ast$, $p \geq 1$, and $\alpha, \beta \in \mathbb{C}^\ast$ with $\alpha^p = x$ and $\beta^p = A$. Let $\gamma : \{0, 1, \ldots, p-1\} \to \mathbb{C}^\ast$ be a cyclotomic anchor family satisfying $\gamma_k^p = A/x$ and $S_p(\gamma_k) \neq 0$ for every $k$. Then for every query point $z_0 \in \mathbb{C}$, the following five properties hold simultaneously:
 \begin{enumerate}
   \item[(1)] \textbf{Multi-start target selection.} There exists an index $s^\ast \in \{0, 1, \ldots, p-1\}$ --- the Voronoï-nearest anchor to $z_0$ --- with $\|\gamma_{s^\ast} - z_0\| \leq \|\gamma_t - z_0\|$ for every $t$.
@@ -1470,7 +1480,7 @@ Theorem~\ref{thm:multistart} covers every $z \in \mathbb{C}$ but only after pre-
 The bound $\pi R_\sigma^2$ is typically very loose. Numerical experiments (script \texttt{latex/basin\_estimate.py}) on $(p, x) = (3, 2)$ show that $\Omega_0$ (principal anchor) covers approximately $99.95\%$ of the grid $[-1.5, 1.5]^2$, while the analytic lower bound $\pi R_\sigma^2$ with an empirical $R_\sigma \geq 2$ gives $\mathrm{vol}(\Omega_0) \geq 4\pi \approx 12.57$. For $(p, x) = (7, 10)$ the radius tightens to $R_\sigma \approx 0.37$ empirically, showing that the geometric obstruction of a non-trivial Julia boundary begins to bite at larger $p$ and $x$. Proposition~\ref{prop:basin-lower-bound} is an explicit \emph{lower} bound only; improving it to a matching upper bound or a Hausdorff-dimension estimate on $\mathbb{C} \setminus \bigcup_k \Omega_k$ requires Fatou--Julia machinery not in Mathlib v4.7.0 and is left for future work.
 \end{remark}
 
-\begin{remark}[Pullback improvement]
+\begin{remark}[Pullback improvement]\label{rem:pullback}
 The bound can be sharpened without leaving the elementary toolbox. Since $\sigma_{p,x}$ is a rational map, each iterate $\sigma_{p,x}^{-m}(\overline{B}(\gamma_k, R/2))$ is an open subset of $\Omega_k$ (pullback of a forward-invariant open set containing $\gamma_k$). Hence
 \[
   \mathrm{vol}(\Omega_k)
@@ -1608,27 +1618,6 @@ The modules are organised in layers: foundations (geometric sums, fixed-point ch
 
 \paragraph{Statement-level \texttt{Prop}s that are NOT proven.} A single archive module \texttt{PandrosionOpenProblems.lean} contains named Lean \texttt{Prop}s whose proofs are \emph{deliberately absent}: the conjectural upper bound of Kung--Traub for $c \geq 3$, McMullen's 1987 impossibility theorem, Lehmer's Mahler-measure conjecture, and Smale's~17th problem. These are recorded as \texttt{axiom} or \texttt{Prop} declarations without accompanying proof terms. They are not used downstream by any load-bearing theorem of the corpus, and their presence in the repository should not be mistaken for formal verification of the corresponding results. A reader auditing the corpus can confirm this by checking that no \texttt{theorem} depending on these \texttt{Prop}s appears in the load-bearing chain. A future cleanup will move this archive module to a dedicated \texttt{archive} namespace to make the non-load-bearing status structurally explicit.
 
-\subsection{Elementary identities on the derivative values at cyclotomic roots}
-
-In the course of the Lean formalization, three cyclotomic sum identities recur. They are used only inside the formalization's internal lemmas (to normalize constants in $K_\sigma$ and to bound cyclotomic orthogonality sums in a.e.-continuity proofs); they do not appear directly in the statements of Theorems~\ref{thm:multistart}--\ref{thm:ae-continuous}. We record them here because the CI-verifiable Lean modules \texttt{PandrosionZeta.lean}, \texttt{PandrosionHigherVanishing.lean}, \texttt{PandrosionSpectralDeterminant.lean} are named after them, and a reader of the formalization will encounter them.
-
-For $P(z) = z^p - 1/x$ with $\alpha^p = 1/x$ and $\alpha_k = \gamma_k$, one has $P'(\alpha_k) = p\alpha_k^{p-1} = p/(x\alpha_k)$. Define the purely combinatorial derivative-power sum
-\[
-  \Sigma_P(s) := \sum_{k=1}^p P'(\alpha_k)^{-s}
-             = (x/p)^{s}\sum_{k=1}^p \alpha_k^{s}.
-\]
-We deliberately use the notation $\Sigma_P$ (not $\zeta_P$, as an earlier draft did) to avoid any spurious suggestion of a connection with the Riemann zeta function; these are finite sums over $p$ cyclotomic roots, nothing more. The three identities below are used in the convergence analysis of Part~II: (i) gives the vanishing of the principal residue sum used in the a.e.-continuity argument; (ii) is the cyclotomic-root orthogonality relation exploited to bound contraction constants uniformly in the anchor; (iii) is the product formula used to normalize the quadratic constant $K_\sigma$ in terms of $(p, x)$. All three reduce to $\sum_{k=0}^{p-1} \omega^{ks} = 0$ for $\omega = e^{2\pi i/p}$ and $p \nmid s$.
-
-\begin{proposition}[Three elementary cyclotomic-sum identities]\label{thm:zeta-all}
-Let $p \geq 2$ and $x \neq 0$.
-\begin{enumerate}
-  \item[(i)] For $s \in \mathbb{Z}$ with $1 \leq s \leq p-1$, $\Sigma_P(s) = 0$.
-  \item[(ii)] For $m \in \mathbb{Z}$ with $0 \leq m \leq p-2$, $\sum_{k=1}^p \alpha_k^m/P'(\alpha_k) = 0$; for $m = p-1$, $\sum_{k=1}^p \alpha_k^{p-1}/P'(\alpha_k) = 1$.
-  \item[(iii)] $\prod_{k=1}^p P'(\alpha_k) = (-1)^{p-1}\,p^p/x^{p-1}$.
-\end{enumerate}
-Items~(i) and~(ii) are the same identity under $s \leftrightarrow m+1$ via $1/P'(\alpha_k) = x\alpha_k/p$; item~(iii) is the product counterpart. All three follow from $\sum_k \omega^{ks} = 0$ for $p \nmid s$.
-\end{proposition}
-
 \subsection{Scope statement on classical open problems}
 
 No claim of progress on classical open problems of polynomial root-finding is made. The corpus touches Kung--Traub ($c \geq 3$) through a compliance interface, not a proof, and records McMullen 1987 as a named statement without in-Lean proof (Mathlib v4.7.0 lacks the Fatou--Julia machinery needed). Lehmer's Mahler-measure conjecture and Smale's 17th problem are explicitly out of scope: the Pandrosion cyclotomic anchors produce algebraic integers whose Mahler measure is easy to compute (trivially far from Lehmer's extremal regime), and the multi-start $\mathcal{O}(\log\log(1/\varepsilon))$ complexity applies to the single-monomial family $z^p = x$, not to Smale's coefficient-uniform problem.
@@ -1646,7 +1635,40 @@ On~$\mathbb{C}$, the extension via the target-dependent seed of Definition~\ref{
 
 The paper does not claim progress on classical open problems of polynomial root-finding, and does not claim a general algorithmic advantage over Newton or its modern variants. Its main deliverable is a concrete derivative-free root-finding scheme with closed-form convergence analysis and complete formal verification for the monomial family $z^p = x$, connecting a ruler-and-parallels construction from fourth-century Alexandria to contemporary formal-methods practice.
 
-\paragraph{Perspectives.} Natural extensions are generalized nonlinear Pandrosion constructions (other polynomials replacing $S_p$); higher-order acceleration variants; a Fatou--Julia formalization in Mathlib that would support a proper in-Lean proof of McMullen's 1987 theorem. None of these is attempted here.
+\paragraph{Perspectives.} We see four concrete, tractable extensions as immediate next steps:
+\begin{enumerate}
+  \item \textbf{Benchmark against Schr\"oder / K\"onig families of order $k \geq 3$} at multi-precision, to quantify how the factor-of-3 cubic gap of Halley over Newton compares against purely algebraic higher-order iterations (the König family is derivative-free in spirit and admits closed-form constants).
+  \item \textbf{Extend to complex $x$} (not just complex anchor $\alpha$): the current Part~II assumes $x \in \mathbb{C}^\ast$ in the statements but the analysis is principally real for the scaling step. A fully complex scaling, via $\beta \in \mathbb{Z}[i]$ close to $X^{1/p}$ in the Gaussian integers, is a natural extension.
+  \item \textbf{Formalize the non-asymptotic bounds of Section~\ref{sec:nonasymptotic} in Lean}, closing the gap between the analytic quantity $\Lambda$ and its in-Lean counterpart. This is a routine but useful extension of \texttt{UniformContractionRate.lean}.
+  \item \textbf{Matching upper bound on the basin} (Remark~\ref{rem:pullback} pointed the way): show that the full basin $\Omega_k$ equals $\bigcup_{m \geq 0} \sigma_{p,x}^{-m}(\overline{B}(\gamma_k, R_\sigma))$ up to a Lebesgue-null set, yielding a matching upper bound on $\mathrm{vol}(\Omega_k)$. This stops short of requiring Fatou--Julia machinery.
+\end{enumerate}
+A Fatou--Julia formalization in Mathlib --- which would enable a proper in-Lean proof of McMullen's 1987 theorem --- is a much larger project and is mentioned here only for completeness, not as an immediate extension.
+
+%=====================================================================
+\appendix
+
+\section{Elementary cyclotomic-sum identities used inside the formalization}
+\label{app:zeta-identities}
+%=====================================================================
+
+This appendix records three finite-sum identities on the derivative values $P'(\alpha_k)$ at cyclotomic roots, where $P(z) = z^p - 1/x$ and $\alpha_k = \gamma_k$. They are used \emph{only} inside the formalization's internal lemmas --- to normalize constants in the explicit formula for $K_\sigma$ and to establish cyclotomic-orthogonality sums in the a.e.-continuity proofs --- and do not appear directly in the statements of Theorems~\ref{thm:multistart}--\ref{thm:ae-continuous}. We include them here so that a reader auditing the Lean corpus encounters the same notation as in the modules \texttt{PandrosionZeta.lean}, \texttt{PandrosionHigherVanishing.lean}, \texttt{PandrosionSpectralDeterminant.lean}, which are named after them.
+
+Since $P'(\alpha_k) = p\alpha_k^{p-1} = p/(x\alpha_k)$, define the purely combinatorial derivative-power sum
+\[
+  \Sigma_P(s) := \sum_{k=1}^p P'(\alpha_k)^{-s}
+             = (x/p)^{s}\sum_{k=1}^p \alpha_k^{s}.
+\]
+The notation $\Sigma_P$ (rather than $\zeta_P$, as an earlier draft used) avoids any spurious suggestion of a connection with the Riemann zeta function; these are finite sums over $p$ cyclotomic roots.
+
+\begin{proposition}[Three elementary cyclotomic-sum identities]\label{thm:zeta-all}
+Let $p \geq 2$ and $x \neq 0$.
+\begin{enumerate}
+  \item[(i)] For $s \in \mathbb{Z}$ with $1 \leq s \leq p-1$, $\Sigma_P(s) = 0$.
+  \item[(ii)] For $m \in \mathbb{Z}$ with $0 \leq m \leq p-2$, $\sum_{k=1}^p \alpha_k^m/P'(\alpha_k) = 0$; for $m = p-1$, $\sum_{k=1}^p \alpha_k^{p-1}/P'(\alpha_k) = 1$.
+  \item[(iii)] $\prod_{k=1}^p P'(\alpha_k) = (-1)^{p-1}\,p^p/x^{p-1}$.
+\end{enumerate}
+Items~(i) and~(ii) are the same identity under $s \leftrightarrow m+1$ via $1/P'(\alpha_k) = x\alpha_k/p$; item~(iii) is the product counterpart. All three follow from $\sum_k \omega^{ks} = 0$ for $p \nmid s$.
+\end{proposition}
 
 %=====================================================================
 \begin{thebibliography}{9}
