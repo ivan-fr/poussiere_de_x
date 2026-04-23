@@ -94,4 +94,6 @@ import Pandrosion.Core.PandrosionZeta
 import Pandrosion.Core.PandrosionSpectralDeterminant
 import Pandrosion.Core.PandrosionHigherVanishing
 import Pandrosion.Core.PandrosionRiemannAnalogy
+import Pandrosion.Core.PandrosionUltimateGrandMaster
+import Pandrosion.Core.PandrosionEnergyZeta
 import Pandrosion.Legacy
