@@ -107,4 +107,5 @@ import Pandrosion.Core.PandrosionGalois
 import Pandrosion.Core.PandrosionMcMullen
 import Pandrosion.Core.PandrosionCardano
 import Pandrosion.Core.PandrosionVieta
+import Pandrosion.Core.PandrosionOpenProblems
 import Pandrosion.Legacy
