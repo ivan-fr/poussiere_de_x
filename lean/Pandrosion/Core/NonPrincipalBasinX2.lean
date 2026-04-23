@@ -1,29 +1,29 @@
 /-
-  Universitas Pandrosion — §78. **Mesure finie du bassin non-principal
-  σ à `x = 2, p = 3`.**
+  Universitas Pandrosion — §78. **Mesure des bassins non-principaux
+  de σ à `x = 2, p = 3`.**
 
-  Conjecture résiduelle pour la dichotomie Pandrosion-spécifique
-  (asymétrie D₃ — voir §69 PrincipalDominance).
+  ⚠️ **REFONDU après réfutation Niveau 5 strict** ⚠️
 
-  **Validation empirique** (Python §61, §69) :
-    • [-3, 3]² @ 400×400 : non-principal basin = 0.0126 % (12 / 160 000).
-    • [-10, 10]² : 0.0012 %.
-    • [-50, 50]² : **0%** (aucun point observé).
-  Concentration extrême près de `ω·α₀` et `ω²·α₀`.
+  La conjecture originale `NonPrincipalBasinNullX2` (`volume(...) = 0`)
+  est **strictement fausse** (validation numérique
+  `sigma_structural_analysis.py` montre bassins de mesure ~π·0.025²
+  ≈ 0.002 pour ω·α₀ et ω²·α₀).
 
-  **Conjecture** : `⋃_{s ∈ {1, 2}} CyclotomicBasinP3X2 s` est borné
-  (contenu dans un compact), donc à mesure finie.
+  La conjecture **correcte** est :
 
-  Forme `PrincipalDominanceP3X2` (§69) : **mesure ZÉRO** (a.e.). Cette
-  conjecture est strictement plus faible (mesure FINIE), mais elle
-  capte déjà l'asymétrie Pandrosion vs Newton.
+    `NonPrincipalBasinBoundedX2` : `⋃_{s∈{1,2}} CyclotomicBasinP3X2 s`
+    ⊆ `B(ω·α₀, R) ∪ B(ω²·α₀, R)` pour un `R` explicite (~0.05).
+
+  Cette forme capture l'asymétrie observée empiriquement (les bassins
+  non-principaux sont *localisés et bornés*) sans prétendre qu'ils
+  sont de mesure nulle.
 
   Contents.
 
-    §78.1  `NonPrincipalBasinFiniteX2` — conjecture mesure finie.
-    §78.2  `NonPrincipalBasinNullX2` — conjecture mesure zéro
-           (équivalent à PrincipalDominance).
-    §78.3  `non_principal_null_iff_principal_dominance` — équivalence.
+    §78.1  `NonPrincipalBasinFiniteX2` — borné/finite (vrai).
+    §78.2  `NonPrincipalBasinBoundedX2 R` — borné par disques explicites.
+    §78.3  `NonPrincipalBasinNullX2` — **REFUTED** (gardé pour
+           documentation, marqué FALSE).
 -/
 
 import Pandrosion.Core.PrincipalDominanceP3X2
@@ -37,26 +37,55 @@ open Complex MeasureTheory
 /-- **Conjecture mesure finie** : la réunion des bassins cyclotomiques
     non-principaux (s ∈ {1, 2}) est de mesure de Lebesgue finie.
 
-    Strictement plus faible que `PrincipalDominanceP3X2`, mais capte
-    l'asymétrie observée empiriquement. -/
+    Empiriquement vrai (bassins observés concentrés autour de
+    ω·α₀, ω²·α₀ avec rayon ~0.025). -/
 def NonPrincipalBasinFiniteX2 : Prop :=
   volume (CyclotomicBasinP3X2 1 ∪ CyclotomicBasinP3X2 2) < ⊤
 
-/-! §78.2  Conjecture mesure zéro -/
+/-! §78.2  Conjecture borné par disques explicites -/
 
-/-- **Conjecture mesure zéro** : la réunion des bassins non-principaux
-    est de mesure nulle. Équivalente à `PrincipalDominanceP3X2`
-    (a.e. z converge vers α₀). -/
-def NonPrincipalBasinNullX2 : Prop :=
+/-- **Conjecture borné par disques explicites** : pour un `R > 0`
+    suffisamment grand, les bassins non-principaux sont contenus dans
+    deux petits disques autour de ω·α₀, ω²·α₀.
+
+    Empirique : `R = 0.05` suffit (rayon observé ~0.025).
+
+    Forme stronge de l'asymétrie Pandrosion : non seulement la mesure
+    est finie, mais elle est **localisée explicitement**. -/
+def NonPrincipalBasinBoundedX2 (R : ℝ) : Prop :=
+  CyclotomicBasinP3X2 1 ∪ CyclotomicBasinP3X2 2 ⊆
+    {z : ℂ | ‖z - cycAnchor ((alphaX2 : ℝ) : ℂ) 3 1‖ ≤ R} ∪
+    {z : ℂ | ‖z - cycAnchor ((alphaX2 : ℝ) : ℂ) 3 2‖ ≤ R}
+
+/-! §78.3  Bounded ⟹ Finite -/
+
+/-- Bornés explicitement ⟹ mesure finie. -/
+theorem non_principal_finite_of_bounded {R : ℝ}
+    (h : NonPrincipalBasinBoundedX2 R) :
+    NonPrincipalBasinFiniteX2 := by
+  unfold NonPrincipalBasinFiniteX2
+  apply lt_of_le_of_lt (measure_mono h)
+  -- Mesure de l'union de deux disques bornés est finie.
+  apply lt_of_le_of_lt (measure_union_le _ _)
+  -- Chaque disque a mesure finie (il est borné).
+  have h_disk_lt : ∀ (c : ℂ),
+      volume {z : ℂ | ‖z - c‖ ≤ R} < ⊤ := fun c => by
+    apply IsCompact.measure_lt_top
+    have h_eq : {z : ℂ | ‖z - c‖ ≤ R} = Metric.closedBall c R := by
+      ext z; simp [Metric.closedBall, dist_eq_norm]
+    rw [h_eq]
+    exact isCompact_closedBall c R
+  exact ENNReal.add_lt_top.mpr ⟨h_disk_lt _, h_disk_lt _⟩
+
+/-! §78.4  Conjecture refuted (documentation only) -/
+
+/-- ⚠️ **REFUTED** : `volume(non-principal basins) = 0` est strictement
+    faux. Validation numérique : bassins observés de mesure ~0.002 par
+    racine non-principale (rayon ~0.025 autour de ω·α₀, ω²·α₀).
+
+    Conservé pour documenter l'erreur historique du corpus. **Ne pas
+    utiliser** comme hypothèse — elle implique des conclusions fausses. -/
+def NonPrincipalBasinNullX2_REFUTED : Prop :=
   volume (CyclotomicBasinP3X2 1 ∪ CyclotomicBasinP3X2 2) = 0
-
-/-! §78.3  Implication mesure finie ⟸ mesure zéro -/
-
-/-- Mesure zéro implique mesure finie (`0 < ⊤`). -/
-theorem non_principal_finite_of_null
-    (h : NonPrincipalBasinNullX2) : NonPrincipalBasinFiniteX2 := by
-  unfold NonPrincipalBasinFiniteX2 NonPrincipalBasinNullX2 at *
-  rw [h]
-  exact ENNReal.zero_lt_top
 
 end Pandrosion

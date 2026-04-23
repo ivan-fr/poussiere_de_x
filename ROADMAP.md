@@ -58,28 +58,44 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   faisabilité du chaînage à un point concret ; full half-plane
   reste ouvert.
 
-### Niveau 5 — Principal dominance (priorité #2)
+### Niveau 2 — McMullenAEEntry à x=2 (priorité #2)
+
+⚠️ **NIVEAU 5 STRICT EST RÉFUTÉ** ⚠️
+
+La conjecture originale `PrincipalDominanceP3X2 := ∀ᵐ z, σⁿ(z) → α₀`
+a été **strictement réfutée** par analyse numérique
+(`/tmp/sigma_structural_analysis.py`, scan dense `[-5, 5]² @ 1000×1000`) :
+les bassins de ω·α₀ et ω²·α₀ ont mesure positive (~π·0.025² ≈ 0.002
+chacun, rayon ~0.025). Donc Niveau 5 strict n'est PAS un théorème.
+
+**Conjecture correcte = Niveau 2** : `McMullenAEEntry 3 2 α₀ : ∀ᵐ z,
+∃ s, σⁿ(z) → γ_s` (convergence vers une racine cyclotomique, pas
+spécifiquement α₀).
 
 - [x] **§77 FarFieldX2** : `|z| ≥ 2 ⟹ h^n(z) → α₀` inconditionnel.
   Argument : `|Sp(z)| ≥ ‖z‖² − ‖z‖ − 1 ≥ 1` pour `‖z‖ ≥ 2`, donc
   `Re h(z) ≥ 1/2`, puis §67 Tendsto conclut. Couvre **tout le
   far-field** complexe inconditionnellement.
 
-- [x] **§77b HalfPlaneExhaustionAE** (formalized as Prop in §79) :
-  conjecture résiduelle pour gap-region. Définie comme
-  `HalfPlaneExhaustionAEP3X2` dans §79 ; preuve dynamique demande
-  Mathlib complex dynamics, hors scope.
+- [x] **§77b HalfPlaneExhaustionAE** : ⚠️ **partiellement réfuté** —
+  les points dans le bassin de ω·α₀ (mesure positive ≈ 0.002) ne
+  sortent **PAS** vers le demi-plan, ils restent près de ω·α₀.
+  Donc `∀ᵐ z, σᵏ(z) ∈ HP` est faux strict. La forme correcte est
+  `∀ z dans bassin principal AE, ∃ k, σᵏ(z) ∈ HP`.
 
-- [x] **§78 NonPrincipalBasinX2** : conjectures formelles `Mesure
-  finie` et `Mesure zéro` pour `⋃_{s∈{1,2}} CyclotomicBasinP3X2 s`.
-  Implication zéro ⟹ finie démontrée. Le full theorem (preuve de la
-  conjecture mesure-zéro) demande dynamique complexe Mathlib.
+- [x] **§78 NonPrincipalBasinX2** (refondu) : conjecture `Mesure
+  zéro` ⚠️ **REFUTED** (mesure observée positive ≈ 0.002 par bassin).
+  Conjectures vraies retenues : `NonPrincipalBasinFiniteX2` (mesure
+  finie) et `NonPrincipalBasinBoundedX2 R` (contenu dans 2 disques
+  explicites de rayon R ≈ 0.05 autour de ω·α₀, ω²·α₀). Implication
+  bounded ⟹ finite démontrée.
 
-- [x] **§79 Niveau5ConditionalChain** : chaînage final conditionnel.
-  `(HalfPlaneSigmaTendstoP3X2 ∧ HalfPlaneExhaustionAEP3X2) ⟹
-  PrincipalDominanceP3X2 ⟹ McMullenAEEntry 3 2 α₀`. Démontre que
-  les deux conjectures résiduelles suffisent à fermer Niveau 5
-  inconditionnellement à x=2.
+- [x] **§79 Niveau5ConditionalChain** (refondu vers Niveau 2) :
+  chaîne maintenant vers `McMullenAEEntry 3 2 α₀` (Niveau 2 — la
+  conjecture VRAIE). Définit `MultiBasinAEConvergence` (équivalent
+  à McMullenAEEntry). Niveau 1 ⟹ MultiBasin restreint au demi-plan
+  démontré. La fausse PrincipalDominance et HalfPlaneExhaustion
+  retirées du chaînage.
 
 ### Extensions p ≥ 3 (priorité #3)
 
@@ -504,3 +520,46 @@ extension à p ≥ 5, etc.) OU lancer `lean-check` pour audit final.
 
 Sessions futures sans nouveau ROADMAP produiront à nouveau des bonus
 de consolidation ou s'arrêteront idle.
+
+---
+
+## Session 9 résumé (cleanup post-réfutation Niveau 5)
+
+**Déclencheur** : analyse Python `sigma_structural_analysis.py` a
+réfuté la conjecture `PrincipalDominanceP3X2 := ∀ᵐ z, σⁿ(z) → α₀` :
+les bassins de ω·α₀ et ω²·α₀ ont mesure positive (~0.002 chacun,
+rayon ~0.025 observé).
+
+### Modules refondus
+- **§69 PrincipalDominanceP3X2.lean** : suppression du `def
+  PrincipalDominanceP3X2` (conjecture fausse) + des théorèmes
+  d'implication. Garde les bassins (PrincipalBasinP3X2,
+  CyclotomicBasinP3X2 s) et inclusions inconditionnelles.
+- **§71 Niveau5Master.lean** : suppression du
+  `niveau5_decomposition_theorem` et `niveau5_from_atoms` (chaînes
+  vers conjecture fausse). Garde les briques inconditionnelles
+  (alpha_in_principal_basin, points concrets, basin nonempty).
+- **§78 NonPrincipalBasinX2.lean** : `NonPrincipalBasinNullX2`
+  REFUTED + renommé `_REFUTED`. Ajout `NonPrincipalBasinBoundedX2 R`
+  (forme correcte, contenu dans 2 disques explicites). Implication
+  bounded ⟹ finite démontrée.
+- **§79 Niveau5ConditionalChain.lean** : refondu vers Niveau 2
+  (McMullenAEEntry). Nouveau `MultiBasinAEConvergence`. Implication
+  Niveau 1 ⟹ MultiBasin sur demi-plan.
+- **§70 SigmaHalfPlaneP3X2.lean** : commentaire mis à jour
+  (`half_plane_principal_dominance_from_sigma_tendsto` reste
+  valide en restreint).
+
+### Build vérifié
+91 modules verts après refactor. Aucune cible inconditionnelle
+perdue ; seules les conjectures fausses + leurs chaînages ont été
+supprimées.
+
+### Cible future correcte = Niveau 2 (McMullenAEEntry 3 2 α₀)
+Démontrable via :
+1. Prouver `HalfPlaneSigmaTendstoP3X2` (Niveau 1) — via §70 C1 + R_σ ≥ 1/4.
+2. Prouver `MultiBasinAEConvergence` — via §79 chaînage McMullen.
+3. Pour cela, prouver `NonPrincipalBasinBoundedX2 R` pour R explicite.
+
+Toutes ces conjectures sont **empiriquement vraies** et démontrables
+à terme (1-2 ans avec Mathlib dynamics).

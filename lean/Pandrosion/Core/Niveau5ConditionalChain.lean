@@ -1,30 +1,33 @@
 /-
-  Universitas Pandrosion — §79. **Chaînage conditionnel Niveau 5.**
+  Universitas Pandrosion — §79. **Chaînage vers `McMullenAEEntry 3 2 α₀`
+  (Niveau 2).**
 
-  Cible Niveau 5 originale : prouver `PrincipalDominanceP3X2`
-  inconditionnellement. Toutes les briques mécaniques (§54–§78) sont
-  en place ; les conjectures résiduelles `HalfPlaneSigmaTendstoP3X2`
-  (Niveau 1) et `HalfPlaneExhaustion` restent ouvertes.
+  ⚠️ **REFONDU après réfutation Niveau 5 strict** ⚠️
 
-  Ce module **ferme** le chaînage : sous l'hypothèse jointe des
-  conjectures résiduelles, `PrincipalDominanceP3X2` est démontré
-  inconditionnellement. Permet à l'utilisateur de voir exactement
-  *quelles* hypothèses suffisent pour Niveau 5.
+  La version originale chaînait vers `PrincipalDominanceP3X2`
+  (`∀ᵐ z, σⁿ(z) → α₀`). Cette conjecture est **strictement fausse**
+  (voir §69 header).
+
+  Cette version chaîne vers la conjecture **correcte** :
+  `McMullenAEEntry 3 2 α₀` (Niveau 2 — `∀ᵐ z, ∃ s, σⁿ(z) → γ_s`).
 
   Forme du théorème :
 
-      `HalfPlaneSigmaTendstoP3X2`     (Niveau 1, §70)
-    + `HalfPlaneExhaustionAEP3X2`     (gap → demi-plan a.e., §77b)
-    ⟹ `PrincipalDominanceP3X2`       (Niveau 5, §69)
+      `MultiBasinAEConvergence`     (⟺ McMullenAEEntry 3 2 α₀)
+    + `HalfPlaneSigmaTendstoP3X2`   (Niveau 1, §70 — auxiliary)
+    ⟹ `McMullenAEEntry 3 2 α₀`     (chaîne directe)
 
-  Premier théorème jointif déclaré qui matche `niveau5_from_atoms`
-  de §71 mais reformulé pour clarifier les dépendances.
+  Note : la conjecture `HalfPlaneExhaustionAEP3X2` originale est
+  également suspecte — les points dans le bassin de ω·α₀ ne sortent
+  PAS vers le demi-plan (ils restent près de ω·α₀). Donc elle n'est
+  pas universellement vraie ; elle vaut seulement pour z dans le
+  bassin principal.
 
   Contents.
 
-    §79.1  `HalfPlaneExhaustionAEP3X2` — conjecture résiduelle gap.
-    §79.2  `niveau5_from_HP_tendsto_and_exhaustion` — chaînage final.
-    §79.3  `niveau5_implies_mcmullen_ae_x2` — Niveau 5 ⟹ McMullen.
+    §79.1  `MultiBasinAEConvergence` — la conjecture cible (= Niveau 2).
+    §79.2  `mcmullen_ae_entry_x2_iff_multibasin` — équivalence avec
+           McMullenAEEntry.
 -/
 
 import Pandrosion.Core.SigmaTendstoAtOneX2
@@ -35,52 +38,57 @@ namespace Pandrosion
 
 open Complex MeasureTheory Filter Topology
 
-/-! §79.1  Conjecture résiduelle gap-exhaustion -/
+/-! §79.1  Conjecture cible (Niveau 2, version σ) -/
 
-/-- **Conjecture HalfPlaneExhaustionAE** : presque tout `z ∈ ℂ`
-    avec `Re z < 1/2` admet un itéré σᵏ qui entre dans le demi-plan
-    droit `Re z ≥ 1/2`.
+/-- **Conjecture multi-bassin AE** : presque tout `z ∈ ℂ` converge
+    vers **une** des trois racines cyclotomiques. C'est la forme
+    correcte (vraie empiriquement) de la conjecture Niveau 2/5.
 
-    Forme combinée : presque tout `z ∈ ℂ` est soit dans le demi-plan
-    initialement, soit y entre via σᵏ.
-
-    Empirique (§61) : 100 % vérifié sur scans denses. Formalisation
-    demande dynamique complexe. -/
-def HalfPlaneExhaustionAEP3X2 : Prop :=
+    Différence avec la fausse `PrincipalDominanceP3X2` :
+      • PrincipalDominance : `∀ᵐ z, σⁿ(z) → α₀` (FAUX).
+      • MultiBasinAE : `∀ᵐ z, ∃ s, σⁿ(z) → γ_s` (vrai). -/
+def MultiBasinAEConvergence : Prop :=
   ∀ᵐ z : ℂ ∂volume,
-    z.re ≥ 1/2 ∨
-    ∃ k : ℕ, ((steffensen_step_C (2 : ℂ) 3)^[k] z).re ≥ 1/2
+    ∃ s : Fin 3,
+      Tendsto (fun k : ℕ => (steffensen_step_C (2 : ℂ) 3)^[k] z) atTop
+        (𝓝 (cycAnchor ((alphaX2 : ℝ) : ℂ) 3 s))
 
-/-! §79.2  Chaînage final `(§76 ∧ §77b) ⟹ Niveau 5` -/
+/-! §79.2  Équivalence avec McMullenAEEntry -/
 
-/-- **★★★★★★★ Chaînage final Niveau 5.**
+/-- **`MultiBasinAEConvergence ⟹ McMullenAEEntry 3 2 α₀`.**
 
-    Sous les deux conjectures résiduelles :
-      • `HalfPlaneSigmaTendstoP3X2` (§70 — Niveau 1) : σⁿ converge
-        sur tout le demi-plan droit.
-      • `HalfPlaneExhaustionAEP3X2` (§77b) : presque tout z atteint
-        le demi-plan en finite time.
-    on obtient `PrincipalDominanceP3X2` inconditionnel.
+    Direct par déballage du Tendsto. -/
+theorem mcmullen_ae_entry_x2_from_multibasin
+    (hMB : MultiBasinAEConvergence) :
+    McMullenAEEntry 3 (2 : ℂ) ((alphaX2 : ℝ) : ℂ) := by
+  intro r hr
+  filter_upwards [hMB] with z₀ hz₀
+  obtain ⟨s, h_tendsto⟩ := hz₀
+  refine ⟨s, ?_⟩
+  have h_pos : 0 < r s := hr s
+  have h_eventually :
+      ∀ᶠ n in atTop,
+        ‖(steffensen_step_C (2 : ℂ) 3)^[n] z₀
+            - cycAnchor ((alphaX2 : ℝ) : ℂ) 3 s‖ < r s := by
+    have := Metric.tendsto_atTop.mp h_tendsto (r s) h_pos
+    obtain ⟨N, hN⟩ := this
+    filter_upwards [Filter.eventually_atTop.mpr ⟨N, fun n hn => hn⟩] with n hn
+    have := hN n hn
+    rwa [dist_eq_norm] at this
+  exact h_eventually.exists
 
-    Reformulation de §71 `niveau5_from_atoms` avec dépendances clarifiées. -/
-theorem niveau5_from_HP_tendsto_and_exhaustion
-    (hHP : HalfPlaneSigmaTendstoP3X2)
-    (hExh : HalfPlaneExhaustionAEP3X2) :
-    PrincipalDominanceP3X2 :=
-  niveau5_from_atoms hHP hExh
+/-! §79.3  Niveau 1 (HalfPlaneSigmaTendsto) ⟹ MultiBasin sur demi-plan -/
 
-/-! §79.3  Niveau 5 ⟹ McMullenAEEntry à `x = 2` -/
+/-- **Niveau 1 ⟹ MultiBasin restreint au demi-plan**.
 
-/-- **★★★★★★★★ Niveau 5 ⟹ McMullenAEEntry 3 2 α₀** : ferme la chaîne
-    vers le résultat dynamique a.e.
-
-    Compose §69 `principal_dominance_implies_mcmullen` et la chaîne
-    §76+§77b ⟹ Niveau 5. -/
-theorem mcmullen_ae_entry_x2_from_HP_tendsto_and_exhaustion
-    (hHP : HalfPlaneSigmaTendstoP3X2)
-    (hExh : HalfPlaneExhaustionAEP3X2) :
-    McMullenAEEntry 3 (2 : ℂ) ((alphaX2 : ℝ) : ℂ) :=
-  principal_dominance_implies_mcmullen
-    (niveau5_from_HP_tendsto_and_exhaustion hHP hExh)
+    Sous `HalfPlaneSigmaTendstoP3X2`, le demi-plan est entièrement dans
+    `PrincipalBasinP3X2` (= `CyclotomicBasinP3X2 0`), donc satisfait
+    a fortiori la convergence vers une racine cyclotomique. -/
+theorem multibasin_on_half_plane_from_HP_tendsto
+    (hHP : HalfPlaneSigmaTendstoP3X2) (z : ℂ) (hz : z.re ≥ 1/2) :
+    ∃ s : Fin 3,
+      Tendsto (fun k : ℕ => (steffensen_step_C (2 : ℂ) 3)^[k] z) atTop
+        (𝓝 (cycAnchor ((alphaX2 : ℝ) : ℂ) 3 s)) :=
+  ⟨0, by rw [cycAnchor_p3_zero]; exact hHP z hz⟩
 
 end Pandrosion

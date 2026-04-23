@@ -108,15 +108,12 @@ theorem half_plane_sigma_tendsto_from_step_into_basin_v2
 
 /-! §70.5  C2 → principal dominance restricted to half-plane -/
 
-/-- **C2 ⟹ principal dominance sur le demi-plan.**
+/-- **C2 ⟹ σⁿ → α₀ a.e. sur le demi-plan.**
 
-    Si σ converge sur tout le demi-plan, alors la mesure du non-
-    principal-basin ∩ demi-plan est nulle.
-
-    *Note* : le demi-plan a mesure infinie, donc ceci n'implique pas
-    directement `PrincipalDominanceP3X2` (conjecture sur tout ℂ). Il
-    faut étendre au complément (Re z < 1/2), qui est le travail
-    restant pour fermer Niveau 5. -/
+    Si σ converge sur tout le demi-plan, alors a fortiori a.e. sur le
+    demi-plan. C'est la version **restreinte** (correcte) de l'ancien
+    énoncé "principal dominance" — voir §69 header pour la
+    réfutation de la version globale. -/
 theorem half_plane_principal_dominance_from_sigma_tendsto
     (hC2 : HalfPlaneSigmaTendstoP3X2) :
     ∀ᵐ z : ℂ ∂(volume.restrict {z : ℂ | z.re ≥ 1/2}),
