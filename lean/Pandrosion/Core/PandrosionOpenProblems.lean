@@ -63,7 +63,7 @@ section KungTraubC3UpperBound
     classe raisonnable de schémas itératifs derivative-free,
     cette borne tient-elle ? Non-trivial pour `c ≥ 3`. -/
 theorem kung_traub_upper_bound_for_DFM
-    (Method : DerivativeFreeMethod) (hM_c3 : Method.c = 3) :
+    (Method : DerivativeFreeMethod) (_hM_c3 : Method.c = 3) :
     Method.q ≤ 2^(Method.c - 1) :=
   Method.kung_traub_bound
 
@@ -186,7 +186,7 @@ theorem lehmer_satisfied_for_pandrosion_beta
   have h_2_pow : (2 : ℝ) ≤ (2 : ℝ)^(p - 1) := by
     have h := pow_le_pow_right (by norm_num : (1 : ℝ) ≤ 2) hp_minus_one
     simpa using h
-  have h_x_pow_ge_2 : (2 : ℝ) ≤ (x : ℝ)^(p - 1) := le_trans h_2_pow h_pow
+  have _h_x_pow_ge_2 : (2 : ℝ) ≤ (x : ℝ)^(p - 1) := le_trans h_2_pow h_pow
   have h_lehmer_lt_2 : (1.17628081825992 : ℝ) < 2 := by norm_num
   linarith
 

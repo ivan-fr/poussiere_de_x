@@ -66,7 +66,7 @@ section CardanoCubic
     chapitre XI), publié en 1545 et attribué à Tartaglia (1535)
     sur les cas particuliers, généralisé par Cardano. -/
 theorem pandrosion_cardano_cubic
-    (x : ℂ) (hx : x ≠ 0)
+    (x : ℂ) (_hx : x ≠ 0)
     (α : ℂ) (hα : α ≠ 0) (hα_pow : α ^ 3 = x) :
     -- (A) Existence : chaque racine satisfait z³ = x.
     (∀ k : Fin 3, (cycAnchor α 3 k)^3 = x) ∧

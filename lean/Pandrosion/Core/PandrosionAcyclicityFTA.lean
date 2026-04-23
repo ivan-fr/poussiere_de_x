@@ -113,7 +113,7 @@ theorem steffensen_orbit_in_basin
           have := ih
           nlinarith [norm_nonneg ((steffensen_step_C x p)^[k] seed - α)]
       _ ≤ R / 2 := by
-          have hr_pos : 0 < R :=
+          have _hr_pos : 0 < R :=
             steffensenR_of_fp_pos x hx p hp α hα hSp hfp
           linarith
 
@@ -226,7 +226,7 @@ theorem multi_start_orbit_acyclic
     -- invariance
     (fun z hz => by
       have h_quarter := steffensen_quarter_contraction x hx p hp α hα hSp hfp z hz
-      have hR_pos : 0 < R := steffensenR_of_fp_pos x hx p hp α hα hSp hfp
+      have _hR_pos : 0 < R := steffensenR_of_fp_pos x hx p hp α hα hSp hfp
       have h_norm_nn : 0 ≤ ‖z - α‖ := norm_nonneg _
       simp only [Set.mem_setOf_eq] at hz ⊢
       calc ‖f z - α‖ ≤ (1/4) * ‖z - α‖ := h_quarter
