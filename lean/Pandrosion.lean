@@ -87,4 +87,6 @@ import Pandrosion.Core.EffectiveKungTraub
 import Pandrosion.Core.Niveau5StrictMultiStart
 import Pandrosion.Core.MasterTotal
 import Pandrosion.Core.MasterTotalEffective
+import Pandrosion.Core.MeasurableSolutionMap
+import Pandrosion.Core.PandrosionJuliaNull
 import Pandrosion.Legacy
