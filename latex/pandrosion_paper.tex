@@ -18,7 +18,7 @@
 \captionsetup{font=small,labelfont=bf}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
 
-\hypersetup{colorlinks=true, linkcolor=blue!60!black, citecolor=blue!60!black, urlcolor=blue!50!black}
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, citecolor=blue!50!black, urlcolor=blue!50!black}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -49,78 +49,123 @@
   xleftmargin=1.5em, framexleftmargin=1.5em,
 }
 
-\title{\Huge\textbf{Universitas Pandrosion}\\[0.4cm]
-\Large A Formally Verified Multi-Start Steffensen Framework\\
-for the Complex Equation $z^p = x$\\[0.2cm]
-\normalsize\itshape{Algorithm + Spectrum + Classical Theorems --- 121 Lean 4 modules, axiom-clean}}
+\title{A Formally Verified Multi-Start Steffensen Scheme\\
+for the Equation $z^p = x$ in $\mathbb{C}$\\[0.3cm]
+\normalsize \textit{Lean 4 / Mathlib v4.7.0 development, with a companion\\
+spectral framework on the derivative values at cyclotomic roots}}
 \author{Ivan Besevic\\
-\small\itshape Independent Mathematical Research\\
-\small\texttt{github.com/ivan-fr/poussiere\_de\_x}}
+\small Independent Mathematical Research\\
+\small \texttt{github.com/ivan-fr/poussiere\_de\_x}}
 \date{April 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We present a formally verified Lean~4 / Mathlib~v4.7.0 development of the
-\emph{Pandrosion-Steffensen multi-start algorithm} for solving the complex
-equation $z^p = x$ ($x \in \mathbb{C}^\ast$, $p \geq 1$). The algorithm
-combines the Pandrosion rational iteration $h_{p,x}(z) = 1 - (x-1)/(x \cdot S_p(z))$
-with Aitken-Steffensen $\Delta^2$ acceleration $\sigma = \mathrm{Aitken}(h)$
-and a perturbative \emph{multi-start seed} $\alpha + \varepsilon \cdot (z-\alpha)$,
-where $\alpha$ is the user-prescribed cyclotomic root.
+We present a Lean~4 / Mathlib v4.7.0 development of a multi-start
+variant of the Pandrosion-Steffensen iteration for solving
+$z^p = x$ with $x \in \mathbb{C}^\ast$ and $p \geq 1$. The scheme
+combines the rational iteration $h_{p,x}(z) = 1 - (x-1)/(x\,S_p(z))$
+(where $S_p(z) = \sum_{k=0}^{p-1} z^k$), the Aitken-Steffensen $\Delta^2$
+accelerator $\sigma = \mathrm{Aitken}(h)$, and a perturbative
+seed $\mathrm{seed}_{\alpha,\varepsilon}(z) = \alpha + \varepsilon(z-\alpha)$
+whose definition depends on the user-chosen cyclotomic target $\alpha$.
 
-The corpus consists of \textbf{121 Lean modules} producing simultaneously:
-(i)~\emph{universal convergence}: for every $z \in \mathbb{C}$ and precision
-$\varepsilon > 0$, an explicit closed-form iteration count
-$N(\varepsilon) = \mathcal{O}(\log\log(1/\varepsilon))$ guarantees
-$\|\sigma^n(\mathrm{seed}) - \alpha\| \leq \varepsilon$ for all $n \geq N$
-(\S95--\S101);
-(ii)~\emph{Galois equivariance}: the algorithm targets any of the $p$
-cyclotomic anchors via an arbitrary selector (\S97);
-(iii)~\emph{measurability and continuity}: the multi-start solution map
-$\mathbb{C} \to \mathbb{C}$ is Borel-measurable everywhere and continuous
-almost-everywhere (Luzin-style, \S102--\S105);
-(iv)~\emph{Pandrosion zeta function}: the spectral series
-$\zeta_P(s) = \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s}$ admits a Riemann-style
-analogy with explicit vanishing identities, biorthogonality, and a closed-form
-spectral determinant $\prod_k P^{\prime}(\alpha_k) = (-1)^{p-1} p^p / x^{p-1}$
-(\S106--\S111);
-(v)~the \textbf{historical Niveau 5 conjecture} of the Pandrosion family is
-formally resolved: empirically false for the plain iteration $\sigma$ (refuted
-by a Python sweep showing $\sim 0.015\%$ of points in non-principal basins
-at $(x,p)=(2,3)$), the multi-start reformulation is proved unconditionally
-(\S99).
+The paper reports three kinds of content, explicitly separated:
+\emph{(a)~results that are new in this formalization}, concerning the
+universal convergence of the multi-start scheme with an explicit
+closed-form iteration count, the Borel-measurability and a.e.\ continuity
+of the resulting solution map, a formal resolution of the historical
+``Niveau 5'' conjecture of the Pandrosion family in its multi-start form,
+and a set of algebraic identities for the finite series
+$\zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s}$;
+\emph{(b)~classical theorems (Banach 1922, FTA Gauss 1799, Aitken 1926,
+Schwarz 1890, Cardano 1545, Vieta 1591, Kronecker 1857, Galois 1832,
+Aberth-Ehrlich 1967/1973) specialized in Lean to the Pandrosion setting};
+\emph{(c)~honestly partial engagements with four open or hard problems
+(Kung-Traub upper bound for $c \geq 3$, Lehmer's Mahler-measure conjecture,
+Smale's~17th problem, and a full formalization of McMullen 1987),
+where we state what is proven, what is conditional, and what remains out of
+reach of the current corpus}.
 
-The corpus also formalizes \textbf{eleven classical theorems} via the
-multi-start framework---Banach (1922), Aitken-Steffensen (1926/1933),
-Schwarz (1890), Cardano-Tartaglia (1545), Vieta (1591), Kronecker (1857),
-Galois (1832), Aberth-Ehrlich (1967/1973), the Fundamental Theorem of
-Algebra (Gauss 1799 specialized), Kung-Traub attainability at $c=3$ (1974),
-and Pandrosion's circumvention of McMullen's 1987 barrier---and engages
-honestly with four classical open problems (Kung-Traub upper bound for
-$c \geq 3$, Lehmer's Mahler-measure conjecture 1933, Smale's 17th problem
-1998, full McMullen 1987), proving partial results and explicitly identifying
-what remains open (\S112--\S123).
-
-Every load-bearing theorem is audited: the Lean dependency closure reduces
-to the whitelist $\{\texttt{propext},\ \texttt{Classical.choice},\ \texttt{Quot.sound}\}$,
-with zero \texttt{sorry} declarations and zero off-whitelist axioms in the
-main spine.
+The Lean development comprises 121 modules with zero \texttt{sorry} and
+an audited dependency closure reducing to
+$\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$.
+We make no claim that the multi-start framework solves any classical
+open conjecture at full generality; the results it provides on
+those problems are either restricted specializations or structural
+reductions, clearly identified as such.
 \end{abstract}
 
 \tableofcontents
 \newpage
 
 %======================================================================
-\section{Introduction}
+\section{Introduction and scope}
 \label{sec:intro}
 %======================================================================
 
-\subsection{The Pandrosion-Steffensen multi-start algorithm}
+\subsection{Historical starting point: Pandrosion's two sequences for $\sqrt[3]{2}$}
+\label{sec:historical}
 
-Given $x \in \mathbb{C}^\ast$ and $p \in \mathbb{N}$ with $p \geq 1$, the
-\emph{Pandrosion iterator} is the rational map
+Before stating the general iterator, we recall the two sequences that
+Pappus (\textit{Collectio}, Book III) attributes to Pandrosion of
+Alexandria for approximating~$\sqrt[3]{2}$. Given an initial
+parameter~$u_0 \in (0, 4)$, the construction produces the pair
+\begin{equation}\label{eq:pandrosion-two-sequences}
+  u_{n+1} \;=\; \frac{u_n}{\displaystyle 2 \;-\; 2\!\left(\frac{4 - u_n}{4}\right)^{\!3}},
+  \qquad
+  v_n \;=\; 2 \left(\frac{4 - u_n}{4}\right)^{\!2},
+  \qquad
+  u_0 \;=\; 0.5.
+\end{equation}
+The sequence $(u_n)$ is the internal parameter (a length in the Thales
+diagram); the sequence $(v_n)$ is the \emph{readout}, converging to
+$\sqrt[3]{2}$.
+
+\paragraph{Normalization.} The substitution
+$s_n := (4 - u_n)/4 \in (0,1)$ eliminates all constants:
+\[
+  u_n \;=\; 4(1 - s_n),
+  \qquad
+  v_n \;=\; 2 s_n^{2},
+  \qquad
+  u_{n+1} \;=\; \frac{4(1 - s_n)}{2(1 - s_n^{3})} \;=\; \frac{2}{1 + s_n + s_n^{2}},
+\]
+which turns~\eqref{eq:pandrosion-two-sequences} into the single rational
+iteration
+\begin{equation}\label{eq:pandrosion-s-iter}
+  s_{n+1} \;=\; 1 - \frac{u_{n+1}}{4}
+          \;=\; \frac{2 s_n^{2} + 2 s_n + 1}{2 s_n^{2} + 2 s_n + 2}.
+\end{equation}
+The fixed point of~\eqref{eq:pandrosion-s-iter} is $s^\ast = 2^{-1/3}$,
+giving $v^\ast = 2 \cdot 2^{-2/3} = 2^{1/3} = \sqrt[3]{2}$, and the local
+convergence is \emph{linear} with ratio
+\[
+  \lambda_{3,2}
+  \;=\; \frac{(\sqrt[3]{2} - 1)(\sqrt[3]{2} + 2)}{\sqrt[3]{4} + \sqrt[3]{2} + 1}
+  \;\approx\; 0.2202.
+\]
+
+\paragraph{Recognition of the general form.} Writing
+$x = 2$, $p = 3$, and $S_3(s) = 1 + s + s^{2}$, the
+iteration~\eqref{eq:pandrosion-s-iter} rearranges to
+\[
+  s_{n+1} \;=\; 1 - \frac{1}{2(1 + s_n + s_n^{2})}
+           \;=\; 1 - \frac{x - 1}{x \cdot S_p(s_n)}\bigg|_{p = 3,\, x = 2}.
+\]
+This is exactly the iterator $h_{p,x}$ introduced below, at
+$(p, x) = (3, 2)$. The fixed-point equation $s^\ast = 1 - (x-1)/(x\,S_p(s^\ast))$
+rearranges to $x \cdot (s^\ast)^p = 1$, i.e.\ $s^\ast = x^{-1/p}$, and
+the readout $v^\ast = x \cdot (s^\ast)^{p-1} = x^{1/p}$ recovers the
+target $p$-th root. The historical
+construction~\eqref{eq:pandrosion-two-sequences} is therefore the
+$(p, x) = (3, 2)$ instance of a one-parameter family defined in~\eqref{eq:pandrosion-h}.
+
+\subsection{The iteration and the multi-start seed}
+
+Given $x \in \mathbb{C}^\ast$ and $p \in \mathbb{N}$ with $p \geq 1$,
+the Pandrosion iterator is
 \begin{equation}\label{eq:pandrosion-h}
   h_{p,x}(z) := 1 - \frac{x-1}{x \cdot S_p(z)},
   \qquad
@@ -128,215 +173,178 @@ Given $x \in \mathbb{C}^\ast$ and $p \in \mathbb{N}$ with $p \geq 1$, the
 \end{equation}
 Its fixed points are exactly the $p$-th roots of $1/x$:
 $h_{p,x}(s) = s \iff s^p = 1/x$.
-Composed with the Aitken-Steffensen $\Delta^2$ accelerator, the algorithm
-becomes derivative-free and quadratic at each fixed point:
+Composing with the Aitken-Steffensen $\Delta^2$ accelerator yields the
+quadratically convergent derivative-free iteration
 \begin{equation}\label{eq:steffensen-sigma}
   \sigma_{p,x}(z) := z - \frac{(h_{p,x}(z) - z)^2}
                               {h_{p,x}(h_{p,x}(z)) - 2 h_{p,x}(z) + z}.
 \end{equation}
 
-The iteration $z_{n+1} = \sigma_{p,x}(z_n)$ converges quadratically to the
-nearest cyclotomic root, but---as McMullen 1987 proved for any purely
-iterative scheme of bounded degree---this convergence cannot be uniform
-over all of $\mathbb{C}$ for $p \geq 4$: the basin of any fixed cyclotomic
-anchor has positive complement.
+As is classical for root-finding iterations in~$\mathbb{C}$, the
+iteration $z_{n+1} = \sigma_{p,x}(z_n)$ cannot converge to a single
+prescribed root from every initial $z_0 \in \mathbb{C}$: the basins of
+different cyclotomic anchors partition $\mathbb{C}$, and the Julia set
+separating them is generically non-trivial (for $p \geq 3$ with rational
+iterations of bounded degree, a classical obstruction of this kind is
+documented by McMullen~\cite{mcmullen}).
 
-The \emph{multi-start} reformulation circumvents this barrier by using an
-$\alpha$-dependent perturbative seed:
+The \emph{multi-start} scheme we formalize starts $\sigma_{p,x}$ not from
+$z_0$ directly, but from the seed
 \begin{equation}\label{eq:multistart-seed}
-  \mathrm{seed}_{\alpha,\varepsilon}(z) := \alpha + \varepsilon \cdot (z - \alpha),
+  \mathrm{seed}_{\alpha,\varepsilon}(z)
+  := \alpha + \varepsilon \cdot (z - \alpha),
   \qquad
-  \varepsilon := \frac{R_\sigma(x,p,\alpha)}{2\,\|z - \alpha\|},
+  \varepsilon := \frac{R_\sigma(x,p,\alpha)}{2\,\|z - \alpha\|}
+  \quad \text{(or $\varepsilon = 1$ if $z = \alpha$)},
 \end{equation}
-where $\alpha$ is the user-prescribed cyclotomic anchor (typically
-$\alpha = (1/x)^{1/p}$) and $R_\sigma$ is the explicit Steffensen attraction
-radius (\S33 of the corpus). With this seed, the iteration
-$\sigma_{p,x}^n(\mathrm{seed})$ \emph{always} converges to $\alpha$,
-independently of the starting point $z \in \mathbb{C}$.
+where $\alpha$ is a cyclotomic anchor with $\alpha^p = 1/x$ and
+$R_\sigma(x,p,\alpha)$ is the explicit Steffensen attraction radius
+established in the corpus. The seed is in the disk
+$\overline{B}(\alpha, R_\sigma/2)$ by construction, so the iteration
+starting from the seed remains in the local attraction disk of $\alpha$,
+and converges to $\alpha$ for every $z \in \mathbb{C}$.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{fig01_multistart_basins.png}
-\caption{Plain $\sigma$ has a fractal Julia set at $(x,p)=(2,5)$ (left, colored
-by which cyclotomic anchor $\gamma_k$ each $z_0$ converges to). The Pandrosion
-multi-start (right, colored by iteration count) achieves universal convergence
-to the user-prescribed $\alpha_0$ for every $z_0 \in \mathbb{C}$.
-This circumvents McMullen 1987 by being explicitly $\alpha$-dependent (\S95, \S120).}
+\includegraphics[width=0.95\textwidth]{fig01_multistart_basins.png}
+\caption{Left: Newton's iteration on $z^5 = 1$, coloured by which
+root the iteration converges to. This is the classical illustration
+of the kind of Julia-set obstruction that affects purely iterative
+root finders. Right: the Pandrosion-Steffensen multi-start scheme
+of this paper, coloured by the number of iterations needed to reach
+precision $10^{-6}$ from each $z_0$. The seed~\eqref{eq:multistart-seed}
+is $\alpha$-dependent; it is therefore \emph{not} a purely iterative
+scheme in the sense of \cite{mcmullen}.}
 \end{figure}
 
-\subsection{Contributions}
+\subsection{Contributions, separated by kind}
+\label{sec:contrib-kinds}
 
-The paper documents five interlocking achievements:
+The paper makes explicit the difference between genuinely new
+formalized results, Pandrosion specializations of classical theorems,
+and honestly partial engagements with open problems.
 
-\begin{enumerate}
-  \item \textbf{Algorithmic capstone (\S95--\S101).}\ Universal multi-start
-        convergence with explicit closed-form complexity
-        $N(\varepsilon) = \lceil \log_2\lceil \log(K_\alpha\varepsilon)/\log(K_\alpha R_\alpha)\rceil\rceil$
-        (Effective Kung-Traub Theorem, \S98), Galois equivariance with
-        arbitrary selector (\S97), and a 12-conjunct Master Total
-        capstone (\S100).
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.26\textwidth}p{0.34\textwidth}p{0.32\textwidth}@{}}
+\toprule
+\textbf{Kind} & \textbf{What is in the corpus} & \textbf{Where} \\
+\midrule
+New formalized results & Universal multi-start convergence,
+ explicit closed-form iteration count, Borel-measurability and a.e.\
+ continuity of the multi-start solution map, multi-start
+ resolution of the Niveau~5 conjecture.
+ & Sections \ref{sec:multistart}, \ref{sec:analysis}. \\
+Algebraic identities for $\zeta_P$ & Vanishing identity $\zeta_P(1) = 0$,
+ $(p-1)$ higher-vanishing relations + normalization, closed-form product
+ $\prod_k P^{\prime}(\alpha_k) = (-1)^{p-1} p^p/x^{p-1}$.
+ & Section \ref{sec:zeta}. These are explicit finite-sum identities
+ on cyclotomic roots; we discuss their relation to the Riemann
+ analogy critically. \\
+Pandrosion specializations of classical theorems (not new
+ mathematics, new Lean formalizations) & Banach 1922, FTA (Gauss 1799),
+ Aitken 1926, Schwarz 1890, Cardano 1545, Vieta 1591, Kronecker 1857,
+ Galois 1832, Aberth-Ehrlich 1967/1973, Kung-Traub 1974 attainability
+ at $c=3$.
+ & Section \ref{sec:classical}. \\
+Honest engagements with open problems & Kung-Traub upper bound
+ for $c \geq 3$, McMullen 1987 formal proof, Lehmer 1933,
+ Smale's~17th problem.
+ & Section \ref{sec:open-problems}. \\
+\bottomrule
+\end{tabular}
+\end{center}
 
-  \item \textbf{Analytic capstone (\S102--\S105).}\ Luzin-style characterization
-        of the Pandrosion solution map: Borel-measurable everywhere,
-        continuous almost-everywhere on the Pandrosion Fatou set, with
-        the Pandrosion Julia set (the Voronoï frontier) Lebesgue-null.
+The paper does \emph{not} claim to solve any of the four classical open
+problems in Section~\ref{sec:open-problems}. Only restricted or
+structural results are proven there, each explicitly scoped.
 
-  \item \textbf{Spectral capstone (\S106--\S111).}\ Pandrosion zeta function
-        $\zeta_P(s) := \sum_k P^{\prime}(\alpha_k)^{-s}$, with vanishing
-        identity $\zeta_P(1) = 0$, higher-vanishing biorthogonality,
-        explicit spectral determinant
-        $\prod_k P^{\prime}(\alpha_k) = (-1)^{p-1} p^p / x^{p-1}$, and
-        Riemann analogy formalized as a 17-conjunct Ultimate Grand Master
-        (\S110).
+\subsection{On naming and scope}
 
-  \item \textbf{Historical resolution (\S99).}\ The Pandrosion Niveau 5
-        conjecture---\emph{a.e.}~convergence of $\sigma^n(z) \to \alpha_0$---is
-        empirically false for the plain iteration but provably true for the
-        multi-start reformulation. This is the first formal resolution of a
-        Pandrosion-family historical conjecture.
+A remark on terminology. We define
+$\zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s}$ as a finite series
+of $p$ complex terms; we prove a set of algebraic identities for it
+(including $\zeta_P(1) = 0$ and a closed-form for
+$\prod_k P^{\prime}(\alpha_k)$). These identities have the shape of
+classical cyclotomic sum identities, and they are formally analogous to
+certain values of the Riemann zeta function; we record the analogy
+where it is useful, but do \emph{not} claim any substantial number-theoretic
+content beyond the elementary finite-sum algebra of roots of unity. In
+particular, the ``finite Riemann analog'' language is meant as a
+presentation device for the identities themselves, not as a statement
+about the Riemann Hypothesis.
 
-  \item \textbf{Classical theorems via multi-start (\S112--\S122).}\ Eleven
-        celebrated theorems re-derived in the Pandrosion framework:
-        Banach 1922, FTA Gauss 1799, Aitken-Steffensen 1926/1933,
-        Schwarz 1890, Cardano-Tartaglia 1545, Vieta 1591, Kronecker 1857,
-        Galois 1832, Aberth-Ehrlich 1967/1973, Kung-Traub 1974 attainability
-        at $c=3$, McMullen 1987 circumvention. Honest engagement with four
-        open problems (\S123).
-\end{enumerate}
+Similarly, the phrase ``Smale's~17th problem'' appears in
+Section~\ref{sec:open-problems} only to locate the context. We solve
+$z^p = x$ with a deterministic algorithm of complexity
+$\mathcal{O}(\log\log(1/\varepsilon))$; this is a very specific
+polynomial family, not Smale's question for arbitrary polynomials. The
+two settings are \emph{not} directly comparable, and the paper says so.
 
-\subsection{Honest scope statement}
+\subsection{Reading order}
 
-The corpus formalizes a substantial body of \emph{algorithmic, dynamical,
-measure-theoretic, and spectral} content. We are explicit about what is
-proven versus what is reformulated:
-\begin{itemize}
-  \item Sections~\ref{sec:multistart}--\ref{sec:zeta} contain genuinely new
-        formalized content (multi-start universal theorem, effective Kung-Traub
-        closed-form count, Niveau 5 strict resolution, Pandrosion zeta
-        framework).
-  \item Sections~\ref{sec:classical}--\ref{sec:open-problems} provide the
-        Pandrosion specialization of classical theorems, with explicit
-        identification of which results are reformulations of existing
-        mathematics versus genuine extensions.
-  \item No claim is made that the multi-start framework solves any
-        long-standing open conjecture (Lehmer 1933, Smale~17 general,
-        Kung-Traub upper bound for $c \geq 3$, full McMullen 1987 formal proof).
-        The corpus provides \emph{partial concrete results} on each, with
-        the open parts explicitly stated as named \texttt{Prop}s.
-\end{itemize}
+Section~\ref{sec:cyclotomic} collects the cyclotomic identities used
+throughout. Sections~\ref{sec:multistart}--\ref{sec:analysis} contain
+the genuinely new multi-start results. Section~\ref{sec:zeta} contains
+the finite-sum identities for $\zeta_P$. Section~\ref{sec:classical}
+collects the Pandrosion specializations of classical theorems.
+Section~\ref{sec:open-problems} records the restricted / partial
+engagements with the four open problems. Sections~\ref{sec:modules}
+and~\ref{sec:reproducibility} describe the Lean corpus structure and
+how to reproduce everything.
 
 %======================================================================
-\section{Cyclotomic Anchors and Galois Structure}
+\section{Cyclotomic anchors and Galois structure}
 \label{sec:cyclotomic}
 %======================================================================
 
 \subsection{Cyclotomic anchor family}
 
 \begin{definition}[Cyclotomic anchors]\label{def:cyc-anchor}
-For $\alpha \in \mathbb{C}^\ast$ and $p \geq 1$, the \emph{cyclotomic anchor
-family} is
+For $\alpha \in \mathbb{C}^\ast$ and $p \geq 1$, let
 \[
   \gamma_k := \alpha \cdot e^{2\pi i k / p}, \qquad k = 0, 1, \dots, p-1.
 \]
 \end{definition}
 
-When $\alpha^p = 1/x$, the anchors $\gamma_k$ are exactly the $p$ distinct
-solutions of $z^p = 1/x$. They are pairwise distinct (for $\alpha \neq 0$,
-$p \geq 1$) and lie on the circle of radius $|\alpha| = |x|^{-1/p}$.
+When $\alpha^p = 1/x$, the $\gamma_k$ are the $p$ distinct solutions of
+$z^p = 1/x$.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig02_cyclotomic_anchors.png}
 \caption{Cyclotomic anchor families for $p \in \{3, 4, 5, 7, 11, 13\}$ at
-$x = 2$. Each anchor lies at radius $|\alpha| = 2^{-1/p}$, and the cyclic
-Galois action $\omega \cdot \gamma_k = \gamma_{k+1 \,(\mathrm{mod}\,p)}$
-generates the splitting field $\mathbb{Q}(\alpha, \omega)$ (\S118--\S119).}
+$x = 2$. The anchors lie on the circle of radius $|\alpha| = 2^{-1/p}$,
+and the cyclic action $\omega \cdot \gamma_k = \gamma_{k+1 \bmod p}$
+generates the splitting field.}
 \end{figure}
 
-\subsection{Galois action (Galois 1832)}
+\subsection{Cyclic permutation of the anchors}
 
-\begin{theorem}[Galois cyclic action, \S119]\label{thm:galois}
-For every $p \geq 1$ and $\alpha \in \mathbb{C}^\ast$, the multiplicative
-action $\omega \cdot (\cdot)$ with $\omega = e^{2\pi i / p}$ implements the
-cyclic permutation
-\[
-  \omega \cdot \gamma_k = \gamma_{k+1 \,\mathrm{mod}\,p},
-  \qquad k \in \mathbb{Z}/p\mathbb{Z}.
-\]
-The Galois group of the splitting field of $z^p - x$ over $\mathbb{Q}(\alpha)$
-is cyclic of order $p$, generated by this action.
+\begin{theorem}[Cyclic action on anchors]\label{thm:galois}
+For every $p \geq 1$ and $\alpha \in \mathbb{C}^\ast$, with
+$\omega = e^{2\pi i / p}$,
+$\omega \cdot \gamma_k = \gamma_{(k+1) \bmod p}$ for every
+$k \in \mathbb{Z}/p\mathbb{Z}$.
 \end{theorem}
 
-The proof in Lean uses the periodicity of $\omega^p = 1$ and the modular
-identity $\omega^{(k+1) \,\mathrm{mod}\,p} = \omega^{k+1}$ via
-\texttt{Nat.div\_add\_mod}.
-
-\subsection{Cardano-Tartaglia formula recovered (Cardano 1545)}
-
-\begin{theorem}[Cardano cubic via Pandrosion, \S121]
-For $x \neq 0$ and any $\alpha$ with $\alpha^3 = x$, the three solutions
-of $z^3 = x$ are explicitly
-\[
-  \gamma_0 = \alpha, \quad
-  \gamma_1 = \alpha \cdot e^{2\pi i / 3}, \quad
-  \gamma_2 = \alpha \cdot e^{4\pi i / 3}.
-\]
-\end{theorem}
-
-This is the classical Cardano formula (\emph{Ars Magna}, Cap.~XI, 1545)
-recovered as the $p = 3$ specialization of the cyclotomic anchor structure.
-
-\subsection{Vieta's formulas (Vieta 1591)}
-
-\begin{theorem}[Vieta master, \S122]\label{thm:vieta}
-For $z^p - x$ with $p \geq 2$ and $\alpha^p = x$, the elementary symmetric
-polynomials in the roots $\gamma_k = \alpha \cdot e^{2\pi i k/p}$ satisfy
-\[
-  e_1 = \sum_k \gamma_k = 0,
-  \qquad
-  e_p = \prod_k \gamma_k = (-1)^{p-1} \cdot x.
-\]
-\end{theorem}
-
-The sum $e_1 = 0$ follows from the geometric-sum identity applied to
-$\omega = e^{2\pi i/p}$, and the product $e_p$ is computed via the
-exponent-sum formula $\sum_{k=0}^{p-1} k = p(p-1)/2$ together with the
-parity identity $\omega^{p(p-1)/2} = (-1)^{p-1}$.
-
-\subsection{Kronecker's theorem at $x = 1$ (Kronecker 1857)}
-
-\begin{theorem}[Kronecker for Pandrosion, \S118]
-For $x = 1$ and $\alpha^p = 1$, all anchors $\gamma_k$ are roots of unity:
-\[
-  \gamma_k^p = 1 \quad \text{for every } k \in \mathrm{Fin}\,p.
-\]
-\end{theorem}
-
-This is Kronecker's 1857 theorem (an algebraic integer with all conjugates
-on the unit circle is a root of unity), \emph{specialized} to the
-cyclotomic family. For $|x| \neq 1$, the anchors lie off the unit circle
-and Kronecker's hypothesis is not satisfied.
+This is Galois 1832 \emph{specialized} to $z^p = x$; it is not new
+mathematics. The Lean proof uses $\omega^p = 1$ and
+\texttt{Nat.div\_add\_mod}. Likewise, the classical Vieta identities
+$e_1 = \sum_k \gamma_k = 0$ and $e_p = \prod_k \gamma_k = (-1)^{p-1} \cdot x$
+are formalized for the cyclotomic family; both are classical finite-sum
+identities about roots of unity.
 
 %======================================================================
-\section{Universal Multi-Start Convergence (\S95--\S101)}
+\section{Universal multi-start convergence}
 \label{sec:multistart}
 %======================================================================
 
-\subsection{Multi-start basin seed}
-
-\begin{definition}[Multi-start seed]
-For $\alpha \in \mathbb{C}^\ast$, $\varepsilon \in \mathbb{R}$, and
-$z \in \mathbb{C}$,
-\[
-  \mathrm{seed}_{\alpha,\varepsilon}(z) := \alpha + \varepsilon \cdot (z - \alpha).
-\]
-Its norm satisfies $\|\mathrm{seed}_{\alpha,\varepsilon}(z) - \alpha\| =
-\varepsilon \cdot \|z - \alpha\|$ for $\varepsilon > 0$.
-\end{definition}
+This is where the genuinely new formal content of the paper lives.
 
 \subsection{Universal multi-start theorem}
 
-\begin{theorem}[Universal multi-start loglog, \S95]\label{thm:multistart}
+\begin{theorem}[Universal multi-start convergence]\label{thm:multistart}
 Let $x \in \mathbb{C}^\ast$, $p \geq 1$, $\alpha \in \mathbb{C}^\ast$ with
 $\alpha^p = 1/x$ and $S_p(\alpha) \neq 0$. Then for every $z \in \mathbb{C}$
 and every $\varepsilon > 0$, there exist $\varepsilon_{\mathrm{seed}} > 0$
@@ -346,157 +354,125 @@ and $N \in \mathbb{N}$ such that
   \big\|\sigma_{p,x}^n(\mathrm{seed}_{\alpha,\varepsilon_{\mathrm{seed}}}(z))
         - \alpha\big\| \leq \varepsilon.
 \]
-The construction is fully explicit: $\varepsilon_{\mathrm{seed}} =
-R_\sigma(x,p,\alpha) / (2\,\|z - \alpha\|)$ (or $\varepsilon_{\mathrm{seed}} = 1$
-if $z = \alpha$), and $N$ is given by the Effective Kung-Traub formula below.
+The construction is explicit: $\varepsilon_{\mathrm{seed}}
+= R_\sigma(x,p,\alpha) / (2\,\|z - \alpha\|)$ when $z \neq \alpha$, and
+$N$ is given by Theorem~\ref{thm:eff-kt} below.
 \end{theorem}
 
-The theorem combines two ingredients:
-\begin{enumerate}
-  \item The seed $\mathrm{seed}_{\alpha,\varepsilon_{\mathrm{seed}}}(z)$ lies
-        in the closed disk $\overline{B}(\alpha, R_\sigma/2)$, which is
-        contained in the Steffensen attraction basin $B(\alpha, R_\sigma)$.
-  \item The basin loglog convergence theorem of \S34.1 then gives
-        $N = \mathcal{O}(\log\log(1/\varepsilon))$ iterations to reach
-        precision $\varepsilon$.
-\end{enumerate}
+The content is: the seed is in $\overline{B}(\alpha, R_\sigma/2)$, the
+iteration stays in $B(\alpha, R_\sigma)$, and a quadratic-contraction
+argument gives the iteration count.
 
-\subsection{Effective Kung-Traub closed form (\S98)}
+\subsection{Explicit iteration count}
 
-\begin{definition}[Effective loglog count]
+\begin{definition}[Effective iteration count]
 For $K, R, \varepsilon > 0$,
 \[
   N_{\mathrm{eff}}(K, R, \varepsilon) :=
   \log_2 \big\lceil \log(K \varepsilon) / \log(K R) \big\rceil_+ + 1,
 \]
-where $\lceil \cdot \rceil_+$ is the natural-number ceiling clamped to $0$
-for non-positive arguments.
+with $\lceil \cdot \rceil_+$ the natural-number ceiling clamped at $0$.
 \end{definition}
 
-\begin{theorem}[Effective Kung-Traub, \S98]\label{thm:eff-kt}
+\begin{theorem}[Explicit iteration count]\label{thm:eff-kt}
 For any quadratically contracting sequence $e_{n+1} \leq K \cdot e_n^2$
 with $e_0 \leq R$ and $K \cdot R < 1$, every iterate $k \geq
 N_{\mathrm{eff}}(K, R, \varepsilon)$ satisfies $e_k \leq \varepsilon$.
-
-Asymptotically, $N_{\mathrm{eff}}(K, R, \varepsilon) \sim \log_2 \log(1/\varepsilon)$,
-matching the Kung-Traub optimal complexity for derivative-free order-2
-methods.
+Asymptotically $N_{\mathrm{eff}} \sim \log_2 \log(1/\varepsilon)$.
 \end{theorem}
-
-Combined with Theorem~\ref{thm:multistart}, this gives an explicit
-closed-form iteration count for the multi-start algorithm at each precision
-$\varepsilon$.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig03_loglog_convergence.png}
-\caption{Left: error $\|\sigma^n(\mathrm{seed}) - \alpha\|$ vs iteration $n$
-for $p \in \{3, 4, 5, 7\}$, $x = 2$, $z_0 = 1 + 0.5i$. The slope on the
-$\log$-scale doubles each step (quadratic convergence). Right: iteration
-count $N(\varepsilon)$ vs target precision $\varepsilon$. Pandrosion
-multi-start achieves $N = \mathcal{O}(\log\log(1/\varepsilon))$ (orders of
-magnitude better than Smale~17's poly-log baseline) (\S98, \S101, \S115).}
+\caption{Left: error $\|\sigma^n(\mathrm{seed}) - \alpha\|$ vs iteration
+for $p \in \{3, 4, 5, 7\}$, $x = 2$, $z_0 = 1 + 0.5i$. Right: iteration
+count $N(\varepsilon)$ vs target precision for the same setup. The
+dashed line is $\log(1/\varepsilon)$; it is shown only for visual
+reference, not as an algorithmic comparison.}
 \end{figure}
 
-\subsection{Niveau 5 conjecture: formal resolution (\S99)}
+\subsection{The Niveau~5 conjecture of the Pandrosion family}
 
-The historical Pandrosion conjecture posits
+The Pandrosion family has a historical conjecture, here called
+Niveau~5, of the form
 \[
   \forall^{\mathrm{a.e.}}\,z \in \mathbb{C}: \quad
-  \sigma_{p,x}^n(z) \xrightarrow{n \to \infty} \alpha_0,
+  \sigma_{p,x}^n(z) \xrightarrow{n \to \infty} \alpha_0.
 \]
-where $\alpha_0$ is the principal cyclotomic anchor. This conjecture is
-\emph{empirically false} for the plain iteration $\sigma_{p,x}$: a Python
-sweep over $[-3, 3]^2$ at resolution $200 \times 200$ for $(x, p) = (2, 3)$
-shows that approximately $0.015\%$ of starting points converge to a
-non-principal anchor $\omega \cdot \alpha_0$ or $\omega^2 \cdot \alpha_0$.
-The non-principal basins have positive Lebesgue measure.
+Numerical experiments with the plain iteration at $(x, p) = (2, 3)$
+(Python sweep over $[-3, 3]^2$ at $200 \times 200$ resolution) show
+that roughly $0.015\%$ of initial points converge instead to a
+non-principal anchor. The conjecture is therefore \emph{false} in its
+original plain-iteration form.
 
-\begin{theorem}[Niveau 5 strict via multi-start, \S99]\label{thm:niveau5}
-The multi-start reformulation
+\begin{theorem}[Multi-start resolution of Niveau~5]\label{thm:niveau5}
+Under the standard hypotheses on $(x, p, \alpha)$, the multi-start
+reformulation
 \[
   \forall\,z \in \mathbb{C}, \exists\,\varepsilon_{\mathrm{seed}} > 0:\quad
-  \sigma_{p,x}^n\big(\alpha + \varepsilon_{\mathrm{seed}} \cdot (z - \alpha)\big)
+  \sigma_{p,x}^n(\alpha + \varepsilon_{\mathrm{seed}} \cdot (z - \alpha))
   \xrightarrow{n \to \infty} \alpha
 \]
-is provable unconditionally on the standard Pandrosion hypotheses
-($x \neq 0$, $p \geq 1$, $\alpha^p = 1/x$, $S_p(\gamma_k) \neq 0$ for all $k$).
+is provable unconditionally.
 \end{theorem}
 
-This is the first formal resolution of a Pandrosion-family historical
-conjecture: empirically false in its original form, provably true under the
-multi-start reformulation. Modules \S95--\S99 establish the resolution
-unconditionally; \S101 packages it with the Effective Kung-Traub closed-form
-iteration count.
+This is Theorem~\ref{thm:multistart} applied with the reformulated
+statement. What is new is the formal resolution of the Pandrosion
+Niveau~5 conjecture, in the Pandrosion-native multi-start form.
 
-\subsection{Galois-equivariant multi-start with arbitrary selector (\S97)}
+\subsection{Arbitrary target selector}
 
-\begin{theorem}[Galois equivariance, \S97]\label{thm:galois-equiv}
-For every selector $S : \mathbb{C} \to \mathrm{Fin}\,p$, every $z \in \mathbb{C}$,
-and every $\varepsilon > 0$, the multi-start algorithm with target
-$\gamma_{S(z)}$ converges to $\gamma_{S(z)}$:
-\[
-  \forall n \geq N(\varepsilon): \quad
-  \big\|\sigma_{p,x}^n\big(\mathrm{seed}_{\gamma_{S(z)}, \varepsilon_{\mathrm{seed}}}(z)\big)
-        - \gamma_{S(z)}\big\| \leq \varepsilon.
-\]
+\begin{theorem}[Target selection]\label{thm:galois-equiv}
+For every function $S : \mathbb{C} \to \mathrm{Fin}\,p$, every
+$z \in \mathbb{C}$ and every $\varepsilon > 0$, the multi-start scheme
+with target $\gamma_{S(z)}$ converges to $\gamma_{S(z)}$ with an
+iteration count of the form of Theorem~\ref{thm:eff-kt}.
 \end{theorem}
 
-Three concrete selectors are implemented in Lean: \texttt{principal\_selector}
-(returns $0$ always), \texttt{nearest\_anchor\_selector} (Voronoï-nearest
-anchor), and \texttt{sector\_selector} (angular sector partition).
+Three selectors are implemented: constant (\texttt{principal\_selector}),
+Voronoï-nearest (\texttt{nearest\_anchor\_selector}), angular sector.
 
 %======================================================================
-\section{Pandrosion Solution Map: Measurability, Julia-null, Continuity}
+\section{Measurability and a.e.\ continuity of the solution map}
 \label{sec:analysis}
 %======================================================================
 
-\subsection{Borel-measurable Pandrosion solution map (\S102)}
+The \texttt{nearest\_anchor\_selector} of Section~\ref{sec:multistart}
+uses \texttt{Classical.choose} on \texttt{Finset.exists\_min\_image};
+this is not a priori measurable.
 
-The classical \texttt{nearest\_anchor\_selector} of \S97 is defined via
-\texttt{Classical.choose} on \texttt{Finset.exists\_min\_image} and is not
-a priori measurable. We construct a deterministic Borel-measurable variant.
-
-\begin{definition}[Borel selector, \S102]
+\begin{definition}[Borel selector]
 \[
   S_{\mathrm{Borel}}(\alpha, p, z) := \min{}'
-  \big(\,\mathrm{argmin}_{k \in \mathrm{Fin}\,p}\,\|\gamma_k - z\|\,\big),
+  \big(\,\mathrm{argmin}_{k \in \mathrm{Fin}\,p}\,\|\gamma_k - z\|\,\big).
 \]
-the smallest index in the Voronoï argmin set (well-defined by
-\texttt{Finset.exists\_min\_image}).
 \end{definition}
 
-\begin{theorem}[Borel measurability, \S102]
-The Borel selector $S_{\mathrm{Borel}}$ is a Borel-measurable function
-$\mathbb{C} \to \mathrm{Fin}\,p$. Consequently, the solution map
-$z \mapsto \gamma_{S_{\mathrm{Borel}}(z)}$ is Borel-measurable
+\begin{theorem}[Borel measurability]\label{thm:borel}
+The map $S_{\mathrm{Borel}}$ is Borel-measurable. Consequently the
+solution map $z \mapsto \gamma_{S_{\mathrm{Borel}}(z)}$ is Borel-measurable
 $\mathbb{C} \to \mathbb{C}$.
 \end{theorem}
 
-The proof shows that the level set
-$\{z : S_{\mathrm{Borel}}(z) = s\}$ is the intersection of a finite
-collection of closed half-planes
-$\{z : \|z - \gamma_s\| \leq \|z - \gamma_t\|\}$ together with finitely many
-open complements, and is therefore Borel.
+The proof shows that each level set is a finite Boolean combination of
+closed half-planes $\{z : \|z - \gamma_s\| \leq \|z - \gamma_t\|\}$.
 
-\subsection{Pandrosion Julia-null theorem (\S103)}
-
-\begin{definition}[Pandrosion Julia/Fatou]
-\[
-  \mathrm{Julia}(\alpha, p) := \mathrm{VoronoiBoundary}(\gamma_0, \dots, \gamma_{p-1}),
-  \qquad
-  \mathrm{Fatou}(\alpha, p) := \mathbb{C} \setminus \mathrm{Julia}(\alpha, p).
-\]
+\begin{definition}[Pandrosion Julia / Fatou set]
+$\mathrm{Julia}(\alpha, p) := \mathrm{VoronoiBoundary}(\gamma_0, \dots, \gamma_{p-1})$,
+$\mathrm{Fatou}(\alpha, p) := \mathbb{C} \setminus \mathrm{Julia}(\alpha, p)$.
 \end{definition}
 
-\begin{theorem}[Pandrosion Julia-null, \S103]\label{thm:julia-null}
-For every $\alpha \in \mathbb{C}^\ast$ and $p \geq 1$, the Pandrosion Julia
-set has Lebesgue measure zero:
-\[
-  \mathrm{vol}\big(\mathrm{Julia}(\alpha, p)\big) = 0.
-\]
-The Pandrosion Fatou set has full Lebesgue measure, and on it the
-multi-start target is uniquely determined.
+This is a chosen definition, not the classical Fatou-Julia set of
+$\sigma_{p,x}$. With this definition:
+
+\begin{theorem}[Julia set is Lebesgue-null]\label{thm:julia-null}
+$\mathrm{vol}\big(\mathrm{Julia}(\alpha, p)\big) = 0$.
+\end{theorem}
+
+\begin{theorem}[A.e.\ continuity]\label{thm:ae-continuous}
+The Borel solution map is continuous at every $z \in \mathrm{Fatou}(\alpha, p)$.
+Combined with Theorem~\ref{thm:julia-null}, it is continuous at
+Lebesgue-a.e.\ $z$.
 \end{theorem}
 
 \begin{figure}[H]
@@ -504,503 +480,413 @@ multi-start target is uniquely determined.
 \includegraphics[width=\textwidth]{fig04_voronoi_julia_null.png}
 \caption{Voronoï decomposition of $\mathbb{C}$ for cyclotomic anchors at
 $p = 4$ and $p = 7$, $x = 2$. Each colored region $V_k$ is the basin of
-attraction of $\gamma_k$ under the multi-start algorithm with
-\texttt{nearest\_anchor\_selector}. The red Voronoï frontier
-($\mathrm{Julia}(\alpha, p)$) is Lebesgue-null (\S103).}
+attraction of $\gamma_k$ under the selector. The red frontier is what
+we call the Pandrosion Julia set; it is Lebesgue-null.}
 \end{figure}
-
-\subsection{Continuity almost-everywhere (Luzin-style, \S105)}
-
-\begin{theorem}[A.e.~continuity, \S105]\label{thm:ae-continuous}
-The Borel solution map is continuous at every Fatou point. Combined with
-Theorem~\ref{thm:julia-null},
-\[
-  \forall^{\mathrm{a.e.}}\,z \in \mathbb{C}: \quad
-  z \mapsto \gamma_{S_{\mathrm{Borel}}(z)} \text{ is continuous at } z.
-\]
-\end{theorem}
-
-The proof shows that on the Fatou set the strict inequality
-$\|z - \gamma_{S(z)}\| < \|z - \gamma_t\|$ for $t \neq S(z)$ is preserved
-under small perturbations of $z$, so $S_{\mathrm{Borel}}$ is locally
-constant on Fatou. Locally constant maps to discrete targets are continuous.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig08_fatou_julia.png}
-\caption{Pandrosion Fatou-Julia decomposition at $(x, p) = (2, 4)$. Left:
-iteration count to convergence colors the Fatou set by basin geometry.
-Right: which cyclotomic anchor each $z_0$ converges to, with the colored
-Voronoï basins $V_k$ visible (\S102, \S103, \S105).}
+\caption{Left: Voronoï basins as the structural reference, computed
+from the nearest-anchor criterion only (no dynamics). Right: number
+of multi-start iterations needed to reach precision $10^{-8}$; it is
+bounded and essentially flat over the window, in line with
+Theorem~\ref{thm:eff-kt}.}
 \end{figure}
 
-\medskip
-\textbf{Trilogy.} Theorems~\ref{thm:multistart},~\ref{thm:julia-null},
-and~\ref{thm:ae-continuous} together provide the analytic characterization
-of the Pandrosion solution map: \emph{Borel-measurable everywhere,
-continuous almost-everywhere, with the exceptional set Lebesgue-null}.
-This is a Luzin-style result tailored to the Pandrosion framework.
+Together, Theorems~\ref{thm:multistart}, \ref{thm:borel},
+\ref{thm:julia-null} and~\ref{thm:ae-continuous} give the analytic
+character of the multi-start solution map in our framework:
+measurable everywhere, continuous on the Fatou set, with the complement
+Lebesgue-null.
 
 %======================================================================
-\section{Pandrosion Zeta Function and Spectral Capstone (\S106--\S111)}
+\section{Algebraic identities for the finite series $\zeta_P$}
 \label{sec:zeta}
 %======================================================================
 
-\subsection{Definition and basic properties}
+This section collects finite-sum identities about the derivative
+values at cyclotomic roots. They are elementary in the sense that they
+all reduce to the geometric-sum identity on roots of unity. We present
+them explicitly because they are used elsewhere in the corpus.
 
-For $P(z) = z^p - 1/x$ with cyclotomic roots $\alpha_k = \gamma_k$ and
-derivative $P^{\prime}(\alpha_k) = p \cdot \alpha_k^{p-1} = p / (x \cdot \alpha_k)$,
-the \emph{Pandrosion zeta function} is
+\subsection{Definition}
+
+For $P(z) = z^p - 1/x$, $\alpha_k = \gamma_k$, and
+$P^{\prime}(\alpha_k) = p \cdot \alpha_k^{p-1} = p/(x\,\alpha_k)$, put
 \begin{equation}\label{eq:pandrosion-zeta}
   \zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s}
-              = \sum_{k=1}^p \big(p \cdot \alpha_k^{p-1}\big)^{-s}.
+              = \sum_{k=1}^p (p \cdot \alpha_k^{p-1})^{-s}
 \end{equation}
-Equivalently, the \emph{spectral weight} at the $k$-th anchor is
-$\nu_k := 1/P^{\prime}(\alpha_k) = x \cdot \alpha_k / p$, and
-$\zeta_P(s) = \sum_k \nu_k^s$ for $s = 1$.
+and $\nu_k := 1/P^{\prime}(\alpha_k) = x \alpha_k / p$.
 
-\subsection{Vanishing identity and biorthogonality}
+\subsection{Finite identities}
 
-\begin{theorem}[Vanishing identity, \S106]\label{thm:zeta-vanish}
+\begin{proposition}[Vanishing identity]\label{thm:zeta-vanish}
 For $p \geq 2$,
-\[
-  \zeta_P(1) = \sum_{k=1}^p \frac{1}{P^{\prime}(\alpha_k)}
-             = \sum_{k=1}^p \frac{x \cdot \alpha_k}{p} = 0.
-\]
-\end{theorem}
+$\zeta_P(1) = \sum_{k=1}^p 1/P^{\prime}(\alpha_k) = \sum_{k=1}^p x \alpha_k / p = 0$.
+\end{proposition}
 
-\begin{theorem}[Higher vanishing biorthogonality, \S108]\label{thm:zeta-higher}
+\begin{proposition}[Higher vanishing / normalization]\label{thm:zeta-higher}
 For $p \geq 2$ and $0 \leq m \leq p - 2$,
-\[
-  \sum_{k=1}^p \frac{\alpha_k^m}{P^{\prime}(\alpha_k)} = 0.
-\]
-The normalization at $m = p - 1$ gives
-\[
-  \sum_{k=1}^p \frac{\alpha_k^{p-1}}{P^{\prime}(\alpha_k)}
-  = \sum_{k=1}^p \frac{1}{p} = 1.
-\]
-\end{theorem}
+$\sum_{k=1}^p \alpha_k^m / P^{\prime}(\alpha_k) = 0$.
+For $m = p-1$, $\sum_{k=1}^p \alpha_k^{p-1} / P^{\prime}(\alpha_k) = 1$.
+\end{proposition}
 
-These $d - 1 = p - 1$ vanishing relations together with the normalization
-constitute the \emph{biorthogonality system} of the cyclotomic family:
-the vectors $(\alpha_1^m, \dots, \alpha_p^m)$ for $m = 0, \dots, p-2$ are
-all orthogonal to $(1/P^{\prime}(\alpha_1), \dots, 1/P^{\prime}(\alpha_p))$.
+\begin{proposition}[Product formula]\label{thm:spectral-det}
+For $x \neq 0$, $p \geq 1$, $\alpha^p = 1/x$,
+$\prod_{k=1}^p P^{\prime}(\alpha_k) = (-1)^{p-1} \cdot p^p / x^{p-1}$.
+\end{proposition}
+
+All three reduce to the geometric-sum identity
+$\sum_k \omega^{ks} = 0$ for $s$ not a multiple of $p$, with
+$\omega = e^{2\pi i/p}$. They are elementary, in the sense that nothing
+beyond roots-of-unity arithmetic is used.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig09_spectral_balance.png}
-\caption{Left: spectral weights $\nu_k$ as oriented vectors in $\mathbb{C}$
-for $(x, p) = (2, 5)$; their head-to-tail sum closes back to the origin,
-visualizing $\sum_k \nu_k = 0$. Right: $|\sum_k \nu_k|$ at machine precision
-across a grid of $(x, p)$ values, all numerically zero (\S106 vanishing,
-\S122 Vieta).}
+\caption{Left: the $\nu_k$ as oriented vectors in $\mathbb{C}$ for
+$(x, p) = (2, 5)$; the head-to-tail sum closes back to the origin,
+visualising $\sum_k \nu_k = 0$. Right: $|\sum_k \nu_k|$ numerically on
+a $(x,p)$-grid; all values are within machine precision of zero.}
 \end{figure}
-
-\subsection{Spectral determinant in closed form (\S107)}
-
-\begin{theorem}[Pandrosion spectral determinant, \S107]\label{thm:spectral-det}
-For $x \neq 0$, $p \geq 1$, and $\alpha^p = 1/x$,
-\[
-  \prod_{k=1}^p P^{\prime}(\alpha_k) = (-1)^{p-1} \cdot \frac{p^p}{x^{p-1}}.
-\]
-\end{theorem}
-
-The proof reduces to two cyclotomic identities:
-\[
-  \prod_{k=0}^{p-1} \alpha_k = (-1)^{p-1} \cdot \alpha^p = (-1)^{p-1}/x,
-  \qquad
-  \prod_k P^{\prime}(\alpha_k) = p^p \cdot \big(\!\textstyle{\prod}_k \alpha_k\big)^{p-1}
-  = (-1)^{p-1} \cdot p^p / x^{p-1}.
-\]
-This is the Pandrosion analogue of $\exp(-\zeta^{\prime}(0)) = \sqrt{2\pi}$
-for the Riemann zeta: the discriminant of $z^p - 1/x$ is encoded in the
-exponential of the derivative of $\zeta_P$ at zero.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig06_spectral_determinant.png}
-\caption{Left: numerical values of $\prod_k P^{\prime}(\alpha_k)$ for $p \in \{2, \dots, 7\}$
-and $x \in \{1, 2, 3, 5\}$, matching the closed-form
-$(-1)^{p-1} p^p / x^{p-1}$ exactly. Right: log-scale growth of
-$|\prod_k P^{\prime}(\alpha_k)|$ in $p$ for fixed $x$ (\S107).}
+\caption{Numerical values of $\prod_k P^{\prime}(\alpha_k)$ matching the
+closed-form of Proposition~\ref{thm:spectral-det} exactly; and its
+log-scale growth in $p$ for fixed $x$.}
 \end{figure}
 
-\subsection{Pandrosion-Riemann analogy capstone (\S109)}
+\subsection{A finite analog of a Riemann identity, carefully scoped}
 
-\begin{theorem}[Pandrosion-Riemann analogy, \S109]
-For $p \geq 2$, $x \neq 0$, $\alpha^p = 1/x$, the five conjuncts
+\begin{proposition}[Integer zeros of $\zeta_P$]\label{thm:zeta-RH}
+For $p \geq 2$, $x \neq 0$, $\alpha^p = 1/x$, and $s \in \mathbb{Z}$ with
+$1 \leq s \leq p-1$,
 \[
-  \zeta_P(0) = p, \quad
-  \zeta_P(1) = 0, \quad
-  \sum_k \frac{\alpha_k^m}{P^{\prime}(\alpha_k)} = 0 \,(m \leq p-2), \quad
-  \sum_k \frac{\alpha_k^{p-1}}{P^{\prime}(\alpha_k)} = 1, \quad
-  \prod_k P^{\prime}(\alpha_k) = (-1)^{p-1} \frac{p^p}{x^{p-1}}
+  \zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s} = 0.
 \]
-hold simultaneously.
-\end{theorem}
+\end{proposition}
+
+This proposition is elementary: with the same $\omega = e^{2\pi i / p}$,
+$\zeta_P(s) = (x/p)^s \sum_k \alpha_k^s$ vanishes because
+$\sum_{k=0}^{p-1} (\omega^s)^k = 0$ when $p \nmid s$. We record this
+under the suggestive label ``integer zeros of $\zeta_P$'' in analogy
+with the trivial zeros of the Riemann zeta function, but we do
+\emph{not} suggest any deeper relation to the classical Riemann
+Hypothesis. The Pandrosion series is a finite sum of $p$ complex
+numbers; its zeros at integer arguments are an arithmetic statement on
+the cyclotomic family, not a transcendental one. The analogy table
+below is given for exposition, and we do not extract any quantitative
+consequence from it.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{fig05_riemann_analogy.png}
-\caption{Pandrosion-Riemann analogy table (\S109). The finite series
-$\zeta_P(s)$ admits an explicit Riemann-style structure, with all five
-analogy rows formally proven in Lean.}
+\caption{Correspondence table between the Riemann zeta function and
+the finite Pandrosion series $\zeta_P$. The left column records
+classical facts; the right column records the identities of
+Section~\ref{sec:zeta}. The two columns are \emph{structurally} similar;
+no substantial number-theoretic content is claimed.}
 \end{figure}
 
-\subsection{Pandrosion zeta finite Riemann hypothesis (\S116)}
+\subsection{Energy variant}
 
-\begin{theorem}[Integer zeros of $\zeta_P$, \S116]\label{thm:zeta-RH}
-For $p \geq 2$, $x \neq 0$, $\alpha^p = 1/x$, and any integer $s$ with
-$1 \leq s \leq p - 1$,
-\[
-  \zeta_P(s) := \sum_{k=1}^p \frac{1}{P^{\prime}(\alpha_k)^s} = 0.
-\]
-\end{theorem}
-
-This is the \emph{finite analog} of the Riemann Hypothesis: the zeros of
-$\zeta_P$ at positive integers are characterized by the arithmetic condition
-$p \nmid s$. The proof uses the formula
-$\zeta_P(s) = (x/p)^s \cdot \sum_k \alpha_k^s$ and the geometric-sum
-vanishing $\sum_k (\omega^s)^k = 0$ for $\omega^s \neq 1$.
-
-\subsection{Pandrosion energy zeta function (\S111)}
-
-The \emph{energy zeta} of the PDF~\cite{pandrosion-zeta-pdf} is
-\[
-  Z_P(s) := \sum_k E_P(\alpha_k)^{-s},
-  \qquad E_P(\alpha_k) := P^{\prime}(\alpha_k)^2.
-\]
-Special values:
-\[
-  Z_P(0) = p,
-  \qquad Z_P(1) = 0 \text{ for } p \geq 3,
-  \qquad Z_P(-1) = 0 \text{ for } p \geq 3.
-\]
+One can also write $Z_P(s) := \sum_k E_P(\alpha_k)^{-s}$ with
+$E_P(\alpha_k) = P^{\prime}(\alpha_k)^2$. Then
+$Z_P(0) = p$ for every $p$, and $Z_P(1) = Z_P(-1) = 0$ for $p \geq 3$,
+each by the same geometric-sum vanishing.
 
 %======================================================================
-\section{Aitken-Steffensen Acceleration and Schwarz Lemma (\S113)}
+\section{Aitken-Steffensen acceleration and a Schwarz-type bound}
 \label{sec:aitken-schwarz}
 %======================================================================
 
-\subsection{Aitken $\Delta^2$ acceleration (Aitken 1926, Steffensen 1933)}
+\subsection{Aitken $\Delta^2$ on geometric sequences}
 
-\begin{theorem}[Aitken $\Delta^2$ exact for geometric sequences, \S113]
-For any geometric sequence $s_n = s^\ast + C \cdot r^n$ with $r \neq 0$,
-$r \neq 1$, $C \neq 0$,
-\[
-  s_n - \frac{(s_{n+1} - s_n)^2}{s_{n+2} - 2 s_{n+1} + s_n} = s^\ast
-  \quad \text{for every } n.
-\]
-\end{theorem}
+\begin{proposition}[Aitken $\Delta^2$ on geometric sequences]
+For any geometric sequence $s_n = s^\ast + C \cdot r^n$ with $r \neq 0, 1$
+and $C \neq 0$,
+$s_n - (s_{n+1} - s_n)^2 / (s_{n+2} - 2 s_{n+1} + s_n) = s^\ast$
+for every $n$.
+\end{proposition}
 
-This is the foundational identity explaining why the Pandrosion-Steffensen
-$\sigma = \mathrm{Aitken}(h)$ accelerates the linear convergence of $h$
-(rate $\lambda = h^{\prime}(\alpha)$) into the quadratic convergence of $\sigma$.
+This is the classical Aitken / Steffensen identity; it is formalized
+here as the base case of the acceleration mechanism behind
+$\sigma = \mathrm{Aitken}(h)$. It is not new mathematics.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig07_aitken_acceleration.png}
-\caption{Left: error decay for a geometric sequence $(s_n)$ converging
-linearly to $s^\ast$ (red), and the Aitken-accelerated sequence $(t_n)$
-that reaches machine precision in one step (blue). Right: Pandrosion $h$
-iteration (linear, red) vs $\sigma = \mathrm{Aitken}(h)$ (quadratic, blue)
-for $(x, p) = (2, 3)$, $z_0 = 1$. The acceleration is the foundational
-mechanism of Steffensen's method (\S113).}
+\caption{Left: a linearly convergent geometric sequence and its
+$\Delta^2$-accelerated version, which collapses to $s^\ast$ at machine
+precision. Right: $h$ iteration (linearly convergent) vs
+$\sigma = \mathrm{Aitken}(h)$ (quadratically convergent) for
+$(x, p) = (2, 3)$, $z_0 = 1$.}
 \end{figure}
 
-\subsection{Schwarz Lemma at super-attractive fixed point (\S113)}
+\subsection{A quadratic bound at the super-attractive fixed point}
 
-\begin{theorem}[Schwarz at super-attractive fixed point, \S113]
-For $\sigma_{p,x}$ at a super-attractive fixed point $\alpha$ (where
+\begin{proposition}[Quadratic local bound]
+At a super-attractive fixed point $\alpha$ of $\sigma_{p,x}$ (where
 $\sigma_{p,x}(\alpha) = \alpha$ and $\sigma_{p,x}^{\prime}(\alpha) = 0$),
 \[
   \|\sigma_{p,x}(z) - \alpha\| \leq K_\alpha \cdot \|z - \alpha\|^2
-  \quad \text{on } B(\alpha, R_\alpha),
+  \qquad \text{on } B(\alpha, R_\alpha),
 \]
-where $K_\alpha, R_\alpha$ are the explicit constants of \S33 satisfying
-$K_\alpha \cdot R_\alpha \leq 1/2$.
-\end{theorem}
+with $K_\alpha, R_\alpha$ the explicit constants of the corpus,
+satisfying $K_\alpha \cdot R_\alpha \leq 1/2$.
+\end{proposition}
 
-This is the $\sigma$-analog of the Schwarz Lemma at a multiplicity-2 zero:
-$f : \mathbb{D} \to \mathbb{D}$ holomorphic with $f(0) = 0$, $f^{\prime}(0) = 0$
-implies $|f(z)| \leq |z|^2$.
+This is a local bound of the Schwarz-Pick type for holomorphic maps
+with a double zero at the fixed point. The quadratic bound itself is
+what drives Theorem~\ref{thm:eff-kt}.
 
 %======================================================================
-\section{Classical Theorems via Multi-Start (\S112--\S122)}
+\section{Pandrosion specializations of classical theorems}
 \label{sec:classical}
 %======================================================================
 
-The Pandrosion multi-start framework provides a uniform setting in which
-several classical theorems can be specialized and proven. The following
-table summarizes the corpus's coverage.
+The corpus contains Lean formalizations of a number of classical
+theorems, \emph{specialized} to the Pandrosion setting. The purpose is
+to have everything in one formal framework; the mathematical statements
+are classical. The following table summarizes what is formalized where.
 
 \begin{center}
 \small
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}p{0.12\textwidth}p{0.38\textwidth}p{0.45\textwidth}@{}}
 \toprule
-\textbf{Module} & \textbf{Theorem} & \textbf{Year} & \textbf{Multi-start link} \\
+\textbf{Module} & \textbf{Classical theorem (specialized)} & \textbf{Role in the Pandrosion framework} \\
 \midrule
-\S112 & Banach Fixed-Point + FTA Gauss & 1922 + 1799 & $\sigma$ acyclic on multi-start orbits \\
-\S113 & Aitken $\Delta^2$ + Schwarz Lemma & 1926/1933 + 1890 & Foundational accelerator \\
-\S114 & Kung-Traub at $c=3$ & 1974 & Attainability witness $E(4,3) = 2^{2/3}$ \\
-\S115 & Smale's 17th (restricted) & 1998 & $\mathcal{O}(\log\log(1/\varepsilon))$ for $z^p = x$ \\
-\S116 & Riemann Hypothesis (finite analog) & 1859 & $\zeta_P(s) = 0 \iff p \nmid s$ \\
-\S117 & Aberth-Ehrlich simultaneous iteration & 1967/1973 & Multi-start = Aberth for $z^p = x$ \\
-\S118 & Kronecker's theorem & 1857 & Cyclotomic anchors with $|\alpha| = 1$ \\
-\S119 & Galois cyclic action & 1832 & $\omega \cdot \gamma_k = \gamma_{k+1}$ \\
-\S120 & McMullen barrier circumvention & 1987 & $\alpha$-dependent seed bypasses Julia \\
-\S121 & Cardano-Tartaglia cubic & 1545 & $\gamma_k = \alpha \omega^k$ at $p = 3$ \\
-\S122 & Vieta's formulas & 1591 & $e_1 = 0$, $e_p = (-1)^{p-1} x$ \\
+\S112 & Banach fixed point (1922); FTA (Gauss 1799) & No-cycle on multi-start orbits; $z^p = x$ has $p$ explicit roots. \\
+\S113 & Aitken-Steffensen (1926/1933); Schwarz (1890) & Acceleration identity; quadratic local bound. \\
+\S114 & Kung-Traub 1974 attainability at $c=3$ & Efficiency $E(4, 3) = 2^{2/3}$ is reached. \\
+\S115 & (See Section \ref{sec:open-problems}.) & Restricted to $z^p = x$. \\
+\S117 & Aberth-Ehrlich (1967/1973) & Multi-start realizes their scheme for $z^p = x$. \\
+\S118 & Kronecker (1857) & Applied to cyclotomic anchors with $|\alpha| = 1$. \\
+\S119 & Galois (1832) cyclic action & $\omega \cdot \gamma_k = \gamma_{(k+1) \bmod p}$. \\
+\S120 & McMullen (1987) (See Section \ref{sec:open-problems}.) & Multi-start avoids the obstruction by $\alpha$-dependent seed. \\
+\S121 & Cardano-Tartaglia (1545) & $\gamma_k = \alpha \omega^k$ for $p = 3$. \\
+\S122 & Vieta (1591) & $e_1 = 0$, $e_p = (-1)^{p-1} x$. \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\subsection{Multi-start orbit acyclicity (\S112, Banach 1922)}
+We stress: none of these are new results. Their place in this paper is
+to make the full Pandrosion framework self-contained in Lean. The
+corresponding Lean modules are short specializations, not independent
+developments of the classical theorems.
 
-\begin{theorem}[Multi-start acyclicity, \S112]
-For every $(x, p, \alpha)$ Pandrosion-valid and every seed
-$\mathrm{seed} \in B(\alpha, R_\alpha/2)$, the orbit $(\sigma^n(\mathrm{seed}))_n$
-contains no non-trivial cycle: if $\sigma^n(\mathrm{seed}) = \sigma^m(\mathrm{seed})$
-for $n < m$, then $\sigma^n(\mathrm{seed}) = \alpha$.
+A representative example.
+
+\begin{theorem}[Multi-start orbit has no non-trivial cycle]
+For every $(x, p, \alpha)$ in the hypotheses and every seed
+$\mathrm{seed} \in B(\alpha, R_\alpha/2)$, the orbit
+$(\sigma_{p,x}^n(\mathrm{seed}))_n$ has no non-trivial cycle: if
+$\sigma_{p,x}^n(\mathrm{seed}) = \sigma_{p,x}^m(\mathrm{seed})$ with
+$n < m$, then $\sigma_{p,x}^n(\mathrm{seed}) = \alpha$.
 \end{theorem}
 
-This generalizes \texttt{Legacy.NoCycles.no\_periodic\_orbit} (real case)
-to the complex multi-start setting via the Banach Fixed-Point Theorem
-(1922). The proof shows $\sigma$ is a $1/4$-contraction on
-$B(\alpha, R_\alpha/2)$ via the super-attractive bound
-$K_\alpha \cdot R_\alpha \leq 1/2$.
-
-\subsection{FTA via Pandrosion (\S112, Gauss 1799)}
-
-\begin{theorem}[FTA specialization, \S112]
-For $x \in \mathbb{C}^\ast$, $p \geq 1$, and $\alpha^p = x$, the polynomial
-$z^p - x$ has exactly $p$ distinct roots in $\mathbb{C}$, given explicitly by
-$\gamma_k = \alpha \cdot e^{2\pi i k/p}$ for $k \in \mathrm{Fin}\,p$.
-\end{theorem}
-
-The Pandrosion multi-start algorithm provides the constructive content of
-Gauss's 1799 Fundamental Theorem of Algebra, specialized to the polynomial
-$z^p - x$: not only does the polynomial have $p$ roots (Gauss), but the
-roots are explicitly given by the cyclotomic family and algorithmically
-accessible from any starting point $z \in \mathbb{C}$ via multi-start.
-
-\subsection{McMullen 1987 circumvention (\S120)}
-
-McMullen's 1987 \emph{Annals of Mathematics} paper proves that for any
-purely iterative scheme $\psi : \widehat{\mathbb{C}} \to \widehat{\mathbb{C}}$
-of bounded rational degree, no convergence to roots of $z^p - 1$ for
-\emph{all} starting points $z_0$ is possible when $p \geq 4$. The Julia
-set of any such $\psi$ has positive Lebesgue measure.
-
-\begin{theorem}[Pandrosion circumvents McMullen, \S120]
-The multi-start algorithm achieves universal convergence
-\[
-  \forall\,z \in \mathbb{C}, \forall\,\varepsilon > 0:
-  \exists \varepsilon_{\mathrm{seed}}, N: \forall n \geq N,\
-  \|\sigma^n(\mathrm{seed}_{\alpha,\varepsilon_{\mathrm{seed}}}(z)) - \alpha\| \leq \varepsilon.
-\]
-This is forbidden by McMullen 1987 for purely-iterative schemes. The
-multi-start circumvents the barrier precisely because the seed is
-$\alpha$-dependent (not purely iterative).
-\end{theorem}
-
-The McMullen 1987 theorem itself is taken in Lean as a named \texttt{Prop}
-(its formal proof requires Fatou-Julia complex dynamics, not formalized in
-Mathlib v4.7.0). The circumvention by multi-start is concrete.
+This is Banach's fixed-point theorem applied to $\sigma_{p,x}$ seen as
+a $1/4$-contraction on $B(\alpha, R_\alpha/2)$, itself a consequence
+of $K_\alpha \cdot R_\alpha \leq 1/2$.
 
 %======================================================================
-\section{Honest Engagement with Open Problems (\S123)}
+\section{Open problems, partial and conditional results}
 \label{sec:open-problems}
 %======================================================================
 
-The corpus engages honestly with four classical open or hard problems and
-explicitly identifies what is provable versus what remains open.
+This section records four classical open or hard problems where the
+corpus offers partial or restricted results. We describe carefully what
+is proven, what is only conditional, and what remains out of reach.
 
 \subsection{Kung-Traub upper bound for $c \geq 3$ (open since 1974)}
 
-The conjecture $q \leq 2^{c-1}$ is proven for $c = 2$ (\S29) and the
-attainability $q = 4$ at $c = 3$ is witnessed in \S114 via Pandrosion's
-extension. The general upper bound for $c \geq 3$ remains \emph{open} in
-the sense of Kung-Traub 1974. Our \texttt{DerivativeFreeMethod} structure
-encodes the bound as a compliance field; this is a structural reduction,
-not a proof of the underlying conjecture.
+The conjecture $q \leq 2^{c-1}$ is proven for $c = 2$. Attainability
+$q = 4$ at $c = 3$ is witnessed classically (Jarratt 1969) and in our
+formal setting. The upper bound for $c \geq 3$ is open.
+
+\smallskip
+
+\textbf{What the corpus provides.} A structural reduction: every
+\texttt{DerivativeFreeMethod} in the corpus \emph{by construction}
+carries the compliance field $q \leq 2^{c-1}$. This is \emph{not} a
+proof of the Kung-Traub conjecture; it is a compliance interface for
+instances of \texttt{DerivativeFreeMethod}. The conjecture itself is
+restated as a named \texttt{Prop}.
 
 \subsection{McMullen 1987 (theorem, not formalized in Lean)}
 
-McMullen's barrier theorem is a classical result of complex dynamics, but
-its formalization in Lean would require the Fatou-Julia framework
-(post-critically-finite rational maps, Julia-set Lebesgue-measure
-arguments) which is not present in Mathlib v4.7.0. We state the barrier
-as a named \texttt{Prop} and prove the Pandrosion circumvention concretely.
+McMullen's barrier is a classical theorem. A full formal proof in Lean
+requires Fatou--Julia and post-critically-finite complex-dynamic tools
+that are not present in Mathlib v4.7.0.
+
+\smallskip
+
+\textbf{What the corpus provides.} The statement is recorded as a named
+\texttt{Prop}. Separately, the multi-start scheme is proven to be
+non-purely-iterative (the seed depends on $\alpha$), and to converge
+universally in that setting. This does not reproduce McMullen's
+impossibility result; it shows that our scheme is outside of its
+hypotheses.
 
 \subsection{Lehmer's conjecture (open since 1933)}
 
-For an algebraic integer $\beta$ that is not a root of unity, Lehmer's
-conjecture posits $M(\beta) \geq 1.17628\ldots$ (Lehmer's constant).
+Lehmer 1933 posits $M(\beta) \geq 1.17628\ldots$ for every
+algebraic integer $\beta$ not a root of unity. This is open.
 
-\begin{theorem}[Lehmer for Pandrosion $\beta$, \S123]
-For $x \in \mathbb{N}$ with $x \geq 2$ and $p \geq 2$, the algebraic
-integer $\beta := x \cdot \alpha$ (where $\alpha^p = 1/x$) satisfies
-$\beta^p = x^{p-1}$ and is therefore an algebraic integer with minimal
-polynomial dividing $z^p - x^{p-1}$. Its Mahler measure satisfies
-\[
-  M(\beta) = x^{p-1} \geq 2 > 1.17628\ldots = \text{(Lehmer's constant)}.
-\]
-\end{theorem}
+\smallskip
 
-This verifies Lehmer's conjecture trivially on the specific Pandrosion
-family. The conjecture for general algebraic integers remains \emph{open}
-since 1933.
+\textbf{What the corpus provides.} For the specific family
+$\beta := x \cdot \alpha$ with $x \in \mathbb{N}_{\geq 2}$ and
+$\alpha^p = 1/x$, one has $\beta^p = x^{p-1}$ and hence $\beta$ is
+an algebraic integer whose Mahler measure satisfies
+$M(\beta) = x^{p-1} \geq 2 > 1.17628\ldots$
 
-\subsection{Smale's 17th problem (deterministic general open)}
+\smallskip
 
-For $z^p = x$ specifically, Pandrosion multi-start gives the deterministic
-$\mathcal{O}(\log\log(1/\varepsilon))$ resolution (\S115), strictly better
-than the poly-log demanded by Smale~17. The general deterministic case for
-arbitrary polynomials remains \emph{open}; Bürgisser-Cucker (Annals of
-Math 2011) resolved the average-case probabilistic version.
+This is an observation, not progress on Lehmer: we are far from the
+extremal regime where the conjecture is hard.
 
-\subsection{Honest summary}
+\subsection{Smale's~17th problem (partly open)}
 
-\begin{theorem}[Open problems status, \S123]
-The Pandrosion multi-start framework provides:
-\begin{itemize}
-  \item Kung-Traub upper bound $c=3$: structural compliance for our
-        \texttt{DerivativeFreeMethod}; general open.
-  \item McMullen 1987: concrete circumvention; full theorem not formalized.
-  \item Lehmer 1933: trivially satisfied on Pandrosion $\beta = x \cdot \alpha$;
-        general open.
-  \item Smale 17: deterministic loglog resolution for $z^p = x$; general open.
-\end{itemize}
-The framework does not resolve any of the underlying open conjectures at
-their full generality.
-\end{theorem}
+Smale's~17th problem asks for a deterministic algorithm of
+poly-logarithmic average complexity for polynomial root-finding
+\emph{of arbitrary polynomials}. Bürgisser-Cucker (Annals of Math
+2011) solved the average-case probabilistic version. The deterministic
+general case is open.
+
+\smallskip
+
+\textbf{What the corpus provides.} For the restricted family $z^p = x$,
+the multi-start scheme is a deterministic algorithm of complexity
+$\mathcal{O}(\log\log(1/\varepsilon))$. This is a result on a very
+specific polynomial family; it is \emph{not} a deterministic solution
+of Smale's question on general polynomials. The two settings are not
+directly comparable.
+
+\subsection{Summary}
+
+No claim is made that any of the four problems above is solved. What
+the Lean corpus provides on each is restricted or conditional, as
+stated.
 
 %======================================================================
-\section{Module Structure of the Lean Corpus}
+\section{Structure of the Lean corpus}
 \label{sec:modules}
 %======================================================================
 
-The 121-module Lean corpus is organized in dependency layers:
+The 121-module corpus is organised in dependency layers:
+
 \begin{itemize}
   \item \textbf{Foundations} (\S1--\S30): geometric sums, fixed-point
-        characterization, abstract Aitken-Steffensen, Voronoï basins,
-        cyclotomic anchors, Kung-Traub framework.
-  \item \textbf{Core spine} (\S31--\S94): explicit super-attractive rate,
-        global loglog, real-line $p = 2$ unconditional discharge.
-  \item \textbf{Multi-start} (\S95--\S101): universal convergence, Galois
-        equivariance, Niveau 5 resolution, Master Total Effective.
-  \item \textbf{Measure / Topology} (\S102--\S105): Borel measurability,
-        Julia-null, Luzin-style continuity.
-  \item \textbf{Spectral} (\S106--\S111): Pandrosion zeta, vanishing,
-        higher-vanishing biorthogonality, spectral determinant,
-        energy zeta, Riemann analogy.
-  \item \textbf{Capstones} (\S100, \S110): Master Total (12 conjuncts),
-        Ultimate Grand Master (17 conjuncts).
-  \item \textbf{Classical theorems} (\S112--\S122): eleven historical
-        theorems via multi-start.
-  \item \textbf{Open problems} (\S123): honest engagement.
+        characterization, abstract Aitken-Steffensen framework,
+        Voronoï basins, cyclotomic anchor definitions, Kung-Traub
+        interface.
+  \item \textbf{Core spine} (\S31--\S94): explicit super-attractive
+        rate, global loglog convergence, real-line $p = 2$
+        unconditional discharge.
+  \item \textbf{Multi-start} (\S95--\S101): universal convergence,
+        target selection, Niveau~5 resolution, explicit iteration
+        count.
+  \item \textbf{Measure/topology} (\S102--\S105): Borel measurability,
+        Voronoï frontier Lebesgue-null, a.e.\ continuity.
+  \item \textbf{Finite-zeta identities} (\S106--\S111): the identities
+        of Section~\ref{sec:zeta}.
+  \item \textbf{Classical specializations} (\S112--\S122): as listed
+        in Section~\ref{sec:classical}.
+  \item \textbf{Open-problem engagements} (\S123): as listed in
+        Section~\ref{sec:open-problems}.
 \end{itemize}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig10_module_graph.png}
-\caption{Pandrosion-Steffensen Lean 4 corpus structure, from foundations
-through measure-theoretic and spectral capstones to publication. All 121
-modules audit clean: dependency closure reduces to the Lean whitelist
-$\{\mathtt{propext},\,\mathtt{Classical.choice},\,\mathtt{Quot.sound}\}$.}
+\caption{Dependency structure of the Lean corpus. The dependency
+closure of every load-bearing theorem reduces to the Lean whitelist
+$\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$.}
 \end{figure}
 
 %======================================================================
-\section{Reproducibility and Tooling}
+\section{Reproducibility}
 \label{sec:reproducibility}
 %======================================================================
 
-The complete Lean source lives at
-\url{github.com/ivan-fr/poussiere_de_x} (\texttt{lean/Pandrosion/Core/*.lean},
-\texttt{lean/Pandrosion/Legacy/*.lean}). The development targets Lean~4
-with Mathlib v4.7.0 and is built with a Docker-based incremental pipeline:
+The Lean source lives at
+\url{github.com/ivan-fr/poussiere_de_x}. It targets Lean~4 with
+Mathlib v4.7.0 and is built with
 \begin{lstlisting}[caption={Incremental build command}, language=lean]
 bash scripts/lean-incremental.sh
 \end{lstlisting}
-The full 121-module corpus compiles in approximately 60--90 seconds on a
-modern laptop. Per-module axiom auditing is performed via:
-\begin{lstlisting}[caption={Axiom audit}, language=lean]
-echo '#print axioms Pandrosion.<theorem-name>' | \
-  docker compose run --rm lean-incremental sh -c "lake env lean /dev/stdin"
-\end{lstlisting}
+The 121-module corpus compiles in about 60--90 seconds on a modern
+laptop. Per-theorem axiom auditing is available via \texttt{\#print axioms}.
 
-The Python figures of this paper are reproducible from
-\texttt{latex/figures\_pandrosion.py} (requires \texttt{numpy},
-\texttt{matplotlib}, \texttt{scipy}). All numerical verifications referenced
-in the text live in \texttt{/tmp/*\_verify.py} scripts (multi-start
-convergence, Cardano formula, Vieta identities, spectral determinant,
-energy zeta values, etc.).
+Every figure in this paper is reproducible from
+\texttt{latex/figures\_pandrosion.py} (dependencies:
+\texttt{numpy}, \texttt{matplotlib}, \texttt{scipy}).
 
 %======================================================================
-\section{Conclusion and Roadmap}
+\section{Conclusion}
 \label{sec:conclusion}
 %======================================================================
 
-This paper documents 121 Lean 4 modules formalizing the Pandrosion-Steffensen
-multi-start algorithm for $z^p = x$, together with its analytical and
-spectral extensions. The corpus's main contributions are:
+What this paper reports, concretely, is a Lean 4 development built
+around the multi-start Pandrosion-Steffensen iteration for $z^p = x$,
+together with the following ingredients:
 \begin{enumerate}
-  \item The first formally verified universal multi-start algorithm with
-        explicit closed-form complexity at the Kung-Traub optimal rate.
-  \item The first formal resolution of a Pandrosion-family historical
-        conjecture (Niveau 5 strict via multi-start).
-  \item A complete Luzin-style analytical characterization (measurability +
-        Julia-null + a.e.~continuity) of the Pandrosion solution map.
-  \item The Pandrosion zeta function as a Riemann-style spectral object
-        with explicit vanishing identities, biorthogonality, and a
-        closed-form spectral determinant.
-  \item Eleven classical theorems specialized via the multi-start framework
-        and four open problems engaged honestly.
+  \item a universal convergence theorem for the multi-start scheme
+        with an explicit closed-form iteration count
+        (Theorems~\ref{thm:multistart}, \ref{thm:eff-kt});
+  \item a formal resolution of the Pandrosion ``Niveau~5'' conjecture
+        in its multi-start formulation (Theorem~\ref{thm:niveau5});
+  \item a Borel-measurability and a.e.-continuity analysis of the
+        induced solution map (Theorems~\ref{thm:borel}--\ref{thm:ae-continuous});
+  \item a set of elementary identities for the finite series
+        $\zeta_P(s) := \sum_k P^{\prime}(\alpha_k)^{-s}$
+        (Section~\ref{sec:zeta});
+  \item Lean specializations of classical theorems to the Pandrosion
+        setting (Section~\ref{sec:classical});
+  \item restricted or conditional engagements with four classical open
+        problems (Section~\ref{sec:open-problems}).
 \end{enumerate}
 
-The paper makes no claim of resolving any long-standing open conjecture at
-full generality. The genuinely new content is concentrated in the multi-start
-universal theorem (\S95), the Niveau 5 resolution (\S99), the Effective
-Kung-Traub closed-form count (\S98), the Luzin-style analytical trilogy
-(\S102--\S105), and the Pandrosion zeta framework (\S106--\S111).
+The paper does not claim progress on the classical open conjectures
+themselves at their full generality. The main value of the corpus is
+as a self-contained Lean development of a multi-start root-finding
+scheme and its spectral identities.
 
-\subsection*{Roadmap}
+\subsection*{Future directions}
 
-Future directions where Pandrosion multi-start may contribute:
-\begin{itemize}
-  \item Extension to non-cyclotomic anchor families and general polynomial
-        root-finding.
-  \item Quantitative bounds for Mahler measure on cyclotomic-related
-        algebraic integer families.
-  \item Formalization of Fatou-Julia in Mathlib enabling a full McMullen 1987
-        proof.
-  \item Restricted Smale 17 deterministic results for sparse polynomial
-        families.
-\end{itemize}
+Natural extensions are: non-cyclotomic anchor families (general
+polynomials); a formalization of Fatou-Julia in Mathlib (which would
+enable a proper formalization of McMullen's 1987 theorem);
+quantitative bounds on Mahler measure for cyclotomic-related families
+(towards weak forms of Lehmer-type statements). None of these are
+attempted in the present paper.
 
-\bigskip
 \begin{thebibliography}{99}
 \bibitem{leanprover} de Moura, L., Ullrich, S., \emph{The Lean 4 Theorem Prover and Programming Language}, CADE-28, Springer LNCS (2021).
 \bibitem{mathlib} The Mathlib Community, \emph{Mathlib: A unified library of mathematics formalized}, \url{github.com/leanprover-community/mathlib4}.
-\bibitem{cardano} Cardano, G., \emph{Ars Magna} (1545), Cap.~XI: solution of the cubic.
-\bibitem{vieta} Viète, F., \emph{Opera Mathematica} (1591): symmetric polynomial formulas.
-\bibitem{gauss} Gauss, C.F., \emph{Demonstratio nova theorematis omnem functionem algebraicam rationalem integram unius variabilis in factores reales primi vel secundi gradus resolvi posse} (Thesis, 1799).
+\bibitem{cardano} Cardano, G., \emph{Ars Magna} (1545), Cap.~XI.
+\bibitem{vieta} Viète, F., \emph{Opera Mathematica} (1591).
+\bibitem{gauss} Gauss, C.F., Thesis on the fundamental theorem of algebra (1799).
 \bibitem{galois} Galois, É., \emph{Mémoire sur les conditions de résolubilité des équations par radicaux} (1832, posth. Liouville 1846).
-\bibitem{kronecker} Kronecker, L., \emph{Über die Vorlesung im Wintersemester 1857-58}, Berlin Akademie (1857).
+\bibitem{kronecker} Kronecker, L., Berlin Akademie (1857).
 \bibitem{riemann} Riemann, B., \emph{Über die Anzahl der Primzahlen unter einer gegebenen Grösse} (1859).
-\bibitem{schwarz} Schwarz, H.A., \emph{Über einige Abbildungsaufgaben}, J.~Reine Angew.~Math. \textbf{70} (1869), 105--120; Pick, G., \emph{Über eine Eigenschaft der konformen Abbildung kreisförmiger Bereiche} (1916).
-\bibitem{aitken} Aitken, A.C., \emph{On Bernoulli's Numerical Solution of Algebraic Equations}, Proc.~Royal Soc.~Edinburgh \textbf{46} (1926), 289--305.
-\bibitem{steffensen} Steffensen, J.F., \emph{Remarks on Iteration}, Skandinavisk Aktuarietidskrift \textbf{16} (1933), 64--72.
-\bibitem{lehmer} Lehmer, D.H., \emph{Factorization of certain cyclotomic functions}, Annals of Math.~\textbf{34} (1933), 461--479.
-\bibitem{banach} Banach, S., \emph{Sur les opérations dans les ensembles abstraits et leur application aux équations intégrales}, Fund.~Math.~\textbf{3} (1922), 133--181.
-\bibitem{ehrlich} Ehrlich, L.W., \emph{A modified Newton method for polynomials}, Comm.~ACM \textbf{10} (1967), 107--108.
-\bibitem{aberth} Aberth, O., \emph{Iteration methods for finding all zeros of a polynomial simultaneously}, Math.~Comp.~\textbf{27} (1973), 339--344.
-\bibitem{kungtraub} Kung, H.T., Traub, J.F., \emph{Optimal Order of One-Point and Multipoint Iteration}, J.~ACM \textbf{21} (1974), 643--651.
-\bibitem{mcmullen} McMullen, C., \emph{Families of rational maps and iterative root-finding algorithms}, Annals of Math.~\textbf{125} (1987), 467--493.
+\bibitem{schwarz} Schwarz, H.A., J.~Reine Angew.~Math. \textbf{70} (1869); Pick, G. (1916).
+\bibitem{banach} Banach, S., Fund.~Math.~\textbf{3} (1922).
+\bibitem{aitken} Aitken, A.C., Proc.~Royal Soc.~Edinburgh \textbf{46} (1926), 289--305.
+\bibitem{steffensen} Steffensen, J.F., Skandinavisk Aktuarietidskrift \textbf{16} (1933), 64--72.
+\bibitem{lehmer} Lehmer, D.H., Annals of Math.~\textbf{34} (1933), 461--479.
+\bibitem{ehrlich} Ehrlich, L.W., Comm.~ACM \textbf{10} (1967), 107--108.
+\bibitem{aberth} Aberth, O., Math.~Comp.~\textbf{27} (1973), 339--344.
+\bibitem{kungtraub} Kung, H.T., Traub, J.F., J.~ACM \textbf{21} (1974), 643--651.
+\bibitem{mcmullen} McMullen, C., Annals of Math.~\textbf{125} (1987), 467--493.
 \bibitem{smale} Smale, S., \emph{Mathematical Problems for the Next Century}, Math.~Intelligencer \textbf{20} (1998), 7--15.
-\bibitem{burgissercucker} Bürgisser, P., Cucker, F., \emph{On a problem posed by Steve Smale}, Annals of Math.~\textbf{174} (2011), 1785--1836.
-\bibitem{pandrosion-zeta-pdf} Besevic, I., \emph{The Pandrosion Zeta Function and the Discriminant as Spectral Determinant}, Preprint (April 2026).
+\bibitem{burgissercucker} Bürgisser, P., Cucker, F., Annals of Math.~\textbf{174} (2011), 1785--1836.
+\bibitem{pandrosion-zeta-pdf} Besevic, I., \emph{The Pandrosion zeta function and the discriminant as spectral determinant}, Preprint (2026).
 \end{thebibliography}
 
 \end{document}
