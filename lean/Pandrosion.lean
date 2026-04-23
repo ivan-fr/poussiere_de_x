@@ -96,4 +96,5 @@ import Pandrosion.Core.PandrosionHigherVanishing
 import Pandrosion.Core.PandrosionRiemannAnalogy
 import Pandrosion.Core.PandrosionUltimateGrandMaster
 import Pandrosion.Core.PandrosionEnergyZeta
+import Pandrosion.Core.PandrosionAcyclicityFTA
 import Pandrosion.Legacy
