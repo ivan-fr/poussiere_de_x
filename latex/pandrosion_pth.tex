@@ -129,7 +129,20 @@ The paper makes no claim of progress on classical open problems of
 polynomial root-finding; its main value is to record a concrete
 derivative-free root-finding scheme with closed-form convergence
 analysis and complete formal verification for the monomial family
-$z^p = x$.
+$z^p = x$. A concluding section (\S\ref{sec:beyond-monomials})
+shows that the Pandrosion iteration itself extends to every monic
+polynomial $P(z) = z^p + R(z)$ via
+$h_P(s) := 1 - (R(s) + 1)/S_p(s)$, whose fixed points are exactly
+the roots of $P$ and which remains derivative-free; Aitken $\Delta^2$
+and the multi-start seed apply verbatim, yielding a target-conditional
+refinement scheme that converges to every target root. Numerical
+experiments on four non-monomial polynomials show the structural
+extension works, with iteration counts varying from $4$ (monomial,
+best case) to $41$ (Bombelli's cubic, worst case) at $50$-digit
+precision, depending on how close $h_P'(\alpha)$ is to $1$ and how
+close the target root is to a singularity of $h_P$. The quantitative
+advantage of the monomial case is therefore genuinely specific to
+that case and does not transport uniformly.
 \end{abstract}
 
 \tableofcontents
@@ -1697,6 +1710,114 @@ $\lambda_\infty$ is continuous and strictly less than~$1$ on $(1, \infty)$, so $
 \end{proof}
 
 This quantitatively matches the per-regime benchmark of~\S\ref{sec:benchmark}: the observed $\approx 3$--$4$ additional iterations when moving from 50 to 500 digits, \emph{across all tested $(p, x)$}, is an instance of Proposition~\ref{thm:uniform-loglog}.
+
+%=====================================================================
+\section{Beyond monomials: Pandrosion-style iteration on general polynomials}
+\label{sec:beyond-monomials}
+%=====================================================================
+
+The paper has focused on the monomial family $z^p = x$ because its specific structure (cyclotomic symmetry, closed-form $\lambda_{p,x}$, scaling preconditioning) gives explicit quantitative results. We close with the observation that the \emph{Pandrosion iteration itself} --- not Newton's method --- extends to every monic polynomial of degree $p$, preserving the derivative-free character that makes the monomial analysis attractive.
+
+\subsection{The generalised Pandrosion iteration}
+
+Let $P(z) = z^p + R(z)$ with $\deg R < p$, and let $S_p(s) = 1 + s + \cdots + s^{p-1}$ be the same geometric sum used throughout. Define
+\begin{equation}\label{eq:h-P-general}
+  h_P(s) \;:=\; 1 - \frac{R(s) + 1}{S_p(s)}.
+\end{equation}
+
+\begin{proposition}[Fixed points = roots of $P$]\label{prop:hP-fixed-points}
+For $s \in \mathbb{C}$ with $S_p(s) \neq 0$, $h_P(s) = s$ if and only if $P(s) = 0$. In particular, when $R(s) = -1/x$ is constant, $h_P$ reduces to the monomial Pandrosion iteration $h_P(s) = 1 - (1 - 1/x)/S_p(s) = 1 - (x-1)/(x\,S_p(s))$, matching~\eqref{eq:pandrosion_gen}.
+\end{proposition}
+
+\begin{proof}
+The key identity $(1 - s)\,S_p(s) = 1 - s^p$ (geometric sum) gives $h_P(s) = s \iff (1-s)S_p(s) = R(s)+1 \iff 1 - s^p = R(s)+1 \iff s^p = -R(s) \iff P(s) = 0$. The monomial case is the specialisation $R(s) = -1/x$.
+\end{proof}
+
+The iteration~\eqref{eq:h-P-general} is \emph{derivative-free}: it uses only $R$ (the sub-leading coefficients of $P$) and the universal polynomial $S_p$, never $P'$ or $P''$. Steffensen acceleration yields
+\[
+  \sigma_P(s) \;:=\; s - \frac{(h_P(s) - s)^2}{h_P(h_P(s)) - 2h_P(s) + s},
+\]
+which satisfies $\sigma_P(\alpha) = \alpha$ and $\sigma_P'(\alpha) = 0$ at every simple root $\alpha$ of $P$ with $S_p(\alpha) \neq 0$ and $h_P'(\alpha) \neq 1$, by the same Taylor computation as in Theorem~\ref{thm:steffensen}; the quadratic constant is $K_S(P, \alpha) = |\lambda_P \cdot h_P''(\alpha)/(2(1 - \lambda_P))|$ with $\lambda_P := h_P'(\alpha)$.
+
+The three-step cascade of Part~II (fix reference radius $R_0$, compute $K_\sigma$ via Cauchy estimate, set $R_\sigma = \min(R_0, 1/(2K_\sigma))$) produces explicit $(K_\sigma(P, \alpha_k), R_\sigma(P, \alpha_k))$ at every simple root $\alpha_k$. The multi-start seed then places any $z \in \mathbb{C}$ inside the quadratic-contraction disk of the target.
+
+\begin{theorem}[Multi-start Pandrosion for general polynomials]\label{thm:multistart-general}
+Let $P(z) = z^p + R(z)$ with $\deg R < p$, and let $\alpha_k$ be a simple root of $P$ with $S_p(\alpha_k) \neq 0$ and $h_P'(\alpha_k) \neq 1$. For every $z \in \mathbb{C}$ and every target accuracy $\delta > 0$, the multi-start seed
+\[
+  z_0 := \alpha_k + \frac{R_\sigma(P, \alpha_k)}{2\,|z - \alpha_k|}\,(z - \alpha_k)
+\]
+and the iterated Steffensen--Pandrosion map $\sigma_P$ satisfy
+\[
+  |\sigma_P^n(z_0) - \alpha_k| \;\leq\; \delta
+  \qquad \text{for every } n \;\geq\; N_{\mathrm{eff}}\bigl(K_\sigma(P, \alpha_k),\, R_\sigma(P, \alpha_k),\, \delta\bigr),
+\]
+with $N_{\mathrm{eff}} = \mathcal{O}(\log_2 \log(1/\delta))$ by Theorem~\ref{thm:eff-kt}.
+\end{theorem}
+
+\begin{proof}
+The fixed-point property $h_P(\alpha_k) = \alpha_k$ is Proposition~\ref{prop:hP-fixed-points}; $\sigma_P(\alpha_k) = \alpha_k$ and $\sigma_P'(\alpha_k) = 0$ follow from Theorem~\ref{thm:steffensen}. The quadratic bound $|\sigma_P(w) - \alpha_k| \leq K_\sigma|w - \alpha_k|^2$ on $\overline{B}(\alpha_k, R_\sigma)$ together with $K_\sigma R_\sigma \leq 1/2$ is the three-step cascade of Part~II applied to $\sigma_P$. The seed places $z_0$ at distance exactly $R_\sigma/2$ from $\alpha_k$, forward invariance $\sigma_P(\overline{B}(\alpha_k, R_\sigma/2)) \subset \overline{B}(\alpha_k, R_\sigma/2)$ follows, and $e_n := |\sigma_P^n(z_0) - \alpha_k|$ satisfies $e_{n+1} \leq K_\sigma e_n^2$ with $e_0 \leq R_\sigma/2$, supplying the count by Theorem~\ref{thm:eff-kt}.
+\end{proof}
+
+\begin{remark}[Structural warning]
+Theorem~\ref{thm:multistart-general} is still \emph{conditional on the target}: the seed requires $\alpha_k$. It does not contradict McMullen's 1987 impossibility result on purely iterative universal root-finders. The Voronoï-nearest selector of Section~\ref{sec:measurability} extends verbatim to $d$ arbitrary distinct roots (not just cyclotomic): the Borel solution map $\Phi_P$ is Borel-measurable and a.e.-continuous, by the same proof (Proposition~\ref{thm:borel-combined}).
+\end{remark}
+
+\begin{remark}[Correspondence with the monomial compatibility bundle]\label{rem:grand-master-correspondence}
+Theorem~\ref{thm:multistart-general} is the general-polynomial analogue of the monomial compatibility bundle (Theorem~\ref{thm:grand-master}), item by item:
+\begin{itemize}
+  \item \emph{Item (1), Voronoï-nearest target selection.} Transports verbatim: for any finite distinct root set $\{\alpha_0, \ldots, \alpha_{p-1}\}$ and any $z_0 \in \mathbb{C}$, there exists $s^\ast$ with $\|\alpha_{s^\ast} - z_0\| \leq \|\alpha_t - z_0\|$ for every $t$. The proof in Theorem~\ref{thm:grand-master} uses only finiteness, not the monomial structure.
+  \item \emph{Item (2), Steffensen fixing.} Transports: $\sigma_P(\alpha_k) = \alpha_k$ holds at every simple root $\alpha_k$ with $S_p(\alpha_k) \neq 0$, by the same Aitken argument as Theorem~\ref{thm:steffensen}.
+  \item \emph{Item (3), Scaling compatibility.} \textbf{Does not transport in the same form.} For the monomial, $(\alpha/\beta)^p = x/A$ is a clean one-parameter identity. For a general $P$, the substitution $z = \beta w$ gives $P(\beta w) = \beta^p w^p + R(\beta w) = A(w^p + R(\beta w)/A)$, so the rescaled polynomial is $\tilde P(w) = w^p + \tilde R(w)$ with $\tilde R(w) := R(\beta w)/A$ --- itself a polynomial, but with different coefficients. The scaling therefore produces a \emph{new polynomial}, not a reduction within a one-parameter family. This is why the quantitative scaling preconditioning of Proposition~\ref{prop:scaling} does not carry over.
+  \item \emph{Item (4), Reconstruction.} Transports trivially: $\alpha_k = \beta \cdot (\alpha_k/\beta)$ for any $\beta \neq 0$.
+  \item \emph{Item (5), Optimal starting point.} Replaced by the multi-start seed. For general $P$, $h_P(1) = 1 - (R(1) + 1)/S_p(1) = 1 - (R(1)+1)/p$ is still a well-defined candidate; whether it is the canonical starting point depends on the geometry of the particular $P$, and we do not claim optimality outside the monomial case.
+\end{itemize}
+So items (1), (2), (4) transport without modification; item (3) transports only in a weaker form (a polynomial-to-polynomial substitution rather than a coefficient-only reduction); item (5) is replaced by the target-conditional seed. Theorem~\ref{thm:multistart-general} captures exactly what the Grand Master bundle says minus the monomial-specific scaling.
+\end{remark}
+
+\subsection{Numerical evidence}
+
+The script \texttt{latex/benchmark\_general\_poly.py} applies the generalised Pandrosion--Steffensen scheme~\eqref{eq:h-P-general} to four non-monomial polynomials at $50$-digit precision, starting from $z_0 = 3 + 3i$. The radius $R_\sigma(P, \alpha_k)$ is estimated empirically by bisection on the circle $\partial B(\alpha_k, R)$.
+
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lccc}
+\toprule
+Polynomial & $p$ & Empirical $R_\sigma$ range & Iterations (per target root) \\
+\midrule
+$z^3 - 2$ (monomial, $x=2$)   & 3 & $1.29$          & $4$ \\
+$z^5 - z - 1$                 & 5 & $0.38$--$0.85$  & $6$--$8$ \\
+$z^3 - 2z - 5$ (Bombelli)     & 3 & $0.06$--$1.67$  & $8$--$41$ \\
+$z^4 + z + 1$                 & 4 & $0.12$--$0.21$  & $7$--$40$ \\
+$z^6 + 3z^2 - 1$              & 6 & $0.03$--$0.44$  & $7$--$11$ \\
+\bottomrule
+\end{tabular}
+\caption{Multi-start Pandrosion--Steffensen (Theorem~\ref{thm:multistart-general}) for non-monomial polynomials from $z_0 = 3 + 3i$ at precision $10^{-50}$, using $h_P(s) = 1 - (R(s) + 1)/S_p(s)$ followed by Aitken $\Delta^2$. For each polynomial and each target root (chosen in turn), the multi-start scheme converges to that root; iteration counts vary with the local multiplier $|h_P'(\alpha_k)|$ and with the empirical $R_\sigma$. The slow Bombelli case (real root at $\alpha \approx 2.094$: 41 iterations) corresponds to $h_P'(\alpha)$ near $1$, inflating the Aitken constant $K_\sigma \propto 1/(1 - |h_P'(\alpha)|)$.}
+\label{tab:multistart-general}
+\end{table}
+
+The iteration converges to every target root of every tested polynomial: the scheme works structurally on any monic polynomial of degree $p$. Quantitatively, however, the iteration count is \emph{not} uniform: it ranges from $4$ iterations (monomial) to $41$ iterations (Bombelli's real root and one root of $z^4 + z + 1$) --- a factor of $10\times$ gap. The slow cases all share the same mechanism: either $R_\sigma(P, \alpha_k)$ is small (the fixed point sits close to a singularity of $h_P$ where $S_p(s) = 0$, or to another root), or $h_P'(\alpha_k)$ approaches $1$, inflating the Aitken constant $K_S \propto 1/(1 - |h_P'(\alpha_k)|)$ and delaying entry into the quadratic regime. Compared against Newton on the same polynomials (which converges in $6$--$14$ iterations), multi-start Pandrosion is \emph{competitive} in the well-conditioned cases (monomial, quintic, sextic) but \emph{significantly slower} in the ill-conditioned cases --- a direct cost of being derivative-free in a setting that does not have the monomial's closed-form protection. The honest verdict: the scheme transports to general polynomials, but the \emph{quantitative} advantage of the monomial case does not.
+
+\subsection{What is lost, what transports}
+
+\emph{Lost:} the monomial setting enjoys four advantages not available in general:
+\begin{enumerate}
+  \item The closed-form contraction ratio $\lambda_{p,x}$ of Theorem~\ref{thm:lambda}: for $h_P$ with general $R$, the multiplier $h_P'(\alpha)$ is computable per root but has no uniform closed form, and can be near $1$ for badly-conditioned roots.
+  \item Cyclotomic symmetry of the root set: $p$ equally-spaced roots on a circle, with congruent Voronoï cells and uniform basin lower bounds $\pi R_\sigma^2$ (Remark~\ref{rem:pullback}). General $P$ has roots in generic position.
+  \item Scaling preconditioning $z^p = A \cdot x'$ (Proposition~\ref{prop:scaling}): no analogue for non-monomial $P$, where factoring a constant out merely multiplies $R$.
+  \item The specific large-$p$ limit $\lambda_\infty(x) = 1 - \ln(x)/(x-1)$: tied to $R(s) = -1/x$.
+\end{enumerate}
+
+\emph{Transports:} four structural features carry over:
+\begin{enumerate}
+  \item \textbf{Derivative-free construction.} $h_P$ in~\eqref{eq:h-P-general} uses only $R$ and $S_p$, never $P'$. This is the defining feature of the Pandrosion family and is preserved.
+  \item \textbf{Steffensen acceleration.} $\sigma_P = \mathrm{Aitken}(h_P)$ is super-attractive at every simple root with $h_P'(\alpha) \neq 1$, by the same Taylor argument as Theorem~\ref{thm:steffensen}; the constant is $K_S = |\lambda_P \cdot h_P''(\alpha)/(2(1 - \lambda_P))|$.
+  \item \textbf{Multi-start seed + $\log_2\log$ count.} Theorems~\ref{thm:multistart} and~\ref{thm:eff-kt} apply verbatim; $N_{\mathrm{eff}}$ depends only on $(K_\sigma, R_\sigma, \delta)$, not on the specific polynomial.
+  \item \textbf{Measurability and a.e.-continuity.} Section~\ref{sec:measurability} extends to any $d$ distinct roots in the plane --- cyclotomic symmetry is not used in those proofs, only distinctness and the affine structure of perpendicular bisectors.
+\end{enumerate}
+
+Theorem~\ref{thm:multistart-general} is therefore a \emph{genuine} extension of the Pandrosion-Steffensen scheme --- the same derivative-free iteration family, applied to any degree-$p$ polynomial --- not a Newton-based reformulation. The monomial case is the favourable instance where the derivative-free character combines with closed-form analysis; the general case preserves the derivative-free character and the target-conditional $\log_2\log$ convergence, at the cost of closed forms. A follow-up paper taking the generalisation seriously would focus on: (a) polynomials with cyclic Galois group (partial cyclotomic symmetry); (b) perturbative series $R(s) = -1/x + \varepsilon g(s)$ as small-deformation case studies with controlled $\lambda_P$; (c) a proper algorithmic comparison against Aberth--Ehrlich and Weierstrass simultaneous root finders on arbitrary polynomials.
 
 %=====================================================================
 \section{Conclusion}
