@@ -1026,18 +1026,85 @@ where $h(s) = 1 - (x-1)/(x \cdot S_p(s))$ is Pandrosion's iteration.
 \label{thm:steffensen}
 The Steffensen--Pandrosion iteration~\eqref{eq:steffensen} converges \emph{quadratically} to $s^* = x^{-1/p}$:
 \[
-  |T(s) - s^*| \leq K_S \cdot |s - s^*|^2 + O(|s - s^*|^3),
+  T(s) - s^* \;=\; -\frac{\lambda\, h''(s^*)}{2(1 - \lambda)}\,(s - s^*)^2 \;+\; O((s - s^*)^3),
 \]
-where the Steffensen constant $K_S$ satisfies
+where $\lambda := h'(s^*) = \lambda_{p,x} \in (0, 1)$. In particular, the Steffensen constant $K_S$ defined by $|T(s) - s^*| \leq K_S\,|s - s^*|^2 + O(|s - s^*|^3)$ has the explicit value
 \begin{equation}
   \label{eq:K_steffensen}
-  K_S = \left|\frac{h''(s^*)}{2(1 - h'(s^*))}\right| = \left|\frac{h''(s^*)}{2(1 - \lambda_{p,x})}\right|.
+  K_S \;=\; \left|\frac{\lambda\, h''(s^*)}{2(1 - \lambda)}\right|.
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-This is a standard result in fixed-point acceleration theory~\cite{stoer}. If $h$ has a fixed point $s^*$ with $h'(s^*) = \lambda \neq 1$ and $h$ is twice continuously differentiable near $s^*$, then the Steffensen map $T$ defined by~\eqref{eq:steffensen} satisfies $T(s^*) = s^*$ and $T'(s^*) = 0$, yielding quadratic convergence with the constant~\eqref{eq:K_steffensen}.
+Set $u := s - s^*$ and expand $h$ around $s^*$ using $h(s^*) = s^*$, $h'(s^*) = \lambda$:
+\[
+  h(s) \;=\; s^* + \lambda u + \tfrac{h''(s^*)}{2}\,u^2 + O(u^3).
+\]
+Writing $h_2 := h''(s^*)$ for brevity, we compute each ingredient of the Steffensen update.
+
+\emph{(1) Compute $h(s) - s$:}
+\[
+  h(s) - s \;=\; (s^* + \lambda u + \tfrac{h_2}{2}u^2) - (s^* + u) + O(u^3)
+           \;=\; (\lambda - 1)\,u \;+\; \tfrac{h_2}{2}\,u^2 + O(u^3).
+\]
+
+\emph{(2) Compute $h(h(s))$.} Let $v := h(s) - s^* = \lambda u + \tfrac{h_2}{2}u^2 + O(u^3)$. Then
+\[
+  h(h(s)) \;=\; s^* + \lambda v + \tfrac{h_2}{2}\,v^2 + O(v^3).
+\]
+Substituting $v = \lambda u + \tfrac{h_2}{2}u^2 + O(u^3)$ and retaining terms through $O(u^2)$:
+\[
+  h(h(s)) \;=\; s^* + \lambda^2 u + \Bigl[\lambda \cdot \tfrac{h_2}{2} + \tfrac{h_2}{2}\lambda^2\Bigr] u^2 + O(u^3)
+          \;=\; s^* + \lambda^2 u + \tfrac{h_2}{2}(\lambda + \lambda^2)\,u^2 + O(u^3).
+\]
+
+\emph{(3) Compute the Aitken denominator $\Delta := h(h(s)) - 2h(s) + s$:}
+\begin{align*}
+  \Delta
+  &\;=\; \bigl[s^* + \lambda^2 u + \tfrac{h_2}{2}(\lambda + \lambda^2)u^2\bigr]
+      - 2\bigl[s^* + \lambda u + \tfrac{h_2}{2}u^2\bigr] + \bigl[s^* + u\bigr] + O(u^3) \\
+  &\;=\; (\lambda^2 - 2\lambda + 1)\,u \;+\; \tfrac{h_2}{2}\bigl[(\lambda + \lambda^2) - 2\bigr] u^2 + O(u^3) \\
+  &\;=\; (\lambda - 1)^2 u \;+\; \tfrac{h_2}{2}(\lambda - 1)(\lambda + 2) u^2 + O(u^3).
+\end{align*}
+
+\emph{(4) Compute the numerator $(h(s) - s)^2$:}
+\[
+  (h(s) - s)^2 \;=\; (\lambda - 1)^2 u^2 \;+\; (\lambda - 1)\,h_2\,u^3 + O(u^4).
+\]
+
+\emph{(5) Take the ratio.} Factoring $(\lambda - 1)^2$ from both numerator and denominator:
+\[
+  \frac{(h(s) - s)^2}{\Delta}
+   \;=\; \frac{u^2 + \frac{h_2}{\lambda-1}\,u^3 + O(u^4)}
+              {u + \frac{h_2(\lambda+2)}{2(\lambda-1)}\,u^2 + O(u^3)}.
+\]
+Factoring one power of $u$ from the denominator and dividing:
+\begin{align*}
+  \frac{(h(s) - s)^2}{\Delta}
+  &\;=\; u \cdot \frac{1 + \frac{h_2}{\lambda-1}\,u + O(u^2)}
+              {1 + \frac{h_2(\lambda+2)}{2(\lambda-1)}\,u + O(u^2)} \\
+  &\;=\; u \cdot \Bigl[1 + \Bigl(\tfrac{h_2}{\lambda-1} - \tfrac{h_2(\lambda+2)}{2(\lambda-1)}\Bigr) u + O(u^2)\Bigr] \\
+  &\;=\; u + \frac{h_2}{\lambda - 1} \cdot \Bigl(1 - \tfrac{\lambda+2}{2}\Bigr)\,u^2 + O(u^3) \\
+  &\;=\; u + \frac{h_2}{\lambda - 1} \cdot \frac{-\lambda}{2}\,u^2 + O(u^3)
+   \;=\; u + \frac{\lambda\, h_2}{2(1 - \lambda)}\,u^2 + O(u^3).
+\end{align*}
+
+\emph{(6) Conclude.} By definition of $T$,
+\[
+  T(s) - s^* \;=\; u - \frac{(h(s) - s)^2}{\Delta}
+             \;=\; -\,\frac{\lambda\, h_2}{2(1 - \lambda)}\,u^2 + O(u^3),
+\]
+which is the stated expansion. In particular $T(s^*) = s^*$ and $T'(s^*) = 0$, and the absolute value of the leading coefficient is $K_S$ as in~\eqref{eq:K_steffensen}.
 \end{proof}
+
+\begin{remark}[Output-residual constant]\label{rem:K-output}
+The paper's numerical tables (Table~\ref{tab:steff-numerical} below) report the quadratic constant for the output residual $|v_n - \alpha|$ rather than the $s$-residual. Since $v_n - \alpha \approx (p-1)\alpha^2(s_n - s^*)$ (Theorem~\ref{thm:lambda}), the output-residual constant is
+\[
+  K_S^{(v)} \;=\; \frac{K_S}{(p-1)\alpha^2}
+          \;=\; \left|\frac{\lambda\, h''(s^*)}{2(1 - \lambda)(p-1)\alpha^2}\right|.
+\]
+For $(p, x) = (3, 2)$: $\lambda \approx 0.2202$, $h''(s^*) \approx -0.3001$, $\alpha^2 = 2^{2/3} \approx 1.587$, so $K_S \approx 0.0424$ and $K_S^{(v)} \approx 0.0133$. The latter is the value reported as ``$K_S \approx 0.013$'' in Table~\ref{tab:ks-comparison} below.
+\end{remark}
 
 \subsection{Numerical demonstration}
 
@@ -1054,6 +1121,7 @@ Step $n$ & $s_n$ (Steffensen) & $|v_n - \cbrt{2}|$ & $|s_n - s^*|$ \\
 \bottomrule
 \end{tabular}
 \caption{Steffensen-accelerated Pandrosion for $p=3$, $x=2$. Machine precision is reached in \textbf{3~steps} (each step requires 2~evaluations of $h$, i.e.\ 6 evaluations of $S_p$ total). The step-$3$ output-residual is given as $< 10^{-15}$ rather than its raw floating-point value to avoid misreporting sub-ULP noise.}
+\label{tab:steff-numerical}
 \end{table}
 
 \subsection{Comparison of quadratic constants}
@@ -1068,14 +1136,16 @@ Both Newton's method and Steffensen--Pandrosion converge quadratically, but with
 & \textbf{Newton} & \textbf{Steffensen--Pandrosion} \\
 \midrule
 Order & $2$ & $2$ \\
-Constant ($p\!=\!3, x\!=\!2$) & $K_N = \dfrac{p-1}{2\alpha} \approx 0.794$ & $K_S \approx 0.013$ \\
+Constant ($p\!=\!3, x\!=\!2$, output residual) & $K_N = \dfrac{p-1}{2\alpha} \approx 0.794$ & $K_S^{(v)} \approx 0.013$ \\
+Constant ($s$-residual, for comparison) & --- & $K_S \approx 0.042$ \\
 Derivative required & Yes ($f'$) & No \\
 Geometric origin & No & Yes \\
 Steps to $10^{-15}$ & $5$ & $3$ \\
 Evaluations of $S_p$ & --- & $6$ (total) \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of the two quadratically convergent methods for $\cbrt{2}$ on a per-iterate basis. Steffensen--Pandrosion has a much smaller quadratic constant ($K_S \ll K_N$), but requires two evaluations of $h$ per step against Newton's one derivative + one value evaluation. Per function evaluation the two methods are within a constant factor; the ``3 steps vs 5 steps'' figure is cosmetic and depends on the starting point.}
+\caption{Comparison of the two quadratically convergent methods for $\cbrt{2}$ on a per-iterate basis. Steffensen--Pandrosion has a smaller quadratic constant for the output residual ($K_S^{(v)} \approx 0.013$ vs.\ $K_N \approx 0.794$), but requires two evaluations of $h$ per step against Newton's one derivative + one value evaluation. Per function evaluation the two methods are within a constant factor; the ``3 steps vs 5 steps'' figure is cosmetic and depends on the starting point. The $s$-residual constant $K_S$ from Theorem~\ref{thm:steffensen} is listed separately for reference.}
+\label{tab:ks-comparison}
 \end{table}
 
 \begin{figure}[H]
@@ -1659,7 +1729,7 @@ The relevant consequences for this paper are:
 \begin{enumerate}
   \item[(i)] $\displaystyle \sum_{k=0}^{p-1} \nu_k = \frac{x}{p}\sum_k \alpha_k = 0$ for $p \geq 2$ (case $s = 1$).
   \item[(ii)] Closed-form product: $\displaystyle \prod_{k=0}^{p-1} P'(\alpha_k) = \frac{p^p}{x^p \prod_k \alpha_k} = (-1)^{p-1}\,\frac{p^p}{x^{p-1}}$, using $\prod_k \alpha_k = (-1)^{p+1}/x$ by Vieta on $z^p - 1/x$.
-  \item[(iii)] For $p \geq 3$: $\sum_k P'(\alpha_k)^{-2} = (x/p)^2 \sum_k \alpha_k^2 = 0$, and similarly $\sum_k P'(\alpha_k)^2 = 0$ (case $s = 2$, $p \geq 3$, $p \nmid 2$). The three special values $\sum_k 1$, $\sum_k P'(\alpha_k)^{-2}$, $\sum_k P'(\alpha_k)^2$ at $s = 0, \pm 1$ respectively equal $p$, $0$, $0$ --- a ``cyclotomic cancellation'' of all non-constant moments.
+  \item[(iii)] For $p \geq 3$: $\sum_k P'(\alpha_k)^{-2} = (x/p)^2 \sum_k \alpha_k^2 = 0$ (case $s = 2$ in Proposition~\ref{prop:cyclotomic-cancellation}, with $p \geq 3$ giving $p \nmid 2$); and $\sum_k P'(\alpha_k)^2 = (p/x)^2 \sum_k \alpha_k^{-2} = 0$ (case $s = -2$, same condition $p \nmid 2$). In compact form: $\sum_k P'(\alpha_k)^{-s} = 0$ for every $s \in \mathbb{Z}$ with $p \nmid s$, so both $s = \pm 2$ vanish for $p \geq 3$, giving a ``cyclotomic cancellation'' of all non-constant moments.
 \end{enumerate}
 
 These three items are the arithmetic ingredients used implicitly in Part~II: (i) is the vanishing of the first residue sum that underlies the a.e.-continuity analysis, and (ii)--(iii) normalize constants in auxiliary bounds. Items (i)--(iii) have been cross-checked symbolically in arbitrary precision for $p \in \{2, 3, 5, 7, 10\}$ and representative $x$ (real and complex).
@@ -1754,7 +1824,7 @@ The paper does not claim progress on classical open problems of polynomial root-
 \paragraph{Perspectives.} We see four concrete, tractable extensions as immediate next steps:
 \begin{enumerate}
   \item \textbf{Benchmark against Schr\"oder / K\"onig families of order $k \geq 3$} at multi-precision, to quantify how the factor-of-3 cubic gap of Halley over Newton compares against purely algebraic higher-order iterations (the König family is derivative-free in spirit and admits closed-form constants).
-  \item \textbf{Extend to complex $x$} (not just complex anchor $\alpha$): the current Part~II assumes $x \in \mathbb{C}^\ast$ in the statements but the analysis is principally real for the scaling step. A fully complex scaling, via $\beta \in \mathbb{Z}[i]$ close to $X^{1/p}$ in the Gaussian integers, is a natural extension.
+  \item \textbf{Extend to complex $x$} (not just complex anchor $\alpha$): the current Part~II assumes $x \in \mathbb{C}^\ast$ in the statements but the analysis is principally real for the scaling step. A fully complex scaling requires choosing $\beta$ in the ring of integers of the appropriate cyclotomic field --- $\mathbb{Z}[i]$ for $p = 2$ (Gaussian integers), $\mathbb{Z}[\omega]$ with $\omega = e^{2\pi i/3}$ for $p = 3$ (Eisenstein integers), $\mathbb{Z}[\zeta_p]$ for general $p$ --- close to $X^{1/p}$ in the corresponding lattice. The machinery extends but the approximation $\beta \approx X^{1/p}$ in $\mathbb{Z}[\zeta_p]$ is non-trivial for $p \geq 5$ (no simple integer-part operation), and bounds on $\lambda_{p, X/\beta^p}$ require control of the discretization error in this richer ring.
   \item \textbf{Formalize the non-asymptotic bounds of Section~\ref{sec:nonasymptotic} in Lean}, closing the gap between the analytic quantity $\Lambda$ and its in-Lean counterpart. This is a routine but useful extension of \texttt{UniformContractionRate.lean}.
   \item \textbf{Matching upper bound on the basin} (Remark~\ref{rem:pullback} pointed the way): show that the full basin $\Omega_k$ equals $\bigcup_{m \geq 0} \sigma_{p,x}^{-m}(\overline{B}(\gamma_k, R_\sigma))$ up to a Lebesgue-null set, yielding a matching upper bound on $\mathrm{vol}(\Omega_k)$. This stops short of requiring Fatou--Julia machinery.
 \end{enumerate}
