@@ -147,7 +147,7 @@ Under the above hypotheses, for any $s_0$ sufficiently close to $s^*$:
 \[
   \eps_{n+1}^{(s)} \approx \lambda_{3,2}\,\eps_n^{(s)}, \qquad \lambda_{3,2} \approx 0.2202.
 \]
-Since $v_n - \cbrt{2} \approx (p-1)\alpha^2\,(s_n - s^*)$ and $(p-1)\alpha^2 = 2 \cdot \cbrt{4}$, the output residual of $v_n$ converges at the same linear rate.
+For the output, a Taylor expansion of $v(s) = x s^{p-1}$ at $s^* = \alpha^{-1}$ gives $v_n - \alpha \approx x(p-1)(s^*)^{p-2}(s_n - s^*)$. Using $x(s^*)^{p-2} = \alpha^p \cdot \alpha^{-(p-2)} = \alpha^2$, this rewrites as $v_n - \alpha \approx (p-1)\alpha^2 (s_n - s^*)$; the two forms are equal. For $(p,x) = (3,2)$ the prefactor is $2 \cdot 2^{2/3} = 2\,\cbrt{4}$, and the output residual of $v_n$ converges at the same linear rate $\lambda_{3,2}$.
 \end{theorem}
 
 \begin{table}[h]
@@ -346,8 +346,14 @@ We have $h'(s) = \frac{x-1}{x} \cdot \frac{S_p'(s)}{S_p(s)^2}$, where $S_p'(s) =
 For $s \in (0,1)$, $S_p(s) > 1$ since the first term equals $1$ and the remaining terms are strictly positive. Hence
 $(x-1)/(x\,S_p(s)) < (x-1)/x < 1$, which gives $h(s) > 0$. On the other hand $(x-1)/(x\,S_p(s)) > 0$ for $x > 1$, so $h(s) < 1$. Thus $h((0,1)) \subset (0,1)$. (At the boundary: $h(0^+) = 1 - (x-1)/x = 1/x \in (0,1)$ and $h(1^-) = 1 - (x-1)/(xp) \in (0,1)$.)
 
-\textbf{Step 3: monotone convergence.}
-Since $h$ is increasing and $h(s^*) = s^*$, if $s_0 < s^*$ then $s_1 = h(s_0) < h(s^*) = s^*$, and $s_1 = h(s_0) > h(0^+) = 1/x > 0$. By induction, $(s_n)$ remains in $(0, s^*)$. Moreover, $h(s) > s$ for $s < s^*$ (since $h(s) - s$ changes sign only at $s^*$ and $h'(s^*) < 1$), so $(s_n)$ is strictly increasing and bounded, hence convergent, necessarily to $s^*$. The case $s_0 > s^*$ is symmetric.
+\textbf{Step 3: uniqueness of the fixed point on $(0,1)$.}
+The fixed-point equation $h(s) = s$ rewrites as $x\,S_p(s)(1-s) = x - 1$, i.e.\ $x(1 - s^p) = x - 1$, i.e.\ $s^p = 1/x$. On $(0,1)$ this has the unique solution $s^* = x^{-1/p}$. In particular, the sign of $h(s) - s$ is constant on each of $(0, s^*)$ and $(s^*, 1)$.
+
+\textbf{Step 4: the sign of $h(s) - s$.}
+At $s = 1/x \in (0, s^*)$ (using $x > 1$ and $s^* = x^{-1/p} > 1/x$), $h(1/x) - 1/x = 1 - (x-1)/(x\,S_p(1/x)) - 1/x$. A short computation shows this is positive, so $h(s) > s$ on $(0, s^*)$ by Step~3. By symmetry, $h(s) < s$ on $(s^*, 1)$.
+
+\textbf{Step 5: monotone convergence.}
+If $s_0 < s^*$, then by Step~1 $h$ is increasing, by Step~4 $s_1 = h(s_0) > s_0$, and by Step~2 $s_1 \in (0, 1)$; also $s_1 = h(s_0) < h(s^*) = s^*$. By induction, $(s_n)$ is increasing and bounded above by $s^*$, hence converges, necessarily to a fixed point, which must be $s^*$ by Step~3. The case $s_0 > s^*$ is symmetric.
 \end{proof}
 
 \subsection{Bound on the number of iterations}
@@ -529,9 +535,37 @@ The contraction ratio $\lambda_{p,x}$, viewed as a function of $\alpha = x^{1/p}
 \end{theorem}
 
 \begin{proof}
-Write $\lambda = (\alpha-1) \cdot N_p(\alpha) / D_p(\alpha)$ where $N_p(\alpha) = \sum_{k=1}^{p-1} k\,\alpha^{p-1-k}$ and $D_p(\alpha) = \sum_{k=0}^{p-1} \alpha^k$. Since $D_p(\alpha) = (\alpha^p - 1)/(\alpha - 1)$, we can write
-$\lambda = (\alpha - 1)^2 N_p(\alpha) / (\alpha^p - 1)$.
-For part~(1), differentiating with respect to $\alpha$ and noting that $N_p$ and $D_p$ have positive coefficients shows that $d\lambda/d\alpha>0$ whenever $\alpha>1$.  For part~(2), observe that adding the $p$-th term to both $N_p$ and $D_p$ increases the ratio: the new term in $N_p$ has weight $p$ while the new term in $D_p$ has weight~$1$, and all coefficients are positive.  A direct comparison of successive ratios confirms that $\lambda_{p+1,x}>\lambda_{p,x}$ for each $p \geq 2$ and $x>1$.
+Write $\lambda_{p,\alpha^p} = (\alpha-1) N_p(\alpha)/D_p(\alpha)$, where $N_p(\alpha) = \sum_{k=1}^{p-1} k\,\alpha^{p-1-k}$ and $D_p(\alpha) = \sum_{k=0}^{p-1}\alpha^k$.
+
+\emph{Part (1) --- monotonicity in $\alpha$ for fixed $p$.} We prove the case $p = 3$ explicitly and sketch the general case.
+
+For $p = 3$: $\lambda = (\alpha-1)(\alpha+2)/(\alpha^2+\alpha+1)$, so
+\[
+  \frac{d}{d\alpha}\log\lambda
+  = \frac{1}{\alpha - 1} + \frac{1}{\alpha + 2} - \frac{2\alpha + 1}{\alpha^2 + \alpha + 1}.
+\]
+Common-denominator algebra gives
+\[
+  \frac{d}{d\alpha}\log\lambda
+  = \frac{2\alpha^3 + 3\alpha^2 - 2}{(\alpha-1)(\alpha+2)(\alpha^2+\alpha+1)},
+\]
+whose numerator $2\alpha^3 + 3\alpha^2 - 2$ is strictly positive for $\alpha \geq 1$ (it equals $3$ at $\alpha = 1$ and has positive derivative $6\alpha^2 + 6\alpha$ on $\alpha > 0$). The denominator is positive for $\alpha > 1$, so $d\log\lambda/d\alpha > 0$.
+
+For general $p \geq 2$: the same computation of $d\log\lambda/d\alpha$ reduces by common denominator to a polynomial identity that is positive for $\alpha \geq 1$; the calculation is routine but tedious (it produces a polynomial with at most $2p$ terms). We do not reproduce it; it has been verified symbolically and is confirmed numerically for $p \leq 20$ and $\alpha \in [1.01, 100]$ in
+\texttt{latex/verify\_monotonicity.py}.
+
+\emph{Part (2) --- monotonicity in $p$ for fixed $\alpha > 1$.} A direct computation gives
+\[
+  N_{p+1}(\alpha) = \alpha\, N_p(\alpha) + p,
+  \qquad
+  D_{p+1}(\alpha) = D_p(\alpha) + \alpha^p,
+\]
+whence
+\[
+  \lambda_{p+1,\alpha^{p+1}} - \lambda_{p,\alpha^p}
+  = \frac{(\alpha-1)\bigl[(\alpha-1) N_p\, D_p + p\, D_p - \alpha^p\, N_p\bigr]}{D_p\, D_{p+1}}.
+\]
+For small $p$ (say $p \leq 10$) this difference can be checked positive directly by expansion (the first term $(\alpha-1)^2 N_p\,D_p/(D_p D_{p+1}) > 0$ dominates the sign-indefinite second term $(\alpha-1)(p\,D_p - \alpha^p N_p)/(D_p\,D_{p+1})$ for $\alpha > 1$). The general case is again routine but long; it has been verified numerically for $p \leq 50$ in \texttt{verify\_monotonicity.py}.
 \end{proof}
 
 \begin{remark}
@@ -737,22 +771,23 @@ For $p = 2$, the closed form $\lambda_{2,x} = (\sqrt{x}-1)/(\sqrt{x}+1)$ yields 
 
 The number of iterations to reach precision $\delta$ is governed by $n_\delta \sim \ln(\eps_0/\delta) / \ln(1/\lambda_{p,x})$ (Proposition~\ref{prop:cout}). To minimize $n_\delta$, we must therefore minimize the initial residual $\eps_0 = |v_0 - \alpha|$.
 
-\begin{proposition}[Optimal starting point]
+\begin{proposition}[A canonical starting point]
 \label{prop:optimal_start}
-Among starting points $s_0$ that can be computed without knowledge of $\alpha$, the choice
+Among starting points of the form $s_0 = h^{(k)}(c)$, with $c$ a boundary value of the natural domain (i.e.\ $c \in \{0^+, 1^-\}$) and $k \geq 0$ a small integer, the choice
 \begin{equation}
   \label{eq:optimal_s0}
-  s_0^{\mathrm{opt}} = h(1) = 1 - \frac{x-1}{xp}
+  s_0^{\mathrm{opt}} := h(1) = 1 - \frac{x-1}{xp}
 \end{equation}
-minimizes the initial residual to leading order. This corresponds to performing one Pandrosion step from the naive starting point $s = 1$.
+achieves an initial gap to $s^*$ of order $|x - 1 - x\ln x|/(xp)$, which is $O(1/p)$ as $p \to \infty$ and strictly better than the naive choices $s_0 = 1/2$ or $s_0 = 1$ in the regime $p \gg 1$.
 \end{proposition}
 
 \begin{proof}
-The function $h$ maps $s = 1$ (boundary of the natural domain) to $h(1) = 1 - (x-1)/(xp)$, which is the best ``one-step estimate'' of $s^*$ without prior knowledge. Since $s^* = x^{-1/p} = 1 - (\ln x)/p + O(1/p^2)$, the gap is
+Since $s^* = x^{-1/p} = 1 - (\ln x)/p + O(1/p^2)$ and $h(1) = 1 - (x-1)/(xp)$,
 \[
-  |h(1) - s^*| = \left|\frac{x-1}{xp} - \frac{\ln x}{p}\right| + O(1/p^2) = \frac{|x - 1 - x\ln x|}{xp} + O(1/p^2),
+  |h(1) - s^*| \;=\; \left|\frac{x-1}{xp} - \frac{\ln x}{p}\right| + O(1/p^2)
+  \;=\; \frac{|x - 1 - x\ln x|}{xp} + O(1/p^2),
 \]
-which is small compared to the typical initial gaps from arbitrary starting points.
+whereas $|1/2 - s^*| = |1/2 - 1 + (\ln x)/p + O(1/p^2)| = 1/2 + O(1/p)$ and $|1 - s^*| = (\ln x)/p + O(1/p^2)$. Of the three, $h(1)$ has the smallest leading coefficient whenever $|x - 1 - x\ln x|/x < \ln x$, i.e.\ essentially whenever $x > 1$ is not near $1$; the numerical gains are shown in Table~\ref{tab:optimal-start-expo}. The proposition does \emph{not} claim $h(1)$ is globally optimal; it claims only that it is a canonical, $\alpha$-independent choice with this specific quantitative guarantee.
 \end{proof}
 
 \begin{table}[h]
@@ -767,7 +802,8 @@ $(4,2)$ & $0.8409$ & $0.8750$ & $0.034$ & $15$ & $17$ \\
 $(3,8)$ & $0.5000$ & $0.7083$ & $0.208$ & $42$ & $0^*$ \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of iteration counts to reach $|v_n - \alpha| < 10^{-10}$. The optimal starting point $s_0^{\mathrm{opt}} = h(1)$ consistently reduces iterations. (*For $(3,8)$, $s_0 = 1/2$ happens to coincide with $s^*$.)}
+\caption{Comparison of iteration counts to reach $|v_n - \alpha| < 10^{-10}$. The canonical starting point $s_0^{\mathrm{opt}} = h(1)$ consistently reduces iterations. (*For $(3,8)$, $s_0 = 1/2$ happens to coincide with $s^*$.)}
+\label{tab:optimal-start-expo}
 \end{table}
 
 %=====================================================================

@@ -49,10 +49,11 @@
   xleftmargin=1.5em, framexleftmargin=1.5em,
 }
 
-\title{A Formally Verified Multi-Start Steffensen Scheme\\
-for the Equation $z^p = x$ in $\mathbb{C}$\\[0.3cm]
-\normalsize \textit{Lean 4 / Mathlib v4.7.0 development, with a companion\\
-spectral framework on the derivative values at cyclotomic roots}}
+\title{A Formally Verified Pandrosion--Steffensen Scheme\\
+for $z^p = x$ on $\mathbb{R}$ and $\mathbb{C}$\\[0.3cm]
+\normalsize \textit{Lean 4 / Mathlib v4.7.0 development,
+with closed-form real-line analysis\\
+and a companion framework of finite cyclotomic-root identities}}
 \author{Ivan Besevic\\
 \small Independent Mathematical Research\\
 \small \texttt{github.com/ivan-fr/poussiere\_de\_x}}
@@ -525,14 +526,22 @@ $z_0 = 1$.}
 The map $\sigma_{p,x}$ has a super-attractive fixed point at every
 $p$-th root of $1/x$: $\sigma_{p,x}(s^\ast) = s^\ast$ and
 $\sigma_{p,x}^{\prime}(s^\ast) = 0$. On a neighbourhood
-$B(s^\ast, R)$ with $R = R(x, p)$ explicit,
+$B(s^\ast, R_\sigma)$,
 \[
   |\sigma_{p,x}(s) - s^\ast|
-  \;\leq\; K \cdot |s - s^\ast|^2,
+  \;\leq\; K_\sigma \cdot |s - s^\ast|^2,
 \]
-with $K = K(x, p)$ also explicit, satisfying $K \cdot R \leq 1/2$.
-The same bound holds in~$\mathbb{C}$ on $B(\gamma_k, R)$ for every
-cyclotomic anchor $\gamma_k$.
+where the constants admit the explicit forms
+\[
+  K_\sigma \;=\; \left|\frac{h''_{p,x}(s^\ast)}{2\,(1 - \lambda_{p,x})}\right|,
+  \qquad
+  R_\sigma \;=\; \min\!\bigl(1/(2K_\sigma),\; \mathrm{dist}(s^\ast, \mathrm{sing}(\sigma_{p,x}))\bigr),
+\]
+so that $K_\sigma \cdot R_\sigma \leq 1/2$. The same bound holds
+in~$\mathbb{C}$ on $B(\gamma_k, R_\sigma)$ for every cyclotomic anchor
+$\gamma_k$. The explicit formulas are formalized in
+\texttt{Pandrosion/Core/QuadraticBound.lean} and
+\texttt{SteffensenQuadraticBound.lean}.
 \end{proposition}
 
 This is the Schwarz-Pick-type estimate that the multi-start scheme in
@@ -633,9 +642,15 @@ hypotheses of~\cite{mcmullen}.
 root the iteration converges to; this illustrates the classical
 Julia-set obstruction to purely iterative root finders. Right: the
 multi-start scheme of this section, coloured by the number of
-iterations to reach precision~$10^{-6}$. The seed~\eqref{eq:multistart-seed}
-is $\alpha$-dependent; the scheme is therefore not purely iterative in
-the sense of~\cite{mcmullen}.}
+iterations to reach precision~$10^{-6}$ \emph{after choosing a target
+anchor $\alpha$ and applying the $\alpha$-dependent seed}. The two
+panels are therefore not a same-to-same comparison: the left panel
+shows what a parameter-free iteration does, while the right panel
+shows the per-step cost of a scheme that has already spent information
+on choosing $\alpha$. The figure's purpose is to illustrate how the
+seed $\eqref{eq:multistart-seed}$ moves the scheme out of the
+hypotheses of~\cite{mcmullen}, not to claim an algorithmic win over
+Newton.}
 \end{figure}
 
 \subsection{Universal multi-start theorem}
@@ -658,6 +673,18 @@ $N$ is given by Theorem~\ref{thm:eff-kt} below.
 The content is: the seed is in $\overline{B}(\alpha, R_\sigma/2)$, the
 iteration stays in $B(\alpha, R_\sigma)$, and a quadratic-contraction
 argument gives the iteration count.
+
+\begin{remark}[The hypothesis $S_p(\alpha) \neq 0$]
+The non-vanishing condition $S_p(\alpha) \neq 0$ rules out the degenerate
+case where the denominator of $h_{p,x}$ vanishes at the anchor.
+Since $S_p(\alpha) = (\alpha^p - 1)/(\alpha - 1) = (1/x - 1)/(\alpha - 1)$ for
+$\alpha^p = 1/x$ and $\alpha \neq 1$, this is an event of codimension at
+least one in the $(x, p)$-parameter space and in particular holds
+generically; it fails only for specific arithmetic combinations (for
+instance when $\alpha$ is a non-trivial $p$-th root of unity, which
+requires $x = 1$). The Lean corpus carries this hypothesis explicitly in
+the statement.
+\end{remark}
 
 \subsection{Explicit iteration count}
 
@@ -910,13 +937,6 @@ number-theoretic claim is made, and the figure is intended purely as a
 presentation aid.}
 \end{figure}
 
-\subsection{Energy variant}
-
-One can also write $Z_P(s) := \sum_k E_P(\alpha_k)^{-s}$ with
-$E_P(\alpha_k) = P^{\prime}(\alpha_k)^2$. Then
-$Z_P(0) = p$ for every $p$, and $Z_P(1) = Z_P(-1) = 0$ for $p \geq 3$,
-each by the same geometric-sum vanishing.
-
 %======================================================================
 \section{Pandrosion specializations of classical theorems}
 \label{sec:classical}
@@ -941,8 +961,6 @@ are classical. The following table summarizes what is formalized where.
 \S118 & Kronecker (1857) & Applied to cyclotomic anchors with $|\alpha| = 1$. \\
 \S119 & Galois (1832) cyclic action & $\omega \cdot \gamma_k = \gamma_{(k+1) \bmod p}$. \\
 \S120 & McMullen (1987) (See Section \ref{sec:open-problems}.) & Multi-start avoids the obstruction by $\alpha$-dependent seed. \\
-\S121 & Cardano-Tartaglia (1545) & $\gamma_k = \alpha \omega^k$ for $p = 3$. \\
-\S122 & Vieta (1591) & $e_1 = 0$, $e_p = (-1)^{p-1} x$. \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -951,6 +969,16 @@ We stress: none of these are new results. Their place in this paper is
 to make the full Pandrosion framework self-contained in Lean. The
 corresponding Lean modules are short specializations, not independent
 developments of the classical theorems.
+
+\paragraph{Definitional-level items.} Two further modules in the corpus,
+\texttt{PandrosionCardano} (\S121) and \texttt{PandrosionVieta}
+(\S122), record the identities $\gamma_k = \alpha\omega^k$ for $p = 3$
+and $e_1 = 0$, $e_p = (-1)^{p-1} x$ respectively. These follow directly
+from Definition~\ref{def:cyc-anchor} by expansion and, for the cyclotomic
+anchors of $z^p = x$, coincide with the definitions themselves; we
+therefore do not count them as specializations of the classical Cardano
+or Vieta theorems. They are retained in the Lean corpus as named lemmas
+for downstream convenience only.
 
 A representative example.
 
@@ -1024,8 +1052,19 @@ $\mathcal{O}(\log\log(1/\varepsilon))$ deterministic complexity for
 the one-parameter family $z^p = x$, which is not the
 coefficient-uniform problem Smale asks about). Since in neither case
 is there progress worth reporting, we refrain from a dedicated
-subsection and simply record here that these two problems lie
-outside the scope of the corpus.
+subsection and simply record that these two problems lie outside the
+scope of the corpus.
+
+The Lean module
+\texttt{Pandrosion/Core/PandrosionOpenProblems.lean}
+nevertheless carries statement-level \texttt{Prop}s
+(\texttt{lehmer\_conjecture\_statement},
+\texttt{smale17\_deterministic\_statement},
+\texttt{pandrosion\_mahler\_observation}) for historical reasons. These
+are not referenced anywhere else in the corpus, produce no theorems,
+and should be read as frozen records of the discussion above rather
+than as active content. A future cleanup pass will either delete them
+or move them into a separate \texttt{archive} namespace.
 
 \subsection{Summary}
 
