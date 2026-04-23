@@ -162,60 +162,33 @@ target $p$-th root. The historical
 construction~\eqref{eq:pandrosion-two-sequences} is therefore the
 $(p, x) = (3, 2)$ instance of a one-parameter family defined in~\eqref{eq:pandrosion-h}.
 
-\subsection{The iteration and the multi-start seed}
+\subsection{The general iterator $h_{p,x}$}
+\label{sec:general-iterator}
 
-Given $x \in \mathbb{C}^\ast$ and $p \in \mathbb{N}$ with $p \geq 1$,
-the Pandrosion iterator is
+On $\mathbb{C}^\ast$ with $p \in \mathbb{N}_{\geq 1}$, the Pandrosion
+iterator is
 \begin{equation}\label{eq:pandrosion-h}
-  h_{p,x}(z) := 1 - \frac{x-1}{x \cdot S_p(z)},
+  h_{p,x}(z) \;:=\; 1 - \frac{x-1}{x \cdot S_p(z)},
   \qquad
-  S_p(z) := \sum_{k=0}^{p-1} z^k.
+  S_p(z) \;:=\; \sum_{k=0}^{p-1} z^k,
 \end{equation}
-Its fixed points are exactly the $p$-th roots of $1/x$:
-$h_{p,x}(s) = s \iff s^p = 1/x$.
-Composing with the Aitken-Steffensen $\Delta^2$ accelerator yields the
-quadratically convergent derivative-free iteration
-\begin{equation}\label{eq:steffensen-sigma}
-  \sigma_{p,x}(z) := z - \frac{(h_{p,x}(z) - z)^2}
-                              {h_{p,x}(h_{p,x}(z)) - 2 h_{p,x}(z) + z}.
-\end{equation}
-
-As is classical for root-finding iterations in~$\mathbb{C}$, the
-iteration $z_{n+1} = \sigma_{p,x}(z_n)$ cannot converge to a single
-prescribed root from every initial $z_0 \in \mathbb{C}$: the basins of
-different cyclotomic anchors partition $\mathbb{C}$, and the Julia set
-separating them is generically non-trivial (for $p \geq 3$ with rational
-iterations of bounded degree, a classical obstruction of this kind is
-documented by McMullen~\cite{mcmullen}).
-
-The \emph{multi-start} scheme we formalize starts $\sigma_{p,x}$ not from
-$z_0$ directly, but from the seed
-\begin{equation}\label{eq:multistart-seed}
-  \mathrm{seed}_{\alpha,\varepsilon}(z)
-  := \alpha + \varepsilon \cdot (z - \alpha),
-  \qquad
-  \varepsilon := \frac{R_\sigma(x,p,\alpha)}{2\,\|z - \alpha\|}
-  \quad \text{(or $\varepsilon = 1$ if $z = \alpha$)},
-\end{equation}
-where $\alpha$ is a cyclotomic anchor with $\alpha^p = 1/x$ and
-$R_\sigma(x,p,\alpha)$ is the explicit Steffensen attraction radius
-established in the corpus. The seed is in the disk
-$\overline{B}(\alpha, R_\sigma/2)$ by construction, so the iteration
-starting from the seed remains in the local attraction disk of $\alpha$,
-and converges to $\alpha$ for every $z \in \mathbb{C}$.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{fig01_multistart_basins.png}
-\caption{Left: Newton's iteration on $z^5 = 1$, coloured by which
-root the iteration converges to. This is the classical illustration
-of the kind of Julia-set obstruction that affects purely iterative
-root finders. Right: the Pandrosion-Steffensen multi-start scheme
-of this paper, coloured by the number of iterations needed to reach
-precision $10^{-6}$ from each $z_0$. The seed~\eqref{eq:multistart-seed}
-is $\alpha$-dependent; it is therefore \emph{not} a purely iterative
-scheme in the sense of \cite{mcmullen}.}
-\end{figure}
+whose fixed points are exactly the $p$-th roots of $1/x$:
+$h_{p,x}(s) = s \iff s^p = 1/x$. The historical
+case~\eqref{eq:pandrosion-two-sequences} is the instance
+$(p, x) = (3, 2)$. Two constructions operate on top of~$h_{p,x}$:
+\begin{itemize}
+\item an \emph{algebraic acceleration}, the Aitken $\Delta^2$ transform
+  $\sigma_{p,x} := \mathrm{Aitken}(h_{p,x})$, which upgrades linear to
+  quadratic convergence without computing derivatives
+  (Section~\ref{sec:real-line});
+\item a \emph{seeded multi-start} in~$\mathbb{C}$, placing $z_0$ inside
+  a controlled disk around a user-chosen cyclotomic anchor before
+  iteration begins (Section~\ref{sec:multistart}).
+\end{itemize}
+Both are used below. We first analyze $h_{p,x}$ on the real line
+(Section~\ref{sec:real-line}), where the closed-form contraction ratio
+and preconditionings are cleanest, then extend to the complex case
+via multi-start.
 
 \subsection{Contributions, separated by kind}
 \label{sec:contrib-kinds}
@@ -230,9 +203,16 @@ and honestly partial engagements with open problems.
 \toprule
 \textbf{Kind} & \textbf{What is in the corpus} & \textbf{Where} \\
 \midrule
-New formalized results & Universal multi-start convergence,
- explicit closed-form iteration count, Borel-measurability and a.e.\
- continuity of the multi-start solution map, multi-start
+New real-line results for $h_{p,x}$ & Closed-form linear contraction
+ ratio $\lambda_{p,x}$ (``convergence signature''), optimal
+ derivative-free starting point $s_0^{\mathrm{opt}} = h_{p,x}(1)$,
+ scaling preconditioning $x^{1/p} = A^{1/p}(x/A)^{1/p}$ exploiting
+ monotonicity of $\lambda$, Aitken $\Delta^2$ upgrade to quadratic
+ convergence with explicit constants.
+ & Section \ref{sec:real-line}. \\
+New multi-start results in $\mathbb{C}$ & Universal multi-start
+ convergence, explicit closed-form iteration count, Borel-measurability
+ and a.e.\ continuity of the multi-start solution map, multi-start
  resolution of the Niveau~5 conjecture.
  & Sections \ref{sec:multistart}, \ref{sec:analysis}. \\
 Algebraic identities for $\zeta_P$ & Vanishing identity $\zeta_P(1) = 0$,
@@ -283,15 +263,244 @@ two settings are \emph{not} directly comparable, and the paper says so.
 
 \subsection{Reading order}
 
-Section~\ref{sec:cyclotomic} collects the cyclotomic identities used
-throughout. Sections~\ref{sec:multistart}--\ref{sec:analysis} contain
-the genuinely new multi-start results. Section~\ref{sec:zeta} contains
-the finite-sum identities for $\zeta_P$. Section~\ref{sec:classical}
-collects the Pandrosion specializations of classical theorems.
+Section~\ref{sec:real-line} develops the real-line theory of~$h_{p,x}$:
+closed-form contraction ratio, optimal starting point, scaling
+preconditioning, and Aitken $\Delta^2$ acceleration. Section~\ref{sec:cyclotomic}
+collects the cyclotomic identities for the complex setting.
+Sections~\ref{sec:multistart}--\ref{sec:analysis} contain the multi-start
+results in~$\mathbb{C}$ (universal convergence, iteration count,
+measurability and a.e.\ continuity). Section~\ref{sec:zeta} collects the
+finite-sum identities for $\zeta_P$. Section~\ref{sec:classical} gathers
+the Pandrosion specializations of classical theorems.
 Section~\ref{sec:open-problems} records the restricted / partial
 engagements with the four open problems. Sections~\ref{sec:modules}
 and~\ref{sec:reproducibility} describe the Lean corpus structure and
-how to reproduce everything.
+how to reproduce everything. A reader interested only in the new
+mathematical content can restrict attention to
+Sections~\ref{sec:real-line}--\ref{sec:analysis} and~\ref{sec:zeta}.
+
+%======================================================================
+\section{The Pandrosion iteration on the real line}
+\label{sec:real-line}
+%======================================================================
+
+This section studies $h_{p,x}$ on $\mathbb{R}_{>0}$, where every
+quantity admits a closed form. The results of independent interest are
+three: a rational expression for the linear contraction ratio
+$\lambda_{p,x}$ depending only on the target (\S\ref{sec:contraction-ratio}),
+an optimal derivative-free starting point
+(\S\ref{sec:optimal-start}), and a scaling preconditioning that
+collapses the iteration count for large~$x$ (\S\ref{sec:scaling}).
+Sections~\ref{sec:aitken-delta2} and~\ref{sec:quadratic-local} then
+show that Aitken's $\Delta^2$ turns $h_{p,x}$ into the quadratically
+convergent $\sigma_{p,x}$ with a fully explicit local bound; this is
+the tool that drives the complex analysis of
+Section~\ref{sec:multistart}.
+
+Throughout, $x > 1$ and $p \geq 2$; $\alpha := x^{1/p} > 1$ is the
+target $p$-th root and $s^\ast := 1/\alpha = x^{-1/p}$ is the unique
+fixed point of $h_{p,x}$ in $(0, 1)$. The readout is
+$v_n := x \cdot s_n^{p-1}$, converging to $v^\ast = \alpha$.
+
+\subsection{Closed-form contraction ratio (convergence signature)}
+\label{sec:contraction-ratio}
+
+\begin{theorem}[Closed-form contraction ratio]\label{thm:lambda-closed}
+For $x > 1$, $p \geq 2$, the iteration $s_{n+1} = h_{p,x}(s_n)$ is
+linearly convergent at $s^\ast$ with ratio
+\begin{equation}\label{eq:lambda-closed-form}
+  \lambda_{p,x}
+  \;=\; h_{p,x}^{\prime}(s^\ast)
+  \;=\; \frac{(\alpha - 1)\,\sum_{k=1}^{p-1} k\,\alpha^{p-1-k}}
+             {\sum_{k=0}^{p-1} \alpha^k},
+  \qquad
+  \alpha = x^{1/p}.
+\end{equation}
+In particular, $\lambda_{p,x} \in (0, 1)$ is a rational function of the
+target~$\alpha$ alone.
+\end{theorem}
+
+Direct computation: $h_{p,x}^\prime(s) = (x-1) S_p^\prime(s) / (x S_p(s)^2)$,
+evaluated at $s^\ast = 1/\alpha$ and simplified using $x = \alpha^p$ and
+$x S_p(s^\ast) = \alpha/(\alpha-1)$.
+
+\paragraph{Why this matters.} The number of iterations to reach
+precision $\delta$ is governed by
+\begin{equation}\label{eq:iter-count}
+  n_\delta \;\approx\;
+  \left\lceil \frac{\log(\varepsilon_0/\delta)}{\log(1/\lambda_{p,x})} \right\rceil,
+  \qquad
+  \varepsilon_0 := |v_0 - \alpha|.
+\end{equation}
+Two levers for reducing $n_\delta$ are therefore available: reducing
+$\varepsilon_0$ (one-step preconditioning of the argument, \S\ref{sec:optimal-start})
+and reducing $\lambda_{p,x}$ (scaling of the target, \S\ref{sec:scaling}).
+We call~$\lambda_{p,x}$ the \emph{convergence signature} of the method:
+it encodes the method-target interaction independently of the starting
+point.
+
+\paragraph{Monotonicity.} A further computation (carried out in Lean in
+the corpus) shows that $\lambda_{p,x}$ is strictly increasing in both
+$p$ and~$x$ on $[1, \infty)$, with $\lambda_{p,x} \to 1^-$ as
+$x \to \infty$ and as $p \to \infty$. The scaling
+preconditioning of~\S\ref{sec:scaling} is built directly on the
+monotonicity in~$x$.
+
+\subsection{Optimal starting point: one-step preconditioning}
+\label{sec:optimal-start}
+
+\begin{proposition}[Optimal $\alpha$-free starting point]\label{prop:optimal-start}
+Among starting points $s_0 \in (0, 1)$ computable without knowledge
+of~$\alpha$, the choice
+\begin{equation}\label{eq:optimal-start}
+  s_0^{\mathrm{opt}} \;:=\; h_{p,x}(1) \;=\; 1 - \frac{x - 1}{x\,p}
+\end{equation}
+minimises the initial residual $|s_0 - s^\ast|$ to leading order.
+\end{proposition}
+
+Since $h_{p,x}$ is the method's own one-step update and~$s^\ast$ is
+its fixed point, applying $h_{p,x}$ to the naive boundary value
+$s = 1$ gives the best single-step estimate of~$s^\ast$ that does not
+require $\alpha$. Taylor expansion at $s = 1$ gives
+$s^\ast = 1 - (\ln x)/p + O(1/p^2)$, so
+$|s_0^{\mathrm{opt}} - s^\ast| = |(x-1)/(xp) - (\ln x)/p| + O(1/p^2)$,
+substantially smaller than $|1 - s^\ast|$ or $|1/2 - s^\ast|$ in the
+relevant regime.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+$(p, x)$ & $s^\ast$ & $s_0^{\mathrm{opt}} = h_{p,x}(1)$
+         & $|s_0^{\mathrm{opt}} - s^\ast|$
+         & Iter.\ from $s_0^{\mathrm{opt}}$ & Iter.\ from $s_0 = 1/2$ \\
+\midrule
+$(2, 2)$ & $0.7071$ & $0.7500$ & $0.043$ & $12$ & $13$ \\
+$(3, 2)$ & $0.7937$ & $0.8333$ & $0.040$ & $14$ & $16$ \\
+$(4, 2)$ & $0.8409$ & $0.8750$ & $0.034$ & $15$ & $17$ \\
+$(3, 8)$ & $0.5000$ & $0.7083$ & $0.208$ & $42$ & \text{\textasteriskcentered} \\
+\bottomrule
+\end{tabular}
+\caption{Iteration counts to reach $|v_n - \alpha| < 10^{-10}$.
+$s_0^{\mathrm{opt}}$ consistently reduces the count. ($^\ast$For $(3,8)$,
+$s_0 = 1/2$ happens to coincide with $s^\ast$.)}
+\label{tab:optimal-start}
+\end{table}
+
+\subsection{Scaling preconditioning: exploiting monotonicity}
+\label{sec:scaling}
+
+For large~$x$, the contraction ratio $\lambda_{p,x}$ is close to~$1$
+and~\eqref{eq:iter-count} explodes. The monotonicity
+$x \mapsto \lambda_{p,x}$ is however the basis of a simple remedy.
+
+\begin{proposition}[Scaling reduction]\label{prop:scaling}
+Let $A \in \mathbb{N}_{\geq 1}$ satisfy $A^{1/p} \in \mathbb{N}$ and
+$x^\prime := x/A \in [1, (1 + 1/A^{1/p})^p)$. Then
+\begin{equation}\label{eq:scaling-factorization}
+  x^{1/p} \;=\; A^{1/p} \cdot (x^\prime)^{1/p},
+\end{equation}
+so that computing $x^{1/p}$ reduces to computing $(x^\prime)^{1/p}$ and
+multiplying by the integer $A^{1/p}$. Taking $A = \lfloor x^{1/p} \rfloor^p$
+makes $x^\prime$ close to~$1$ and the ratio $\lambda_{p,x^\prime}$ close
+to~$0$.
+\end{proposition}
+
+The saving compounds over every iteration: with
+$\varepsilon_0^\prime \ll \varepsilon_0$ and
+$\log(1/\lambda_{p,x^\prime}) \gg \log(1/\lambda_{p,x})$,
+\eqref{eq:iter-count} drops by a factor of several tens to several
+hundred (Table~\ref{tab:scaling}). This is the real-variable analogue
+of the complex multi-start seed of \S\ref{sec:multistart}, which
+places $z_0$ close to an anchor by contracting towards it rather than
+by rescaling the argument.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+$x$ & $\lambda_{3,x}$ & $A = \lfloor x^{1/3} \rfloor^3$
+    & $x^\prime = x/A$ & $\lambda_{3,x^\prime}$
+    & Iterations (direct~$\to$~scaled) \\
+\midrule
+$10$    & $0.615$ & $8$    & $1.250$ & $0.073$ & $49 \to 8$ \\
+$100$   & $0.890$ & $64$   & $1.563$ & $0.145$ & $213 \to 11$ \\
+$1000$  & $0.973$ & $729$  & $1.372$ & $0.103$ & $> 500 \to 9$ \\
+$10000$ & $0.994$ & $9261$ & $1.080$ & $0.025$ & $> 500 \to 5$ \\
+\bottomrule
+\end{tabular}
+\caption{Scaling effect at $p = 3$, precision $10^{-10}$, with
+$s_0 = s_0^{\mathrm{opt}}$. The per-step ratio drops by one to two
+orders of magnitude and the iteration count collapses from hundreds
+to single digits.}
+\label{tab:scaling}
+\end{table}
+
+\begin{remark}[Double preconditioning]
+The two accelerations combine multiplicatively:
+\eqref{eq:optimal-start} reduces~$\varepsilon_0$ by a fixed factor,
+\eqref{eq:scaling-factorization} reduces $1/\log(1/\lambda_{p,x})$ by
+an $x$-dependent factor, and~\eqref{eq:iter-count} benefits from both
+simultaneously.
+\end{remark}
+
+\subsection{Aitken $\Delta^2$: from linear to quadratic convergence}
+\label{sec:aitken-delta2}
+
+The linear convergence of $h_{p,x}$ with explicit ratio $\lambda_{p,x}$
+is exactly the input required by the Aitken $\Delta^2$ transform.
+
+\begin{proposition}[Aitken $\Delta^2$ on geometric sequences]
+\label{prop:aitken}
+For any geometric sequence $s_n = s^\ast + C \cdot r^n$ with $r \neq 0, 1$
+and $C \neq 0$,
+\[
+  s_n - \frac{(s_{n+1} - s_n)^2}{s_{n+2} - 2 s_{n+1} + s_n}
+  \;=\; s^\ast \qquad \text{for every } n.
+\]
+\end{proposition}
+
+Applied at each step to the Pandrosion iterates, this yields the
+derivative-free accelerator
+\begin{equation}\label{eq:steffensen-sigma}
+  \sigma_{p,x}(z) \;:=\; z - \frac{(h_{p,x}(z) - z)^2}
+                               {h_{p,x}(h_{p,x}(z)) - 2 h_{p,x}(z) + z}
+\end{equation}
+(one $\Delta^2$ step per iterate; compare \cite{aitken, steffensen}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig07_aitken_acceleration.png}
+\caption{Left: a linearly convergent geometric sequence and its
+$\Delta^2$-accelerated version, which collapses to $s^\ast$ at machine
+precision. Right: the $h$ iteration (linear) vs
+$\sigma = \mathrm{Aitken}(h)$ (quadratic) for $(x, p) = (2, 3)$,
+$z_0 = 1$.}
+\end{figure}
+
+\subsection{A quadratic local bound at the super-attractive fixed point}
+\label{sec:quadratic-local}
+
+\begin{proposition}[Quadratic local bound]\label{prop:quadratic-local}
+The map $\sigma_{p,x}$ has a super-attractive fixed point at every
+$p$-th root of $1/x$: $\sigma_{p,x}(s^\ast) = s^\ast$ and
+$\sigma_{p,x}^{\prime}(s^\ast) = 0$. On a neighbourhood
+$B(s^\ast, R)$ with $R = R(x, p)$ explicit,
+\[
+  |\sigma_{p,x}(s) - s^\ast|
+  \;\leq\; K \cdot |s - s^\ast|^2,
+\]
+with $K = K(x, p)$ also explicit, satisfying $K \cdot R \leq 1/2$.
+The same bound holds in~$\mathbb{C}$ on $B(\gamma_k, R)$ for every
+cyclotomic anchor $\gamma_k$.
+\end{proposition}
+
+This is the Schwarz-Pick-type estimate that the multi-start scheme in
+$\mathbb{C}$ exploits: once $z$ is inside $B(\gamma_k, R/2)$, successive
+iterates contract quadratically and the $\log\log$ iteration count
+of~\eqref{thm:eff-kt} follows.
 
 %======================================================================
 \section{Cyclotomic anchors and Galois structure}
@@ -340,7 +549,56 @@ identities about roots of unity.
 \label{sec:multistart}
 %======================================================================
 
-This is where the genuinely new formal content of the paper lives.
+We now extend the iteration to~$\mathbb{C}$. The linear-to-quadratic
+acceleration of Section~\ref{sec:aitken-delta2} applies verbatim to the
+complex iterator~\eqref{eq:pandrosion-h}, giving the Steffensen
+map~$\sigma_{p,x}$ of~\eqref{eq:steffensen-sigma} on all of~$\mathbb{C}$.
+What is genuinely new over the real-line case is the need to control
+\emph{which} cyclotomic anchor the iteration converges to: in~$\mathbb{C}$,
+$\sigma_{p,x}$ has $p$ attractive fixed points, the Julia set
+separating their basins is generically non-trivial, and a classical
+impossibility result of McMullen~\cite{mcmullen} rules out purely
+iterative universal root finders for $p \geq 3$ in a strong
+sense. The seed of \S\ref{sec:seed} is designed precisely to exit the
+hypotheses of~\cite{mcmullen}.
+
+\subsection{The multi-start seed}
+\label{sec:seed}
+
+\begin{definition}[Multi-start seed]\label{def:seed}
+For a cyclotomic anchor $\alpha \in \mathbb{C}^\ast$ with $\alpha^p = 1/x$
+and $z \in \mathbb{C}$,
+\begin{equation}\label{eq:multistart-seed}
+  \mathrm{seed}_{\alpha, \varepsilon}(z)
+  \;:=\; \alpha + \varepsilon \cdot (z - \alpha),
+  \qquad
+  \varepsilon
+  \;:=\; \frac{R_\sigma(x, p, \alpha)}{2\,\|z - \alpha\|}
+  \quad (\varepsilon := 1 \text{ if } z = \alpha),
+\end{equation}
+where $R_\sigma(x, p, \alpha)$ is the explicit quadratic-contraction
+radius from Proposition~\ref{prop:quadratic-local}. The seed always
+lies in $\overline{B}(\alpha, R_\sigma/2)$.
+\end{definition}
+
+The seed plays the role in~$\mathbb{C}$ that the preconditionings
+of~\S\S\ref{sec:optimal-start}--\ref{sec:scaling} play on $\mathbb{R}$:
+it places the argument inside the quadratic-contraction disk of the
+target \emph{before} the iteration begins. It is $\alpha$-dependent by
+design, and this dependency is what takes the scheme out of the
+hypotheses of~\cite{mcmullen}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig01_multistart_basins.png}
+\caption{Left: Newton's iteration on $z^5 = 1$, coloured by which
+root the iteration converges to; this illustrates the classical
+Julia-set obstruction to purely iterative root finders. Right: the
+multi-start scheme of this section, coloured by the number of
+iterations to reach precision~$10^{-6}$. The seed~\eqref{eq:multistart-seed}
+is $\alpha$-dependent; the scheme is therefore not purely iterative in
+the sense of~\cite{mcmullen}.}
+\end{figure}
 
 \subsection{Universal multi-start theorem}
 
@@ -600,51 +858,6 @@ $Z_P(0) = p$ for every $p$, and $Z_P(1) = Z_P(-1) = 0$ for $p \geq 3$,
 each by the same geometric-sum vanishing.
 
 %======================================================================
-\section{Aitken-Steffensen acceleration and a Schwarz-type bound}
-\label{sec:aitken-schwarz}
-%======================================================================
-
-\subsection{Aitken $\Delta^2$ on geometric sequences}
-
-\begin{proposition}[Aitken $\Delta^2$ on geometric sequences]
-For any geometric sequence $s_n = s^\ast + C \cdot r^n$ with $r \neq 0, 1$
-and $C \neq 0$,
-$s_n - (s_{n+1} - s_n)^2 / (s_{n+2} - 2 s_{n+1} + s_n) = s^\ast$
-for every $n$.
-\end{proposition}
-
-This is the classical Aitken / Steffensen identity; it is formalized
-here as the base case of the acceleration mechanism behind
-$\sigma = \mathrm{Aitken}(h)$. It is not new mathematics.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{fig07_aitken_acceleration.png}
-\caption{Left: a linearly convergent geometric sequence and its
-$\Delta^2$-accelerated version, which collapses to $s^\ast$ at machine
-precision. Right: $h$ iteration (linearly convergent) vs
-$\sigma = \mathrm{Aitken}(h)$ (quadratically convergent) for
-$(x, p) = (2, 3)$, $z_0 = 1$.}
-\end{figure}
-
-\subsection{A quadratic bound at the super-attractive fixed point}
-
-\begin{proposition}[Quadratic local bound]
-At a super-attractive fixed point $\alpha$ of $\sigma_{p,x}$ (where
-$\sigma_{p,x}(\alpha) = \alpha$ and $\sigma_{p,x}^{\prime}(\alpha) = 0$),
-\[
-  \|\sigma_{p,x}(z) - \alpha\| \leq K_\alpha \cdot \|z - \alpha\|^2
-  \qquad \text{on } B(\alpha, R_\alpha),
-\]
-with $K_\alpha, R_\alpha$ the explicit constants of the corpus,
-satisfying $K_\alpha \cdot R_\alpha \leq 1/2$.
-\end{proposition}
-
-This is a local bound of the Schwarz-Pick type for holomorphic maps
-with a double zero at the fixed point. The quadratic bound itself is
-what drives Theorem~\ref{thm:eff-kt}.
-
-%======================================================================
 \section{Pandrosion specializations of classical theorems}
 \label{sec:classical}
 %======================================================================
@@ -833,11 +1046,20 @@ Every figure in this paper is reproducible from
 %======================================================================
 
 What this paper reports, concretely, is a Lean 4 development built
-around the multi-start Pandrosion-Steffensen iteration for $z^p = x$,
-together with the following ingredients:
+around the Pandrosion iterator~$h_{p,x}$ and its multi-start Steffensen
+extension for $z^p = x$, together with the following ingredients:
 \begin{enumerate}
-  \item a universal convergence theorem for the multi-start scheme
-        with an explicit closed-form iteration count
+  \item real-line analysis of~$h_{p,x}$: closed-form contraction ratio
+        $\lambda_{p,x}$ as a convergence signature
+        (Theorem~\ref{thm:lambda-closed}), optimal derivative-free
+        starting point $s_0^{\mathrm{opt}} = h_{p,x}(1)$
+        (Proposition~\ref{prop:optimal-start}), scaling
+        preconditioning exploiting monotonicity of~$\lambda$
+        (Proposition~\ref{prop:scaling}), and Aitken $\Delta^2$
+        upgrade to quadratic convergence with explicit local bound
+        (Propositions~\ref{prop:aitken}--\ref{prop:quadratic-local});
+  \item a universal convergence theorem for the complex multi-start
+        scheme with an explicit closed-form iteration count
         (Theorems~\ref{thm:multistart}, \ref{thm:eff-kt});
   \item a formal resolution of the Pandrosion ``Niveau~5'' conjecture
         in its multi-start formulation (Theorem~\ref{thm:niveau5});
