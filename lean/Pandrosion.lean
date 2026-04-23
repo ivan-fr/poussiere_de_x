@@ -92,4 +92,6 @@ import Pandrosion.Core.PandrosionJuliaNull
 import Pandrosion.Core.FatouContinuity
 import Pandrosion.Core.PandrosionZeta
 import Pandrosion.Core.PandrosionSpectralDeterminant
+import Pandrosion.Core.PandrosionHigherVanishing
+import Pandrosion.Core.PandrosionRiemannAnalogy
 import Pandrosion.Legacy
