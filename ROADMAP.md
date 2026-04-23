@@ -102,7 +102,11 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   Théorème Banach paramétré sur x downscope (demande paramétrer
   toutes les bornes polynomiales sur x, hors budget).
 
-- [ ] **§84 HalfPlane generic x** : généraliser §67.
+- [x] **§84 HalfPlaneGenericX** : invariance demi-plan paramétrée
+  pour `pandrosion_h_C x 3` à `x ∈ (1, 8]`. `Re h(x, 3, z) ≥ 1/2`
+  sur `Re z ≥ 1/2` via majoration `(x-1)/(x·‖Sp(z)‖) ≤ 1/2`. La plage
+  `x ≤ 8` correspond exactement à `α(x) ≥ 1/2` (§83). Tendsto et
+  Banach paramétrés sur x restent pour preuve future.
 
 ### Périphériques — si budget restant
 
