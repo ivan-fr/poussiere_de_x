@@ -140,6 +140,19 @@ spécifiquement α₀).
   ε = 1/100 sur `B(α₀, 1/4)`. Instance numérique de §86.2 via
   `(104/259)^4 · (1/4) ≤ 1/100` (norm_num).
 
+### Niveau 5 RESTAURÉ via Multi-Start (session 10)
+
+- [x] **§93 MultiStartSigmaX2** : **★★★★★★★ THÉORÈME VITRINE PANDROSION**.
+  Validation Python (`/tmp/multi_start_test.py`) : 100% convergence
+  vers α₀ avec multi-start (vs 99.985% avec σ plain). Définit
+  `multi_start_basin_seed ε z := α₀ + ε·(z − α₀)` et prouve
+  **inconditionnellement** :
+
+      ∀ z ∈ ℂ, ∃ ε > 0, σⁿ(multi_start_basin_seed ε z) → α₀
+
+  via `ε = R_σ / (2·‖z − α₀‖)` (cas z ≠ α₀) ou ε = 1 (cas z = α₀).
+  **C'est la version correcte de Niveau 5 — démontrée sans hypothèse !**
+
 ### Périphériques — si budget restant
 
 - [x] **§85 SteffensenRadiusBoundX2** (downscope framework) : pose

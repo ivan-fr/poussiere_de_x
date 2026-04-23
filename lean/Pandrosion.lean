@@ -78,4 +78,5 @@ import Pandrosion.Core.SteffensenRadiusBoundX2
 import Pandrosion.Core.BottcherSeriesStubX2
 import Pandrosion.Core.CombinedDomainX2
 import Pandrosion.Core.IterCountConcreteX2
+import Pandrosion.Core.MultiStartSigmaX2
 import Pandrosion.Legacy
