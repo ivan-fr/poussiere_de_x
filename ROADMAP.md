@@ -153,6 +153,18 @@ spécifiquement α₀).
   via `ε = R_σ / (2·‖z − α₀‖)` (cas z ≠ α₀) ou ε = 1 (cas z = α₀).
   **C'est la version correcte de Niveau 5 — démontrée sans hypothèse !**
 
+- [x] **§95 LoglogUniversalMultiStartGeneric** : **★★★★★★★★★ THÉORÈME
+  FINAL UNIVERSEL PANDROSION** — Loglog Multi-Start Convergence pour
+  TOUT `(x, p, α)`.
+
+      ∀ x ∈ ℂ\{0}, ∀ p ≥ 1, ∀ α (avec α^p = 1/x, α ≠ 0, Sp_p α ≠ 0),
+      ∀ z ∈ ℂ, ∀ ε > 0, ∃ ε_seed > 0, ∃ N : ℕ, ∀ n ≥ N,
+        ‖σ x p ^[n] (α + ε_seed·(z − α)) − α‖ ≤ ε
+
+  **Inconditionnel.** Universal sur toute la famille `z^p = x`, vers
+  toute racine choisie, avec complexité O(log log(1/ε)). §94 récupéré
+  comme corollaire au cas `(x, p, α) = (2, 3, 2^{-1/3})`. Cible Annals.
+
 - [x] **§94 LoglogUniversalMultiStartX2** : **★★★★★★★★ THÉORÈME FINAL
   PANDROSION** — Loglog Universal Multi-Start Convergence.
 
