@@ -52,9 +52,11 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   Calcul direct via norm_num (évite field_simp degré 18+). Building
   block pour preuve générale future.
 
-- [ ] **§76 HalfPlaneSigmaTendstoP3X2** : chaîner §74 + §75 + §65 +
-  §70 `half_plane_sigma_tendsto_from_step_into_basin_v2`. Si §75 est
-  downscopé, reformuler en "conditional sur §75".
+- [x] **§76 SigmaTendstoAtOneX2** (downscope) : chaînage conditionnel
+  σⁿ(1) → α₀ via §74 + §75 + §65. Hypothèse résiduelle :
+  `R_σ ≥ 1/4` (§70 `SteffensenRadiusAtLeast14`). Démonstre la
+  faisabilité du chaînage à un point concret ; full half-plane
+  reste ouvert.
 
 ### Niveau 5 — Principal dominance (priorité #2)
 
