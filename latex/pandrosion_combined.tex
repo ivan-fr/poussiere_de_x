@@ -1258,20 +1258,20 @@ $z \neq \alpha$. Define the seed parameter
 \[
   \varepsilon_{\mathrm{seed}} \;:=\; \frac{R_\sigma(x,p,\alpha)}{2\,\|z - \alpha\|},
 \]
-which depends only on $(x, p, \alpha, z)$ (not on $\varepsilon$). Then for
-every target accuracy $\varepsilon > 0$, the integer
-$N := N_{\mathrm{eff}}(K_\sigma, R_\sigma, \varepsilon)$ of
+which depends only on $(x, p, \alpha, z)$. Then for every target accuracy
+$\delta > 0$, the integer
+$N := N_{\mathrm{eff}}(K_\sigma, R_\sigma, \delta)$ of
 Theorem~\ref{thm:eff-kt} satisfies
 \[
   \forall n \geq N: \quad
   \big\|\sigma_{p,x}^n(\mathrm{seed}_{\alpha, \varepsilon_{\mathrm{seed}}}(z))
-        - \alpha\big\| \;\leq\; \varepsilon.
+        - \alpha\big\| \;\leq\; \delta.
 \]
 The case $z = \alpha$ is trivial (take $\varepsilon_{\mathrm{seed}} := 1$ and
 $N := 0$). The construction separates cleanly into two levels: the seed
 parameter $\varepsilon_{\mathrm{seed}}$ and the admissible radius $R_\sigma$
 are functions of $(x, p, \alpha, z)$ alone, while the iteration count $N$
-alone depends on the target accuracy $\varepsilon$.
+alone depends on the target accuracy $\delta$.
 \end{theorem}
 
 \begin{proof}
@@ -1293,7 +1293,7 @@ Setting $e_n := \|w_n - \alpha\|$, one has $e_0 \leq R_\sigma/2$ and $e_{n+1} \l
 \end{proof}
 
 \begin{remark}[The hypothesis $S_p(\alpha) \neq 0$]
-The condition $S_p(\alpha) \neq 0$ rules out the degenerate case where the denominator of $h_{p,x}$ vanishes at the anchor. Since $S_p(\alpha) = (\alpha^p - 1)/(\alpha - 1)$ for $\alpha \neq 1$, this is an event of codimension at least one in the parameter space and in particular holds generically; it fails only for specific arithmetic combinations (for instance when $\alpha$ is a non-trivial $p$-th root of unity, requiring $x = 1$).
+The condition $S_p(\alpha) \neq 0$ rules out the degenerate case where the denominator of $h_{p,x}$ vanishes at the anchor. Since $S_p(\alpha) = (\alpha^p - 1)/(\alpha - 1)$ for $\alpha \neq 1$, one has $S_p(\alpha) = 0$ iff $\alpha^p = 1$ with $\alpha \neq 1$, which combined with $\alpha^p = 1/x$ forces $x = 1$ and $\alpha$ a non-trivial $p$-th root of unity. The hypothesis therefore fails on a single point of the $x$-line, and holds for every $x \neq 1$.
 \end{remark}
 
 \subsection{Explicit iteration count}
@@ -1315,7 +1315,7 @@ Asymptotically $N_{\mathrm{eff}} \sim \log_2 \log(1/\varepsilon)$.
 \end{theorem}
 
 \begin{proof}
-Set $u_n := K e_n$, so $u_0 \leq KR < 1$ and $u_{n+1} \leq u_n^2$. By induction $u_n \leq u_0^{2^n} \leq (KR)^{2^n}$. We want $u_n \leq K\varepsilon$, i.e.\ $(KR)^{2^n} \leq K\varepsilon$. Taking logarithms (both sides of absolute value less than~$1$, so both $\log(KR)$ and $\log(K\varepsilon)$ are negative), this is equivalent to $2^n \cdot \log(KR) \leq \log(K\varepsilon)$, i.e.\ $2^n \geq \log(K\varepsilon)/\log(KR)$, i.e.\
+Set $u_n := K e_n$, so $u_0 \leq KR < 1$ and $u_{n+1} \leq u_n^2$. By induction $u_n \leq u_0^{2^n} \leq (KR)^{2^n}$. We want $u_n \leq K\varepsilon$, i.e.\ $(KR)^{2^n} \leq K\varepsilon$. Since $KR < 1$ and $K\varepsilon < 1$, both $\log(KR)$ and $\log(K\varepsilon)$ are negative; dividing by $\log(KR) < 0$ reverses the inequality direction and gives $2^n \geq \log(K\varepsilon)/\log(KR)$, i.e.\
 \[
   n \;\geq\; \log_2 \Bigl\lceil \frac{\log(K\varepsilon)}{\log(KR)} \Bigr\rceil_+,
 \]
@@ -1371,7 +1371,7 @@ a finite Boolean combination of closed (resp.\ open) half-planes in $\mathbb{C}$
 
 \emph{(ii) Null boundary.} Squaring $\|\gamma_j - z\| = \|\gamma_k - z\|$ and expanding in real coordinates yields the affine equation
 \[
-  B_{jk} = \bigl\{z \in \mathbb{C} : \mathrm{Re}((\gamma_k - \gamma_j)\overline{z}) = \tfrac12(|\gamma_k|^2 - |\gamma_j|^2)\bigr\},
+  B_{jk} = \bigl\{z \in \mathbb{C} : \mathrm{Re}\bigl(\overline{(\gamma_k - \gamma_j)}\,z\bigr) = \tfrac12(|\gamma_k|^2 - |\gamma_j|^2)\bigr\},
 \]
 a strict affine subspace of $\mathbb{C} \cong \mathbb{R}^2$ (Hausdorff dimension $1$). Each $B_{jk}$ therefore has two-dimensional Lebesgue measure zero. A finite union of null sets is null, so $\mathrm{vol}(\mathrm{VorBdy}) = 0$.
 
