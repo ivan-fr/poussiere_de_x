@@ -1,8 +1,21 @@
 """
 Numerically verify monotonicity of lambda_{p,x} in (p, alpha).
-Check several proof strategies.
+Also verifies the closed-form identities:
+  B_p(alpha) = (alpha-1) N_p D_p + p D_p - alpha^p N_p
+            = D_p(alpha)^2 - alpha^p N_p(alpha)
+            = sum_{j=1}^{p} j alpha^{j-1}
+  P_p(alpha) = numerator of d/dalpha log(lambda_{p, alpha^p}) after
+              common-denom reduction by (alpha-1) N_p D_p
+            = p * D_p'(alpha)
+            = p * sum_{j=1}^{p-1} j alpha^{j-1}
+symbolically for p up to 20 using SymPy, if available.
 """
 import math
+try:
+    import sympy as sp
+    _HAS_SYMPY = True
+except ImportError:
+    _HAS_SYMPY = False
 
 
 def lam(p, alpha):
@@ -41,3 +54,33 @@ for p in [2, 3, 4, 5, 7, 10]:
         Np = sum(k * alpha ** (p - 1 - k) for k in range(1, p))
         diff = p * Dp - alpha ** p * Np
         print(f"  p={p}, alpha={alpha}: p D_p - alpha^p N_p = {diff:+.4f}")
+
+
+# ---------------------------------------------------------------------------
+# (5) Symbolic verification of B_p and P_p closed forms
+# ---------------------------------------------------------------------------
+if _HAS_SYMPY:
+    print()
+    print("=" * 72)
+    print("(5) Symbolic verification of closed forms (requires SymPy):")
+    alpha = sp.Symbol("alpha")
+    def N(p): return sum(k * alpha ** (p - 1 - k) for k in range(1, p))
+    def D(p): return sum(alpha ** k for k in range(p))
+    def Bp(p):
+        return sp.expand((alpha - 1) * N(p) * D(p) + p * D(p) - alpha ** p * N(p))
+    def Pp(p):
+        logderiv = sp.diff(sp.log((alpha - 1) * N(p) / D(p)), alpha)
+        return sp.expand(sp.simplify(logderiv * (alpha - 1) * N(p) * D(p)))
+    def closed_B(p): return sp.expand(sum(j * alpha ** (j - 1) for j in range(1, p + 1)))
+    def closed_P(p): return sp.expand(p * sum(j * alpha ** (j - 1) for j in range(1, p)))
+
+    all_ok = True
+    for p in range(2, 21):
+        b_ok = sp.simplify(Bp(p) - closed_B(p)) == 0
+        p_ok = sp.simplify(Pp(p) - closed_P(p)) == 0
+        all_ok = all_ok and b_ok and p_ok
+    print(f"  B_p = sum_{{j=1}}^{{p}} j alpha^{{j-1}}  : verified for 2 <= p <= 20 -> {all_ok}")
+    print(f"  P_p = p * sum_{{j=1}}^{{p-1}} j alpha^{{j-1}}  : verified for 2 <= p <= 20 -> {all_ok}")
+else:
+    print()
+    print("SymPy not available; skipping symbolic closed-form verification.")

@@ -79,10 +79,14 @@ closed-form iteration count, the Borel-measurability and a.e.\ continuity
 of the resulting solution map, and a set of elementary algebraic identities
 for the finite series
 $\zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s}$;
-\emph{(b)~Lean specializations of classical theorems (Banach 1922, Gauss 1799,
-Aitken 1926, Schwarz 1890, Cardano 1545, Vieta 1591, Kronecker 1857, Galois
-1832, Aberth--Ehrlich 1967/1973) to the Pandrosion setting — these are not
-new mathematics, only new formalizations};
+\emph{(b)~Lean specializations of classical theorems (Banach 1922,
+Aitken 1926, Schwarz 1890, Kronecker 1857, Aberth--Ehrlich 1967/1973)
+to the Pandrosion setting — these are not new mathematics, only new
+formalizations. Three further modules
+(\texttt{PandrosionCardano}, \texttt{PandrosionVieta},
+\texttt{PandrosionGalois}) record definitional-level identities for the
+cyclotomic anchors of $z^p = x$ and are not counted as specializations
+of the classical theorems};
 \emph{(c)~two short structural observations: a compliance interface
 for the Kung--Traub upper bound for $c \geq 3$, and a statement-level
 recording of McMullen 1987. Two other classical themes (Lehmer's
@@ -208,8 +212,7 @@ and honestly partial engagements with open problems.
 \textbf{Kind} & \textbf{What is in the corpus} & \textbf{Where} \\
 \midrule
 New real-line results for $h_{p,x}$ & Closed-form linear contraction
- ratio $\lambda_{p,x}$ (called the ``convergence signature'' for
- presentation; this is of course just $h_{p,x}'(s^\ast)$), optimal
+ ratio $\lambda_{p,x} = h_{p,x}'(s^\ast)$, canonical
  derivative-free starting point $s_0^{\mathrm{opt}} = h_{p,x}(1)$,
  scaling preconditioning $x^{1/p} = A^{1/p}(x/A)^{1/p}$ exploiting
  monotonicity of $\lambda$, Aitken $\Delta^2$ upgrade to quadratic
@@ -227,9 +230,10 @@ Elementary algebraic identities for $\zeta_P$ & Vanishing identity $\zeta_P(1) =
  only as a presentation device and claim no number-theoretic content. \\
 Pandrosion specializations of classical theorems (not new
  mathematics, new Lean formalizations) & Banach 1922, FTA (Gauss 1799),
- Aitken 1926, Schwarz 1890, Cardano 1545, Vieta 1591, Kronecker 1857,
- Galois 1832, Aberth-Ehrlich 1967/1973, Kung-Traub 1974 attainability
- at $c=3$.
+ Aitken 1926, Schwarz 1890, Kronecker 1857, Aberth--Ehrlich 1967/1973,
+ Kung--Traub 1974 attainability at $c=3$. Cardano, Vieta, and Galois
+ modules exist in the corpus but are purely definitional for $z^p=x$
+ and not counted here.
  & Section \ref{sec:classical}. \\
 Two short structural observations
  & Kung--Traub upper bound for $c \geq 3$ (compliance interface, not a
@@ -331,7 +335,7 @@ target $p$-th root and $s^\ast := 1/\alpha = x^{-1/p}$ is the unique
 fixed point of $h_{p,x}$ in $(0, 1)$. The readout is
 $v_n := x \cdot s_n^{p-1}$, converging to $v^\ast = \alpha$.
 
-\subsection{Closed-form contraction ratio (convergence signature)}
+\subsection{Closed-form contraction ratio}
 \label{sec:contraction-ratio}
 
 \begin{theorem}[Closed-form contraction ratio]\label{thm:lambda-closed}
@@ -364,9 +368,8 @@ precision $\delta$ is governed by
 Two levers for reducing $n_\delta$ are therefore available: reducing
 $\varepsilon_0$ (one-step preconditioning of the argument, \S\ref{sec:optimal-start})
 and reducing $\lambda_{p,x}$ (scaling of the target, \S\ref{sec:scaling}).
-We call~$\lambda_{p,x}$ the \emph{convergence signature} of the method:
-it encodes the method-target interaction independently of the starting
-point.
+Thus $\lambda_{p,x}$ encodes the method-target interaction independently
+of the starting point.
 
 \paragraph{Monotonicity and limits.} A further computation (carried out in
 Lean in the corpus) shows that $\lambda_{p,x}$ is strictly increasing in both
@@ -577,19 +580,11 @@ generates the splitting field.}
 
 \subsection{Cyclic permutation of the anchors}
 
-\begin{theorem}[Cyclic action on anchors]\label{thm:galois}
-For every $p \geq 1$ and $\alpha \in \mathbb{C}^\ast$, with
-$\omega = e^{2\pi i / p}$,
-$\omega \cdot \gamma_k = \gamma_{(k+1) \bmod p}$ for every
-$k \in \mathbb{Z}/p\mathbb{Z}$.
-\end{theorem}
-
-This is Galois 1832 \emph{specialized} to $z^p = x$; it is not new
-mathematics. The Lean proof uses $\omega^p = 1$ and
-\texttt{Nat.div\_add\_mod}. Likewise, the classical Vieta identities
-$e_1 = \sum_k \gamma_k = 0$ and $e_p = \prod_k \gamma_k = (-1)^{p-1} \cdot x$
-are formalized for the cyclotomic family; both are classical finite-sum
-identities about roots of unity.
+By direct expansion of Definition~\ref{def:cyc-anchor}, $\omega\cdot\gamma_k
+= \gamma_{(k+1)\bmod p}$ for every $k$ (with $\omega^p = 1$). Likewise
+$\sum_k \gamma_k = 0$ and $\prod_k \gamma_k = (-1)^{p-1}\cdot x$. These
+are definitional consequences for $z^p = x$, not specializations of the
+Galois or Vieta theorems; we use them freely in the sequel.
 
 %======================================================================
 \section{Universal multi-start convergence}
@@ -638,19 +633,17 @@ hypotheses of~\cite{mcmullen}.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{fig01_multistart_basins.png}
-\caption{Left: Newton's iteration on $z^5 = 1$, coloured by which
-root the iteration converges to; this illustrates the classical
-Julia-set obstruction to purely iterative root finders. Right: the
-multi-start scheme of this section, coloured by the number of
-iterations to reach precision~$10^{-6}$ \emph{after choosing a target
-anchor $\alpha$ and applying the $\alpha$-dependent seed}. The two
-panels are therefore not a same-to-same comparison: the left panel
-shows what a parameter-free iteration does, while the right panel
-shows the per-step cost of a scheme that has already spent information
-on choosing $\alpha$. The figure's purpose is to illustrate how the
-seed $\eqref{eq:multistart-seed}$ moves the scheme out of the
-hypotheses of~\cite{mcmullen}, not to claim an algorithmic win over
-Newton.}
+\caption{Structure of the multi-start seed. Each point $z \in \mathbb{C}$
+is mapped to $\mathrm{seed}_{\alpha,\varepsilon_\mathrm{seed}}(z)$,
+which lies in $\overline{B}(\alpha, R_\sigma/2)$ regardless of $z$;
+the iteration is then run from the seed. Colour indicates the number
+of iterations needed to reach precision $10^{-6}$ after the seed is
+applied. The figure illustrates how
+seed~\eqref{eq:multistart-seed} places the scheme outside the
+hypotheses of~\cite{mcmullen} by making the iterate entry point
+$\alpha$-dependent; we explicitly do \emph{not} compare with Newton's
+basin structure here, since the two schemes do not solve the same
+problem (Newton is parameter-free, multi-start is $\alpha$-targeted).}
 \end{figure}
 
 \subsection{Universal multi-start theorem}
@@ -842,100 +835,50 @@ measurable everywhere, continuous outside the Voronoï boundary of the
 cyclotomic anchor set, with that boundary Lebesgue-null.
 
 %======================================================================
-\section{Algebraic identities for the finite series $\zeta_P$}
+\section{Elementary identities on the derivative values at cyclotomic roots}
 \label{sec:zeta}
 %======================================================================
 
-This section collects finite-sum identities about the derivative
-values at cyclotomic roots. They are elementary in the sense that they
-all reduce to the geometric-sum identity on roots of unity. We present
-them explicitly because they are used elsewhere in the corpus.
-
-\subsection{Definition}
-
-For $P(z) = z^p - 1/x$, $\alpha_k = \gamma_k$, and
-$P^{\prime}(\alpha_k) = p \cdot \alpha_k^{p-1} = p/(x\,\alpha_k)$, put
+For $P(z) = z^p - 1/x$ with $\alpha^p = 1/x$ and cyclotomic anchors
+$\alpha_k = \gamma_k$ (Definition~\ref{def:cyc-anchor}), one has
+$P'(\alpha_k) = p\,\alpha_k^{p-1} = p/(x\,\alpha_k)$. Define
 \begin{equation}\label{eq:pandrosion-zeta}
-  \zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s}
-              = \sum_{k=1}^p (p \cdot \alpha_k^{p-1})^{-s}
+  \zeta_P(s) := \sum_{k=1}^p P'(\alpha_k)^{-s}
+             = (x/p)^{s}\sum_{k=1}^p \alpha_k^{s}.
 \end{equation}
-and $\nu_k := 1/P^{\prime}(\alpha_k) = x \alpha_k / p$.
+Every identity used elsewhere in the corpus about the values
+$P'(\alpha_k)$ reduces to the geometric-sum vanishing
+$\sum_{k=0}^{p-1}\omega^{ks} = 0$ for $\omega = e^{2\pi i/p}$ and
+$p \nmid s$. We record the three forms that Lean modules cite directly.
 
-\subsection{Finite identities}
-
-\begin{proposition}[Vanishing identity]\label{thm:zeta-vanish}
-For $p \geq 2$,
-$\zeta_P(1) = \sum_{k=1}^p 1/P^{\prime}(\alpha_k) = \sum_{k=1}^p x \alpha_k / p = 0$.
+\begin{proposition}[Three elementary identities]\label{thm:zeta-all}
+Let $p \geq 2$ and $x \neq 0$.
+\begin{enumerate}
+  \item[(i)] For every $s \in \mathbb{Z}$ with $1 \leq s \leq p - 1$,
+    \[
+      \zeta_P(s) = \sum_{k=1}^p P'(\alpha_k)^{-s} = 0.
+    \]
+    In particular $\zeta_P(1) = 0$.
+  \item[(ii)] For every $m \in \mathbb{Z}$ with $0 \leq m \leq p - 2$,
+    $\sum_{k=1}^p \alpha_k^m / P'(\alpha_k) = 0$; for $m = p - 1$,
+    $\sum_{k=1}^p \alpha_k^{p-1}/P'(\alpha_k) = 1$.
+  \item[(iii)] $\prod_{k=1}^p P'(\alpha_k) = (-1)^{p-1}\,p^p/x^{p-1}$.
+\end{enumerate}
+Items~(i) and~(ii) are the same statement under $s \leftrightarrow m+1$
+via $1/P'(\alpha_k) = x\alpha_k/p$; item~(iii) is the product
+counterpart. All three follow from $\sum_k \omega^{ks} = 0$ for
+$p \nmid s$.
 \end{proposition}
 
-\begin{proposition}[Higher vanishing / normalization]\label{thm:zeta-higher}
-For $p \geq 2$ and $0 \leq m \leq p - 2$,
-$\sum_{k=1}^p \alpha_k^m / P^{\prime}(\alpha_k) = 0$.
-For $m = p-1$, $\sum_{k=1}^p \alpha_k^{p-1} / P^{\prime}(\alpha_k) = 1$.
-\end{proposition}
-
-\begin{proposition}[Product formula]\label{thm:spectral-det}
-For $x \neq 0$, $p \geq 1$, $\alpha^p = 1/x$,
-$\prod_{k=1}^p P^{\prime}(\alpha_k) = (-1)^{p-1} \cdot p^p / x^{p-1}$.
-\end{proposition}
-
-All three reduce to the geometric-sum identity
-$\sum_k \omega^{ks} = 0$ for $s$ not a multiple of $p$, with
-$\omega = e^{2\pi i/p}$. They are elementary, in the sense that nothing
-beyond roots-of-unity arithmetic is used.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{fig09_spectral_balance.png}
-\caption{Left: the $\nu_k$ as oriented vectors in $\mathbb{C}$ for
-$(x, p) = (2, 5)$; the head-to-tail sum closes back to the origin,
-visualising $\sum_k \nu_k = 0$. Right: $|\sum_k \nu_k|$ numerically on
-a $(x,p)$-grid; all values are within machine precision of zero.}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{fig06_spectral_determinant.png}
-\caption{Numerical values of $\prod_k P^{\prime}(\alpha_k)$ matching the
-closed-form of Proposition~\ref{thm:spectral-det} exactly; and its
-log-scale growth in $p$ for fixed $x$.}
-\end{figure}
-
-\subsection{Vanishing of $\zeta_P$ at integer arguments}
-
-The following proposition is \emph{not} a new identity: it is the
-$s \leftrightarrow m+1$ relabeling of Proposition~\ref{thm:zeta-higher}.
-We record it separately only because its statement uses the letter
-$s$ (as in $\zeta_P(s)$) rather than the exponent~$m$, and because
-downstream Lean modules cite this form directly.
-
-\begin{proposition}[Vanishing of $\zeta_P$ on $1 \leq s \leq p-1$]
-\label{thm:zeta-RH}
-For $p \geq 2$, $x \neq 0$, $\alpha^p = 1/x$, and $s \in \mathbb{Z}$ with
-$1 \leq s \leq p-1$,
-\[
-  \zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s} = 0.
-\]
-\end{proposition}
-
-Proof. From $P'(\alpha_k) = p/(x\,\alpha_k)$ one gets
-$P'(\alpha_k)^{-s} = (x/p)^s\, \alpha_k^s$, so
-$\zeta_P(s) = (x/p)^s \sum_k \alpha_k^s$. Applying
-Proposition~\ref{thm:zeta-higher} with $m = s - 1 \in \{0, 1, \dots, p-2\}$
-(using $1/P'(\alpha_k) = x\alpha_k/p$) gives $\sum_k \alpha_k^s = 0$,
-and the conclusion follows.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{fig05_riemann_analogy.png}
-\caption{A typographic correspondence table between the Riemann zeta
-function and the finite Pandrosion series $\zeta_P$. The left column
-records classical facts; the right column records elementary identities
-from this section. The two columns share a \emph{visual} shape but the
-right-hand identities all reduce to roots-of-unity arithmetic; no
-number-theoretic claim is made, and the figure is intended purely as a
-presentation aid.}
-\end{figure}
+We keep this section deliberately short: the identities are logged
+because the Lean modules
+\texttt{PandrosionZeta.lean},
+\texttt{PandrosionHigherVanishing.lean}, and
+\texttt{PandrosionSpectralDeterminant.lean} cite them by name, not
+because there is substantial mathematics here. The shape of~(i)--(ii)
+is reminiscent of vanishing identities for classical arithmetic zeta
+functions, but the analogy is typographic only and no number-theoretic
+claim is made.
 
 %======================================================================
 \section{Pandrosion specializations of classical theorems}
@@ -959,7 +902,6 @@ are classical. The following table summarizes what is formalized where.
 \S115 & (See Section \ref{sec:open-problems}.) & Restricted to $z^p = x$. \\
 \S117 & Aberth-Ehrlich (1967/1973) & Multi-start realizes their scheme for $z^p = x$. \\
 \S118 & Kronecker (1857) & Applied to cyclotomic anchors with $|\alpha| = 1$. \\
-\S119 & Galois (1832) cyclic action & $\omega \cdot \gamma_k = \gamma_{(k+1) \bmod p}$. \\
 \S120 & McMullen (1987) (See Section \ref{sec:open-problems}.) & Multi-start avoids the obstruction by $\alpha$-dependent seed. \\
 \bottomrule
 \end{tabular}
@@ -970,15 +912,16 @@ to make the full Pandrosion framework self-contained in Lean. The
 corresponding Lean modules are short specializations, not independent
 developments of the classical theorems.
 
-\paragraph{Definitional-level items.} Two further modules in the corpus,
-\texttt{PandrosionCardano} (\S121) and \texttt{PandrosionVieta}
-(\S122), record the identities $\gamma_k = \alpha\omega^k$ for $p = 3$
-and $e_1 = 0$, $e_p = (-1)^{p-1} x$ respectively. These follow directly
-from Definition~\ref{def:cyc-anchor} by expansion and, for the cyclotomic
-anchors of $z^p = x$, coincide with the definitions themselves; we
-therefore do not count them as specializations of the classical Cardano
-or Vieta theorems. They are retained in the Lean corpus as named lemmas
-for downstream convenience only.
+\paragraph{Definitional-level items (not listed above).} Three further
+modules, \texttt{PandrosionCardano} (\S121), \texttt{PandrosionVieta}
+(\S122), and \texttt{PandrosionGalois} (\S119), record the identities
+$\gamma_k = \alpha\omega^k$ for $p = 3$, $e_1 = 0$ and $e_p = (-1)^{p-1}x$,
+and $\omega\cdot\gamma_k = \gamma_{(k+1)\bmod p}$ respectively. For the
+monomial family $z^p = x$ all three are direct expansions of
+Definition~\ref{def:cyc-anchor} and do not rely on the classical Cardano,
+Vieta, or Galois theorems as such. We therefore do not count them as
+specializations of those theorems; they remain in the Lean corpus as
+named lemmas for downstream convenience only.
 
 A representative example.
 
@@ -1090,12 +1033,13 @@ The 121-module corpus is organised in dependency layers:
         rate, global loglog convergence, real-line $p = 2$
         unconditional discharge.
   \item \textbf{Multi-start} (\S95--\S101): universal convergence,
-        target selection, the multi-start reformulation of the
-        ``Niveau~5'' a.e.-convergence statement (Theorem~\ref{thm:niveau5}
-        — note that the plain-iteration version is numerically
-        \emph{false}; what the module establishes is the multi-start
-        theorem, not a proof of the original a.e.\ statement),
-        explicit iteration count.
+        target selection, the multi-start a.e.-convergence
+        reformulation of Theorem~\ref{thm:niveau5} (the
+        plain-iteration version is numerically \emph{false}; what the
+        module establishes is the multi-start theorem, not a proof of
+        the original a.e.\ statement), explicit iteration count.
+        Module names prefixed \texttt{Niveau5*} are historical
+        bookkeeping and will be renamed in a future cleanup pass.
   \item \textbf{Measure/topology} (\S102--\S105): Borel measurability,
         Voronoï frontier Lebesgue-null, a.e.\ continuity.
   \item \textbf{Finite-zeta identities} (\S106--\S111): the identities
@@ -1199,6 +1143,7 @@ Section~\ref{sec:open-problems}.
 \begin{thebibliography}{99}
 \bibitem{leanprover} de Moura, L., Ullrich, S., \emph{The Lean 4 Theorem Prover and Programming Language}, CADE-28, Springer LNCS (2021).
 \bibitem{mathlib} The Mathlib Community, \emph{Mathlib: A unified library of mathematics formalized}, \url{github.com/leanprover-community/mathlib4}.
+\bibitem{numrecipes} W.~H.~Press, S.~A.~Teukolsky, W.~T.~Vetterling, B.~P.~Flannery, \emph{Numerical Recipes: The Art of Scientific Computing}, 3rd ed., Cambridge University Press, 2007.
 \bibitem{cardano} Cardano, G., \emph{Ars Magna} (1545), Cap.~XI.
 \bibitem{vieta} Viète, F., \emph{Opera Mathematica} (1591).
 \bibitem{gauss} Gauss, C.F., Thesis on the fundamental theorem of algebra (1799).
