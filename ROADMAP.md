@@ -40,10 +40,12 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   Acquis : `SigmaClosedStepIntoBasinX2` défini, cas `z = α₀` prouvé,
   chaînage conditionnel vers §70 via §75 documenté.
 
-- [ ] **§74 SigmaStepIntoBasinX2 — full** : étendre §73 à `Re z ≥ 1/2`
-  par découpage en régions (`[1/2, 2]` traité séparément via borne
-  polynomiale, `[2, ∞)` par asymptotique). Utiliser `sigma_x2_closed`
-  comme handle.
+- [x] **§74 SigmaConcretePointsX2** (downscope) : full sur tout le
+  demi-plan reste hors budget. Cette session ajoute des **vérifications
+  concrètes à points nommés** : `σ_closed(1) = 353/444`, `σ_closed(2) =
+  5571/6888`, et `|σ_closed(z) - α₀| < 1/4` à ces deux points (via
+  `α₀ ∈ [3/4, 1]` + arithmétique linéaire). Building blocks pour
+  preuve full future.
 
 - [ ] **§75 steffensen_step_C ↔ sigma_x2_closed** : prouver
   l'équivalence formelle à `x = 2, p = 3` en factorisant la `field_simp`

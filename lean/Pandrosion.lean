@@ -69,4 +69,5 @@ import Pandrosion.Core.AlphaX2P4
 import Pandrosion.Core.AlphaGenericX
 import Pandrosion.Core.AlphaGenericPX
 import Pandrosion.Core.HalfPlaneGenericX
+import Pandrosion.Core.SigmaConcretePointsX2
 import Pandrosion.Legacy
