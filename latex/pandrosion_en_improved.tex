@@ -76,7 +76,10 @@ At each finite step of Pandrosion's construction, there remains a gap $\eps_n = 
 
 \medskip
 
-To our knowledge, the explicit expression for $\lambda_{p,x}$ in equation~\eqref{eq:lambda_general} is not recorded in standard numerical analysis textbooks (such as Stoer--Bulirsch~\cite{stoer} or the third edition of \emph{Numerical Recipes}~\cite{numrecipes}) nor in the historical literature on cube duplication.  We therefore include its derivation here for completeness.
+\paragraph{Positioning and related work.}
+Rational iterations for $p$-th roots are a classical topic with a large literature: Newton's method applied to $f(u) = u^p - x$, Halley's method, and more generally Schröder's (1870) and König's (1884) families produce iterations of arbitrary order with explicit asymptotic constants, and Traub's \emph{Iterative Methods for the Solution of Equations} (1964) systematizes the analysis of fixed-point iterations and their acceleration. The derivative-free counterpart via Aitken--Steffensen (1926/1933) is also standard and appears in every textbook on numerical analysis~\cite{stoer,numrecipes}.
+What is specific to the iteration~\eqref{eq:pandrosion_gen} below is that it arises directly from Pandrosion's geometric construction, \emph{without} being derived as Newton or Schröder applied to a particular polynomial: it is a rational iteration with linear (not quadratic) order, whose contraction ratio admits the closed form~\eqref{eq:lambda_general} as a rational function of $\alpha = x^{1/p}$.
+We have not located this closed form, together with its monotonicity in $(p,x)$ and its use to drive a scaling preconditioning, in the textbooks~\cite{stoer,numrecipes} or the historical literature on cube duplication, but we make no claim that the iteration itself is genuinely new: the contribution is to record the profile of a specific historical iteration and to show how standard acceleration devices (Aitken $\Delta^2$, scaling) interact with it.
 
 \medskip
 
@@ -179,7 +182,9 @@ Pandrosion's construction relies on Thales' theorem applied to a rectangle. Cons
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.52\textwidth]{pandrosion_geometry.pdf}
+  \IfFileExists{pandrosion_geometry.pdf}
+    {\includegraphics[width=0.52\textwidth]{pandrosion_geometry.pdf}}
+    {\fbox{\parbox{0.52\textwidth}{\centering \vspace{2em}\textit{Figure pandrosion\_geometry.pdf not found.}\vspace{2em}}}}
   \caption{Pandrosion's geometric construction for $p=3$, $x=2$.
   The blue horizontal lines (steps $n=0,1,2,3$) converge toward the dashed red line,
   which corresponds to $v^* = \sqrt[3]{2}$.}
@@ -297,7 +302,7 @@ where we used $\alpha^p - 1 = (\alpha-1)\sum_{k=0}^{p-1}\alpha^k$. This establis
 \end{proof}
 
 \begin{remark}
-The contraction ratio $\lambda_{p,x}$ is entirely determined by $\alpha = x^{1/p}$: the target itself dictates the rate at which Pandrosion's method approaches it. This is the \textbf{convergence signature} of the method.
+The contraction ratio $\lambda_{p,x}$ is entirely determined by $\alpha = x^{1/p}$: the target itself dictates the rate at which Pandrosion's method approaches it. We will occasionally refer to $\lambda_{p,x}$, viewed as a rational function of $\alpha$, as the \emph{convergence signature} of the method. This is purely terminological --- $\lambda_{p,x}$ is of course nothing more than $h'(s^*)$, the standard asymptotic error constant of a linearly convergent fixed-point iteration --- and we introduce the name only to make the dependence on the target (rather than on the starting point) verbally prominent.
 \end{remark}
 
 \subsection{Closed forms for \texorpdfstring{$p=2$}{p=2} and \texorpdfstring{$p=3$}{p=3}}
@@ -370,7 +375,9 @@ For $p=3$, $x=2$ ($\lambda_{3,2} \approx 0.220$): $10$ decimal digits of accurac
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{pandrosion_figures.pdf}
+  \IfFileExists{pandrosion_figures.pdf}
+    {\includegraphics[width=\textwidth]{pandrosion_figures.pdf}}
+    {\fbox{\parbox{0.9\textwidth}{\centering \vspace{2em}\textit{Figure pandrosion\_figures.pdf not found.}\vspace{2em}}}}
   \caption{\textbf{Left:} Cobweb diagram of the iteration $s_{n+1} = h(s_n)$ for
   $p=3$, $x=2$, starting at $s_0=0.875$. The spiral converges to $s^* = 2^{-1/3}$
   with rate $\lambda_{3,2} \approx 0.220$.
@@ -495,7 +502,12 @@ Derivative required & No & No & No & Yes \\
 
 Pandrosion's method occupies an intermediate position among order-1 methods: it is significantly faster than bisection ($\lambda_{3,2} \approx 0.22$ versus $0.50$) while remaining purely geometric in nature (requiring no derivative computation).  Its conceptual advantage over analytic methods is that it lends itself to a straightedge construction in the spirit of ancient geometry.
 
-The coexistence of four distinct residual profiles for the same target $\alpha = \cbrt{2}$ illustrates the central thesis: \textbf{the residual profile is a property of the method, not of the number.}
+\begin{remark}[On fair comparison]
+\label{rem:fair-comparison}
+The iteration counts above are per-iterate, \emph{not} per-function-evaluation. Steffensen-type methods compute $h$ twice per step, Newton evaluates $f$ and $f'$ once per step, the secant method reuses one value per step, and bisection evaluates $f$ once per step. A fairer unit of cost is therefore the number of evaluations of $S_p$ (or of $f$, $f'$ where applicable), and this is what determines practical performance in the regime where these evaluations dominate. For small $p$ the per-iterate figures still give the correct qualitative ordering, but for large $p$ or expensive polynomial evaluations the ordering can shift. We report per-iterate counts because they match the structure of the theorems (Theorem~\ref{thm:lambda} is a statement about $\lambda_{p,x}^n$, not about wall time).
+\end{remark}
+
+The coexistence of four distinct error laws for the same target $\alpha = \cbrt{2}$ illustrates a structural point: the rate at which a fixed-point iteration approaches a given number depends on the iteration, not on the number; conversely, once the iteration is fixed, the target determines the rate through $\lambda_{p,x}$.
 
 %=====================================================================
 \section{Functional properties of \texorpdfstring{$\lambda_{p,x}$}{lambda}}
@@ -771,7 +783,9 @@ Evaluations of $S_p$ & --- & $6$ (total) \\
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{pandrosion_steffensen.pdf}
+  \IfFileExists{pandrosion_steffensen.pdf}
+    {\includegraphics[width=\textwidth]{pandrosion_steffensen.pdf}}
+    {\fbox{\parbox{0.9\textwidth}{\centering \vspace{2em}\textit{Figure pandrosion\_steffensen.pdf not found.}\vspace{2em}}}}
   \caption{\textbf{Left:} Error decay comparison for $\cbrt{2}$.
   Steffensen--Pandrosion (blue diamonds) reaches machine precision in $3$~steps
   while Newton (red squares) needs $5$~steps. The faded grey line shows plain
@@ -783,8 +797,8 @@ Evaluations of $S_p$ & --- & $6$ (total) \\
   \label{fig:steffensen}
 \end{figure}
 
-\begin{remark}[A bridge between ancient and modern]
-The Steffensen--Pandrosion method is particularly striking: it takes a purely geometric, ancient construction (Pandrosion, order~1) and, through a universal algebraic acceleration (Aitken, 1926), produces a derivative-free, quadratically convergent method.  This provides a concrete bridge between ancient geometric approximation and modern numerical analysis, demonstrating that the ``slow'' linear convergence of Pandrosion is not an intrinsic limitation but rather a platform for acceleration.
+\begin{remark}
+The construction illustrates, on a specific example, a standard point of acceleration theory: once an iteration converges linearly with a known ratio, Aitken $\Delta^2$ upgrades it to an order-$2$ scheme with a bounded constant. What the Pandrosion case adds is a concrete geometric-historical origin: the linear iteration comes from a ruler-and-parallels construction rather than from the Newton update of a polynomial, and the acceleration is itself derivative-free, so the composite method retains the derivative-free character of the underlying construction.
 \end{remark}
 
 %=====================================================================

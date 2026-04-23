@@ -75,26 +75,28 @@ The paper reports three kinds of content, explicitly separated:
 \emph{(a)~results that are new in this formalization}, concerning the
 universal convergence of the multi-start scheme with an explicit
 closed-form iteration count, the Borel-measurability and a.e.\ continuity
-of the resulting solution map, a formal resolution of the historical
-``Niveau 5'' conjecture of the Pandrosion family in its multi-start form,
-and a set of algebraic identities for the finite series
+of the resulting solution map, and a set of elementary algebraic identities
+for the finite series
 $\zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s}$;
-\emph{(b)~classical theorems (Banach 1922, FTA Gauss 1799, Aitken 1926,
-Schwarz 1890, Cardano 1545, Vieta 1591, Kronecker 1857, Galois 1832,
-Aberth-Ehrlich 1967/1973) specialized in Lean to the Pandrosion setting};
-\emph{(c)~honestly partial engagements with four open or hard problems
-(Kung-Traub upper bound for $c \geq 3$, Lehmer's Mahler-measure conjecture,
-Smale's~17th problem, and a full formalization of McMullen 1987),
-where we state what is proven, what is conditional, and what remains out of
-reach of the current corpus}.
+\emph{(b)~Lean specializations of classical theorems (Banach 1922, Gauss 1799,
+Aitken 1926, Schwarz 1890, Cardano 1545, Vieta 1591, Kronecker 1857, Galois
+1832, Aberth--Ehrlich 1967/1973) to the Pandrosion setting — these are not
+new mathematics, only new formalizations};
+\emph{(c)~short structural observations touching four classical or hard
+problems (Kung--Traub upper bound for $c \geq 3$, Lehmer's Mahler-measure
+conjecture, Smale's~17th problem, McMullen 1987), where in each case we
+state explicitly that the observation does not attempt to address the
+original problem at its full generality}.
 
 The Lean development comprises 121 modules with zero \texttt{sorry} and
 an audited dependency closure reducing to
 $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$.
-We make no claim that the multi-start framework solves any classical
-open conjecture at full generality; the results it provides on
-those problems are either restricted specializations or structural
-reductions, clearly identified as such.
+We make no claim of progress on any of the four classical open
+problems listed under~(c). The material in Section~\ref{sec:open-problems}
+consists of restricted specializations or trivial observations on a very
+narrow polynomial family, clearly identified as such. The main contribution
+of the corpus is the formalization itself and the multi-start convergence
+analysis of~(a), not the engagements in~(c).
 \end{abstract}
 
 \tableofcontents
@@ -204,7 +206,8 @@ and honestly partial engagements with open problems.
 \textbf{Kind} & \textbf{What is in the corpus} & \textbf{Where} \\
 \midrule
 New real-line results for $h_{p,x}$ & Closed-form linear contraction
- ratio $\lambda_{p,x}$ (``convergence signature''), optimal
+ ratio $\lambda_{p,x}$ (called the ``convergence signature'' for
+ presentation; this is of course just $h_{p,x}'(s^\ast)$), optimal
  derivative-free starting point $s_0^{\mathrm{opt}} = h_{p,x}(1)$,
  scaling preconditioning $x^{1/p} = A^{1/p}(x/A)^{1/p}$ exploiting
  monotonicity of $\lambda$, Aitken $\Delta^2$ upgrade to quadratic
@@ -212,25 +215,28 @@ New real-line results for $h_{p,x}$ & Closed-form linear contraction
  & Section \ref{sec:real-line}. \\
 New multi-start results in $\mathbb{C}$ & Universal multi-start
  convergence, explicit closed-form iteration count, Borel-measurability
- and a.e.\ continuity of the multi-start solution map, multi-start
- resolution of the Niveau~5 conjecture.
+ and a.e.\ continuity of the multi-start solution map.
  & Sections \ref{sec:multistart}, \ref{sec:analysis}. \\
-Algebraic identities for $\zeta_P$ & Vanishing identity $\zeta_P(1) = 0$,
+Elementary algebraic identities for $\zeta_P$ & Vanishing identity $\zeta_P(1) = 0$,
  $(p-1)$ higher-vanishing relations + normalization, closed-form product
  $\prod_k P^{\prime}(\alpha_k) = (-1)^{p-1} p^p/x^{p-1}$.
- & Section \ref{sec:zeta}. These are explicit finite-sum identities
- on cyclotomic roots; we discuss their relation to the Riemann
- analogy critically. \\
+ & Section \ref{sec:zeta}. All of these reduce to the geometric-sum
+ identity on roots of unity; we use a ``finite Riemann-style'' vocabulary
+ only as a presentation device and claim no number-theoretic content. \\
 Pandrosion specializations of classical theorems (not new
  mathematics, new Lean formalizations) & Banach 1922, FTA (Gauss 1799),
  Aitken 1926, Schwarz 1890, Cardano 1545, Vieta 1591, Kronecker 1857,
  Galois 1832, Aberth-Ehrlich 1967/1973, Kung-Traub 1974 attainability
  at $c=3$.
  & Section \ref{sec:classical}. \\
-Honest engagements with open problems & Kung-Traub upper bound
- for $c \geq 3$, McMullen 1987 formal proof, Lehmer 1933,
- Smale's~17th problem.
- & Section \ref{sec:open-problems}. \\
+Short structural observations touching classical or open problems
+ & Kung--Traub upper bound for $c \geq 3$; a statement-level recording
+ of McMullen 1987 without a formal proof; a trivial Mahler-measure
+ observation on the family $\beta = x\alpha$; a scope-restricted
+ deterministic algorithm bearing only on~$z^p = x$ (not on general
+ polynomials as in Smale's~17th problem).
+ & Section \ref{sec:open-problems}. Each of these is clearly flagged as
+ either a reduction, a trivial observation, or a restricted special case. \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -239,27 +245,56 @@ The paper does \emph{not} claim to solve any of the four classical open
 problems in Section~\ref{sec:open-problems}. Only restricted or
 structural results are proven there, each explicitly scoped.
 
+\subsection{Related work}
+\label{sec:related-work}
+
+Rational iterations for $p$-th roots are classical. Newton's method applied
+to $f(u) = u^p - x$, Halley's method, and the Schröder (1870) and
+König (1884) families supply iterations of arbitrary order with explicit
+asymptotic constants; Traub's \emph{Iterative Methods for the Solution
+of Equations} (1964) is the canonical systematic treatment of fixed-point
+iterations and their acceleration, and Ortega--Rheinboldt (1970) treats
+the multidimensional analogue. Aitken--Steffensen $\Delta^2$ acceleration
+is standard textbook material~\cite{numrecipes}. The cyclotomic identities
+in Section~\ref{sec:zeta} are elementary consequences of the geometric-sum
+vanishing $\sum_k \omega^{ks} = 0$ on roots of unity, which is used in
+every undergraduate treatment of cyclotomic polynomials.
+
+What is specific to this paper is: (i) the rational iteration~$h_{p,x}$
+arising from the Pandrosion construction, which is \emph{not} the Newton
+iteration of any polynomial and has order one rather than two; (ii) the
+closed-form ratio $\lambda_{p,x}$ and the preconditioning built on its
+monotonicity; (iii) the multi-start seed of~\S\ref{sec:seed} together
+with the measurability/a.e.-continuity analysis of the induced solution
+map; (iv) the Lean~4 formalization itself, which is the main deliverable.
+We do not claim the iteration itself, or the ancillary identities, are
+novel mathematics; the contribution is to assemble them in a verified
+formal framework and to record the specific Pandrosion parameters.
+
 \subsection{On naming and scope}
 
 A remark on terminology. We define
 $\zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s}$ as a finite series
-of $p$ complex terms; we prove a set of algebraic identities for it
+of $p$ complex terms. All the identities we prove for it
 (including $\zeta_P(1) = 0$ and a closed-form for
-$\prod_k P^{\prime}(\alpha_k)$). These identities have the shape of
-classical cyclotomic sum identities, and they are formally analogous to
-certain values of the Riemann zeta function; we record the analogy
-where it is useful, but do \emph{not} claim any substantial number-theoretic
-content beyond the elementary finite-sum algebra of roots of unity. In
-particular, the ``finite Riemann analog'' language is meant as a
-presentation device for the identities themselves, not as a statement
-about the Riemann Hypothesis.
+$\prod_k P^{\prime}(\alpha_k)$) reduce to the geometric-sum identity on
+roots of unity and are elementary. We occasionally use a vocabulary
+reminiscent of the Riemann zeta function (``integer zeros of $\zeta_P$'')
+because the shape of the identities mirrors it, but we do \emph{not}
+claim any number-theoretic content and the analogy should be read as
+typographic, not mathematical. In particular, nothing in this paper
+bears on the Riemann Hypothesis or on any transcendental question.
 
-Similarly, the phrase ``Smale's~17th problem'' appears in
-Section~\ref{sec:open-problems} only to locate the context. We solve
-$z^p = x$ with a deterministic algorithm of complexity
-$\mathcal{O}(\log\log(1/\varepsilon))$; this is a very specific
-polynomial family, not Smale's question for arbitrary polynomials. The
-two settings are \emph{not} directly comparable, and the paper says so.
+Likewise, the phrase ``Smale's~17th problem'' in
+Section~\ref{sec:open-problems} is used only to locate context. We
+provide a deterministic algorithm of complexity
+$\mathcal{O}(\log\log(1/\varepsilon))$ for $z^p = x$; this is a very
+specific polynomial family, not Smale's question on arbitrary
+polynomials, and the two settings are not directly comparable.
+The phrase ``Niveau 5 conjecture'' is our own internal name for an
+a.e.-convergence statement on the plain Pandrosion iteration that we
+use as a target of Theorem~\ref{thm:niveau5}; it does not appear under
+this label in the classical literature.
 
 \subsection{Reading order}
 
@@ -649,21 +684,24 @@ dashed line is $\log(1/\varepsilon)$; it is shown only for visual
 reference, not as an algorithmic comparison.}
 \end{figure}
 
-\subsection{The Niveau~5 conjecture of the Pandrosion family}
+\subsection{An a.e.-convergence statement for the plain iteration}
 
-The Pandrosion family has a historical conjecture, here called
-Niveau~5, of the form
+It is natural to ask whether the plain Steffensen iteration
+$\sigma_{p,x}$ converges for almost every starting point to the
+principal anchor~$\alpha_0$:
 \[
   \forall^{\mathrm{a.e.}}\,z \in \mathbb{C}: \quad
   \sigma_{p,x}^n(z) \xrightarrow{n \to \infty} \alpha_0.
 \]
-Numerical experiments with the plain iteration at $(x, p) = (2, 3)$
-(Python sweep over $[-3, 3]^2$ at $200 \times 200$ resolution) show
-that roughly $0.015\%$ of initial points converge instead to a
-non-principal anchor. The conjecture is therefore \emph{false} in its
-original plain-iteration form.
+Numerical experiments at $(x, p) = (2, 3)$ (Python sweep over
+$[-3, 3]^2$ at $200 \times 200$ resolution) show that roughly
+$0.015\%$ of initial points converge instead to a non-principal
+anchor, so the plain-iteration version of the statement is
+\emph{false}. We refer to this local statement as ``Niveau~5'' in
+the Lean corpus for internal bookkeeping; the label is ours and does
+not correspond to any externally attested conjecture.
 
-\begin{theorem}[Multi-start resolution of Niveau~5]\label{thm:niveau5}
+\begin{theorem}[Multi-start version]\label{thm:niveau5}
 Under the standard hypotheses on $(x, p, \alpha)$, the multi-start
 reformulation
 \[
@@ -671,12 +709,11 @@ reformulation
   \sigma_{p,x}^n(\alpha + \varepsilon_{\mathrm{seed}} \cdot (z - \alpha))
   \xrightarrow{n \to \infty} \alpha
 \]
-is provable unconditionally.
+holds unconditionally.
 \end{theorem}
 
-This is Theorem~\ref{thm:multistart} applied with the reformulated
-statement. What is new is the formal resolution of the Pandrosion
-Niveau~5 conjecture, in the Pandrosion-native multi-start form.
+This is Theorem~\ref{thm:multistart} applied to the reformulated
+statement.
 
 \subsection{Arbitrary target selector}
 
@@ -818,9 +855,14 @@ closed-form of Proposition~\ref{thm:spectral-det} exactly; and its
 log-scale growth in $p$ for fixed $x$.}
 \end{figure}
 
-\subsection{A finite analog of a Riemann identity, carefully scoped}
+\subsection{Vanishing of $\zeta_P$ at integer arguments}
 
-\begin{proposition}[Integer zeros of $\zeta_P$]\label{thm:zeta-RH}
+The following proposition is a direct consequence of the geometric-sum
+vanishing on roots of unity. We record it here because it is used
+elsewhere in the corpus; nothing about it is number-theoretic.
+
+\begin{proposition}[Vanishing of $\zeta_P$ on $1 \leq s \leq p-1$]
+\label{thm:zeta-RH}
 For $p \geq 2$, $x \neq 0$, $\alpha^p = 1/x$, and $s \in \mathbb{Z}$ with
 $1 \leq s \leq p-1$,
 \[
@@ -828,26 +870,21 @@ $1 \leq s \leq p-1$,
 \]
 \end{proposition}
 
-This proposition is elementary: with the same $\omega = e^{2\pi i / p}$,
-$\zeta_P(s) = (x/p)^s \sum_k \alpha_k^s$ vanishes because
-$\sum_{k=0}^{p-1} (\omega^s)^k = 0$ when $p \nmid s$. We record this
-under the suggestive label ``integer zeros of $\zeta_P$'' in analogy
-with the trivial zeros of the Riemann zeta function, but we do
-\emph{not} suggest any deeper relation to the classical Riemann
-Hypothesis. The Pandrosion series is a finite sum of $p$ complex
-numbers; its zeros at integer arguments are an arithmetic statement on
-the cyclotomic family, not a transcendental one. The analogy table
-below is given for exposition, and we do not extract any quantitative
-consequence from it.
+With $\omega = e^{2\pi i / p}$, one has
+$\zeta_P(s) = (x/p)^s \sum_k \alpha_k^s$, and the sum vanishes because
+$\sum_{k=0}^{p-1} (\omega^s)^k = 0$ when $p \nmid s$. The proof is one
+line.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{fig05_riemann_analogy.png}
-\caption{Correspondence table between the Riemann zeta function and
-the finite Pandrosion series $\zeta_P$. The left column records
-classical facts; the right column records the identities of
-Section~\ref{sec:zeta}. The two columns are \emph{structurally} similar;
-no substantial number-theoretic content is claimed.}
+\caption{A typographic correspondence table between the Riemann zeta
+function and the finite Pandrosion series $\zeta_P$. The left column
+records classical facts; the right column records elementary identities
+from this section. The two columns share a \emph{visual} shape but the
+right-hand identities all reduce to roots-of-unity arithmetic; no
+number-theoretic claim is made, and the figure is intended purely as a
+presentation aid.}
 \end{figure}
 
 \subsection{Energy variant}
@@ -907,84 +944,89 @@ a $1/4$-contraction on $B(\alpha, R_\alpha/2)$, itself a consequence
 of $K_\alpha \cdot R_\alpha \leq 1/2$.
 
 %======================================================================
-\section{Open problems, partial and conditional results}
+\section{Short structural observations on four classical problems}
 \label{sec:open-problems}
 %======================================================================
 
-This section records four classical open or hard problems where the
-corpus offers partial or restricted results. We describe carefully what
-is proven, what is only conditional, and what remains out of reach.
+We record four places where the Pandrosion setting intersects a
+classical or open problem. None of the material below constitutes
+progress on the underlying problem; each subsection states what the
+corpus contributes and, just as importantly, what it does not.
 
-\subsection{Kung-Traub upper bound for $c \geq 3$ (open since 1974)}
+\subsection{Kung--Traub upper bound for $c \geq 3$ (open since 1974)}
 
 The conjecture $q \leq 2^{c-1}$ is proven for $c = 2$. Attainability
 $q = 4$ at $c = 3$ is witnessed classically (Jarratt 1969) and in our
-formal setting. The upper bound for $c \geq 3$ is open.
+formal setting.
 
 \smallskip
 
-\textbf{What the corpus provides.} A structural reduction: every
-\texttt{DerivativeFreeMethod} in the corpus \emph{by construction}
-carries the compliance field $q \leq 2^{c-1}$. This is \emph{not} a
-proof of the Kung-Traub conjecture; it is a compliance interface for
-instances of \texttt{DerivativeFreeMethod}. The conjecture itself is
-restated as a named \texttt{Prop}.
+\textbf{What the corpus provides.} An interface: every
+\texttt{DerivativeFreeMethod} in the corpus carries a
+\emph{compliance field} asserting $q \leq 2^{c-1}$ for its own
+instance. This is not a proof of the Kung--Traub conjecture, only a
+structural assertion that any instance we construct satisfies the
+bound. The conjecture itself is recorded as a named \texttt{Prop};
+the general case for $c \geq 3$ remains open.
 
-\subsection{McMullen 1987 (theorem, not formalized in Lean)}
+\subsection{McMullen 1987 (recorded but not formalized)}
 
-McMullen's barrier is a classical theorem. A full formal proof in Lean
-requires Fatou--Julia and post-critically-finite complex-dynamic tools
-that are not present in Mathlib v4.7.0.
-
-\smallskip
-
-\textbf{What the corpus provides.} The statement is recorded as a named
-\texttt{Prop}. Separately, the multi-start scheme is proven to be
-non-purely-iterative (the seed depends on $\alpha$), and to converge
-universally in that setting. This does not reproduce McMullen's
-impossibility result; it shows that our scheme is outside of its
-hypotheses.
-
-\subsection{Lehmer's conjecture (open since 1933)}
-
-Lehmer 1933 posits $M(\beta) \geq 1.17628\ldots$ for every
-algebraic integer $\beta$ not a root of unity. This is open.
+McMullen's barrier is a classical theorem. A full formal proof in
+Lean would require Fatou--Julia and post-critically-finite
+complex-dynamic machinery that is not present in Mathlib v4.7.0.
 
 \smallskip
 
-\textbf{What the corpus provides.} For the specific family
-$\beta := x \cdot \alpha$ with $x \in \mathbb{N}_{\geq 2}$ and
-$\alpha^p = 1/x$, one has $\beta^p = x^{p-1}$ and hence $\beta$ is
-an algebraic integer whose Mahler measure satisfies
-$M(\beta) = x^{p-1} \geq 2 > 1.17628\ldots$
+\textbf{What the corpus provides.} The statement is recorded as a
+named \texttt{Prop}; it is \emph{not} formally proven.
+Independently, Theorem~\ref{thm:multistart} shows that our multi-start
+scheme has an $\alpha$-dependent seed and therefore does not fall
+under McMullen's hypotheses on purely iterative universal root
+finders. This observation places our scheme outside the hypothesis
+of~\cite{mcmullen}; it does not reproduce or challenge the theorem.
+
+\subsection{Lehmer's conjecture: a trivial observation only}
+
+Lehmer's 1933 conjecture posits $M(\beta) \geq 1.17628\ldots$ for
+every non-cyclotomic algebraic integer $\beta$, and remains open.
 
 \smallskip
 
-This is an observation, not progress on Lehmer: we are far from the
-extremal regime where the conjecture is hard.
+\textbf{What the corpus provides.} A trivial observation, not in any
+sense progress. For $x \in \mathbb{N}_{\geq 2}$ and $\alpha^p = 1/x$,
+the element $\beta := x \cdot \alpha$ satisfies $\beta^p = x^{p-1}$,
+hence $M(\beta) = x^{p-1} \geq 2$. The relevant regime for Lehmer is
+$M(\beta)$ just above~$1$, where the conjecture is hard; our family
+lies arbitrarily far from it. We record the observation only to
+document that the Pandrosion cyclotomic anchors produce algebraic
+integers whose Mahler measure is easy to compute.
 
-\subsection{Smale's~17th problem (partly open)}
+\subsection{Smale's~17th problem: a scope-restricted algorithm}
 
 Smale's~17th problem asks for a deterministic algorithm of
-poly-logarithmic average complexity for polynomial root-finding
-\emph{of arbitrary polynomials}. Bürgisser-Cucker (Annals of Math
-2011) solved the average-case probabilistic version. The deterministic
-general case is open.
+poly-logarithmic average complexity for the root-finding problem
+\emph{on arbitrary polynomials}. Bürgisser--Cucker (2011) solved the
+probabilistic average-case version. The deterministic general case
+is open.
 
 \smallskip
 
-\textbf{What the corpus provides.} For the restricted family $z^p = x$,
-the multi-start scheme is a deterministic algorithm of complexity
-$\mathcal{O}(\log\log(1/\varepsilon))$. This is a result on a very
-specific polynomial family; it is \emph{not} a deterministic solution
-of Smale's question on general polynomials. The two settings are not
-directly comparable.
+\textbf{What the corpus provides.} For the single-monomial family
+$z^p = x$, the multi-start scheme is a deterministic algorithm of
+complexity $\mathcal{O}(\log\log(1/\varepsilon))$. This is a
+statement on the narrowest possible polynomial family (one complex
+parameter, no other coefficients) and the two settings are not
+directly comparable; we do not view this as progress on Smale's
+problem, and neither should a reader.
 
 \subsection{Summary}
 
-No claim is made that any of the four problems above is solved. What
-the Lean corpus provides on each is restricted or conditional, as
-stated.
+No claim is made that any of the four problems above is solved, or
+even substantively advanced. The material in this section consists of
+a compliance interface, a recording of a classical statement, a
+trivial observation, and a scope-restricted special case. Readers
+primarily interested in the mathematics should focus on
+Sections~\ref{sec:real-line}--\ref{sec:zeta}.
 
 %======================================================================
 \section{Structure of the Lean corpus}
@@ -1061,32 +1103,33 @@ extension for $z^p = x$, together with the following ingredients:
   \item a universal convergence theorem for the complex multi-start
         scheme with an explicit closed-form iteration count
         (Theorems~\ref{thm:multistart}, \ref{thm:eff-kt});
-  \item a formal resolution of the Pandrosion ``Niveau~5'' conjecture
-        in its multi-start formulation (Theorem~\ref{thm:niveau5});
   \item a Borel-measurability and a.e.-continuity analysis of the
         induced solution map (Theorems~\ref{thm:borel}--\ref{thm:ae-continuous});
-  \item a set of elementary identities for the finite series
+  \item a set of elementary finite-sum identities for the series
         $\zeta_P(s) := \sum_k P^{\prime}(\alpha_k)^{-s}$
-        (Section~\ref{sec:zeta});
+        (Section~\ref{sec:zeta}), all reducing to roots-of-unity arithmetic;
   \item Lean specializations of classical theorems to the Pandrosion
         setting (Section~\ref{sec:classical});
-  \item restricted or conditional engagements with four classical open
-        problems (Section~\ref{sec:open-problems}).
+  \item four short structural observations where the Pandrosion setting
+        intersects a classical or open problem
+        (Section~\ref{sec:open-problems}); these are restricted,
+        trivial, or purely interface-level, as marked.
 \end{enumerate}
 
-The paper does not claim progress on the classical open conjectures
+The paper does not claim progress on the classical open problems
 themselves at their full generality. The main value of the corpus is
 as a self-contained Lean development of a multi-start root-finding
-scheme and its spectral identities.
+scheme and its ancillary algebraic identities.
 
 \subsection*{Future directions}
 
 Natural extensions are: non-cyclotomic anchor families (general
-polynomials); a formalization of Fatou-Julia in Mathlib (which would
-enable a proper formalization of McMullen's 1987 theorem);
-quantitative bounds on Mahler measure for cyclotomic-related families
-(towards weak forms of Lehmer-type statements). None of these are
-attempted in the present paper.
+polynomials), which would require dropping the closed-form cyclotomic
+identities that drive Sections~\ref{sec:cyclotomic} and~\ref{sec:zeta};
+and a formalization of Fatou--Julia in Mathlib, which would make a
+proper in-Lean proof of McMullen's 1987 theorem accessible. We make
+no conjecture regarding the other three problems discussed in
+Section~\ref{sec:open-problems}.
 
 \begin{thebibliography}{99}
 \bibitem{leanprover} de Moura, L., Ullrich, S., \emph{The Lean 4 Theorem Prover and Programming Language}, CADE-28, Springer LNCS (2021).
