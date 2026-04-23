@@ -86,4 +86,5 @@ import Pandrosion.Core.GaloisEquivariantMultiStart
 import Pandrosion.Core.EffectiveKungTraub
 import Pandrosion.Core.Niveau5StrictMultiStart
 import Pandrosion.Core.MasterTotal
+import Pandrosion.Core.MasterTotalEffective
 import Pandrosion.Legacy
