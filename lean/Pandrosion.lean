@@ -82,4 +82,5 @@ import Pandrosion.Core.MultiStartSigmaX2
 import Pandrosion.Core.LoglogUniversalMultiStartX2
 import Pandrosion.Core.LoglogUniversalMultiStartGeneric
 import Pandrosion.Core.MasterUniversel
+import Pandrosion.Core.GaloisEquivariantMultiStart
 import Pandrosion.Legacy
