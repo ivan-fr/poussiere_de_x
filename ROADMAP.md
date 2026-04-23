@@ -128,9 +128,11 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   géométrique explicite `(104/259)^N · (1/4) ≤ ε ⟹ N suffit`. La
   forme `Real.log`-exacte reste pour §86b future.
 
-- [ ] **§87 Böttcher formal series attempt** : tenter une version
-  formelle de §68's `ψ` via série de puissances tronquée, preuve
-  de convergence locale.
+- [x] **§87 BottcherSeriesStubX2** (downscope) : Props pour
+  coefficients de Böttcher tronqués (`BottcherLeadingCoefficient c`,
+  `BottcherTruncatedExists n`). Implication `BottcherCoordinateP3X2 ⟹
+  BottcherTruncatedExists` démontrée. Construction concrète
+  (séries holomorphes Mathlib) hors scope.
 
 ---
 
