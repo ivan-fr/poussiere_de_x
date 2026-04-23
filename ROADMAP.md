@@ -120,6 +120,10 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   ∪ far-field (`Re z ≥ 1/2 ∨ |z| ≥ 2`). Couvre tout ℂ sauf la
   région bornée gap `{Re z < 1/2 ∧ |z| < 2}`.
 
+- [x] **§91 IterCountConcreteX2** : 4 itérations h suffisent pour
+  ε = 1/100 sur `B(α₀, 1/4)`. Instance numérique de §86.2 via
+  `(104/259)^4 · (1/4) ≤ 1/100` (norm_num).
+
 ### Périphériques — si budget restant
 
 - [x] **§85 SteffensenRadiusBoundX2** (downscope framework) : pose
