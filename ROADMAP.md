@@ -264,3 +264,51 @@ trouve le threshold optimal pour la borne lower, puis formalise.
 Sinon : attaque §83 (Banach generic x ∈ (1, 8) à p=3) — paramétriser
 §64 sur x au lieu de fixer x=2.
 ```
+
+---
+
+## Session 4 résumé (autonomous, paramétrisations)
+
+**État corpus début** : 79 modules verts.
+**État corpus fin** : 82 modules verts.
+
+### Cibles complétées (cette session)
+- **§83 AlphaGenericX** : ancre `α(x) := x^{-1/3}` paramétrée sur x.
+  Identités `α(x)^3 = 1/x`, `α(x) < 1` pour x > 1, `α(x) ≥ 1/2` pour
+  `x ≤ 8`. Étend §64.1 (alphaX2 = α(2)) à toute la plage utile.
+- **§82 AlphaGenericPX** : unification `α(p, x) := x^{-1/p}`.
+  Identité `α(p, x)^p = 1/x`. Spécialisations vers alphaX2, alphaX2P4,
+  alphaX. Cap commun pour les ancres §64, §81, §83.
+- **§84 HalfPlaneGenericX** : invariance demi-plan paramétrée pour
+  `pandrosion_h_C x 3` à `x ∈ (1, 8]`. Premier théorème dynamique
+  paramétré sur x (pas fixé à x=2).
+
+### Anecdote build importante
+- §84 v1 (avec `field_simp` + `nlinarith` chains) : build > 5 minutes.
+  Killed via docker. Refactor en pure `ring + linarith` + `linarith`
+  direct sans field_simp : build 10s. **Le pattern "ring identity hunt"
+  reste le plus efficace** pour les preuves polynomiales.
+
+### Cibles bloquées (toutes les restantes)
+- §74, §75, §76 : analyse polynomiale complexe (degré 18+ field_simp).
+- §77b : dynamique complexe sur région bornée + voisinages ω, ω².
+- §78 NonPrincipalBasin : mesure topologique des bassins ω·α₀.
+- §79 : ferme Niveau 5, dépend des précédents.
+- §85 : Classical.choose unfolding pour steffensenR_of_fp.
+- §87 : Böttcher — formalisation de séries holomorphes.
+
+### Prochaine session : suggestion de prompt
+
+```
+Lis ROADMAP.md Session 4 résumé. Toutes les cibles "faciles"
+sont cochées. Restantes demandent ou bien :
+(a) analyse polynomiale fine (§73 full, §74, §75) — utilise sympy
+    pour trouver factorisation, puis formalise via ring identity.
+(b) dynamique complexe (§77b, §78, §79) — extension Mathlib hors
+    portée d'une session.
+(c) Classical.choose unfold (§85) — nécessite refonte §33.
+
+Recommandation : repos session 5, attendre validation utilisateur
+sur direction (Mathlib dynamics? sympy-aided polynomial?).
+Sinon : §85 explicit Steffensen radius via unfolding.
+```
