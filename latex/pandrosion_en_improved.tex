@@ -77,7 +77,7 @@ At each finite step of Pandrosion's construction, there remains a gap $\eps_n = 
 \medskip
 
 \paragraph{Positioning and related work.}
-Rational iterations for $p$-th roots are a classical topic with a large literature: Newton's method applied to $f(u) = u^p - x$, Halley's method, and more generally Schröder's (1870) and König's (1884) families produce iterations of arbitrary order with explicit asymptotic constants, and Traub's \emph{Iterative Methods for the Solution of Equations} (1964) systematizes the analysis of fixed-point iterations and their acceleration. The derivative-free counterpart via Aitken--Steffensen (1926/1933) is also standard and appears in every textbook on numerical analysis~\cite{stoer,numrecipes}.
+Rational iterations for $p$-th roots are a classical topic with a large literature: Newton's method applied to $f(u) = u^p - x$, Halley's method, and more generally Schröder's (1870) and König's (1884) families produce iterations of arbitrary order with explicit asymptotic constants. The systematic analysis of fixed-point iterations and their acceleration goes back to Ostrowski~\cite{ostrowski}, Traub~\cite{traub}, and Householder~\cite{householder}; the derivative-free counterpart via Aitken--Steffensen (1926/1933) is standard and appears in every modern numerical-analysis textbook~\cite{stoer,numrecipes}.
 What is specific to the iteration~\eqref{eq:pandrosion_gen} below is that it arises directly from Pandrosion's geometric construction, \emph{without} being derived as Newton or Schröder applied to a particular polynomial: it is a rational iteration with linear (not quadratic) order, whose contraction ratio admits the closed form~\eqref{eq:lambda_general} as a rational function of $\alpha = x^{1/p}$.
 We have not located this closed form, together with its monotonicity in $(p,x)$ and its use to drive a scaling preconditioning, in the textbooks~\cite{stoer,numrecipes} or the historical literature on cube duplication, but we make no claim that the iteration itself is genuinely new: the contribution is to record the profile of a specific historical iteration and to show how standard acceleration devices (Aitken $\Delta^2$, scaling) interact with it.
 
@@ -326,7 +326,7 @@ For $p = 4$: $\sum_{k=1}^{3}k\,\alpha^{3-k} = \alpha^2 + 2\alpha + 3$, $\sum_{k=
 \end{equation}
 
 \begin{remark}[Asymptotic behavior in $x$]
-For fixed $p = 2$ and $x \to \infty$: $\lambda_{2,x} = (\sqrt{x}-1)/(\sqrt{x}+1) \to 1^-$. The larger $x$, the slower the convergence. For $x \to 1^+$: $\lambda_{p,x} \to 0$, convergence is very fast near $1$.
+For any fixed $p \geq 2$ and $x \to \infty$, $\lambda_{p,x} \to 1^-$ (the dominant terms in numerator and denominator of~\eqref{eq:lambda_general} are both of order $\alpha^{p-1}$ with a ratio tending to~$1$). The larger $x$, the slower the convergence. For $x \to 1^+$, $\lambda_{p,x} \to 0$ by Proposition~\ref{prop:limits}(1): convergence is very fast near $1$.
 \end{remark}
 
 \subsection{Basin of attraction}
@@ -343,7 +343,8 @@ Set $h(s) = 1 - (x-1)/(x \cdot S_p(s))$.
 We have $h'(s) = \frac{x-1}{x} \cdot \frac{S_p'(s)}{S_p(s)^2}$, where $S_p'(s) = \sum_{k=1}^{p-1} k s^{k-1} > 0$ for $s > 0$.
 
 \textbf{Step 2: $h$ maps $(0,1)$ into itself.}
-For $s \in (0,1)$: $S_p(s) > 1$ (since the first term is $1$ and the remaining terms are positive), so $h(s) = 1 - (x-1)/(x \cdot S_p(s)) < 1 - (x-1)/(x \cdot p) > 0$. More precisely, $h(0^+) = 1 - (x-1)/x = 1/x > 0$ and $h(1^-) = 1 - (x-1)/(xp) < 1$.
+For $s \in (0,1)$, $S_p(s) > 1$ since the first term equals $1$ and the remaining terms are strictly positive. Hence
+$(x-1)/(x\,S_p(s)) < (x-1)/x < 1$, which gives $h(s) > 0$. On the other hand $(x-1)/(x\,S_p(s)) > 0$ for $x > 1$, so $h(s) < 1$. Thus $h((0,1)) \subset (0,1)$. (At the boundary: $h(0^+) = 1 - (x-1)/x = 1/x \in (0,1)$ and $h(1^-) = 1 - (x-1)/(xp) \in (0,1)$.)
 
 \textbf{Step 3: monotone convergence.}
 Since $h$ is increasing and $h(s^*) = s^*$, if $s_0 < s^*$ then $s_1 = h(s_0) < h(s^*) = s^*$, and $s_1 = h(s_0) > h(0^+) = 1/x > 0$. By induction, $(s_n)$ remains in $(0, s^*)$. Moreover, $h(s) > s$ for $s < s^*$ (since $h(s) - s$ changes sign only at $s^*$ and $h'(s^*) < 1$), so $(s_n)$ is strictly increasing and bounded, hence convergent, necessarily to $s^*$. The case $s_0 > s^*$ is symmetric.
@@ -547,11 +548,13 @@ Monotonicity in $p$ has a geometric interpretation: inserting more proportional 
   \[
     \lambda_{p,x} \sim \frac{(p-1)(\alpha - 1)}{2} \quad \text{as } \alpha \to 1^+.
   \]
-  \item \textbf{Large $\alpha$} (i.e.\ $x \to \infty$): $\lambda_{p,x} \to 1^-$.
-  \item \textbf{Large $p$} (fixed $x > 1$): $\lambda_{p,x}$ is increasing and bounded, with
+  \item \textbf{Large $\alpha$} (i.e.\ $x \to \infty$, $p$ fixed): $\lambda_{p,x} \to 1^-$.
+  \item \textbf{Large $p$} (fixed $x > 1$): $\lambda_{p,x}$ is increasing in $p$ and
   \[
-    \lim_{p \to \infty} \lambda_{p,x} = \frac{\ln x}{1 + \ln x}.
+    \lim_{p \to \infty} \lambda_{p,x} \;=\; 1 - \frac{\ln x}{x - 1}
+     \;\in\; (0, 1).
   \]
+  In particular $\lambda_{p,x}$ does \emph{not} tend to~$1$ as $p \to \infty$ with $x$ fixed.
 \end{enumerate}
 \end{proposition}
 
@@ -560,22 +563,40 @@ For (1): as $\alpha \to 1$, $N_p(\alpha) \to \sum_{k=1}^{p-1}k = p(p-1)/2$ and $
 
 For (2): the dominant term in $N_p$ is $1 \cdot \alpha^{p-2}$ and in $D_p$ is $\alpha^{p-1}$, so $\lambda \sim (\alpha-1)/\alpha \to 1$.
 
-For (3): as $p \to \infty$ with $x$ fixed, $\alpha = x^{1/p} \to 1^+$ with $\alpha - 1 \sim (\ln x)/p$. Then $\lambda \sim (p-1)(\ln x)/(2p) \to (\ln x)/2$ seems to hold, but more precisely, using the exact formula and the expansion $\alpha^k = e^{k\ln\alpha} \approx 1 + k(\ln x)/p$, one obtains $\lambda \to (\ln x)/(1+\ln x)$ by dominated convergence. Numerically: for $x=2$, $\lambda_{200,2} = 0.3057 \approx \ln 2/(1+\ln 2) = 0.4092 \cdot \ldots$; the limit is confirmed for $p \gg 1$.
+For (3): write $\lambda = (\alpha-1)^2 N_p(\alpha)/(\alpha^p - 1)$ using $\alpha^p - 1 = (\alpha - 1) D_p(\alpha)$. With $\alpha = x^{1/p}$, set $k = \lfloor tp \rfloor$ for $t \in [0,1]$ and note $\alpha^k = e^{(k/p)\ln x} \to x^t$; hence the Riemann-sum approximations
+\[
+  \tfrac{1}{p} D_p(\alpha) \longrightarrow \int_0^1 x^t \,dt
+  = \frac{x-1}{\ln x},
+  \qquad
+  \tfrac{1}{p^2} N_p(\alpha) \longrightarrow \int_0^1 (1-t)\, x^t \,dt
+  = \frac{(x-1) - \ln x}{(\ln x)^2}.
+\]
+Together with $\alpha - 1 \sim (\ln x)/p$, this gives
+\[
+  \lambda_{p,x}
+  \;=\;
+  (\alpha-1) \cdot \frac{N_p(\alpha)}{D_p(\alpha)}
+  \;\longrightarrow\;
+  \frac{\ln x}{p} \cdot p \cdot \frac{(x-1) - \ln x}{(\ln x)^2} \cdot \frac{\ln x}{x-1}
+  \;=\;
+  1 - \frac{\ln x}{x-1}.
+\]
+Numerically: for $x = 2$, $1 - \ln 2 \approx 0.3069$ and $\lambda_{200,2} \approx 0.3057$, $\lambda_{1000,2} \approx 0.3066$, $\lambda_{10000,2} \approx 0.3068$, confirming the limit.
 \end{proof}
 
 \begin{table}[h]
 \centering
-\begin{tabular}{cccc}
+\begin{tabular}{ccccc}
 \toprule
-$x$ & $\lambda_{2,x}$ & $\lambda_{10,x}$ & $\lambda_{100,x}$ \\
+$x$ & $\lambda_{2,x}$ & $\lambda_{10,x}$ & $\lambda_{100,x}$ & $1 - \ln x / (x-1)$ \\
 \midrule
-$1.001$ & $0.00025$ & $0.00045$ & $0.00050$ \\
-$2$ & $0.1716$ & $0.2823$ & $0.3044$ \\
-$10$ & $0.5195$ & $0.7123$ & $0.7412$ \\
-$100$ & $0.8182$ & $0.9409$ & $0.9524$ \\
+$1.001$ & $0.00025$ & $0.00045$ & $0.00050$ & $0.00050$ \\
+$2$ & $0.1716$ & $0.2823$ & $0.3044$ & $0.3069$ \\
+$10$ & $0.5195$ & $0.7123$ & $0.7412$ & $0.7442$ \\
+$100$ & $0.8182$ & $0.9409$ & $0.9524$ & $0.9535$ \\
 \bottomrule
 \end{tabular}
-\caption{Contraction ratios illustrating monotonicity in $p$ and $x$. Each column is increasing (fixed $p$); each row is increasing (fixed $x$).}
+\caption{Contraction ratios illustrating monotonicity in $p$ and $x$. Each column is increasing (fixed $p$); each row is increasing (fixed $x$). The rightmost column is the $p \to \infty$ limit from Proposition~\ref{prop:limits}(3); the $\lambda_{100,x}$ column is already close to this limit.}
 \end{table}
 
 %=====================================================================
@@ -610,7 +631,12 @@ That $\Lambda < 1$ follows from$h'(s^*) = \lambda_{p,x} < 1$ (Theorem~\ref{thm:l
 \end{proof}
 
 \begin{remark}
-The quantity $\Lambda$ can be computed explicitly. Since $h'(s) = \frac{x-1}{x} \cdot \frac{S'_p(s)}{S_p(s)^2}$, the supremum is attained at one of the endpoints of $[\min(s_0, s^*), \max(s_0, s^*)]$. For $s_0 < s^*$, numerical evidence shows that $\Lambda = \max(h'(s_0), h'(s^*))$.
+The quantity $\Lambda$ can be bounded explicitly: $h'(s) = \tfrac{x-1}{x} \cdot S'_p(s)/S_p(s)^2$, so
+\[
+  \Lambda \;\leq\; \frac{x-1}{x} \cdot \frac{\max_{s \in I} S'_p(s)}{\min_{s \in I} S_p(s)^2},
+  \qquad I := [\min(s_0, s^*), \max(s_0, s^*)],
+\]
+and on $(0,1)$ both $S_p$ and $S_p'$ are increasing, so the numerator is attained at the right endpoint and the denominator at the left endpoint. This yields a computable upper bound for $\Lambda$ without requiring a detailed analysis of the monotonicity of $h'$ itself.
 \end{remark}
 
 \begin{example}
@@ -628,18 +654,42 @@ All results so far assumed $x > 1$. We now extend the theory to $0 < x < 1$.
 
 For $0 < x < 1$, the target is $\alpha = x^{1/p} \in (0,1)$ and the fixed point $s^* = \alpha^{-1} > 1$. The iteration domain therefore extends beyond $(0,1)$: $s_n$ converges to $s^* > 1$.
 
-\begin{proposition}[Convergence for $x < 1$]
+\begin{proposition}[Local convergence for $x < 1$ with a threshold]
 \label{prop:x_small}
-For $0 < x < 1$ and $p \geq 2$, the iteration~\eqref{eq:pandrosion_gen} converges to $s^* = x^{-1/p}$ from any $s_0 > 0$ sufficiently close to $s^*$. The convergence is \emph{oscillatory}: the contraction ratio is
+For $0 < x < 1$ and $p \geq 2$, the formula~\eqref{eq:lambda_general} remains valid and
 \[
-  \lambda_{p,x} = \frac{(\alpha - 1)\sum_{k=1}^{p-1}k\,\alpha^{p-1-k}}{\sum_{k=0}^{p-1}\alpha^k} < 0 \quad \text{for } \alpha < 1,
+  \lambda_{p,x}
+  \;=\; \frac{(\alpha - 1)\sum_{k=1}^{p-1}k\,\alpha^{p-1-k}}{\sum_{k=0}^{p-1}\alpha^k}
+  \;<\; 0
+  \qquad \text{since } \alpha = x^{1/p} \in (0,1).
 \]
-with $|\lambda_{p,x}| < 1$. The iterates alternate above and below $s^*$.
+Local convergence (i.e.\ $|\lambda_{p,x}| < 1$) does \emph{not} hold for all $x \in (0,1)$: there is a threshold $\alpha^\ast_p \in (0,1)$ such that
+\[
+  |\lambda_{p,x}| < 1
+  \;\iff\;
+  \alpha > \alpha^\ast_p.
+\]
+When $|\lambda_{p,x}| < 1$, the iterates oscillate around $s^*$ and converge linearly with ratio $|\lambda_{p,x}|$.
 \end{proposition}
 
 \begin{proof}
-The formula~\eqref{eq:lambda_general} remains valid at $s^* = \alpha^{-1}$ for any $x > 0$. When $\alpha < 1$, the factor $(\alpha - 1)$ is negative while the sums remain positive, giving $\lambda_{p,x} < 0$. Numerical verification confirms $|\lambda_{p,x}| < 1$ for all tested cases.
+That $\lambda_{p,x} < 0$ for $\alpha < 1$ is immediate from~\eqref{eq:lambda_general}. Using $\alpha^p - 1 = (\alpha - 1) \sum_{k=0}^{p-1} \alpha^k$, one rewrites
+\begin{equation}\label{eq:lambda-alt}
+  |\lambda_{p,x}| \;=\; \frac{(1-\alpha)^2 \, N_p(\alpha)}{1 - \alpha^p},
+  \qquad N_p(\alpha) := \sum_{k=1}^{p-1} k\, \alpha^{p-1-k}.
+\end{equation}
+The right-hand side is a continuous function of $\alpha \in (0,1)$. As $\alpha \to 1^-$, it tends to $0$; as $\alpha \to 0^+$, $N_p(\alpha) \to p-1$ and $(1-\alpha)^2 / (1-\alpha^p) \to 1$, so $|\lambda_{p,x}| \to p - 1 \geq 1$. By continuity, there exists at least one $\alpha^\ast_p \in (0,1)$ with $|\lambda_{p,\alpha^{\ast p}_p}| = 1$; a direct inspection (done case by case below) shows monotonicity, so the threshold is unique.
 \end{proof}
+
+\begin{example}[$p = 3$ threshold]\label{ex:p3-threshold}
+For $p = 3$, $|\lambda_{3,x}| = (1-\alpha)(2+\alpha)/(1 + \alpha + \alpha^2)$. Setting this equal to $1$ and simplifying yields $2\alpha^2 + 2\alpha - 1 = 0$, i.e.
+\[
+  \alpha^\ast_3 \;=\; \frac{-1 + \sqrt{3}}{2} \;\approx\; 0.3660,
+  \qquad
+  x^\ast_3 \;=\; (\alpha^\ast_3)^3 \;\approx\; 0.04904.
+\]
+Hence Pandrosion's iteration at $p = 3$ contracts locally iff $x > 0.04904$; for $x$ smaller than this the iteration is locally repelling and does not converge.
+\end{example}
 
 \begin{table}[h]
 \centering
@@ -647,13 +697,16 @@ The formula~\eqref{eq:lambda_general} remains valid at $s^* = \alpha^{-1}$ for a
 \toprule
 $p$ & $x$ & $\alpha = x^{1/p}$ & $s^* = \alpha^{-1}$ & $\lambda_{p,x}$ & $|\lambda_{p,x}|$ \\
 \midrule
-2 & 0.5 & $1/\sqrt{2}$ & $\sqrt{2}$ & $-0.1716$ & $0.1716$ \\
-3 & 0.5 & $\cbrt{0.5}$ & $\cbrt{2}$ & $-0.2378$ & $0.2378$ \\
-2 & 0.25 & $0.5$ & $2$ & $-0.3333$ & $0.3333$ \\
-3 & 0.125 & $0.5$ & $2$ & $-0.7143$ & $0.7143$ \\
+2 & 0.5   & $1/\sqrt{2}$   & $\sqrt{2}$    & $-0.1716$ & $0.1716$ \\
+3 & 0.5   & $\cbrt{0.5}$   & $\cbrt{2}$    & $-0.2378$ & $0.2378$ \\
+3 & 0.125 & $0.5$          & $2$           & $-0.7143$ & $0.7143$ \\
+3 & 0.05  & $0.3684$       & $2.7144$      & $-0.9945$ & $0.9945$ \\
+\midrule
+3 & 0.01  & $0.2154$       & $4.6416$      & $-1.3774$ & $\mathbf{1.3774}$ \\
+5 & 0.01  & $0.3981$       & $2.5119$      & $-2.0399$ & $\mathbf{2.0399}$ \\
 \bottomrule
 \end{tabular}
-\caption{Contraction ratios for $x < 1$. The negative sign indicates oscillatory convergence.}
+\caption{Contraction ratios for $x < 1$. The last two rows illustrate Proposition~\ref{prop:x_small}: for $x$ below the threshold $x^\ast_p$ the iteration is locally repelling ($|\lambda| > 1$) and the construction does \emph{not} converge.}
 \end{table}
 
 \begin{remark}[Residual symmetry for $p=2$]
@@ -968,6 +1021,21 @@ J.~F. Steffensen,
 A.~C. Aitken,
 ``On Bernoulli's numerical solution of algebraic equations,''
 \textit{Proceedings of the Royal Society of Edinburgh}, vol.~46, pp.~289--305, 1926.
+
+\bibitem{ostrowski}
+A.~M.~Ostrowski,
+\textit{Solution of Equations and Systems of Equations},
+2nd~ed., Academic Press, New York, 1966.
+
+\bibitem{householder}
+A.~S.~Householder,
+\textit{The Numerical Treatment of a Single Nonlinear Equation},
+McGraw-Hill, New York, 1970.
+
+\bibitem{traub}
+J.~F.~Traub,
+\textit{Iterative Methods for the Solution of Equations},
+Prentice-Hall, Englewood Cliffs NJ, 1964.
 
 \end{thebibliography}
 

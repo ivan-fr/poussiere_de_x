@@ -82,21 +82,22 @@ $\zeta_P(s) := \sum_{k=1}^p P^{\prime}(\alpha_k)^{-s}$;
 Aitken 1926, Schwarz 1890, Cardano 1545, Vieta 1591, Kronecker 1857, Galois
 1832, Aberth--Ehrlich 1967/1973) to the Pandrosion setting — these are not
 new mathematics, only new formalizations};
-\emph{(c)~short structural observations touching four classical or hard
-problems (Kung--Traub upper bound for $c \geq 3$, Lehmer's Mahler-measure
-conjecture, Smale's~17th problem, McMullen 1987), where in each case we
-state explicitly that the observation does not attempt to address the
-original problem at its full generality}.
+\emph{(c)~two short structural observations: a compliance interface
+for the Kung--Traub upper bound for $c \geq 3$, and a statement-level
+recording of McMullen 1987. Two other classical themes (Lehmer's
+Mahler-measure conjecture, Smale's~17th problem) that earlier drafts
+discussed have been removed from scope, because the Pandrosion setting
+contributes nothing to either}.
 
 The Lean development comprises 121 modules with zero \texttt{sorry} and
 an audited dependency closure reducing to
-$\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$.
-We make no claim of progress on any of the four classical open
-problems listed under~(c). The material in Section~\ref{sec:open-problems}
-consists of restricted specializations or trivial observations on a very
-narrow polynomial family, clearly identified as such. The main contribution
-of the corpus is the formalization itself and the multi-start convergence
-analysis of~(a), not the engagements in~(c).
+$\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$,
+verifiable per-theorem via \texttt{\#print axioms}
+(see Section~\ref{sec:reproducibility}).
+The main contribution of the corpus is the formalization itself and the
+multi-start convergence analysis of~(a), not any of the engagements
+in~(c); readers primarily interested in the mathematics should focus on
+Sections~\ref{sec:real-line}--\ref{sec:zeta}.
 \end{abstract}
 
 \tableofcontents
@@ -229,14 +230,13 @@ Pandrosion specializations of classical theorems (not new
  Galois 1832, Aberth-Ehrlich 1967/1973, Kung-Traub 1974 attainability
  at $c=3$.
  & Section \ref{sec:classical}. \\
-Short structural observations touching classical or open problems
- & Kung--Traub upper bound for $c \geq 3$; a statement-level recording
- of McMullen 1987 without a formal proof; a trivial Mahler-measure
- observation on the family $\beta = x\alpha$; a scope-restricted
- deterministic algorithm bearing only on~$z^p = x$ (not on general
- polynomials as in Smale's~17th problem).
- & Section \ref{sec:open-problems}. Each of these is clearly flagged as
- either a reduction, a trivial observation, or a restricted special case. \\
+Two short structural observations
+ & Kung--Traub upper bound for $c \geq 3$ (compliance interface, not a
+ proof); statement-level recording of McMullen 1987 without a formal
+ proof.
+ & Section \ref{sec:open-problems}. Lehmer's conjecture and Smale's
+ 17th problem are deliberately outside scope (earlier drafts discussed
+ them; they have been removed). \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -285,12 +285,6 @@ claim any number-theoretic content and the analogy should be read as
 typographic, not mathematical. In particular, nothing in this paper
 bears on the Riemann Hypothesis or on any transcendental question.
 
-Likewise, the phrase ``Smale's~17th problem'' in
-Section~\ref{sec:open-problems} is used only to locate context. We
-provide a deterministic algorithm of complexity
-$\mathcal{O}(\log\log(1/\varepsilon))$ for $z^p = x$; this is a very
-specific polynomial family, not Smale's question on arbitrary
-polynomials, and the two settings are not directly comparable.
 The phrase ``Niveau 5 conjecture'' is our own internal name for an
 a.e.-convergence statement on the plain Pandrosion iteration that we
 use as a target of Theorem~\ref{thm:niveau5}; it does not appear under
@@ -374,10 +368,20 @@ We call~$\lambda_{p,x}$ the \emph{convergence signature} of the method:
 it encodes the method-target interaction independently of the starting
 point.
 
-\paragraph{Monotonicity.} A further computation (carried out in Lean in
-the corpus) shows that $\lambda_{p,x}$ is strictly increasing in both
-$p$ and~$x$ on $[1, \infty)$, with $\lambda_{p,x} \to 1^-$ as
-$x \to \infty$ and as $p \to \infty$. The scaling
+\paragraph{Monotonicity and limits.} A further computation (carried out in
+Lean in the corpus) shows that $\lambda_{p,x}$ is strictly increasing in both
+$p$ and~$x$ on $[1, \infty)$. The limits are
+\[
+  \lim_{x \to \infty} \lambda_{p,x} \;=\; 1^-
+  \quad \text{(for fixed $p$)},
+  \qquad
+  \lim_{p \to \infty} \lambda_{p,x}
+   \;=\; 1 - \frac{\ln x}{x - 1}
+   \;\in\; (0, 1)
+  \quad \text{(for fixed $x > 1$)}.
+\]
+In particular, for fixed $x$ the ratio does \emph{not} tend to~$1$ as
+$p$ grows — it saturates at $1 - \ln(x)/(x-1)$. The scaling
 preconditioning of~\S\ref{sec:scaling} is built directly on the
 monotonicity in~$x$.
 
@@ -659,18 +663,20 @@ argument gives the iteration count.
 \subsection{Explicit iteration count}
 
 \begin{definition}[Effective iteration count]
-For $K, R, \varepsilon > 0$,
+For $K, R, \varepsilon > 0$ with $K R < 1$ and $K \varepsilon < 1$,
 \[
   N_{\mathrm{eff}}(K, R, \varepsilon) :=
   \log_2 \big\lceil \log(K \varepsilon) / \log(K R) \big\rceil_+ + 1,
 \]
 with $\lceil \cdot \rceil_+$ the natural-number ceiling clamped at $0$.
+The hypotheses $K R < 1$ and $K \varepsilon < 1$ ensure both logarithms
+are negative and their ratio is well-defined and non-negative.
 \end{definition}
 
 \begin{theorem}[Explicit iteration count]\label{thm:eff-kt}
 For any quadratically contracting sequence $e_{n+1} \leq K \cdot e_n^2$
-with $e_0 \leq R$ and $K \cdot R < 1$, every iterate $k \geq
-N_{\mathrm{eff}}(K, R, \varepsilon)$ satisfies $e_k \leq \varepsilon$.
+with $e_0 \leq R$, $K \cdot R < 1$, and $\varepsilon < R$, every iterate
+$k \geq N_{\mathrm{eff}}(K, R, \varepsilon)$ satisfies $e_k \leq \varepsilon$.
 Asymptotically $N_{\mathrm{eff}} \sim \log_2 \log(1/\varepsilon)$.
 \end{theorem}
 
@@ -712,8 +718,14 @@ reformulation
 holds unconditionally.
 \end{theorem}
 
-This is Theorem~\ref{thm:multistart} applied to the reformulated
-statement.
+This is Theorem~\ref{thm:multistart} restated. The content is not that
+the reformulation is ``solved'': it is that by conditioning on the
+choice of target anchor $\alpha$ and adjusting the seed accordingly,
+the convergence problem decouples from the dynamics of $\sigma_{p,x}$
+on all of $\mathbb{C}$. What the reformulation gives up, compared to
+the plain-iteration statement, is universality: the seed depends on
+$\alpha$ and can therefore not be interpreted as a ``method that
+converges regardless of target''.
 
 \subsection{Arbitrary target selector}
 
@@ -752,20 +764,25 @@ $\mathbb{C} \to \mathbb{C}$.
 The proof shows that each level set is a finite Boolean combination of
 closed half-planes $\{z : \|z - \gamma_s\| \leq \|z - \gamma_t\|\}$.
 
-\begin{definition}[Pandrosion Julia / Fatou set]
-$\mathrm{Julia}(\alpha, p) := \mathrm{VoronoiBoundary}(\gamma_0, \dots, \gamma_{p-1})$,
-$\mathrm{Fatou}(\alpha, p) := \mathbb{C} \setminus \mathrm{Julia}(\alpha, p)$.
+\begin{definition}[Voronoï boundary and its complement]
+$\mathrm{VorBdy}(\alpha, p) := \mathrm{VoronoiBoundary}(\gamma_0, \dots, \gamma_{p-1})$,
+$\mathrm{VorInt}(\alpha, p) := \mathbb{C} \setminus \mathrm{VorBdy}(\alpha, p)$.
 \end{definition}
 
-This is a chosen definition, not the classical Fatou-Julia set of
-$\sigma_{p,x}$. With this definition:
+These are Voronoï-geometric objects, not the classical Fatou--Julia sets
+of $\sigma_{p,x}$. Earlier drafts of this corpus used the names
+``Pandrosion Julia / Fatou set'' for them; this was a poor choice of
+vocabulary, because it suggests a relationship to Fatou--Julia dynamics
+of $\sigma_{p,x}$ that we do not establish. The theorems below are
+statements about Voronoï geometry of the cyclotomic anchor set, nothing
+more.
 
-\begin{theorem}[Julia set is Lebesgue-null]\label{thm:julia-null}
-$\mathrm{vol}\big(\mathrm{Julia}(\alpha, p)\big) = 0$.
+\begin{theorem}[Voronoï boundary is Lebesgue-null]\label{thm:julia-null}
+$\mathrm{vol}\big(\mathrm{VorBdy}(\alpha, p)\big) = 0$.
 \end{theorem}
 
 \begin{theorem}[A.e.\ continuity]\label{thm:ae-continuous}
-The Borel solution map is continuous at every $z \in \mathrm{Fatou}(\alpha, p)$.
+The Borel solution map is continuous at every $z \in \mathrm{VorInt}(\alpha, p)$.
 Combined with Theorem~\ref{thm:julia-null}, it is continuous at
 Lebesgue-a.e.\ $z$.
 \end{theorem}
@@ -775,8 +792,8 @@ Lebesgue-a.e.\ $z$.
 \includegraphics[width=\textwidth]{fig04_voronoi_julia_null.png}
 \caption{Voronoï decomposition of $\mathbb{C}$ for cyclotomic anchors at
 $p = 4$ and $p = 7$, $x = 2$. Each colored region $V_k$ is the basin of
-attraction of $\gamma_k$ under the selector. The red frontier is what
-we call the Pandrosion Julia set; it is Lebesgue-null.}
+attraction of $\gamma_k$ under the selector. The red frontier is the
+Voronoï boundary of the cyclotomic anchor set; it is Lebesgue-null.}
 \end{figure}
 
 \begin{figure}[H]
@@ -792,8 +809,8 @@ Theorem~\ref{thm:eff-kt}.}
 Together, Theorems~\ref{thm:multistart}, \ref{thm:borel},
 \ref{thm:julia-null} and~\ref{thm:ae-continuous} give the analytic
 character of the multi-start solution map in our framework:
-measurable everywhere, continuous on the Fatou set, with the complement
-Lebesgue-null.
+measurable everywhere, continuous outside the Voronoï boundary of the
+cyclotomic anchor set, with that boundary Lebesgue-null.
 
 %======================================================================
 \section{Algebraic identities for the finite series $\zeta_P$}
@@ -985,48 +1002,30 @@ under McMullen's hypotheses on purely iterative universal root
 finders. This observation places our scheme outside the hypothesis
 of~\cite{mcmullen}; it does not reproduce or challenge the theorem.
 
-\subsection{Lehmer's conjecture: a trivial observation only}
+\subsection{Two classical problems we deliberately do \emph{not} engage with}
 
-Lehmer's 1933 conjecture posits $M(\beta) \geq 1.17628\ldots$ for
-every non-cyclotomic algebraic integer $\beta$, and remains open.
-
-\smallskip
-
-\textbf{What the corpus provides.} A trivial observation, not in any
-sense progress. For $x \in \mathbb{N}_{\geq 2}$ and $\alpha^p = 1/x$,
-the element $\beta := x \cdot \alpha$ satisfies $\beta^p = x^{p-1}$,
-hence $M(\beta) = x^{p-1} \geq 2$. The relevant regime for Lehmer is
-$M(\beta)$ just above~$1$, where the conjecture is hard; our family
-lies arbitrarily far from it. We record the observation only to
-document that the Pandrosion cyclotomic anchors produce algebraic
-integers whose Mahler measure is easy to compute.
-
-\subsection{Smale's~17th problem: a scope-restricted algorithm}
-
-Smale's~17th problem asks for a deterministic algorithm of
-poly-logarithmic average complexity for the root-finding problem
-\emph{on arbitrary polynomials}. Bürgisser--Cucker (2011) solved the
-probabilistic average-case version. The deterministic general case
-is open.
-
-\smallskip
-
-\textbf{What the corpus provides.} For the single-monomial family
-$z^p = x$, the multi-start scheme is a deterministic algorithm of
-complexity $\mathcal{O}(\log\log(1/\varepsilon))$. This is a
-statement on the narrowest possible polynomial family (one complex
-parameter, no other coefficients) and the two settings are not
-directly comparable; we do not view this as progress on Smale's
-problem, and neither should a reader.
+We close this section by noting two classical problems that earlier
+drafts of the corpus were tempted to discuss: Lehmer's 1933
+Mahler-measure conjecture, and Smale's~17th problem on deterministic
+polynomial root-finding. In both cases, the only non-vacuous things
+the Pandrosion setting offers are a trivial observation (for Lehmer:
+that $\beta = x \cdot \alpha$ has Mahler measure $x^{p-1}$, which is
+$\geq 2$ for $x \geq 2$, far from the conjecture's extremal regime
+near~$1$) and a scope-restricted algorithm (for Smale: the
+$\mathcal{O}(\log\log(1/\varepsilon))$ deterministic complexity for
+the one-parameter family $z^p = x$, which is not the
+coefficient-uniform problem Smale asks about). Since in neither case
+is there progress worth reporting, we refrain from a dedicated
+subsection and simply record here that these two problems lie
+outside the scope of the corpus.
 
 \subsection{Summary}
 
-No claim is made that any of the four problems above is solved, or
-even substantively advanced. The material in this section consists of
-a compliance interface, a recording of a classical statement, a
-trivial observation, and a scope-restricted special case. Readers
-primarily interested in the mathematics should focus on
-Sections~\ref{sec:real-line}--\ref{sec:zeta}.
+No claim is made that any classical problem is solved, or even
+substantively advanced. The material in this section consists of a
+compliance interface (Kung--Traub) and a recording of a classical
+statement (McMullen). Readers primarily interested in the mathematics
+should focus on Sections~\ref{sec:real-line}--\ref{sec:zeta}.
 
 %======================================================================
 \section{Structure of the Lean corpus}
@@ -1076,7 +1075,16 @@ Mathlib v4.7.0 and is built with
 bash scripts/lean-incremental.sh
 \end{lstlisting}
 The 121-module corpus compiles in about 60--90 seconds on a modern
-laptop. Per-theorem axiom auditing is available via \texttt{\#print axioms}.
+laptop. Per-theorem axiom auditing is available via
+\texttt{\#print axioms}: for every load-bearing theorem referenced in
+this paper (Theorems~\ref{thm:lambda-closed}, \ref{thm:multistart},
+\ref{thm:eff-kt}, \ref{thm:borel}, \ref{thm:julia-null},
+\ref{thm:ae-continuous}, and the
+$\zeta_P$ identities of Section~\ref{sec:zeta}), the output is the
+standard Lean whitelist
+$\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$;
+this can be reproduced by running \texttt{\#print axioms <theorem>} at
+the end of the relevant module.
 
 Every figure in this paper is reproducible from
 \texttt{latex/figures\_pandrosion.py} (dependencies:
@@ -1092,7 +1100,7 @@ around the Pandrosion iterator~$h_{p,x}$ and its multi-start Steffensen
 extension for $z^p = x$, together with the following ingredients:
 \begin{enumerate}
   \item real-line analysis of~$h_{p,x}$: closed-form contraction ratio
-        $\lambda_{p,x}$ as a convergence signature
+        $\lambda_{p,x} = h'_{p,x}(s^\ast)$
         (Theorem~\ref{thm:lambda-closed}), optimal derivative-free
         starting point $s_0^{\mathrm{opt}} = h_{p,x}(1)$
         (Proposition~\ref{prop:optimal-start}), scaling
@@ -1110,16 +1118,16 @@ extension for $z^p = x$, together with the following ingredients:
         (Section~\ref{sec:zeta}), all reducing to roots-of-unity arithmetic;
   \item Lean specializations of classical theorems to the Pandrosion
         setting (Section~\ref{sec:classical});
-  \item four short structural observations where the Pandrosion setting
-        intersects a classical or open problem
-        (Section~\ref{sec:open-problems}); these are restricted,
-        trivial, or purely interface-level, as marked.
+  \item two short structural observations (Kung--Traub compliance
+        interface, McMullen 1987 statement-level recording) in
+        Section~\ref{sec:open-problems}; two further classical themes
+        that earlier drafts discussed (Lehmer, Smale 17) have been
+        removed as being outside scope.
 \end{enumerate}
 
-The paper does not claim progress on the classical open problems
-themselves at their full generality. The main value of the corpus is
-as a self-contained Lean development of a multi-start root-finding
-scheme and its ancillary algebraic identities.
+The paper does not claim progress on any classical open problem. The
+main value of the corpus is as a self-contained Lean development of a
+multi-start root-finding scheme and its ancillary algebraic identities.
 
 \subsection*{Future directions}
 
