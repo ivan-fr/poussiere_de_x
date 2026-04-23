@@ -114,6 +114,12 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   `x ≤ 8` correspond exactement à `α(x) ≥ 1/2` (§83). Tendsto et
   Banach paramétrés sur x restent pour preuve future.
 
+### Bonus session 8
+
+- [x] **§90 CombinedDomainX2** : Tendsto h^n sur l'union demi-plan
+  ∪ far-field (`Re z ≥ 1/2 ∨ |z| ≥ 2`). Couvre tout ℂ sauf la
+  région bornée gap `{Re z < 1/2 ∧ |z| < 2}`.
+
 ### Périphériques — si budget restant
 
 - [x] **§85 SteffensenRadiusBoundX2** (downscope framework) : pose
