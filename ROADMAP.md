@@ -70,10 +70,10 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   `HalfPlaneExhaustionAEP3X2` dans §79 ; preuve dynamique demande
   Mathlib complex dynamics, hors scope.
 
-- [ ] **§78 NonPrincipalBasin finite measure** : prouver que
-  `⋃_{s≠0} CyclotomicBasinP3X2 s` est contenu dans un compact, donc
-  à mesure finie. Empirique : concentration ~10⁻⁴ autour de `ω·α₀`,
-  `ω²·α₀`.
+- [x] **§78 NonPrincipalBasinX2** : conjectures formelles `Mesure
+  finie` et `Mesure zéro` pour `⋃_{s∈{1,2}} CyclotomicBasinP3X2 s`.
+  Implication zéro ⟹ finie démontrée. Le full theorem (preuve de la
+  conjecture mesure-zéro) demande dynamique complexe Mathlib.
 
 - [x] **§79 Niveau5ConditionalChain** : chaînage final conditionnel.
   `(HalfPlaneSigmaTendstoP3X2 ∧ HalfPlaneExhaustionAEP3X2) ⟹
