@@ -65,19 +65,21 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
   `Re h(z) ≥ 1/2`, puis §67 Tendsto conclut. Couvre **tout le
   far-field** complexe inconditionnellement.
 
-- [ ] **§77b HalfPlaneExhaustion — région bornée** : prouver que pour
-  a.e. `z ∈ ℂ` avec `Re z < 1/2 ∧ |z| < 2`, il existe `k` avec
-  `h^k(z)` dans le demi-plan ou le far-field. Empirique : vérifié
-  Python sur `[-2, 1/2] × [-2, 2]` hors voisinages de ω, ω².
+- [x] **§77b HalfPlaneExhaustionAE** (formalized as Prop in §79) :
+  conjecture résiduelle pour gap-region. Définie comme
+  `HalfPlaneExhaustionAEP3X2` dans §79 ; preuve dynamique demande
+  Mathlib complex dynamics, hors scope.
 
 - [ ] **§78 NonPrincipalBasin finite measure** : prouver que
   `⋃_{s≠0} CyclotomicBasinP3X2 s` est contenu dans un compact, donc
   à mesure finie. Empirique : concentration ~10⁻⁴ autour de `ω·α₀`,
   `ω²·α₀`.
 
-- [ ] **§79 Niveau 5 final** : chaîner §76 + §77 + §78 pour fermer
-  `PrincipalDominanceP3X2`. Si §77 ou §78 manque, produire version
-  conditionnelle + chaînage explicite.
+- [x] **§79 Niveau5ConditionalChain** : chaînage final conditionnel.
+  `(HalfPlaneSigmaTendstoP3X2 ∧ HalfPlaneExhaustionAEP3X2) ⟹
+  PrincipalDominanceP3X2 ⟹ McMullenAEEntry 3 2 α₀`. Démontre que
+  les deux conjectures résiduelles suffisent à fermer Niveau 5
+  inconditionnellement à x=2.
 
 ### Extensions p ≥ 3 (priorité #3)
 

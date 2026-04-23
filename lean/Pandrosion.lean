@@ -72,4 +72,5 @@ import Pandrosion.Core.HalfPlaneGenericX
 import Pandrosion.Core.SigmaConcretePointsX2
 import Pandrosion.Core.SigmaEquivPointsX2
 import Pandrosion.Core.SigmaTendstoAtOneX2
+import Pandrosion.Core.Niveau5ConditionalChain
 import Pandrosion.Legacy
