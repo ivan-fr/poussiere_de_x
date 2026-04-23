@@ -1811,33 +1811,36 @@ A natural follow-up question: for fixed precision, does the iteration count scal
 \centering
 \small
 \renewcommand{\arraystretch}{1.15}
-\begin{tabular}{c|ccc|ccc}
+\begin{tabular}{c|cc|cc}
 \toprule
-& \multicolumn{3}{c|}{\textbf{(A) $z^p - 2$ (monomial)}} & \multicolumn{3}{c}{\textbf{(B) $z^p - z - 1$ (trinomial)}} \\
-$p$ & $\alpha$ & $R_\sigma$ & iters & $\alpha$ & $R_\sigma$ & iters \\
+& \multicolumn{2}{c|}{\textbf{(A) $z^p - 2$ (monomial)}} & \multicolumn{2}{c}{\textbf{(B) $z^p - z - 1$ (trinomial)}} \\
+$p$ & $R_\sigma$ & iters & $R_\sigma$ & iters \\
 \midrule
-$3$   & $1.26$ & $1.09$   & $6$  & $1.32$ & $0.16$   & $5$  \\
-$5$   & $1.15$ & $0.68$   & $6$  & $1.17$ & $0.084$  & $5$  \\
-$10$  & $1.07$ & $0.33$   & $10$ & $1.08$ & $0.038$  & $20$ \\
-$20$  & $1.04$ & $0.16$   & $13$ & $1.04$ & $0.018$  & $28$ \\
-$50$  & $1.01$ & $0.064$  & $15$ & $1.01$ & $0.0071$ & $33$ \\
-$100$ & $1.007$ & $0.032$ & $15$ & $1.007$ & $0.0035$ & $35$ \\
-$200$ & $1.003$ & $0.016$ & $16$ & $1.003$ & $0.0017$ & $36$ \\
+$3$        & $1.09$       & $6$  & $0.16$        & $5$  \\
+$5$        & $0.68$       & $6$  & $0.084$       & $5$  \\
+$10$       & $0.33$       & $10$ & $0.038$       & $20$ \\
+$20$       & $0.16$       & $13$ & $0.018$       & $28$ \\
+$50$       & $0.064$      & $15$ & $0.0071$      & $33$ \\
+$100$      & $0.032$      & $15$ & $0.0035$      & $35$ \\
+$200$      & $0.016$      & $16$ & $0.0017$      & $36$ \\
+$500$      & $0.0063$     & $16$ & $0.00069$     & $36$ \\
+$1\,000$    & $0.0031$     & $\mathbf{16}$ & $0.00035$     & $37$ \\
+$10\,000$   & $0.00031$    & $\mathbf{16}$ & $0.000035$    & $\mathbf{37}$ \\
 \bottomrule
 \end{tabular}
-\caption{Iteration counts of multi-start Pandrosion--Steffensen for degree-$p$ polynomials to reach $50$-digit precision from $z_0 = 3 + 3i$. The contraction radius $R_\sigma(P, \alpha)$ scales roughly as $1/p$ in both families (cyclotomic gap for (A); near-unit-circle clustering for (B)). Iteration count grows slowly with $p$: for the monomial it stays within $[6, 16]$ across two orders of magnitude in $p$; for the trinomial it grows more sharply, from $5$ to $36$, because $|h_P'(\alpha)|$ approaches $1$ faster with $p$.}
+\caption{Iteration counts of multi-start Pandrosion--Steffensen for degree-$p$ polynomials to reach $50$-digit precision from $z_0 = 3 + 3i$. The contraction radius $R_\sigma(P, \alpha)$ scales as $1/p$ (cyclotomic gap for (A), near-unit-circle clustering for (B)). Iteration count \textbf{saturates} at a plateau independent of $p$: $16$ for the monomial, $37$ for the trinomial. Wall-clock at $p = 10\,000$: $3.7$\,s (monomial), $4.6$\,s (trinomial); essentially linear in $p$ from the $p$-dependent cost of evaluating $S_p(s)$ via the closed-form $(s^p - 1)/(s - 1)$, not from the iteration count itself.}
 \label{tab:large-p}
 \end{table}
 
 \paragraph{Observations.}
 \begin{enumerate}
-  \item \textbf{The scheme still works at $p = 200$.} For both families, multi-start Pandrosion-Steffensen converges at degree $200$, taking $16$ iterations (monomial) or $36$ iterations (trinomial) to reach $50$ digits. The degree is not an obstruction to convergence.
-  \item \textbf{Iteration count is $O(\log p + \log\log(1/\delta))$, not $O(p)$.} For the monomial, the count roughly doubles as $p$ goes from $3$ to $200$ --- consistent with $\log_2(200/3) \approx 6$ additional iterations on top of the base. This is much slower growth than the $\log p$ cost of Newton's $u^{p-1}$ evaluation, but still logarithmic.
-  \item \textbf{Trinomial is $\approx 2\times$ slower than monomial at large $p$.} The trinomial's $R_\sigma$ is smaller by a factor of $\approx 10$ (reflecting how much closer the real root is to the clustering of other roots near the unit circle), and the local multiplier $|h_P'(\alpha)|$ is closer to $1$, both inflating the Aitken pre-asymptotic regime. For $p = 200$: $36$ iterations vs $16$.
-  \item \textbf{No blow-up at $p = 200$.} Neither $R_\sigma$ collapsing to a dangerously small value nor the iteration count exploding. The degree-dependence is manageable.
+  \item \textbf{The iteration count saturates.} For the monomial family, the count plateaus at $16$ iterations for every $p$ between $200$ and $10\,000$. For the trinomial, the count plateaus at $36$--$37$ iterations for every $p$ between $200$ and $10\,000$. This is the uniform-in-$p$ behaviour of Proposition~\ref{thm:uniform-loglog} made experimental: fixed precision, fixed $x$ (here $x = 2$ or the trinomial coefficient vector), iteration count bounded by a constant independent of $p$.
+  \item \textbf{The scheme works at $p = 10\,000$.} Both families converge in well under $40$ iterations; the wall-clock scales linearly with $p$ only through the arithmetic cost of computing $S_p(s) = (s^p - 1)/(s - 1)$, which is an $\mathcal{O}(\log p)$ multi-precision exponentiation, not a $p$-sum.
+  \item \textbf{Trinomial $\approx 2\times$ slower than monomial at the plateau.} For $p \gtrsim 200$: $37$ vs $16$ iterations. The extra factor reflects $h_P'(\alpha) \approx -0.5$ for the trinomial (vs $\approx 0.22$ for $z^3 - 2$), inflating the Aitken pre-asymptotic regime uniformly.
+  \item \textbf{$R_\sigma$ decays like $1/p$ but the iteration count does not grow}. The plateau behaviour at fixed precision is a consequence of the $\log_2\log$ asymptotic: $N_{\mathrm{eff}}(K_\sigma, R_\sigma, \delta) \sim \log_2\log(1/\delta) + O(\log(K_\sigma R_\sigma))$, and the correction $\log(K_\sigma R_\sigma)$ stays bounded even as $R_\sigma \to 0$ because $K_\sigma R_\sigma \leq 1/2$ is enforced by the cascade construction.
 \end{enumerate}
 
-For the monomial family, the iteration counts of Table~\ref{tab:large-p} confirm the theoretical prediction of Proposition~\ref{thm:uniform-loglog}: over the compact regime $K = \{2\}$, the count is $\mathcal{O}(\log\log(1/\delta))$ uniformly in $p$. For the trinomial, the growth is steeper because $\lambda_P \to 1$ as $p \to \infty$ (the real root approaches the other roots' clustering on the unit circle), a regime not covered by Proposition~\ref{thm:uniform-loglog}'s compactness assumption on the monomial parameter $x$. The slow cases all share the same mechanism: either $R_\sigma(P, \alpha_k)$ is small (the fixed point sits close to a singularity of $h_P$ where $S_p(s) = 0$, or to another root), or $h_P'(\alpha_k)$ approaches $1$, inflating the Aitken constant $K_S \propto 1/(1 - |h_P'(\alpha_k)|)$ and delaying entry into the quadratic regime. Compared against Newton on the same polynomials (which converges in $6$--$14$ iterations), multi-start Pandrosion is \emph{competitive} in the well-conditioned cases (monomial, quintic, sextic) but \emph{significantly slower} in the ill-conditioned cases --- a direct cost of being derivative-free in a setting that does not have the monomial's closed-form protection. The honest verdict: the scheme transports to general polynomials, but the \emph{quantitative} advantage of the monomial case does not.
+For the monomial family, the plateau empirically confirms Proposition~\ref{thm:uniform-loglog}: over the compact regime $K = \{2\}$, the count is $\mathcal{O}(\log\log(1/\delta))$ uniformly in $p \in [2, \infty)$. For the trinomial, Proposition~\ref{thm:uniform-loglog} does not apply directly (the argument is not a monomial parameter), but the saturation at $37$ iterations shows that the theorem's uniform behaviour extends empirically to at least this trinomial family. A follow-up paper characterising the class of polynomials for which the plateau holds would be of independent interest. The slow cases all share the same mechanism: either $R_\sigma(P, \alpha_k)$ is small (the fixed point sits close to a singularity of $h_P$ where $S_p(s) = 0$, or to another root), or $h_P'(\alpha_k)$ approaches $1$, inflating the Aitken constant $K_S \propto 1/(1 - |h_P'(\alpha_k)|)$ and delaying entry into the quadratic regime. Compared against Newton on the same polynomials (which converges in $6$--$14$ iterations), multi-start Pandrosion is \emph{competitive} in the well-conditioned cases (monomial, quintic, sextic) but \emph{significantly slower} in the ill-conditioned cases --- a direct cost of being derivative-free in a setting that does not have the monomial's closed-form protection. The honest verdict: the scheme transports to general polynomials, but the \emph{quantitative} advantage of the monomial case does not.
 
 \subsection{What is lost, what transports}
 

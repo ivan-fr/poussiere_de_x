@@ -122,7 +122,7 @@ def run():
     tol = mp.mpf(10) ** (-50)
     z0 = mp.mpc("3", "3")
 
-    p_values = [3, 5, 10, 20, 50, 100, 200]
+    p_values = [3, 5, 10, 20, 50, 100, 200, 500, 1000, 10000]
 
     print("=" * 80)
     print("Family A: monomial P(z) = z^p - 2    (target alpha = 2^(1/p), real)")
@@ -153,13 +153,22 @@ def run():
     for p in p_values:
         R_coefs = [mp.mpf(-1), mp.mpf(-1)] + [mp.mpf(0)] * (p - 2)
         P_coefs = [mp.mpf(-1), mp.mpf(-1)] + [mp.mpf(0)] * (p - 2) + [mp.mpf(1)]
-        # Real root of z^p - z - 1 ~ 2^(1/p) for large p (since alpha^p ~ 2).
-        seed_guess = mp.mpf(2) ** (mp.mpf(1) / p)
+        # Real root of z^p - z - 1 via direct Newton.  For large p,
+        # alpha ~ 1 + log(2)/p, and Newton's iteration with this seed
+        # converges super-fast.
         try:
-            alpha = mp.findroot(lambda z: z ** p - z - 1, seed_guess)
+            alpha = mp.mpf(2) ** (mp.mpf(1) / p)  # seed
+            for _ in range(80):
+                ap = alpha ** p
+                num = ap - alpha - 1
+                den = p * (ap / alpha) - 1  # = p alpha^(p-1) - 1
+                step = num / den
+                alpha = alpha - step
+                if abs(step) < mp.mpf(10) ** -(mp.mp.dps - 5):
+                    break
             alpha = mp.mpc(alpha)
         except Exception as e:
-            print(f"{p:>5} | findroot failed: {e}")
+            print(f"{p:>5} | alpha-Newton failed: {e}")
             continue
         # Estimate gap via perturbation: for large p, other roots are near |z| = 1,
         # on the unit circle. Gap from alpha (slightly > 1) to unit circle is small.
