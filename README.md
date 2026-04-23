@@ -1,18 +1,18 @@
 # Pandrosion Lean 4 Corpus
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19689482.svg)](https://doi.org/10.5281/zenodo.19689482)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19712450.svg)](https://doi.org/10.5281/zenodo.19712450)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![Universitas Pandrosion CI](https://github.com/ivan-fr/poussiere_de_x/actions/workflows/ci.yml/badge.svg)](https://github.com/ivan-fr/poussiere_de_x/actions)
 
 Formal verification and numerical illustration of the Pandrosion rational
 root-finding map, with a compiled research paper and reproducible figures.
 
-**Cite this work:** DOI [10.5281/zenodo.19689482](https://zenodo.org/records/19689482)
+**Cite this work:** DOI [10.5281/zenodo.19712450](https://zenodo.org/records/19712450)
 
 The current primary artifact is:
 
-- [`articles/pandrosion_paper.pdf`](articles/pandrosion_paper.pdf) - distributable compiled paper
-- [`latex/pandrosion_paper.tex`](latex/pandrosion_paper.tex) - LaTeX source
+- [`articles/pandrosion_pth.pdf`](articles/pandrosion_pth.pdf) - distributable compiled paper
+- [`latex/pandrosion_pth.tex`](latex/pandrosion_pth.tex) - LaTeX source
 - [`lean/Pandrosion.lean`](lean/Pandrosion.lean) - root Lean module importing the corpus
 
 ## What This Repository Contains
@@ -157,12 +157,11 @@ lean-incremental`.
 ```text
 .
 ├── articles/
-│   └── pandrosion_paper.pdf          # Current distributable paper
+│   └── pandrosion_pth.pdf            # Current distributable paper
 ├── latex/
-│   ├── pandrosion_paper.tex          # Main paper source
-│   ├── pandrosion_paper.pdf          # Local compiled copy
-│   ├── pandrosion_master.tex/.pdf    # Larger working manuscript
-│   └── fig_*.pdf                     # Paper figures
+│   ├── pandrosion_pth.tex            # Main paper source
+│   ├── pandrosion_pth.pdf            # Local compiled copy
+│   └── pandrosion_*.pdf              # Paper figures
 ├── lean/
 │   ├── Pandrosion.lean               # Root import module
 │   ├── Pandrosion/
@@ -223,19 +222,19 @@ directory is `/workspace/lean`.
 The repository includes a local `tectonic` binary at the repository root.
 
 ```bash
-(cd latex && ../tectonic pandrosion_paper.tex)
+(cd latex && ../tectonic pandrosion_pth.tex)
 ```
 
 Then copy the compiled PDF to the distributable location:
 
 ```bash
-cp latex/pandrosion_paper.pdf articles/pandrosion_paper.pdf
+cp latex/pandrosion_pth.pdf articles/pandrosion_pth.pdf
 ```
 
 From inside `latex/`, the equivalent copy command is:
 
 ```bash
-cp pandrosion_paper.pdf ../articles/pandrosion_paper.pdf
+cp pandrosion_pth.pdf ../articles/pandrosion_pth.pdf
 ```
 
 ## The `Pandrosion.Legacy` Companion (9 Modules)
@@ -320,8 +319,8 @@ rational iteration, in a proof-assistant-checked form.
   title  = {Universitas Pandrosion: Formal Verification of a Rational Root-Finding Map and Diophantine Bridges in Lean 4},
   author = {Besevic, Ivan},
   year   = {2026},
-  doi    = {10.5281/zenodo.19689482},
-  url    = {https://zenodo.org/records/19689482},
+  doi    = {10.5281/zenodo.19712450},
+  url    = {https://zenodo.org/records/19712450},
   note   = {24-module Pandrosion.Core spine + 9-module Pandrosion.Legacy companion; 296 theorems, 0 sorry, 0 off-whitelist axiom; fully unconditional axiom-clean RealMcMullenP2 on R at p=2, x>1 (bad-set Lebesgue-null lemma formalised via polynomial fiber-finiteness)}
 }
 ```
