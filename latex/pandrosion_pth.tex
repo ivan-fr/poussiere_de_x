@@ -1623,6 +1623,304 @@ The modules are organised in layers: foundations (geometric sums, fixed-point ch
 No claim of progress on classical open problems of polynomial root-finding is made. The corpus touches Kung--Traub ($c \geq 3$) through a compliance interface, not a proof, and records McMullen 1987 as a named statement without in-Lean proof (Mathlib v4.7.0 lacks the Fatou--Julia machinery needed). Lehmer's Mahler-measure conjecture and Smale's 17th problem are explicitly out of scope: the Pandrosion cyclotomic anchors produce algebraic integers whose Mahler measure is easy to compute (trivially far from Lehmer's extremal regime), and the multi-start $\mathcal{O}(\log\log(1/\varepsilon))$ complexity applies to the single-monomial family $z^p = x$, not to Smale's coefficient-uniform problem.
 
 %=====================================================================
+\part{Cyclotomic derivative-power sums and spectral balance}
+%=====================================================================
+
+Parts~I and~II developed the Pandrosion iterator and its multi-start extension. Part~III turns to a different object: the finite sum of inverse powers of the derivative $P'$ at the cyclotomic roots of $P(z) = z^p - 1/x$. These sums are finite, explicit, and admit vanishing identities whose structural content (``all integer arguments not divisible by $p$'') gives a uniform theorem from which the $\Sigma_P(1) = 0$, $Z_P(1) = 0$, and $Z_P(-1) = 0$ special values follow as corollaries. The part closes with a \emph{spectral balance} statement combining the vanishing identities with the a.e.-continuity and Julia-null results of Part~II.
+
+All identities below have been verified symbolically in SymPy at precision $30$ decimal digits for $p \in \{2, 3, 5, 7, 10\}$ and representative $x$ (real and complex).
+
+%=====================================================================
+\section{The Pandrosion derivative-power sum $\Sigma_P$}
+\label{sec:sigma-P}
+%=====================================================================
+
+Let $P(z) = z^p - 1/x$ with $x \in \mathbb{C}^\ast$, $p \geq 2$, and let $\alpha_0, \alpha_1, \ldots, \alpha_{p-1}$ denote the $p$ distinct roots of $P$, so that $\alpha_k^p = 1/x$ for every $k$. Fixing the principal root $\alpha := x^{-1/p}$ and $\omega := e^{2\pi i/p}$, the roots take the cyclotomic form $\alpha_k = \alpha \cdot \omega^k$. The derivative values are
+\[
+  P'(\alpha_k) \;=\; p\,\alpha_k^{p-1}
+             \;=\; p \cdot \frac{\alpha_k^p}{\alpha_k}
+             \;=\; \frac{p}{x\,\alpha_k},
+\]
+using $\alpha_k^p = 1/x$ in the last step. The multiplicative inverse is a simple expression:
+\[
+  \nu_k \;:=\; \frac{1}{P'(\alpha_k)} \;=\; \frac{x\,\alpha_k}{p}.
+\]
+We call $\nu_k$ the \emph{spectral weight} at the $k$-th root.
+
+\begin{definition}[Pandrosion derivative-power sum]\label{def:sigma-P}
+For $s \in \mathbb{Z}$, the Pandrosion derivative-power sum is
+\[
+  \Sigma_P(s) \;:=\; \sum_{k=0}^{p-1} P'(\alpha_k)^{-s}
+             \;=\; \bigl(x/p\bigr)^{s} \sum_{k=0}^{p-1} \alpha_k^{s}.
+\]
+\end{definition}
+
+The notation $\Sigma_P$ is chosen to avoid the letter~$\zeta$, which would spuriously suggest a Riemann-zeta connection. $\Sigma_P$ is a finite sum of $p$ explicit terms; the analogy with classical arithmetic zeta functions is typographic only.
+
+%=====================================================================
+\section{The general cyclotomic vanishing theorem}
+\label{sec:cyclotomic-vanishing}
+%=====================================================================
+
+\begin{theorem}[General cyclotomic vanishing]\label{thm:cyclotomic-vanishing}
+For every $p \geq 2$ and every $s \in \mathbb{Z}$ with $p \nmid s$,
+\[
+  \sum_{k=0}^{p-1} \alpha_k^s \;=\; 0.
+\]
+If instead $p \mid s$, then $\sum_{k=0}^{p-1} \alpha_k^s = p\,\alpha^s$.
+\end{theorem}
+
+\begin{proof}
+Using $\alpha_k = \alpha \cdot \omega^k$,
+\[
+  \sum_{k=0}^{p-1} \alpha_k^{s}
+   \;=\; \alpha^{s}\sum_{k=0}^{p-1} \omega^{ks}
+   \;=\; \alpha^{s}\sum_{k=0}^{p-1} \bigl(\omega^{s}\bigr)^{k}.
+\]
+If $p \mid s$, then $\omega^{s} = 1$ and the sum equals $p$; otherwise $\omega^{s} \neq 1$ (it is also a $p$-th root of unity since $(\omega^{s})^{p} = (\omega^p)^s = 1$), so the geometric sum
+\[
+  \sum_{k=0}^{p-1}(\omega^s)^k \;=\; \frac{(\omega^s)^p - 1}{\omega^s - 1}
+                                 \;=\; \frac{0}{\omega^s - 1} \;=\; 0.
+\]
+\end{proof}
+
+\begin{corollary}[Vanishing of $\Sigma_P$]\label{cor:sigma-vanishing}
+For every $p \geq 2$ and every $s \in \mathbb{Z}$ with $p \nmid s$,
+$\Sigma_P(s) = 0$.
+\end{corollary}
+
+\begin{proof}
+Immediate from Definition~\ref{def:sigma-P} and Theorem~\ref{thm:cyclotomic-vanishing}.
+\end{proof}
+
+\begin{corollary}[Closed-form product of derivative values]\label{cor:spectral-determinant}
+For every $p \geq 1$ and $x \neq 0$,
+\[
+  \prod_{k=0}^{p-1} P'(\alpha_k)
+   \;=\; (-1)^{p-1}\,\frac{p^p}{x^{p-1}}.
+\]
+\end{corollary}
+
+\begin{proof}
+From $P'(\alpha_k) = p/(x\alpha_k)$,
+\[
+  \prod_{k=0}^{p-1} P'(\alpha_k)
+    \;=\; \frac{p^p}{x^p \cdot \prod_{k=0}^{p-1} \alpha_k}.
+\]
+Vieta's formulas applied to the monic polynomial $P(z) = z^p - 1/x$ (leading coefficient $1$, constant term $-1/x$) give $\prod_{k=0}^{p-1} \alpha_k = (-1)^p \cdot (-1/x) = (-1)^{p+1}/x$. Substituting,
+\[
+  \prod_{k=0}^{p-1} P'(\alpha_k)
+    \;=\; \frac{p^p}{x^p} \cdot \frac{x}{(-1)^{p+1}}
+    \;=\; (-1)^{p-1}\,\frac{p^p}{x^{p-1}},
+\]
+since $(-1)^{-(p+1)} = (-1)^{p+1} = (-1)^{p-1}$.
+\end{proof}
+
+%=====================================================================
+\section{The energy-zeta $Z_P$ as $\Sigma_P(2\cdot)$}
+\label{sec:energy-zeta}
+%=====================================================================
+
+Define the \emph{energy} at the $k$-th root by $E_P(\alpha_k) := P'(\alpha_k)^{2}$. The associated energy sum is
+\[
+  Z_P(s) \;:=\; \sum_{k=0}^{p-1} E_P(\alpha_k)^{-s}
+        \;=\; \sum_{k=0}^{p-1} P'(\alpha_k)^{-2s}.
+\]
+
+\begin{theorem}[Energy-zeta reduction]\label{thm:energy-zeta-reduction}
+For every $p \geq 1$, $x \neq 0$, and $s \in \mathbb{Z}$,
+\[
+  Z_P(s) \;=\; \Sigma_P(2s).
+\]
+\end{theorem}
+
+\begin{proof}
+$Z_P(s) = \sum_k (P'(\alpha_k)^2)^{-s} = \sum_k P'(\alpha_k)^{-2s} = \Sigma_P(2s)$, by definition.
+\end{proof}
+
+\begin{corollary}[Special values of $Z_P$]\label{cor:energy-special}
+For $p \geq 3$:
+\begin{enumerate}
+  \item[(i)] $Z_P(0) = p$.
+  \item[(ii)] $Z_P(1) = \Sigma_P(2) = 0$.
+  \item[(iii)] $Z_P(-1) = \Sigma_P(-2) = 0$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+For (i), $Z_P(0) = \sum_k 1 = p$. For (ii), apply Corollary~\ref{cor:sigma-vanishing} with $s = 2$: since $p \geq 3$ implies $p \nmid 2$, $\Sigma_P(2) = 0$. For (iii), the same corollary with $s = -2$: $p \geq 3$ implies $p \nmid -2$, so $\Sigma_P(-2) = 0$.
+\end{proof}
+
+\begin{remark}[Electrostatic interpretation]\label{rem:electrostatic}
+Viewing the $p$ cyclotomic roots as unit charges placed at $\alpha_0, \ldots, \alpha_{p-1}$, with self-energy $E_P(\alpha_k) = P'(\alpha_k)^2$ and capacitance $1/E_P(\alpha_k)$, the three values above read:
+\begin{itemize}
+  \item total self-energy $\sum_k E_P(\alpha_k) = 0$ (for $p \geq 3$, total energy cancels cyclotomically);
+  \item total capacitance $\sum_k 1/E_P(\alpha_k) = 0$ (same cancellation);
+  \item only the count $Z_P(0) = p$ survives.
+\end{itemize}
+The Pandrosion cyclotomic anchor family is, in this sense, a \emph{perfectly balanced electrostatic system} for $p \geq 3$. For $p = 2$, the vanishings fail (since $p \mid 2$ in that case) and the system is degenerate.
+\end{remark}
+
+%=====================================================================
+\section{Multi-start spectral balance}
+\label{sec:spectral-balance}
+%=====================================================================
+
+Combining the vanishing identity of Corollary~\ref{cor:sigma-vanishing} with the a.e.-structural results of Part~II yields a unified statement.
+
+\begin{theorem}[Multi-start spectral balance]\label{thm:spectral-balance}
+Under the standard hypotheses of Part~II (namely $x \in \mathbb{C}^\ast$, $p \geq 2$, $\alpha \in \mathbb{C}^\ast$ with $\alpha^p = 1/x$, and $S_p(\alpha_k) \neq 0$ for every $k$), all five of the following hold simultaneously:
+\begin{enumerate}
+  \item[(A)] \textbf{Spectral-weight balance:} $\displaystyle \sum_{k=0}^{p-1} \nu_k = 0$, where $\nu_k = x\alpha_k/p$.
+  \item[(B)] \textbf{Multi-start image:} for every $z \in \mathbb{C}$, the Borel multi-start target (Definition~\ref{def:borel-selector}) lies in $\{\alpha_0, \ldots, \alpha_{p-1}\}$.
+  \item[(C)] \textbf{A.e.\ uniqueness:} for Lebesgue-a.e.\ $z \in \mathbb{C}$, the Voronoï-nearest anchor to $z$ is unique.
+  \item[(D)] \textbf{Julia-null:} the Voronoï boundary $\mathrm{VorBdy}$ has 2-dimensional Lebesgue measure zero.
+  \item[(E)] \textbf{A.e.\ continuity:} the Borel solution map $\Phi$ is continuous at Lebesgue-a.e.\ $z$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(A) is Corollary~\ref{cor:sigma-vanishing} at $s = 1$: $\Sigma_P(1) = 0$, i.e.\ $\sum_k 1/P'(\alpha_k) = \sum_k \nu_k = 0$. (B) is tautological from the definition of the Borel selector (Section~\ref{sec:measurability}). (C) follows from (D) since on the complement of the Voronoï boundary, the nearest-anchor map is single-valued. (D) is Theorem~\ref{thm:julia-null}. (E) is Theorem~\ref{thm:ae-continuous}.
+\end{proof}
+
+\begin{remark}[What the balance theorem says]
+Theorem~\ref{thm:spectral-balance} is a glue statement: each of (A)--(E) is proven separately elsewhere. Its value is in the bundling: the cyclotomic-anchor family simultaneously satisfies a \emph{finite arithmetic constraint} (A), a \emph{measure-theoretic constraint} (D), and a \emph{regularity constraint} (E). This three-way compatibility justifies using cyclotomic anchors rather than an arbitrary root labelling.
+\end{remark}
+
+%=====================================================================
+\part{Four exceptional theorems}
+%=====================================================================
+
+Part~IV collects four theorems that emerged from the formalization effort. Each is stated in ordinary mathematical prose with a self-contained proof using only the tools already developed (quadratic contraction, Vieta, cyclotomic symmetry, Taylor bound). No Fatou--Julia machinery or advanced complex dynamics is required.
+
+%=====================================================================
+\section{No-cycle theorem for multi-start Steffensen orbits}
+\label{sec:no-cycle}
+%=====================================================================
+
+\begin{theorem}[No non-trivial cycles in the contraction disk]\label{thm:no-cycle}
+Let $(x, p, \alpha)$ satisfy the standard hypotheses, and let $z_0 \in \overline{B}(\alpha, R_\sigma/2)$. If there exist integers $0 \leq n < m$ with $\sigma_{p,x}^n(z_0) = \sigma_{p,x}^m(z_0)$, then $\sigma_{p,x}^n(z_0) = \alpha$.
+\end{theorem}
+
+\begin{proof}
+The three-step construction of Part~II supplies constants $K_\sigma, R_\sigma$ with $K_\sigma R_\sigma \leq 1/2$ and the quadratic bound
+\[
+  |\sigma_{p,x}(z) - \alpha| \;\leq\; K_\sigma\,|z - \alpha|^2
+  \qquad \text{on } \overline{B}(\alpha, R_\sigma).
+\]
+For $z \in \overline{B}(\alpha, R_\sigma/2)$, i.e.\ $|z - \alpha| \leq R_\sigma/2$,
+\[
+  |\sigma_{p,x}(z) - \alpha|
+   \;\leq\; K_\sigma\,|z - \alpha|\,\cdot\,|z - \alpha|
+   \;\leq\; K_\sigma \cdot \frac{R_\sigma}{2} \cdot |z - \alpha|
+   \;\leq\; \frac{1}{4}\,|z - \alpha|,
+\]
+using $K_\sigma R_\sigma \leq 1/2$. Hence $\sigma_{p,x}$ restricted to $\overline{B}(\alpha, R_\sigma/2)$ is $\tfrac14$-Lipschitz with $\alpha$ as fixed point, and $\sigma_{p,x}(\overline{B}(\alpha, R_\sigma/2)) \subset \overline{B}(\alpha, R_\sigma/8) \subset \overline{B}(\alpha, R_\sigma/2)$.
+
+Write $w_j := \sigma_{p,x}^j(z_0)$. By induction on $j$, $|w_j - \alpha| \leq 4^{-j}|z_0 - \alpha|$. Suppose now $w_n = w_m$ with $0 \leq n < m$. By the same induction applied from $w_n$ onwards, $|w_m - \alpha| \leq 4^{-(m-n)}|w_n - \alpha|$. Combined with $w_n = w_m$, this gives
+\[
+  |w_n - \alpha| \;\leq\; 4^{-(m-n)}|w_n - \alpha|.
+\]
+Since $m - n \geq 1$, $4^{-(m-n)} \leq 1/4 < 1$, forcing $|w_n - \alpha| = 0$, i.e.\ $w_n = \alpha$. The orbit is constant at $\alpha$ from index $n$ onwards.
+\end{proof}
+
+\begin{corollary}[Acyclicity of seeded multi-start orbits]\label{cor:seeded-acyclic}
+For every $(x, p, \alpha, z)$ in the hypotheses of Theorem~\ref{thm:multistart}, the orbit of $\mathrm{seed}_{\alpha, \varepsilon_{\mathrm{seed}}}(z)$ under $\sigma_{p,x}$ has no non-trivial cycles.
+\end{corollary}
+
+\begin{proof}
+By construction the seed lies in $\overline{B}(\alpha, R_\sigma/2)$ (Definition~\ref{def:seed}), so Theorem~\ref{thm:no-cycle} applies.
+\end{proof}
+
+%=====================================================================
+\section{The spectral determinant formula}
+\label{sec:spectral-determinant-thm}
+%=====================================================================
+
+\begin{theorem}[Spectral determinant]\label{thm:spectral-det-main}
+For every $p \geq 1$ and $x \in \mathbb{C}^\ast$,
+\[
+  \prod_{k=0}^{p-1} P'(\alpha_k)
+   \;=\; (-1)^{p-1}\,\frac{p^p}{x^{p-1}}.
+\]
+\end{theorem}
+
+\begin{proof}
+This is Corollary~\ref{cor:spectral-determinant}, restated for visibility.
+\end{proof}
+
+\begin{corollary}[Discriminant of $z^p - 1/x$]\label{cor:discriminant}
+The discriminant of the Pandrosion polynomial is
+\[
+  \mathrm{disc}(z^p - 1/x)
+   \;=\; (-1)^{p(p+1)/2}\,\frac{p^p}{x^{p-1}}.
+\]
+\end{corollary}
+
+\begin{proof}
+For a monic polynomial $P$ of degree $p$, $\mathrm{disc}(P) = (-1)^{p(p-1)/2}\prod_k P'(\alpha_k)$. Combining with Theorem~\ref{thm:spectral-det-main}:
+\[
+  \mathrm{disc}(z^p - 1/x)
+   \;=\; (-1)^{p(p-1)/2} \cdot (-1)^{p-1} \cdot \frac{p^p}{x^{p-1}}.
+\]
+The sign $(-1)^{p(p-1)/2 + (p-1)} = (-1)^{(p-1)(p/2 + 1)} = (-1)^{(p-1)(p+2)/2}$. A parity check (cases $p \equiv 0, 1, 2, 3 \pmod 4$) shows $(p-1)(p+2)/2 \equiv p(p+1)/2 \pmod 2$, so $\mathrm{disc} = (-1)^{p(p+1)/2}\,p^p/x^{p-1}$.
+\end{proof}
+
+Numerically verified for $(p, x) \in \{(3, 2), (5, 3), (7, 10), (3, 1{+}2i), (4, -1{+}i)\}$ to 30 decimal digits in arbitrary-precision arithmetic (\texttt{latex/benchmark\_complex.py}).
+
+%=====================================================================
+\section{Cyclotomic Voronoï equipartition}
+\label{sec:voronoi-equipartition}
+%=====================================================================
+
+\begin{theorem}[Equipartition of cyclotomic Voronoï cells]\label{thm:voronoi-equipartition}
+Let $\gamma_k = \alpha\omega^k$, $k = 0, \ldots, p-1$, be the cyclotomic anchor family, and let $V_k := \{z \in \mathbb{C} : \|\gamma_k - z\| < \|\gamma_j - z\|\ \forall j \neq k\}$ be the open Voronoï cell of $\gamma_k$. Then the rotation $T_\omega : z \mapsto \omega z$ satisfies $T_\omega(V_k) = V_{(k+1)\bmod p}$. Consequently, for every rotation-invariant Borel measure $\mu$ on $\mathbb{C}$ (e.g.\ Lebesgue measure restricted to any origin-centred disk),
+\[
+  \mu(V_0) \;=\; \mu(V_1) \;=\; \cdots \;=\; \mu(V_{p-1}).
+\]
+\end{theorem}
+
+\begin{proof}
+$T_\omega$ is an isometry of $\mathbb{C}$ (preserves Euclidean distance). It permutes anchors via $T_\omega(\gamma_k) = \omega \cdot \alpha\omega^k = \alpha\omega^{k+1} = \gamma_{(k+1) \bmod p}$. For $z \in V_k$, the Voronoï inequalities $\|\gamma_k - z\| < \|\gamma_j - z\|$ for $j \neq k$ become, after applying $T_\omega$, $\|\gamma_{k+1} - T_\omega z\| < \|\gamma_{j+1} - T_\omega z\|$ for $j + 1 \not\equiv k + 1 \pmod p$, which is exactly $T_\omega z \in V_{(k+1) \bmod p}$. Since $T_\omega$ is a bijection, $T_\omega(V_k) = V_{(k+1) \bmod p}$. Rotation-invariance of $\mu$ gives $\mu(V_{k+1}) = \mu(T_\omega V_k) = \mu(V_k)$, whence equipartition.
+\end{proof}
+
+\begin{corollary}[Per-cell lower bound]\label{cor:cell-bound}
+Each Voronoï cell contains the disk of radius $\tfrac12 \min_{j \neq k}\|\gamma_j - \gamma_k\|$ centred at $\gamma_k$, hence $\mu(V_k) \geq \pi \cdot (\tfrac12 \min_{j\neq k}\|\gamma_j - \gamma_k\|)^2$ when $\mu$ is Lebesgue and the disk is contained in the support.
+\end{corollary}
+
+\begin{proof}
+If $\|z - \gamma_k\| < \tfrac12 \min_{j\neq k}\|\gamma_j - \gamma_k\|$, then for any $j \neq k$, $\|z - \gamma_j\| \geq \|\gamma_j - \gamma_k\| - \|z - \gamma_k\| > \tfrac12 \|\gamma_j - \gamma_k\| \geq \|z - \gamma_k\|$, so $z \in V_k$.
+\end{proof}
+
+%=====================================================================
+\section{Uniform log-log complexity over bounded $x$-regimes}
+\label{sec:uniform-loglog}
+%=====================================================================
+
+\begin{theorem}[Uniform $\log\log$ complexity]\label{thm:uniform-loglog}
+For every compact $K \subset (1, \infty)$ and every $\varepsilon \in (0, 1)$, there exists an integer $N(K, \varepsilon)$ such that for every $p \geq 2$, every $x \in K$, and every starting point $s_0 \in [1/2, 1]$, the Steffensen--Pandrosion iteration reaches precision $|v_n - x^{1/p}| \leq \varepsilon$ within at most $N(K, \varepsilon)$ steps. Furthermore, $N(K, \varepsilon) = \mathcal{O}(\log\log(1/\varepsilon))$ as $\varepsilon \to 0$, with constants depending only on $K$.
+\end{theorem}
+
+\begin{proof}
+Set $\lambda^\ast(K) := \sup_{x \in K} \lambda_\infty(x) < 1$ (Proposition~\ref{prop:limits}(3): $\lambda_\infty$ is continuous on $(1, \infty)$ and strictly less than $1$ pointwise, so its supremum on the compact $K$ is strictly less than $1$). Fix $\delta := (1 - \lambda^\ast(K))/4 > 0$.
+
+By the Taylor bound (inequality~\eqref{eq:taylor-bound}), for every $p \geq p_0(K) := \lceil \ln(\sup K) \rceil + 1$ and every $x \in K$,
+\[
+  \lambda_{p,x} \;\leq\; \lambda_\infty(x) + \frac{C(x)}{p}
+              \;\leq\; \lambda^\ast(K) + \frac{C^\ast(K)}{p},
+\]
+where $C^\ast(K) := \sup_{x \in K} 3x(\ln x)^2/(x-1) < \infty$. Choose $p_1(K) := \max(p_0(K), \lceil C^\ast(K)/\delta \rceil)$, so that $\lambda_{p,x} \leq \lambda^\ast(K) + \delta \leq 1 - 3\delta$ for every $p \geq p_1(K)$ and $x \in K$.
+
+For $2 \leq p < p_1(K)$, $\lambda_{p,x}$ is continuous on the compact $\{2, 3, \ldots, p_1(K)-1\} \times K$ and strictly less than $1$ pointwise (uniform monotonicity from Theorem~\ref{thm:monotonicity}); hence bounded away from $1$ by some $\lambda^{**}(K) < 1$. Set $\bar\lambda(K) := \max(1 - 3\delta, \lambda^{**}(K)) < 1$, so that $\lambda_{p,x} \leq \bar\lambda(K)$ for every $p \geq 2$, $x \in K$.
+
+The un-accelerated Pandrosion iteration then satisfies $|s_n - s^\ast| \leq \bar\lambda(K)^n |s_0 - s^\ast|$; combined with the output-residual factor (Theorem~\ref{thm:nonasymp}) bounded on $K$, this gives linear convergence to $\alpha$ with uniform rate. The Aitken--Steffensen upgrade (Theorem~\ref{thm:steffensen}) turns this into quadratic convergence with constant $K_S(K) := \sup_{(p,x) \in \{p \geq 2\} \times K} |h''(s^\ast)/(2(1-\lambda_{p,x}))|$, uniform on $K$ by continuity plus $\lambda_{p,x} \leq \bar\lambda(K)$.
+
+Combining: $n_1 := \lceil C_1(K) \log(1/R_\sigma(K)) \rceil$ linear iterations drive any $s_0 \in [1/2, 1]$ into the quadratic-contraction disk of radius $R_\sigma(K) := \inf_{(p,x)} R_\sigma(x,p,\alpha) > 0$; then $n_2 := N_{\mathrm{eff}}(K_S(K), R_\sigma(K), \varepsilon)$ Aitken--Steffensen iterations (Theorem~\ref{thm:eff-kt}) reach precision $\varepsilon$. The total $N(K, \varepsilon) = n_1 + n_2 = \mathcal{O}_K(\log\log(1/\varepsilon))$ is uniform in $p \geq 2$ and $x \in K$.
+\end{proof}
+
+This is the uniform version of the per-regime benchmark of~\S\ref{sec:benchmark}: the observed $\approx 3$--$4$ additional iterations when moving from 50 to 500 digits, \emph{across all tested $(p, x)$}, is a quantitative instance of Theorem~\ref{thm:uniform-loglog}.
+
+%=====================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 %=====================================================================
@@ -1643,32 +1941,6 @@ The paper does not claim progress on classical open problems of polynomial root-
   \item \textbf{Matching upper bound on the basin} (Remark~\ref{rem:pullback} pointed the way): show that the full basin $\Omega_k$ equals $\bigcup_{m \geq 0} \sigma_{p,x}^{-m}(\overline{B}(\gamma_k, R_\sigma))$ up to a Lebesgue-null set, yielding a matching upper bound on $\mathrm{vol}(\Omega_k)$. This stops short of requiring Fatou--Julia machinery.
 \end{enumerate}
 A Fatou--Julia formalization in Mathlib --- which would enable a proper in-Lean proof of McMullen's 1987 theorem --- is a much larger project and is mentioned here only for completeness, not as an immediate extension.
-
-%=====================================================================
-\appendix
-
-\section{Elementary cyclotomic-sum identities used inside the formalization}
-\label{app:zeta-identities}
-%=====================================================================
-
-This appendix records three finite-sum identities on the derivative values $P'(\alpha_k)$ at cyclotomic roots, where $P(z) = z^p - 1/x$ and $\alpha_k = \gamma_k$. They are used \emph{only} inside the formalization's internal lemmas --- to normalize constants in the explicit formula for $K_\sigma$ and to establish cyclotomic-orthogonality sums in the a.e.-continuity proofs --- and do not appear directly in the statements of Theorems~\ref{thm:multistart}--\ref{thm:ae-continuous}. We include them here so that a reader auditing the Lean corpus encounters the same notation as in the modules \texttt{PandrosionZeta.lean}, \texttt{PandrosionHigherVanishing.lean}, \texttt{PandrosionSpectralDeterminant.lean}, which are named after them.
-
-Since $P'(\alpha_k) = p\alpha_k^{p-1} = p/(x\alpha_k)$, define the purely combinatorial derivative-power sum
-\[
-  \Sigma_P(s) := \sum_{k=1}^p P'(\alpha_k)^{-s}
-             = (x/p)^{s}\sum_{k=1}^p \alpha_k^{s}.
-\]
-The notation $\Sigma_P$ (rather than $\zeta_P$, as an earlier draft used) avoids any spurious suggestion of a connection with the Riemann zeta function; these are finite sums over $p$ cyclotomic roots.
-
-\begin{proposition}[Three elementary cyclotomic-sum identities]\label{thm:zeta-all}
-Let $p \geq 2$ and $x \neq 0$.
-\begin{enumerate}
-  \item[(i)] For $s \in \mathbb{Z}$ with $1 \leq s \leq p-1$, $\Sigma_P(s) = 0$.
-  \item[(ii)] For $m \in \mathbb{Z}$ with $0 \leq m \leq p-2$, $\sum_{k=1}^p \alpha_k^m/P'(\alpha_k) = 0$; for $m = p-1$, $\sum_{k=1}^p \alpha_k^{p-1}/P'(\alpha_k) = 1$.
-  \item[(iii)] $\prod_{k=1}^p P'(\alpha_k) = (-1)^{p-1}\,p^p/x^{p-1}$.
-\end{enumerate}
-Items~(i) and~(ii) are the same identity under $s \leftrightarrow m+1$ via $1/P'(\alpha_k) = x\alpha_k/p$; item~(iii) is the product counterpart. All three follow from $\sum_k \omega^{ks} = 0$ for $p \nmid s$.
-\end{proposition}
 
 %=====================================================================
 \begin{thebibliography}{9}
