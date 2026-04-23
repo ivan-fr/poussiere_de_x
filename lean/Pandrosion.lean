@@ -84,4 +84,5 @@ import Pandrosion.Core.LoglogUniversalMultiStartGeneric
 import Pandrosion.Core.MasterUniversel
 import Pandrosion.Core.GaloisEquivariantMultiStart
 import Pandrosion.Core.EffectiveKungTraub
+import Pandrosion.Core.Niveau5StrictMultiStart
 import Pandrosion.Legacy
