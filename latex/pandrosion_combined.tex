@@ -107,7 +107,11 @@ $\mathrm{seed}_{\alpha,\varepsilon}(z) = \alpha + \varepsilon(z-\alpha)$
 with target-dependent $\varepsilon$ places any $z \in \mathbb{C}$
 inside the quadratic-contraction disk of a chosen anchor $\alpha$,
 providing a universal convergence theorem with closed-form iteration
-count $N_{\mathrm{eff}} \sim \log_2 \log(1/\varepsilon)$.
+count $N_{\mathrm{eff}} \sim \log_2 \log(1/\varepsilon)$. A
+``Grand Master'' statement (Theorem~\ref{thm:grand-master}) bundles
+target selection, Steffensen fixing, scaling compatibility,
+reconstruction, and optimal seed into a single glue result that the
+downstream formalization cites by name.
 Unconditionally (without seeding), each anchor's basin of attraction
 contains an explicit disk of radius $R_\sigma(x, p, \gamma_k)$, giving
 the lower bound $\mathrm{vol}(\bigcup_k \Omega_k) \geq \sum_k \pi R_\sigma(x, p, \gamma_k)^2$
@@ -1372,6 +1376,42 @@ For every function $S : \mathbb{C} \to \mathrm{Fin}\,p$, every $z \in \mathbb{C}
 
 Three selectors are formalized: constant (\texttt{principal\_selector}), Voronoï-nearest (\texttt{nearest\_anchor\_selector}), angular sector.
 
+\subsection{The Grand Master multi-start theorem}
+\label{sec:grand-master}
+
+The previous subsections have presented the ingredients of the multi-start pipeline separately: the seed (Definition~\ref{def:seed}), the universal convergence theorem (Theorem~\ref{thm:multistart}), the target selectors (Theorem~\ref{thm:galois-equiv}), and the real-line preconditionings of Part~I transported to the cyclotomic anchor family. The following theorem bundles all five into a single statement that the formalization refers to as the \emph{Grand Master multi-start theorem}. It is the unifying statement the downstream Lean modules cite.
+
+\begin{theorem}[Grand Master multi-start]\label{thm:grand-master}
+Let $x \in \mathbb{C}^\ast$, $A \in \mathbb{C}^\ast$, $p \geq 1$, and $\alpha, \beta \in \mathbb{C}^\ast$ with $\alpha^p = x$ and $\beta^p = A$. Let $\gamma : \{0, 1, \ldots, p-1\} \to \mathbb{C}^\ast$ be a cyclotomic anchor family satisfying $\gamma_k^p = A/x$ and $S_p(\gamma_k) \neq 0$ for every $k$. Then for every query point $z_0 \in \mathbb{C}$, the following five properties hold simultaneously:
+\begin{enumerate}
+  \item[(1)] \textbf{Multi-start target selection.} There exists an index $s^\ast \in \{0, 1, \ldots, p-1\}$ --- the Voronoï-nearest anchor to $z_0$ --- with $\|\gamma_{s^\ast} - z_0\| \leq \|\gamma_t - z_0\|$ for every $t$.
+  \item[(2)] \textbf{Steffensen fixing.} Every $\gamma_s$ is a fixed point of the scaled Steffensen map: $\sigma_{x/A,\,p}(\gamma_s) = \gamma_s$ for every $s$.
+  \item[(3)] \textbf{Scaling compatibility.} The principal ratio satisfies $(\alpha/\beta)^p = x/A$.
+  \item[(4)] \textbf{Reconstruction.} $\alpha = \beta \cdot (\alpha/\beta)$, so the original $p$-th root is recovered from the scaled one by multiplication by the integer root $\beta$.
+  \item[(5)] \textbf{Optimal starting point.} The canonical seed for the scaled problem is $s_0^{\mathrm{opt}}(x/A) = h_{p,\,x/A}(1)$, matching Proposition~\ref{prop:optimal_start} of Part~I.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(1) Voronoï-nearest existence: the function $t \mapsto \|\gamma_t - z_0\|$ attains its minimum on the finite set $\{0, \ldots, p-1\}$ at some index $s^\ast$.
+
+(2) Steffensen fixing: by the factorization of Part~I specialized to $\gamma_s^p = A/x = 1/(x/A)$, $h_{p, x/A}(\gamma_s) = \gamma_s$; applying Aitken's $\Delta^2$ to a constant sequence $h(\gamma_s), h(h(\gamma_s)), \ldots$ yields $\sigma_{x/A, p}(\gamma_s) = \gamma_s$ whenever the denominator of the Aitken step is non-zero, which holds since $S_p(\gamma_s) \neq 0$ (the removable singularity at a fixed point is handled by the standard Aitken convention).
+
+(3) Scaling compatibility: $(\alpha/\beta)^p = \alpha^p/\beta^p = x/A$ by direct computation.
+
+(4) Reconstruction: $\beta \cdot (\alpha/\beta) = \alpha$ since $\beta \neq 0$.
+
+(5) Optimal starting point: $h_{p, x/A}(1) = 1 - ((x/A) - 1)/((x/A) \cdot S_p(1)) = 1 - ((x/A) - 1)/((x/A) \cdot p)$, matching~\eqref{eq:optimal_s0} applied to the scaled problem $x' = x/A$.
+\end{proof}
+
+\begin{remark}[What the Grand Master theorem actually says]
+Theorem~\ref{thm:grand-master} is not itself a new mathematical result; each of the five parts is proven elsewhere in Parts~I and~II. Its value is structural: it records, in a single statement, the \emph{compatibility} of the five layers of the pipeline --- selection, fixing, scaling, reconstruction, seeding --- so that downstream statements (in the formalization and in the effective iteration-count theorem below) can cite one name instead of five. The theorem's role is that of a \emph{glue lemma}: Proposition~(3), for instance, is used by the scaling preconditioning of Part~I to certify that a $\mathbb{R}$-level identity transports correctly to the cyclotomic family in $\mathbb{C}$.
+\end{remark}
+
+\begin{remark}[Effective version]
+The effective counterpart of Theorem~\ref{thm:grand-master} replaces the asymptotic iteration count $N$ of Theorem~\ref{thm:multistart} with the explicit $N_{\mathrm{eff}}(K_\sigma, R_\sigma, \delta)$ of Theorem~\ref{thm:eff-kt}, applied per-anchor in the family $\gamma$. Concretely, for every $z_0 \in \mathbb{C}$ and every target accuracy $\delta > 0$, the following holds: choose $s^\ast$ as in Theorem~\ref{thm:grand-master}(1), form the seed $\mathrm{seed}_{\gamma_{s^\ast},\,\varepsilon_{\mathrm{seed}}}(z_0)$ with $\varepsilon_{\mathrm{seed}} = R_\sigma(x/A, p, \gamma_{s^\ast})/(2\|z_0 - \gamma_{s^\ast}\|)$, and iterate $\sigma_{x/A, p}$. After $N = N_{\mathrm{eff}}(K_\sigma, R_\sigma, \delta)$ steps, the iterate is within $\delta$ of $\gamma_{s^\ast}$, and multiplying by $\beta$ yields an approximation of $\alpha$ to comparable accuracy. The total cost is $\log_2 \log(1/\delta) + O(1)$ iterations plus one integer $p$-th root --- the scaling cost $\beta$ --- plus one final multiplication, exactly the pipeline the benchmark of \S\ref{sec:benchmark} exercises.
+\end{remark}
+
 \subsection{Explicit lower bound on the basin of attraction (unseeded iteration)}
 \label{sec:basin-bound}
 
@@ -1518,7 +1558,7 @@ The Lean development lives at
   \item \textbf{Axiom audit file.} The file \texttt{AXIOMS.md} at the repository root contains the raw \texttt{\#print axioms} output for every load-bearing theorem cited in this paper; for each, the dependency closure reduces to the Lean whitelist $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$.
   \item \textbf{Local reproduction.} Incremental build \texttt{bash scripts/lean-incremental.sh} takes 60--90~seconds on a modern laptop; per-theorem verification is available via \texttt{\#print axioms <theorem>} at the end of the relevant module.
 \end{itemize}
-The modules are organised in layers: foundations (geometric sums, fixed-point characterization, Voronoï basins, cyclotomic anchor definitions), core spine (explicit super-attractive rate, global $\log\log$ convergence, real-line $p = 2$ discharge), multi-start (universal convergence, target selection, iteration count), measure/topology (Borel measurability, Voronoï-null frontier, a.e.\ continuity), and a small set of classical specializations (Banach 1922, Aitken--Steffensen, Kronecker 1857, Aberth--Ehrlich, Kung--Traub attainability at $c=3$).
+The modules are organised in layers: foundations (geometric sums, fixed-point characterization, Voronoï basins, cyclotomic anchor definitions), core spine (explicit super-attractive rate, global $\log\log$ convergence, real-line $p = 2$ discharge), multi-start (universal convergence, target selection, iteration count, Grand Master theorem of \S\ref{sec:grand-master} via \texttt{Foundations.multi\_start\_grand\_master} and \texttt{PandrosionUltimateGrandMaster}), measure/topology (Borel measurability, Voronoï-null frontier, a.e.\ continuity), and a small set of classical specializations (Banach 1922, Aitken--Steffensen, Kronecker 1857, Aberth--Ehrlich, Kung--Traub attainability at $c=3$).
 
 \paragraph{Statement-level \texttt{Prop}s that are NOT proven.} A single archive module \texttt{PandrosionOpenProblems.lean} contains named Lean \texttt{Prop}s whose proofs are \emph{deliberately absent}: the conjectural upper bound of Kung--Traub for $c \geq 3$, McMullen's 1987 impossibility theorem, Lehmer's Mahler-measure conjecture, and Smale's~17th problem. These are recorded as \texttt{axiom} or \texttt{Prop} declarations without accompanying proof terms. They are not used downstream by any load-bearing theorem of the corpus, and their presence in the repository should not be mistaken for formal verification of the corresponding results. A reader auditing the corpus can confirm this by checking that no \texttt{theorem} depending on these \texttt{Prop}s appears in the load-bearing chain. A future cleanup will move this archive module to a dedicated \texttt{archive} namespace to make the non-load-bearing status structurally explicit.
 
