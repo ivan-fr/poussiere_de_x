@@ -98,4 +98,7 @@ import Pandrosion.Core.PandrosionUltimateGrandMaster
 import Pandrosion.Core.PandrosionEnergyZeta
 import Pandrosion.Core.PandrosionAcyclicityFTA
 import Pandrosion.Core.PandrosionAitkenSchwarz
+import Pandrosion.Core.PandrosionKungTraubC3
+import Pandrosion.Core.PandrosionSmaleSeventeenth
+import Pandrosion.Core.PandrosionRiemannHypothesis
 import Pandrosion.Legacy
