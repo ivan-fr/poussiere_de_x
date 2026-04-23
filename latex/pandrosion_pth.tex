@@ -26,6 +26,7 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}{Proposition}[section]
 \newtheorem{corollary}{Corollary}[section]
 \newtheorem{remark}{Remark}[section]
@@ -712,11 +713,7 @@ For general $p \geq 2$, we combine the Taylor bound~\eqref{eq:taylor-bound} with
   \lambda_\infty'(x)
   = \frac{\ln x - (x-1)/x}{(x-1)^2}.
 \]
-The numerator equals $\ln x + 1/x - 1$. Its derivative is $1/x - 1/x^2 = (x-1)/x^2 > 0$ on $x > 1$, and its value at $x = 1$ is $0$; hence it is strictly positive on $(1, \infty)$, and $\lambda_\infty$ is strictly increasing there. \begin{remark}[Monotonicity of the asymptote]
-The asymptote $\lambda_\infty(x) = 1 - \ln(x)/(x-1)$ is itself strictly increasing on $(1, \infty)$: $\lambda_\infty'(x) = (\ln x - (x-1)/x)/(x-1)^2 > 0$ since $\ln x + 1/x - 1 > 0$ on $x > 1$ (value $0$ at $x = 1$, derivative $(x-1)/x^2 > 0$). This is a consistency check only; the finite-$p$ monotonicity is already established above via $P_p = p\,D_p'$, without appealing to the Taylor bound.
-\end{remark}
-
-\medskip
+The numerator equals $\ln x + 1/x - 1$. Its derivative is $1/x - 1/x^2 = (x-1)/x^2 > 0$ on $x > 1$, and its value at $x = 1$ is $0$; hence it is strictly positive on $(1, \infty)$, and $\lambda_\infty$ is strictly increasing there.
 
 \medskip
 
@@ -993,7 +990,7 @@ $(4,2)$ & $0.8409$ & $0.8750$ & $0.034$ & $15$ & $17$ \\
 $(3,8)$ & $0.5000$ & $0.7083$ & $0.208$ & $42$ & $0^*$ \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of iteration counts to reach $|v_n - \alpha| < 10^{-10}$. The canonical starting point $s_0^{\mathrm{opt}} = h(1)$ consistently reduces iterations. (*For $(3,8)$, $s_0 = 1/2$ happens to coincide with $s^*$.)}
+\caption{Comparison of iteration counts to reach $|v_n - \alpha| < 10^{-10}$. The canonical starting point $s_0^{\mathrm{opt}} = h(1)$ consistently reduces iterations. (*For $(p, x) = (3, 8)$: since $8^{-1/3} = 1/2$ exactly, the naive choice $s_0 = 1/2$ equals $s^*$ and converges in zero iterations --- not an accidental coincidence but a consequence of $x$ being a perfect $p$-th power.)}
 \label{tab:optimal-start-expo}
 \end{table}
 
@@ -1036,65 +1033,26 @@ where $\lambda := h'(s^*) = \lambda_{p,x} \in (0, 1)$. In particular, the Steffe
 \end{theorem}
 
 \begin{proof}
-Set $u := s - s^*$ and expand $h$ around $s^*$ using $h(s^*) = s^*$, $h'(s^*) = \lambda$:
+Set $u := s - s^*$, $h_2 := h''(s^*)$, and expand to order $u^2$:
+$h(s) - s^* = \lambda u + \tfrac{h_2}{2}u^2 + O(u^3)$, hence
 \[
-  h(s) \;=\; s^* + \lambda u + \tfrac{h''(s^*)}{2}\,u^2 + O(u^3).
+  h(s) - s = (\lambda - 1)u + \tfrac{h_2}{2}u^2 + O(u^3).
 \]
-Writing $h_2 := h''(s^*)$ for brevity, we compute each ingredient of the Steffensen update.
-
-\emph{(1) Compute $h(s) - s$:}
+Substituting $v = h(s) - s^*$ into $h(h(s)) = s^* + \lambda v + \tfrac{h_2}{2}v^2 + O(v^3)$ and collecting through $O(u^2)$ gives $h(h(s)) = s^* + \lambda^2 u + \tfrac{h_2}{2}(\lambda + \lambda^2)u^2 + O(u^3)$, whence the Aitken denominator
 \[
-  h(s) - s \;=\; (s^* + \lambda u + \tfrac{h_2}{2}u^2) - (s^* + u) + O(u^3)
-           \;=\; (\lambda - 1)\,u \;+\; \tfrac{h_2}{2}\,u^2 + O(u^3).
+  \Delta := h(h(s)) - 2h(s) + s = (\lambda - 1)^2 u + \tfrac{h_2}{2}(\lambda - 1)(\lambda + 2)u^2 + O(u^3).
 \]
-
-\emph{(2) Compute $h(h(s))$.} Let $v := h(s) - s^* = \lambda u + \tfrac{h_2}{2}u^2 + O(u^3)$. Then
-\[
-  h(h(s)) \;=\; s^* + \lambda v + \tfrac{h_2}{2}\,v^2 + O(v^3).
-\]
-Substituting $v = \lambda u + \tfrac{h_2}{2}u^2 + O(u^3)$ and retaining terms through $O(u^2)$:
-\[
-  h(h(s)) \;=\; s^* + \lambda^2 u + \Bigl[\lambda \cdot \tfrac{h_2}{2} + \tfrac{h_2}{2}\lambda^2\Bigr] u^2 + O(u^3)
-          \;=\; s^* + \lambda^2 u + \tfrac{h_2}{2}(\lambda + \lambda^2)\,u^2 + O(u^3).
-\]
-
-\emph{(3) Compute the Aitken denominator $\Delta := h(h(s)) - 2h(s) + s$:}
-\begin{align*}
-  \Delta
-  &\;=\; \bigl[s^* + \lambda^2 u + \tfrac{h_2}{2}(\lambda + \lambda^2)u^2\bigr]
-      - 2\bigl[s^* + \lambda u + \tfrac{h_2}{2}u^2\bigr] + \bigl[s^* + u\bigr] + O(u^3) \\
-  &\;=\; (\lambda^2 - 2\lambda + 1)\,u \;+\; \tfrac{h_2}{2}\bigl[(\lambda + \lambda^2) - 2\bigr] u^2 + O(u^3) \\
-  &\;=\; (\lambda - 1)^2 u \;+\; \tfrac{h_2}{2}(\lambda - 1)(\lambda + 2) u^2 + O(u^3).
-\end{align*}
-
-\emph{(4) Compute the numerator $(h(s) - s)^2$:}
-\[
-  (h(s) - s)^2 \;=\; (\lambda - 1)^2 u^2 \;+\; (\lambda - 1)\,h_2\,u^3 + O(u^4).
-\]
-
-\emph{(5) Take the ratio.} Factoring $(\lambda - 1)^2$ from both numerator and denominator:
+The numerator is $(h(s) - s)^2 = (\lambda - 1)^2 u^2 + (\lambda - 1)h_2 u^3 + O(u^4)$. Dividing (factoring one power of $u$ from $\Delta$ and $(\lambda-1)^2$ from both):
 \[
   \frac{(h(s) - s)^2}{\Delta}
-   \;=\; \frac{u^2 + \frac{h_2}{\lambda-1}\,u^3 + O(u^4)}
-              {u + \frac{h_2(\lambda+2)}{2(\lambda-1)}\,u^2 + O(u^3)}.
+   = u \cdot \frac{1 + \tfrac{h_2}{\lambda-1}u + O(u^2)}{1 + \tfrac{h_2(\lambda+2)}{2(\lambda-1)}u + O(u^2)}
+   = u + \frac{h_2}{\lambda - 1}\cdot\Bigl(1 - \tfrac{\lambda+2}{2}\Bigr)u^2 + O(u^3).
 \]
-Factoring one power of $u$ from the denominator and dividing:
-\begin{align*}
-  \frac{(h(s) - s)^2}{\Delta}
-  &\;=\; u \cdot \frac{1 + \frac{h_2}{\lambda-1}\,u + O(u^2)}
-              {1 + \frac{h_2(\lambda+2)}{2(\lambda-1)}\,u + O(u^2)} \\
-  &\;=\; u \cdot \Bigl[1 + \Bigl(\tfrac{h_2}{\lambda-1} - \tfrac{h_2(\lambda+2)}{2(\lambda-1)}\Bigr) u + O(u^2)\Bigr] \\
-  &\;=\; u + \frac{h_2}{\lambda - 1} \cdot \Bigl(1 - \tfrac{\lambda+2}{2}\Bigr)\,u^2 + O(u^3) \\
-  &\;=\; u + \frac{h_2}{\lambda - 1} \cdot \frac{-\lambda}{2}\,u^2 + O(u^3)
-   \;=\; u + \frac{\lambda\, h_2}{2(1 - \lambda)}\,u^2 + O(u^3).
-\end{align*}
-
-\emph{(6) Conclude.} By definition of $T$,
+The bracketed coefficient simplifies to $-\lambda/2$, giving $(h(s)-s)^2/\Delta = u + \tfrac{\lambda h_2}{2(1-\lambda)}u^2 + O(u^3)$. Therefore
 \[
-  T(s) - s^* \;=\; u - \frac{(h(s) - s)^2}{\Delta}
-             \;=\; -\,\frac{\lambda\, h_2}{2(1 - \lambda)}\,u^2 + O(u^3),
+  T(s) - s^* = u - \frac{(h(s)-s)^2}{\Delta} = -\frac{\lambda h_2}{2(1-\lambda)}u^2 + O(u^3),
 \]
-which is the stated expansion. In particular $T(s^*) = s^*$ and $T'(s^*) = 0$, and the absolute value of the leading coefficient is $K_S$ as in~\eqref{eq:K_steffensen}.
+which is the stated expansion; $T(s^*) = s^*$ and $T'(s^*) = 0$ are immediate, and the absolute value of the leading coefficient is $K_S$ as in~\eqref{eq:K_steffensen}. (The full symbolic derivation up to $O(u^3)$ is in \texttt{latex/verify\_monotonicity.py}.)
 \end{proof}
 
 \begin{remark}[Output-residual constant]\label{rem:K-output}
@@ -1461,7 +1419,7 @@ Three selectors are formalized: constant (\texttt{principal\_selector}), Vorono�
 
 The previous subsections presented the ingredients of the multi-start pipeline separately: the seed (Definition~\ref{def:seed}), the universal convergence theorem (Theorem~\ref{thm:multistart}), the target selectors (Theorem~\ref{thm:galois-equiv}), and the real-line preconditionings of Part~I transported to the cyclotomic anchor family. The following statement bundles all five into a single compatibility assertion. It is a glue lemma used by downstream citations, not a headline result.
 
-\begin{theorem}[Multi-start compatibility bundle]\label{thm:grand-master}
+\begin{lemma}[Multi-start compatibility bundle]\label{thm:grand-master}
 Let $x \in \mathbb{C}^\ast$, $A \in \mathbb{C}^\ast$, $p \geq 1$, and $\alpha, \beta \in \mathbb{C}^\ast$ with $\alpha^p = x$ and $\beta^p = A$. Let $\gamma : \{0, 1, \ldots, p-1\} \to \mathbb{C}^\ast$ be a cyclotomic anchor family satisfying $\gamma_k^p = A/x$ and $S_p(\gamma_k) \neq 0$ for every $k$. Then for every query point $z_0 \in \mathbb{C}$, the following five properties hold simultaneously:
 \begin{enumerate}
   \item[(1)] \textbf{Multi-start target selection.} There exists an index $s^\ast \in \{0, 1, \ldots, p-1\}$ --- the Voronoï-nearest anchor to $z_0$ --- with $\|\gamma_{s^\ast} - z_0\| \leq \|\gamma_t - z_0\|$ for every $t$.
@@ -1470,7 +1428,7 @@ Let $x \in \mathbb{C}^\ast$, $A \in \mathbb{C}^\ast$, $p \geq 1$, and $\alpha, \
   \item[(4)] \textbf{Reconstruction.} $\alpha = \beta \cdot (\alpha/\beta)$, so the original $p$-th root is recovered from the scaled one by multiplication by the integer root $\beta$.
   \item[(5)] \textbf{Optimal starting point.} The canonical seed for the scaled problem is $s_0^{\mathrm{opt}}(x/A) = h_{p,\,x/A}(1)$, matching Proposition~\ref{prop:optimal_start} of Part~I.
 \end{enumerate}
-\end{theorem}
+\end{lemma}
 
 \begin{proof}
 (1) Voronoï-nearest existence: the function $t \mapsto \|\gamma_t - z_0\|$ attains its minimum on the finite set $\{0, \ldots, p-1\}$ at some index $s^\ast$.
@@ -1546,17 +1504,12 @@ Part~(iii) follows from (i) and (ii) by additivity of Lebesgue measure.
 Theorem~\ref{thm:multistart} covers every $z \in \mathbb{C}$ but only after pre-processing $z$ into a chosen target's disk via the seed. Proposition~\ref{prop:basin-lower-bound} does not need any pre-processing: the disk $\overline{B}(\gamma_k, R_\sigma)$ is directly in the unseeded basin. The two results are complementary: the seed (Theorem~\ref{thm:multistart}) addresses points outside any anchor's disk, while the basin bound (Proposition~\ref{prop:basin-lower-bound}) quantifies the unconditional contribution from points already close to an anchor.
 \end{remark}
 
-\begin{remark}[Tightness and numerical observations]
-The bound $\pi R_\sigma^2$ is typically very loose. Numerical experiments (script \texttt{latex/basin\_estimate.py}) on $(p, x) = (3, 2)$ show that $\Omega_0$ (principal anchor) covers approximately $99.95\%$ of the grid $[-1.5, 1.5]^2$, while the analytic lower bound $\pi R_\sigma^2$ with an empirical $R_\sigma \geq 2$ gives $\mathrm{vol}(\Omega_0) \geq 4\pi \approx 12.57$. For $(p, x) = (7, 10)$ the radius tightens to $R_\sigma \approx 0.37$ empirically, showing that the geometric obstruction of a non-trivial Julia boundary begins to bite at larger $p$ and $x$. Proposition~\ref{prop:basin-lower-bound} is an explicit \emph{lower} bound only; improving it to a matching upper bound or a Hausdorff-dimension estimate on $\mathbb{C} \setminus \bigcup_k \Omega_k$ requires Fatou--Julia machinery not in Mathlib v4.7.0 and is left for future work.
-\end{remark}
-
-\begin{remark}[Pullback improvement]\label{rem:pullback}
-The bound can be sharpened without leaving the elementary toolbox. Since $\sigma_{p,x}$ is a rational map, each iterate $\sigma_{p,x}^{-m}(\overline{B}(\gamma_k, R/2))$ is an open subset of $\Omega_k$ (pullback of a forward-invariant open set containing $\gamma_k$). Hence
+\begin{remark}[Pullback improvement and empirical tightness]\label{rem:pullback}
+The bound $\pi R_\sigma^2$ is a level-$0$ estimate and can be sharpened without leaving the elementary toolbox. Since $\sigma_{p,x}$ is a rational map of degree $d = d(p)$, each iterate $\sigma_{p,x}^{-m}(\overline{B}(\gamma_k, R_\sigma/2))$ is an open subset of $\Omega_k$ (pullback of a forward-invariant open set containing $\gamma_k$), and the pullbacks over distinct $m$ are disjoint up to measure-zero overlap, so
 \[
-  \mathrm{vol}(\Omega_k)
-  \;\geq\; \mathrm{vol}\!\Bigl(\bigcup_{m \geq 0} \sigma_{p,x}^{-m}\bigl(\overline{B}(\gamma_k, R/2)\bigr)\Bigr),
+  \mathrm{vol}(\Omega_k) \;\geq\; \sum_{m=0}^{M} \mathrm{vol}\!\bigl(\sigma_{p,x}^{-m}(\overline{B}(\gamma_k, R_\sigma/2))\bigr)
 \]
-and each pullback-level $m$ contributes a disjoint (up to measure-zero overlap) additional region. We do not pursue this refinement here because each pullback involves solving a degree-$d$ polynomial equation, and the bookkeeping obscures the elementary character of the $m = 0$ bound.
+for every $M$. Numerical exploration (script \texttt{latex/basin\_estimate.py}) on $(p, x) = (3, 2)$ finds $\Omega_0$ covering approximately $99.95\%$ of $[-1.5, 1.5]^2$, while the level-$0$ lower bound already gives $\mathrm{vol}(\Omega_0) \geq \pi R_\sigma^2 \approx 4\pi$ with empirical $R_\sigma \geq 2$ --- roughly $87\%$ of the test square, a substantial fraction. For $(p, x) = (7, 10)$ the empirical $R_\sigma \approx 0.37$ is tighter and the gap between level-$0$ bound and observed basin is larger, reflecting the onset of a non-trivial Julia boundary. A matching upper bound on $\mathrm{vol}(\Omega_k)$ would require Fatou--Julia machinery not used here and is left for future work.
 \end{remark}
 
 \subsection{Multi-precision benchmark in the complex plane}
@@ -1693,15 +1646,13 @@ The modules are organised in layers: foundations (geometric sums, fixed-point ch
 No claim of progress on classical open problems of polynomial root-finding is made. The corpus touches Kung--Traub ($c \geq 3$) through a compliance interface, not a proof, and records McMullen 1987 as a named statement without in-Lean proof (Mathlib v4.7.0 lacks the Fatou--Julia machinery needed). Lehmer's Mahler-measure conjecture and Smale's 17th problem are explicitly out of scope: the Pandrosion cyclotomic anchors produce algebraic integers whose Mahler measure is easy to compute (trivially far from Lehmer's extremal regime), and the multi-start $\mathcal{O}(\log\log(1/\varepsilon))$ complexity applies to the single-monomial family $z^p = x$, not to Smale's coefficient-uniform problem.
 
 %=====================================================================
-\part{Cyclotomic cancellation and two technical supplements}
+\section{Three short technical notes}
+\label{sec:tech-notes}
 %=====================================================================
 
-Part~III gathers a short cyclotomic-cancellation section that records the one identity on the cyclotomic anchor family actually used downstream, together with two technical supplements: a no-cycle theorem for the seeded Steffensen orbit, and a uniform-in-$(p, x)$ $\log\log$ complexity bound on a compact $x$-regime. These are not headline results; they are recorded because they close small logical gaps and provide a quantitative analogue of the benchmark observations of~\S\ref{sec:benchmark}.
+This section records three short items used implicitly earlier: cyclotomic cancellation on the anchor family (behind the a.e.-continuity argument of Part~II), a no-cycle lemma for the seeded orbit, and a uniform $\log\log$ complexity bound quantifying the ``$\approx 3$--$4$ additional iterations'' observed in the benchmark of~\S\ref{sec:benchmark}. None is a headline result.
 
-%=====================================================================
-\section{Cyclotomic cancellation on the anchor family}
-\label{sec:cyclotomic-cancellation}
-%=====================================================================
+\subsection*{A. Cyclotomic cancellation on the anchor family}
 
 Let $P(z) = z^p - 1/x$ with $x \in \mathbb{C}^\ast$, $p \geq 2$; let $\alpha_0, \ldots, \alpha_{p-1}$ be its roots, $\alpha := x^{-1/p}$ principal, $\omega := e^{2\pi i/p}$. Then $\alpha_k = \alpha\omega^k$ and
 \[
@@ -1711,21 +1662,10 @@ Let $P(z) = z^p - 1/x$ with $x \in \mathbb{C}^\ast$, $p \geq 2$; let $\alpha_0, 
 \]
 
 \begin{proposition}[Cyclotomic cancellation]\label{prop:cyclotomic-cancellation}
-For every $p \geq 2$ and every $s \in \mathbb{Z}$,
-\[
-  \sum_{k=0}^{p-1} \alpha_k^s \;=\;
-  \begin{cases}
-    0 & \text{if } p \nmid s, \\
-    p\,\alpha^s & \text{if } p \mid s.
-  \end{cases}
-\]
+For every $p \geq 2$ and every $s \in \mathbb{Z}$: $\sum_{k=0}^{p-1}\alpha_k^s = \alpha^s \sum_{k=0}^{p-1}(\omega^s)^k$, which equals $p\,\alpha^s$ if $p \mid s$ and $0$ otherwise. The proof is a one-line geometric sum.
 \end{proposition}
 
-\begin{proof}
-$\sum_k \alpha_k^s = \alpha^s \sum_{k=0}^{p-1} (\omega^s)^k$. If $p \mid s$, $\omega^s = 1$ and the sum is $p$; otherwise $\omega^s \neq 1$ is a $p$-th root of unity and the geometric sum vanishes.
-\end{proof}
-
-The relevant consequences for this paper are:
+Three consequences used earlier:
 \begin{enumerate}
   \item[(i)] $\displaystyle \sum_{k=0}^{p-1} \nu_k = \frac{x}{p}\sum_k \alpha_k = 0$ for $p \geq 2$ (case $s = 1$).
   \item[(ii)] Closed-form product: $\displaystyle \prod_{k=0}^{p-1} P'(\alpha_k) = \frac{p^p}{x^p \prod_k \alpha_k} = (-1)^{p-1}\,\frac{p^p}{x^{p-1}}$, using $\prod_k \alpha_k = (-1)^{p+1}/x$ by Vieta on $z^p - 1/x$.
@@ -1734,79 +1674,29 @@ The relevant consequences for this paper are:
 
 These three items are the arithmetic ingredients used implicitly in Part~II: (i) is the vanishing of the first residue sum that underlies the a.e.-continuity analysis, and (ii)--(iii) normalize constants in auxiliary bounds. Items (i)--(iii) have been cross-checked symbolically in arbitrary precision for $p \in \{2, 3, 5, 7, 10\}$ and representative $x$ (real and complex).
 
-\begin{remark}[Multi-start compatibility bundle]\label{rem:multistart-balance}
-Combining (i) with the Part~II structural results: for $x, p, \alpha$ under the standard hypotheses, (A) $\sum_k \nu_k = 0$, (B) the multi-start image lies in the cyclotomic anchor set, (C) the Voronoï-nearest target is unique a.e., (D) the Voronoï boundary is Lebesgue-null (Theorem~\ref{thm:julia-null}), (E) the Borel solution map is continuous a.e.\ (Theorem~\ref{thm:ae-continuous}). All five statements are separately proven above; the bundling is a compatibility observation, not a new theorem.
-\end{remark}
+The rotation $T_\omega : z \mapsto \omega z$ is a Euclidean isometry permuting $\alpha_k \to \alpha_{(k+1)\bmod p}$, hence permuting the Voronoï cells $V_k$; any rotation-invariant measure gives $\mu(V_k)$ independent of $k$. Combined with the Part~II results (Theorems~\ref{thm:borel}--\ref{thm:ae-continuous}), this gives the ``multi-start compatibility bundle'' of Theorem~\ref{thm:grand-master} as a packaged observation, not a new theorem.
 
-\begin{remark}[Symmetry of the cyclotomic Voronoï diagram]\label{rem:voronoi-symmetry}
-The rotation $T_\omega : z \mapsto \omega z$ is a Euclidean isometry permuting $\alpha_k \to \alpha_{(k+1)\bmod p}$, hence permuting the Voronoï cells $V_k := \{z : \|\alpha_k - z\| < \|\alpha_j - z\|, \forall j \neq k\}$ by $T_\omega(V_k) = V_{(k+1)\bmod p}$. For any rotation-invariant Borel measure, $\mu(V_k)$ is independent of $k$. This equipartition by cyclic symmetry is an elementary observation; it records that the basin bounds of Proposition~\ref{prop:basin-lower-bound} are distributed uniformly across the anchor indices.
-\end{remark}
+\subsection*{B. No-cycle lemma for seeded multi-start orbits}
 
-%=====================================================================
-\section{No-cycle theorem for multi-start orbits}
-\label{sec:no-cycle}
-%=====================================================================
-
-\begin{theorem}[No non-trivial cycles in the contraction disk]\label{thm:no-cycle}
-Let $(x, p, \alpha)$ satisfy the standard hypotheses, and let $z_0 \in \overline{B}(\alpha, R_\sigma/2)$. If there exist integers $0 \leq n < m$ with $\sigma_{p,x}^n(z_0) = \sigma_{p,x}^m(z_0)$, then $\sigma_{p,x}^n(z_0) = \alpha$.
-\end{theorem}
+\begin{lemma}[No non-trivial cycles]\label{thm:no-cycle}
+Let $(x, p, \alpha)$ satisfy the standard hypotheses, and let $z_0 \in \overline{B}(\alpha, R_\sigma/2)$. If $\sigma_{p,x}^n(z_0) = \sigma_{p,x}^m(z_0)$ for some $0 \leq n < m$, then $\sigma_{p,x}^n(z_0) = \alpha$.
+\end{lemma}
 
 \begin{proof}
-The three-step construction of Part~II supplies $K_\sigma, R_\sigma$ with $K_\sigma R_\sigma \leq 1/2$ and
-\[
-  |\sigma_{p,x}(z) - \alpha| \;\leq\; K_\sigma\,|z - \alpha|^2
-  \qquad \text{on } \overline{B}(\alpha, R_\sigma).
-\]
-For $z \in \overline{B}(\alpha, R_\sigma/2)$, $|z - \alpha| \leq R_\sigma/2$ gives
-\[
-  |\sigma_{p,x}(z) - \alpha|
-   \;\leq\; K_\sigma \cdot (R_\sigma/2) \cdot |z - \alpha|
-   \;\leq\; \tfrac14\,|z - \alpha|.
-\]
-Hence $\sigma_{p,x}$ restricted to $\overline{B}(\alpha, R_\sigma/2)$ is $\tfrac14$-Lipschitz with $\alpha$ as fixed point, and $\sigma_{p,x}(\overline{B}(\alpha, R_\sigma/2)) \subset \overline{B}(\alpha, R_\sigma/2)$.
-
-Write $w_j := \sigma_{p,x}^j(z_0)$; then $|w_j - \alpha| \leq 4^{-j}|z_0 - \alpha|$ by induction. Suppose $w_n = w_m$ with $n < m$. Applying the same bound from index $n$: $|w_m - \alpha| \leq 4^{-(m-n)}|w_n - \alpha|$. Combined with $w_n = w_m$:
-\[
-  |w_n - \alpha| \;\leq\; 4^{-(m-n)}|w_n - \alpha|,
-\]
-and $4^{-(m-n)} < 1$ forces $|w_n - \alpha| = 0$.
+On $\overline{B}(\alpha, R_\sigma/2)$, the quadratic bound of Part~II and $K_\sigma R_\sigma \leq 1/2$ give $|\sigma_{p,x}(z) - \alpha| \leq K_\sigma(R_\sigma/2)|z-\alpha| \leq \tfrac14|z - \alpha|$. Hence $\sigma_{p,x}$ is $\tfrac14$-Lipschitz with fixed point $\alpha$, and forward-invariant. Induction gives $|w_j - \alpha| \leq 4^{-j}|z_0 - \alpha|$, $w_j := \sigma_{p,x}^j(z_0)$. If $w_n = w_m$, then $|w_n - \alpha| \leq 4^{-(m-n)}|w_n - \alpha|$ with $4^{-(m-n)} < 1$, forcing $|w_n - \alpha| = 0$. Since the Definition~\ref{def:seed} seed lies in $\overline{B}(\alpha, R_\sigma/2)$, every seeded multi-start orbit is acyclic.
 \end{proof}
 
-\begin{corollary}[Acyclicity of seeded multi-start orbits]\label{cor:seeded-acyclic}
-For every $(x, p, \alpha, z)$ in the hypotheses of Theorem~\ref{thm:multistart}, the orbit of $\mathrm{seed}_{\alpha, \varepsilon_{\mathrm{seed}}}(z)$ under $\sigma_{p,x}$ has no non-trivial cycles.
-\end{corollary}
+\subsection*{C. Uniform $\log\log$ complexity}
+
+\begin{proposition}[Uniform $\log\log$ complexity]\label{thm:uniform-loglog}
+For every compact $K \subset (1, \infty)$ and every $\varepsilon \in (0, 1)$, there exists $N(K, \varepsilon) = \mathcal{O}_K(\log\log(1/\varepsilon))$ such that for every $p \geq 2$, $x \in K$, $s_0 \in [1/2, 1]$, the Steffensen--Pandrosion iteration reaches $|v_n - x^{1/p}| \leq \varepsilon$ within $\leq N(K, \varepsilon)$ steps.
+\end{proposition}
 
 \begin{proof}
-The seed lies in $\overline{B}(\alpha, R_\sigma/2)$ (Definition~\ref{def:seed}), so Theorem~\ref{thm:no-cycle} applies.
+$\lambda_\infty$ is continuous and strictly less than~$1$ on $(1, \infty)$, so $\lambda^\ast(K) := \sup_K \lambda_\infty < 1$. The Taylor bound~\eqref{eq:taylor-bound} gives $\lambda_{p,x} \leq \lambda^\ast(K) + C^\ast(K)/p$ with $C^\ast(K) := \sup_K 3x(\ln x)^2/(x-1)$ for $p \geq \lceil \ln\sup K \rceil + 1$; on the remaining finite range of $p$, $\lambda_{p,x}$ is continuous on a compact and strictly $< 1$, so it is bounded away from $1$. Hence $\bar\lambda(K) := \sup_{p \geq 2, x \in K} \lambda_{p,x} < 1$. The plain Pandrosion iteration converges linearly at this uniform rate; Aitken--Steffensen (Theorem~\ref{thm:steffensen}) upgrades to quadratic with $K_S(K)$ uniform on $K$; Theorem~\ref{thm:eff-kt} then gives $N(K, \varepsilon) = \mathcal{O}_K(\log\log(1/\varepsilon))$, uniformly in $(p, x)$.
 \end{proof}
 
-%=====================================================================
-\section{Uniform log-log complexity over bounded $x$-regimes}
-\label{sec:uniform-loglog}
-%=====================================================================
-
-\begin{theorem}[Uniform $\log\log$ complexity]\label{thm:uniform-loglog}
-For every compact $K \subset (1, \infty)$ and every $\varepsilon \in (0, 1)$, there exists an integer $N(K, \varepsilon)$ such that for every $p \geq 2$, every $x \in K$, and every starting point $s_0 \in [1/2, 1]$, the Steffensen--Pandrosion iteration reaches precision $|v_n - x^{1/p}| \leq \varepsilon$ within at most $N(K, \varepsilon)$ steps. Furthermore, $N(K, \varepsilon) = \mathcal{O}(\log\log(1/\varepsilon))$ as $\varepsilon \to 0$, with constants depending only on $K$.
-\end{theorem}
-
-\begin{proof}
-Set $\lambda^\ast(K) := \sup_{x \in K} \lambda_\infty(x) < 1$ (Proposition~\ref{prop:limits}(3): $\lambda_\infty$ is continuous on $(1, \infty)$ and strictly less than $1$ pointwise, so its supremum on the compact $K$ is strictly less than $1$). Fix $\delta := (1 - \lambda^\ast(K))/4 > 0$.
-
-By the Taylor bound (inequality~\eqref{eq:taylor-bound}), for every $p \geq p_0(K) := \lceil \ln(\sup K) \rceil + 1$ and every $x \in K$,
-\[
-  \lambda_{p,x} \;\leq\; \lambda_\infty(x) + \frac{C(x)}{p}
-              \;\leq\; \lambda^\ast(K) + \frac{C^\ast(K)}{p},
-\]
-where $C^\ast(K) := \sup_{x \in K} 3x(\ln x)^2/(x-1) < \infty$. Choose $p_1(K) := \max(p_0(K), \lceil C^\ast(K)/\delta \rceil)$, so that $\lambda_{p,x} \leq \lambda^\ast(K) + \delta \leq 1 - 3\delta$ for every $p \geq p_1(K)$ and $x \in K$.
-
-For $2 \leq p < p_1(K)$, $\lambda_{p,x}$ is continuous on the compact $\{2, 3, \ldots, p_1(K)-1\} \times K$ and strictly less than $1$ pointwise (uniform monotonicity from Theorem~\ref{thm:monotonicity}); hence bounded away from $1$ by some $\lambda^{**}(K) < 1$. Set $\bar\lambda(K) := \max(1 - 3\delta, \lambda^{**}(K)) < 1$, so that $\lambda_{p,x} \leq \bar\lambda(K)$ for every $p \geq 2$, $x \in K$.
-
-The un-accelerated Pandrosion iteration then satisfies $|s_n - s^\ast| \leq \bar\lambda(K)^n |s_0 - s^\ast|$; combined with the output-residual factor (Theorem~\ref{thm:nonasymp}) bounded on $K$, this gives linear convergence to $\alpha$ with uniform rate. The Aitken--Steffensen upgrade (Theorem~\ref{thm:steffensen}) turns this into quadratic convergence with constant $K_S(K) := \sup_{(p,x) \in \{p \geq 2\} \times K} |h''(s^\ast)/(2(1-\lambda_{p,x}))|$, uniform on $K$ by continuity plus $\lambda_{p,x} \leq \bar\lambda(K)$.
-
-Combining: $n_1 := \lceil C_1(K) \log(1/R_\sigma(K)) \rceil$ linear iterations drive any $s_0 \in [1/2, 1]$ into the quadratic-contraction disk of radius $R_\sigma(K) := \inf_{(p,x)} R_\sigma(x,p,\alpha) > 0$; then $n_2 := N_{\mathrm{eff}}(K_S(K), R_\sigma(K), \varepsilon)$ Aitken--Steffensen iterations (Theorem~\ref{thm:eff-kt}) reach precision $\varepsilon$. The total $N(K, \varepsilon) = n_1 + n_2 = \mathcal{O}_K(\log\log(1/\varepsilon))$ is uniform in $p \geq 2$ and $x \in K$.
-\end{proof}
-
-This is the uniform version of the per-regime benchmark of~\S\ref{sec:benchmark}: the observed $\approx 3$--$4$ additional iterations when moving from 50 to 500 digits, \emph{across all tested $(p, x)$}, is a quantitative instance of Theorem~\ref{thm:uniform-loglog}.
+This quantitatively matches the per-regime benchmark of~\S\ref{sec:benchmark}: the observed $\approx 3$--$4$ additional iterations when moving from 50 to 500 digits, \emph{across all tested $(p, x)$}, is an instance of Proposition~\ref{thm:uniform-loglog}.
 
 %=====================================================================
 \section{Conclusion}
