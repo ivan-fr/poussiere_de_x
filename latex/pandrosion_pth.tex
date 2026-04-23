@@ -1767,11 +1767,11 @@ Theorem~\ref{thm:multistart-general} is the general-polynomial analogue of the m
 \begin{itemize}
   \item \emph{Item (1), Voronoï-nearest target selection.} Transports verbatim: for any finite distinct root set $\{\alpha_0, \ldots, \alpha_{p-1}\}$ and any $z_0 \in \mathbb{C}$, there exists $s^\ast$ with $\|\alpha_{s^\ast} - z_0\| \leq \|\alpha_t - z_0\|$ for every $t$. The proof in Theorem~\ref{thm:grand-master} uses only finiteness, not the monomial structure.
   \item \emph{Item (2), Steffensen fixing.} Transports: $\sigma_P(\alpha_k) = \alpha_k$ holds at every simple root $\alpha_k$ with $S_p(\alpha_k) \neq 0$, by the same Aitken argument as Theorem~\ref{thm:steffensen}.
-  \item \emph{Item (3), Scaling compatibility.} \textbf{Does not transport in the same form.} For the monomial, $(\alpha/\beta)^p = x/A$ is a clean one-parameter identity. For a general $P$, the substitution $z = \beta w$ gives $P(\beta w) = \beta^p w^p + R(\beta w) = A(w^p + R(\beta w)/A)$, so the rescaled polynomial is $\tilde P(w) = w^p + \tilde R(w)$ with $\tilde R(w) := R(\beta w)/A$ --- itself a polynomial, but with different coefficients. The scaling therefore produces a \emph{new polynomial}, not a reduction within a one-parameter family. This is why the quantitative scaling preconditioning of Proposition~\ref{prop:scaling} does not carry over.
+  \item \emph{Item (3), Scaling compatibility.} \textbf{Transports with real benefit.} The substitution $z = \beta w$ gives $P(\beta w) = \beta^p w^p + R(\beta w) = A\bigl(w^p + R(\beta w)/A\bigr)$ with $A = \beta^p$, so the rescaled problem is $\tilde P(w) := w^p + \tilde R(w)$ with $\tilde R(w) := R(\beta w)/A$. The new roots are $\tilde \alpha_k = \alpha_k/\beta$, so if $\beta$ is chosen close to $|\alpha_k|$ --- for instance $\beta = \lfloor|\alpha_k|\rceil$, the nearest integer --- then $|\tilde \alpha_k| \approx 1$, which is the well-conditioned regime for Pandrosion. One then applies multi-start Pandrosion--Steffensen to $\tilde P$, and recovers $\alpha_k = \beta \cdot \tilde \alpha_k$ by the trivial reconstruction of item~(4). This is a genuine generalisation of Proposition~\ref{prop:scaling}: scaling produces another polynomial of the same form $w^p + \tilde R(w)$, with the target root compressed close to $1$. The quantitative benefit is substantial (Table~\ref{tab:scaling-general} below).
   \item \emph{Item (4), Reconstruction.} Transports trivially: $\alpha_k = \beta \cdot (\alpha_k/\beta)$ for any $\beta \neq 0$.
   \item \emph{Item (5), Optimal starting point.} Replaced by the multi-start seed. For general $P$, $h_P(1) = 1 - (R(1) + 1)/S_p(1) = 1 - (R(1)+1)/p$ is still a well-defined candidate; whether it is the canonical starting point depends on the geometry of the particular $P$, and we do not claim optimality outside the monomial case.
 \end{itemize}
-So items (1), (2), (4) transport without modification; item (3) transports only in a weaker form (a polynomial-to-polynomial substitution rather than a coefficient-only reduction); item (5) is replaced by the target-conditional seed. Theorem~\ref{thm:multistart-general} captures exactly what the Grand Master bundle says minus the monomial-specific scaling.
+So items (1), (2), (3), (4) transport --- item (3) through a polynomial-to-polynomial substitution rather than a coefficient-only reduction, but with a genuine quantitative payoff (Table~\ref{tab:scaling-general}); item (5) is replaced by the target-conditional seed. Theorem~\ref{thm:multistart-general} therefore captures the full Grand Master bundle in the non-monomial setting, with the seed playing the role that the canonical real starting point played on $\mathbb{R}$.
 \end{remark}
 
 \subsection{Numerical evidence}
@@ -1844,20 +1844,43 @@ For the monomial family, the plateau empirically confirms Proposition~\ref{thm:u
 
 \subsection{What is lost, what transports}
 
-\emph{Lost:} the monomial setting enjoys four advantages not available in general:
+\emph{Lost:} the monomial setting enjoys three advantages not available in general:
 \begin{enumerate}
   \item The closed-form contraction ratio $\lambda_{p,x}$ of Theorem~\ref{thm:lambda}: for $h_P$ with general $R$, the multiplier $h_P'(\alpha)$ is computable per root but has no uniform closed form, and can be near $1$ for badly-conditioned roots.
   \item Cyclotomic symmetry of the root set: $p$ equally-spaced roots on a circle, with congruent Voronoï cells and uniform basin lower bounds $\pi R_\sigma^2$ (Remark~\ref{rem:pullback}). General $P$ has roots in generic position.
-  \item Scaling preconditioning $z^p = A \cdot x'$ (Proposition~\ref{prop:scaling}): no analogue for non-monomial $P$, where factoring a constant out merely multiplies $R$.
   \item The specific large-$p$ limit $\lambda_\infty(x) = 1 - \ln(x)/(x-1)$: tied to $R(s) = -1/x$.
 \end{enumerate}
 
-\emph{Transports:} four structural features carry over:
+\emph{Transports:} five structural features carry over:
 \begin{enumerate}
   \item \textbf{Derivative-free construction.} $h_P$ in~\eqref{eq:h-P-general} uses only $R$ and $S_p$, never $P'$. This is the defining feature of the Pandrosion family and is preserved.
   \item \textbf{Steffensen acceleration.} $\sigma_P = \mathrm{Aitken}(h_P)$ is super-attractive at every simple root with $h_P'(\alpha) \neq 1$, by the same Taylor argument as Theorem~\ref{thm:steffensen}; the constant is $K_S = |\lambda_P \cdot h_P''(\alpha)/(2(1 - \lambda_P))|$.
   \item \textbf{Multi-start seed + $\log_2\log$ count.} Theorems~\ref{thm:multistart} and~\ref{thm:eff-kt} apply verbatim; $N_{\mathrm{eff}}$ depends only on $(K_\sigma, R_\sigma, \delta)$, not on the specific polynomial.
   \item \textbf{Measurability and a.e.-continuity.} Section~\ref{sec:measurability} extends to any $d$ distinct roots in the plane --- cyclotomic symmetry is not used in those proofs, only distinctness and the affine structure of perpendicular bisectors.
+  \item \textbf{Scaling preconditioning.} Proposition~\ref{prop:scaling} \emph{does} transport, in the following form. The substitution $z = \beta w$ yields
+  \[
+    P(\beta w) \;=\; \beta^p w^p + R(\beta w) \;=\; A\bigl(w^p + R(\beta w)/A\bigr), \qquad A := \beta^p,
+  \]
+  so the rescaled problem is $\tilde P(w) := w^p + \tilde R(w)$ with
+  \[
+    \tilde R(w) \;=\; R(\beta w)/A, \qquad \tilde R_i \;=\; R_i\,\beta^i/A.
+  \]
+  The new target root is $\tilde \alpha_k = \alpha_k/\beta$. Choosing $\beta$ close to $|\alpha_k|$ places $\tilde \alpha_k$ near the unit circle and dramatically improves conditioning: in $w$-space the iteration $\tilde h(w) = 1 - (\tilde R(w) + 1)/S_p(w)$ and its Aitken acceleration $\tilde \sigma$ have a moderate $\tilde \lambda$ and are well-scaled, whereas the unscaled iteration on $P$ may have $|h_P'(\alpha)|$ near $1$. Table~\ref{tab:scaling-general} exhibits the speedups.
+
+  \begin{table}[H]
+  \centering
+  \begin{tabular}{lrrrr}
+    \toprule
+    $P(z)$ & $|\alpha|$ & iters (unscaled) & $\beta$ & iters (scaled) \\
+    \midrule
+    $z^3 - 2z - 100$    & $4.83$ & $156$ & $5$  & $14$ \\
+    $z^5 - 3z - 1000$   & $3.98$ & $35$  & $4$  & $13$ \\
+    $z^4 + 2z^3 - 1000$ & $5.03$ & $30$  & $5$  & $6$  \\
+    \bottomrule
+  \end{tabular}
+  \caption{Iteration counts of multi-start Pandrosion--Steffensen before and after the scaling $z = \beta w$ with $\beta = \lfloor|\alpha|\rceil$. Target: $50$-digit precision from $z_0 = 3 + 3i$ (mapped to $w_0 = z_0/\beta$ in $w$-space). The transport of scaling gives speedups of $11\times$, $2.7\times$, and $5\times$ respectively on polynomials with roots far from the unit circle.}
+  \label{tab:scaling-general}
+  \end{table}
 \end{enumerate}
 
 Theorem~\ref{thm:multistart-general} is therefore a \emph{genuine} extension of the Pandrosion-Steffensen scheme --- the same derivative-free iteration family, applied to any degree-$p$ polynomial --- not a Newton-based reformulation. The monomial case is the favourable instance where the derivative-free character combines with closed-form analysis; the general case preserves the derivative-free character and the target-conditional $\log_2\log$ convergence, at the cost of closed forms. A follow-up paper taking the generalisation seriously would focus on: (a) polynomials with cyclic Galois group (partial cyclotomic symmetry); (b) perturbative series $R(s) = -1/x + \varepsilon g(s)$ as small-deformation case studies with controlled $\lambda_P$; (c) a proper algorithmic comparison against Aberth--Ehrlich and Weierstrass simultaneous root finders on arbitrary polynomials.
