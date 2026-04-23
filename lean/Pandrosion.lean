@@ -104,4 +104,7 @@ import Pandrosion.Core.PandrosionRiemannHypothesis
 import Pandrosion.Core.PandrosionAberthEhrlich
 import Pandrosion.Core.PandrosionKronecker
 import Pandrosion.Core.PandrosionGalois
+import Pandrosion.Core.PandrosionMcMullen
+import Pandrosion.Core.PandrosionCardano
+import Pandrosion.Core.PandrosionVieta
 import Pandrosion.Legacy
