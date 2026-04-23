@@ -74,4 +74,5 @@ import Pandrosion.Core.SigmaEquivPointsX2
 import Pandrosion.Core.SigmaTendstoAtOneX2
 import Pandrosion.Core.Niveau5ConditionalChain
 import Pandrosion.Core.NonPrincipalBasinX2
+import Pandrosion.Core.SteffensenRadiusBoundX2
 import Pandrosion.Legacy

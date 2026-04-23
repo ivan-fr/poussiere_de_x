@@ -116,10 +116,12 @@ Tu es Claude. Tu travailles **seul**, sans input utilisateur.
 
 ### Périphériques — si budget restant
 
-- [ ] **§85 Explicit Steffensen radius lower bound** : dérouler
-  `steffensenR_of_fp` à l'anchor x=2 pour obtenir une valeur
-  concrète (ex: `R_σ ≥ 1/100`). Débloque §70
-  `SteffensenRadiusAtLeast14` (ou version affaiblie).
+- [x] **§85 SteffensenRadiusBoundX2** (downscope framework) : pose
+  les Props `SteffensenRadiusUpperHalfConjecture` (R_σ ≤ 1/2),
+  `SteffensenRadiusLowerBoundConjecture ε`, et l'instance ε=1/4.
+  Implication monotonique entre lower bounds. Preuve concrète des
+  bornes demande unfolding `Classical.choose` de §33 — refonte
+  profonde, hors budget.
 
 - [x] **§86 IterCountX2** : compte d'itérations pour `ε`-précision.
   Forme existentielle `∃ N, ∀ n ≥ N, ‖h^n z − α₀‖ ≤ ε` + forme
