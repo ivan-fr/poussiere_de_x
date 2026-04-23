@@ -108,10 +108,10 @@ with target-dependent $\varepsilon$ places any $z \in \mathbb{C}$
 inside the quadratic-contraction disk of a chosen anchor $\alpha$,
 providing a universal convergence theorem with closed-form iteration
 count $N_{\mathrm{eff}} \sim \log_2 \log(1/\varepsilon)$. A
-bundling theorem (Theorem~\ref{thm:grand-master}, the ``grand master''
-of the Lean formalization) collects target selection, Steffensen fixing,
-scaling compatibility, reconstruction, and optimal seed into a single
-glue result that downstream Lean modules cite by name.
+compatibility bundle (Theorem~\ref{thm:grand-master}) collects target
+selection, Steffensen fixing, scaling compatibility, reconstruction, and
+optimal seed into a single glue statement that downstream modules cite
+by name.
 Unconditionally (without seeding), each anchor's basin of attraction
 contains an explicit disk of radius $R_\sigma(x, p, \gamma_k)$, giving
 the lower bound $\mathrm{vol}(\bigcup_k \Omega_k) \geq \sum_k \pi R_\sigma(x, p, \gamma_k)^2$
@@ -1220,7 +1220,7 @@ $p=20,\ x=2$            & 7 & 4 & 5 & 9  & 6 & 7 & 11 & 6 & 8 \\
   \item \textbf{Iteration count scaling.} All three methods grow as $\log_2\log(1/\varepsilon)$, as predicted by theory (Newton and Steffensen--Pandrosion are order~$2$; Halley is order~$3$). In the table, going from 50 to 500 digits adds $\approx 3$--$4$ iterations, consistent with $\log_2 \log_{10}(10^{500}/10^{50}) = \log_2(500/50) \approx 3.3$.
   \item \textbf{Halley wins on count.} Halley (cubic order) consistently takes 2--3 fewer iterations than Newton (quadratic order), saving roughly $30\%$ on iteration count. Newton and Steffensen--Pandrosion--scaling differ by at most 1--2 iterations in every regime.
   \item \textbf{Wall clock.} Per-iteration, Newton is fastest (one power $u^{p-1}$ per step), Halley is close to Newton (one power $u^p$ and a rational combination), and Steffensen--Pandrosion--scaling is $2$--$3\times$ slower per iteration than Halley because each Aitken step requires two evaluations of the degree-$p$ polynomial $S_p$. On the iteration counts above and measured in the repository, Halley is the fastest method in total wall-clock time, Newton is within $10$--$30\%$, and Steffensen--Pandrosion--scaling sits $1.5$--$3\times$ slower.
-  \item \textbf{The role of scaling.} Without scaling, Steffensen--Pandrosion on $x = 10^6 + 3$ with $p = 3$ would need $40$--$50$ iterations (the contraction ratio $\lambda_{3, 10^6+3} \approx 0.995$ gives $\log(10^{-200})/\log(1/0.995) \approx 92000$ iterations for the un-accelerated method, reduced by Aitken to $\sim 20$--$50$); with scaling, the count collapses to $4$. The scaling preconditioning is essential for Steffensen--Pandrosion to remain competitive at large $x$.
+  \item \textbf{The role of scaling.} Without scaling, Steffensen--Pandrosion on $x = 10^6 + 3$ with $p = 3$ would be severely handicapped by the contraction ratio $\lambda_{3, 10^6+3} \approx 0.9997$: the un-accelerated Pandrosion iteration would need $\lceil\ln(10^{-200})/\ln(1/\lambda)\rceil \approx 1.5 \times 10^6$ iterations to reach 200-digit precision. The Aitken upgrade reduces this dramatically (to $\mathcal{O}(\log\log)$), but its constant $K_S \sim |h''(s^*)|/(2(1-\lambda))$ is inflated by $1/(1-\lambda) \approx 3300$, delaying the entry into the quadratic regime. With scaling ($x' \approx 1$, $\lambda_{3, x'}$ small), both issues disappear and the count collapses to $4$. The scaling preconditioning is what makes Steffensen--Pandrosion competitive at large~$x$.
 \end{enumerate}
 
 \paragraph{Conclusion of the benchmark.} Steffensen--Pandrosion--scaling is not the fastest $p$-th root method in practice: Halley wins on both iteration count and wall clock, and Newton wins on wall clock by a small margin. What the benchmark does establish is that the scheme --- with scaling --- is \emph{competitive}: it achieves the same $\mathcal{O}(\log\log)$ asymptotic as Newton and Halley, within a small constant factor of them in every regime tested, while being derivative-free. For applications where the derivative is costly or unavailable, Steffensen--Pandrosion--scaling is a viable alternative; for standard $p$-th root computation, Halley remains the method of choice.
@@ -1386,12 +1386,12 @@ For every function $S : \mathbb{C} \to \mathrm{Fin}\,p$, every $z \in \mathbb{C}
 
 Three selectors are formalized: constant (\texttt{principal\_selector}), Voronoï-nearest (\texttt{nearest\_anchor\_selector}), angular sector.
 
-\subsection{The multi-start bundle theorem}
+\subsection{Multi-start compatibility bundle}
 \label{sec:grand-master}
 
-The previous subsections have presented the ingredients of the multi-start pipeline separately: the seed (Definition~\ref{def:seed}), the universal convergence theorem (Theorem~\ref{thm:multistart}), the target selectors (Theorem~\ref{thm:galois-equiv}), and the real-line preconditionings of Part~I transported to the cyclotomic anchor family. The following theorem bundles all five into a single statement. The Lean formalization refers to it as the ``multi-start grand master theorem'' (module \texttt{Foundations.multi\_start\_grand\_master}), a name we retain only to match the Lean naming convention; the theorem is a glue lemma, not a headline result.
+The previous subsections presented the ingredients of the multi-start pipeline separately: the seed (Definition~\ref{def:seed}), the universal convergence theorem (Theorem~\ref{thm:multistart}), the target selectors (Theorem~\ref{thm:galois-equiv}), and the real-line preconditionings of Part~I transported to the cyclotomic anchor family. The following statement bundles all five into a single compatibility assertion. It is a glue lemma used by downstream citations, not a headline result.
 
-\begin{theorem}[Multi-start bundle, ``grand master'' in Lean]\label{thm:grand-master}
+\begin{theorem}[Multi-start compatibility bundle]\label{thm:grand-master}
 Let $x \in \mathbb{C}^\ast$, $A \in \mathbb{C}^\ast$, $p \geq 1$, and $\alpha, \beta \in \mathbb{C}^\ast$ with $\alpha^p = x$ and $\beta^p = A$. Let $\gamma : \{0, 1, \ldots, p-1\} \to \mathbb{C}^\ast$ be a cyclotomic anchor family satisfying $\gamma_k^p = A/x$ and $S_p(\gamma_k) \neq 0$ for every $k$. Then for every query point $z_0 \in \mathbb{C}$, the following five properties hold simultaneously:
 \begin{enumerate}
   \item[(1)] \textbf{Multi-start target selection.} There exists an index $s^\ast \in \{0, 1, \ldots, p-1\}$ --- the Voronoï-nearest anchor to $z_0$ --- with $\|\gamma_{s^\ast} - z_0\| \leq \|\gamma_t - z_0\|$ for every $t$.
@@ -1414,7 +1414,7 @@ Let $x \in \mathbb{C}^\ast$, $A \in \mathbb{C}^\ast$, $p \geq 1$, and $\alpha, \
 (5) Optimal starting point: $h_{p, x/A}(1) = 1 - ((x/A) - 1)/((x/A) \cdot S_p(1)) = 1 - ((x/A) - 1)/((x/A) \cdot p)$, matching~\eqref{eq:optimal_s0} applied to the scaled problem $x' = x/A$.
 \end{proof}
 
-\begin{remark}[What the Grand Master theorem actually says]
+\begin{remark}[What the compatibility bundle actually says]
 Theorem~\ref{thm:grand-master} is not itself a new mathematical result; each of the five parts is proven elsewhere in Parts~I and~II. Its value is structural: it records, in a single statement, the \emph{compatibility} of the five layers of the pipeline --- selection, fixing, scaling, reconstruction, seeding --- so that downstream statements (in the formalization and in the effective iteration-count theorem below) can cite one name instead of five. The theorem's role is that of a \emph{glue lemma}: Proposition~(3), for instance, is used by the scaling preconditioning of Part~I to certify that a $\mathbb{R}$-level identity transports correctly to the cyclotomic family in $\mathbb{C}$.
 \end{remark}
 
@@ -1497,7 +1497,7 @@ Complementing the real-line benchmark of \S\ref{sec:benchmark}, the script \text
   \item Newton's iteration $z_{n+1} = ((p-1)z_n + X/z_n^{p-1})/p$;
   \item Halley's iteration $z_{n+1} = z_n \cdot ((p-1)z_n^p + (p+1)X)/((p+1)z_n^p + (p-1)X)$;
   \item Multi-start Steffensen--Pandrosion (Theorem~\ref{thm:multistart}), seeded at the principal anchor $\alpha = X^{1/p}$;
-  \item Grand Master multi-start (Theorem~\ref{thm:grand-master}), combining scaling $\beta = \lfloor |X|^{1/p} \rfloor$, Voronoï-nearest selector on the anchor family, seed, and reconstruction.
+  \item Scaled multi-start (the compatibility bundle of Theorem~\ref{thm:grand-master}), combining scaling $\beta = \lfloor |X|^{1/p} \rfloor$, Voronoï-nearest selector on the anchor family, seed, and reconstruction.
 \end{itemize}
 All methods start from the same user-supplied $z_0 \in \mathbb{C}$ and stop when $|z_n^p - X|/|X| \leq 10^{-d}$ at precision target $d$ decimal digits. The seed radius is set uniformly to a conservative $R_\sigma = 0.5$.
 
@@ -1520,7 +1520,7 @@ $p=3,\ X=10^6+17i,\ z_0 = 50+10i$          & 9  & 5 & 6 & \textbf{4} & 11 & 6 & 
 $p=7,\ X=10,\ z_0 = 1+i$                   & 7  & 4 & 8 & 13 & 9  & 6 & 10 & 15 \\
 \bottomrule
 \end{tabular}
-\caption{Complex-case iteration counts. \textbf{N} = Newton, \textbf{H} = Halley, \textbf{MS} = multi-start Pandrosion seeded at principal anchor, \textbf{GM} = Grand Master (scaling + Voronoï-nearest + seed). Stopping criterion $|z^p - X|/|X| \leq 10^{-d}$. Boldface marks the best (or tied-best) method in each row; Halley is best-or-tied in most regimes, Grand Master wins on large-$|X|$ regimes where scaling collapses the problem to $X' \approx 1$.}
+\caption{Complex-case iteration counts. \textbf{N} = Newton, \textbf{H} = Halley, \textbf{MS} = multi-start Pandrosion seeded at principal anchor, \textbf{GM} = scaled multi-start (compatibility-bundle pipeline: scaling + Voronoï-nearest + seed). Stopping criterion $|z^p - X|/|X| \leq 10^{-d}$. Boldface marks the best (or tied-best) method in each row; Halley is best-or-tied in most regimes, scaled multi-start wins on large-$|X|$ regimes where scaling collapses the problem to $X' \approx 1$.}
 \label{tab:benchmark-complex}
 \end{table}
 
@@ -1528,12 +1528,12 @@ $p=7,\ X=10,\ z_0 = 1+i$                   & 7  & 4 & 8 & 13 & 9  & 6 & 10 & 15 
 \begin{enumerate}
   \item \textbf{Halley is the iteration-count winner.} Cubic order gives Halley a consistent 30--40\% edge on iteration count in every tested regime. Wall-clock ordering is the same as the real case (Halley $<$ Newton $<$ MS $<$ GM).
   \item \textbf{Multi-start Pandrosion matches Newton within $\pm 2$ iterations.} The seed construction places $z_0$ inside the quadratic-contraction disk of the principal anchor, from which the $\log_2 \log$ scaling kicks in. The iteration count is within one or two of Newton's across all regimes.
-  \item \textbf{Grand Master wins when scaling collapses the problem.} For $|X| \gtrsim 10^5$, Grand Master drops to $4$--$6$ iterations (at 50 and 200 digits respectively), a $30$--$40\%$ improvement over plain multi-start Pandrosion, because the scaled argument $X/\beta^p$ is close to $1$ and $\lambda_\infty(X/\beta^p)$ is small. This confirms experimentally the scaling preconditioning of Part~I, Proposition~\ref{prop:scaling}, in the complex setting.
-  \item \textbf{Grand Master can be worse in niche regimes.} For $p = 7, X = 10, z_0 = 1+i$, Grand Master takes 13--15 iterations versus 8--10 for plain multi-start. The cause is that $|X|^{1/7} \approx 1.39 < 2$, so the integer scaling coefficient $\beta = 1$ provides no preconditioning, yet the Voronoï-nearest selector picks a non-principal anchor $\gamma_{s^\ast}$ for which the conservative $R_\sigma = 0.5$ is not tight, forcing extra pre-asymptotic iterations. This is a cost of the generality of the Grand Master pipeline.
+  \item \textbf{Scaled multi-start wins when scaling collapses the problem.} For $|X| \gtrsim 10^5$, the scaled multi-start drops to $4$--$6$ iterations (at 50 and 200 digits respectively), a $30$--$40\%$ improvement over plain multi-start Pandrosion, because $X/\beta^p$ is close to $1$ and $\lambda_\infty(X/\beta^p)$ is small. This confirms experimentally the scaling preconditioning of Part~I (Proposition~\ref{prop:scaling}) in the complex setting.
+  \item \textbf{Scaled multi-start can be worse in niche regimes.} For $p = 7, X = 10, z_0 = 1+i$, it takes 13--15 iterations versus 8--10 for plain multi-start. The cause is that $|X|^{1/7} \approx 1.39 < 2$, so $\beta = 1$ provides no preconditioning, yet the Voronoï-nearest selector picks a non-principal anchor for which the conservative $R_\sigma = 0.5$ is not tight, forcing extra pre-asymptotic iterations.
   \item \textbf{All four methods achieve $\mathcal{O}(\log\log)$ scaling.} Going from $50$ to $200$ digits adds roughly $2$--$3$ iterations to each method, matching $\log_2(200/50) = 2$.
 \end{enumerate}
 
-\paragraph{Bottom-line (complex case).} As on the real line, Steffensen--Pandrosion-style methods are \emph{competitive} with textbook Newton/Halley at high precision: they remain within a small constant factor of Halley in every tested regime while being derivative-free, and the Grand Master pipeline provides an additional $30$--$40\%$ savings in the large-$|X|$ regime where integer scaling bites. For derivative-cheap settings, Halley remains the fastest; for derivative-expensive or derivative-unavailable settings (black-box polynomial evaluation), the Pandrosion pipeline is a viable alternative.
+\paragraph{Bottom-line (complex case).} As on the real line, Steffensen--Pandrosion-style methods are \emph{competitive} with textbook Newton/Halley at high precision: they remain within a small constant factor of Halley in every tested regime while being derivative-free, and the scaled multi-start pipeline provides an additional $30$--$40\%$ savings in the large-$|X|$ regime where integer scaling bites. For derivative-cheap settings, Halley remains the fastest; for derivative-expensive or derivative-unavailable settings, the Pandrosion pipeline is a viable alternative.
 
 %=====================================================================
 \section{Measurability and a.e.\ continuity of the solution map}
@@ -1614,7 +1614,7 @@ The Lean development lives at
   \item \textbf{Axiom audit file.} The file \texttt{AXIOMS.md} at the repository root contains the raw \texttt{\#print axioms} output for every load-bearing theorem cited in this paper; for each, the dependency closure reduces to the Lean whitelist $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$.
   \item \textbf{Local reproduction.} Incremental build \texttt{bash scripts/lean-incremental.sh} takes 60--90~seconds on a modern laptop; per-theorem verification is available via \texttt{\#print axioms <theorem>} at the end of the relevant module.
 \end{itemize}
-The modules are organised in layers: foundations (geometric sums, fixed-point characterization, Voronoï basins, cyclotomic anchor definitions), core spine (explicit super-attractive rate, global $\log\log$ convergence, real-line $p = 2$ discharge), multi-start (universal convergence, target selection, iteration count, Grand Master theorem of \S\ref{sec:grand-master} via \texttt{Foundations.multi\_start\_grand\_master} and \texttt{PandrosionUltimateGrandMaster}), measure/topology (Borel measurability, Voronoï-null frontier, a.e.\ continuity), and a small set of classical specializations (Banach 1922, Aitken--Steffensen, Kronecker 1857, Aberth--Ehrlich, Kung--Traub attainability at $c=3$).
+The modules are organised in layers: foundations (geometric sums, fixed-point characterization, Voronoï basins, cyclotomic anchor definitions), core spine (explicit super-attractive rate, global $\log\log$ convergence, real-line $p = 2$ discharge), multi-start (universal convergence, target selection, iteration count, compatibility bundle of \S\ref{sec:grand-master}), measure/topology (Borel measurability, Voronoï-null frontier, a.e.\ continuity), and a small set of classical specializations (Banach 1922, Aitken--Steffensen, Kronecker 1857, Aberth--Ehrlich, Kung--Traub attainability at $c=3$).
 
 \paragraph{Statement-level \texttt{Prop}s that are NOT proven.} A single archive module \texttt{PandrosionOpenProblems.lean} contains named Lean \texttt{Prop}s whose proofs are \emph{deliberately absent}: the conjectural upper bound of Kung--Traub for $c \geq 3$, McMullen's 1987 impossibility theorem, Lehmer's Mahler-measure conjecture, and Smale's~17th problem. These are recorded as \texttt{axiom} or \texttt{Prop} declarations without accompanying proof terms. They are not used downstream by any load-bearing theorem of the corpus, and their presence in the repository should not be mistaken for formal verification of the corresponding results. A reader auditing the corpus can confirm this by checking that no \texttt{theorem} depending on these \texttt{Prop}s appears in the load-bearing chain. A future cleanup will move this archive module to a dedicated \texttt{archive} namespace to make the non-load-bearing status structurally explicit.
 
@@ -1623,178 +1623,57 @@ The modules are organised in layers: foundations (geometric sums, fixed-point ch
 No claim of progress on classical open problems of polynomial root-finding is made. The corpus touches Kung--Traub ($c \geq 3$) through a compliance interface, not a proof, and records McMullen 1987 as a named statement without in-Lean proof (Mathlib v4.7.0 lacks the Fatou--Julia machinery needed). Lehmer's Mahler-measure conjecture and Smale's 17th problem are explicitly out of scope: the Pandrosion cyclotomic anchors produce algebraic integers whose Mahler measure is easy to compute (trivially far from Lehmer's extremal regime), and the multi-start $\mathcal{O}(\log\log(1/\varepsilon))$ complexity applies to the single-monomial family $z^p = x$, not to Smale's coefficient-uniform problem.
 
 %=====================================================================
-\part{Cyclotomic derivative-power sums and spectral balance}
+\part{Cyclotomic cancellation and two technical supplements}
 %=====================================================================
 
-Parts~I and~II developed the Pandrosion iterator and its multi-start extension. Part~III turns to a different object: the finite sum of inverse powers of the derivative $P'$ at the cyclotomic roots of $P(z) = z^p - 1/x$. These sums are finite, explicit, and admit vanishing identities whose structural content (``all integer arguments not divisible by $p$'') gives a uniform theorem from which the $\Sigma_P(1) = 0$, $Z_P(1) = 0$, and $Z_P(-1) = 0$ special values follow as corollaries. The part closes with a \emph{spectral balance} statement combining the vanishing identities with the a.e.-continuity and Julia-null results of Part~II.
-
-All identities below have been verified symbolically in SymPy at precision $30$ decimal digits for $p \in \{2, 3, 5, 7, 10\}$ and representative $x$ (real and complex).
+Part~III gathers a short cyclotomic-cancellation section that records the one identity on the cyclotomic anchor family actually used downstream, together with two technical supplements: a no-cycle theorem for the seeded Steffensen orbit, and a uniform-in-$(p, x)$ $\log\log$ complexity bound on a compact $x$-regime. These are not headline results; they are recorded because they close small logical gaps and provide a quantitative analogue of the benchmark observations of~\S\ref{sec:benchmark}.
 
 %=====================================================================
-\section{The Pandrosion derivative-power sum $\Sigma_P$}
-\label{sec:sigma-P}
+\section{Cyclotomic cancellation on the anchor family}
+\label{sec:cyclotomic-cancellation}
 %=====================================================================
 
-Let $P(z) = z^p - 1/x$ with $x \in \mathbb{C}^\ast$, $p \geq 2$, and let $\alpha_0, \alpha_1, \ldots, \alpha_{p-1}$ denote the $p$ distinct roots of $P$, so that $\alpha_k^p = 1/x$ for every $k$. Fixing the principal root $\alpha := x^{-1/p}$ and $\omega := e^{2\pi i/p}$, the roots take the cyclotomic form $\alpha_k = \alpha \cdot \omega^k$. The derivative values are
+Let $P(z) = z^p - 1/x$ with $x \in \mathbb{C}^\ast$, $p \geq 2$; let $\alpha_0, \ldots, \alpha_{p-1}$ be its roots, $\alpha := x^{-1/p}$ principal, $\omega := e^{2\pi i/p}$. Then $\alpha_k = \alpha\omega^k$ and
 \[
-  P'(\alpha_k) \;=\; p\,\alpha_k^{p-1}
-             \;=\; p \cdot \frac{\alpha_k^p}{\alpha_k}
-             \;=\; \frac{p}{x\,\alpha_k},
+  P'(\alpha_k) \;=\; p\alpha_k^{p-1} \;=\; \frac{p}{x\alpha_k},
+  \qquad
+  \nu_k := \frac{1}{P'(\alpha_k)} \;=\; \frac{x\alpha_k}{p}.
 \]
-using $\alpha_k^p = 1/x$ in the last step. The multiplicative inverse is a simple expression:
+
+\begin{proposition}[Cyclotomic cancellation]\label{prop:cyclotomic-cancellation}
+For every $p \geq 2$ and every $s \in \mathbb{Z}$,
 \[
-  \nu_k \;:=\; \frac{1}{P'(\alpha_k)} \;=\; \frac{x\,\alpha_k}{p}.
+  \sum_{k=0}^{p-1} \alpha_k^s \;=\;
+  \begin{cases}
+    0 & \text{if } p \nmid s, \\
+    p\,\alpha^s & \text{if } p \mid s.
+  \end{cases}
 \]
-We call $\nu_k$ the \emph{spectral weight} at the $k$-th root.
-
-\begin{definition}[Pandrosion derivative-power sum]\label{def:sigma-P}
-For $s \in \mathbb{Z}$, the Pandrosion derivative-power sum is
-\[
-  \Sigma_P(s) \;:=\; \sum_{k=0}^{p-1} P'(\alpha_k)^{-s}
-             \;=\; \bigl(x/p\bigr)^{s} \sum_{k=0}^{p-1} \alpha_k^{s}.
-\]
-\end{definition}
-
-The notation $\Sigma_P$ is chosen to avoid the letter~$\zeta$, which would spuriously suggest a Riemann-zeta connection. $\Sigma_P$ is a finite sum of $p$ explicit terms; the analogy with classical arithmetic zeta functions is typographic only.
-
-%=====================================================================
-\section{The general cyclotomic vanishing theorem}
-\label{sec:cyclotomic-vanishing}
-%=====================================================================
-
-\begin{theorem}[General cyclotomic vanishing]\label{thm:cyclotomic-vanishing}
-For every $p \geq 2$ and every $s \in \mathbb{Z}$ with $p \nmid s$,
-\[
-  \sum_{k=0}^{p-1} \alpha_k^s \;=\; 0.
-\]
-If instead $p \mid s$, then $\sum_{k=0}^{p-1} \alpha_k^s = p\,\alpha^s$.
-\end{theorem}
+\end{proposition}
 
 \begin{proof}
-Using $\alpha_k = \alpha \cdot \omega^k$,
-\[
-  \sum_{k=0}^{p-1} \alpha_k^{s}
-   \;=\; \alpha^{s}\sum_{k=0}^{p-1} \omega^{ks}
-   \;=\; \alpha^{s}\sum_{k=0}^{p-1} \bigl(\omega^{s}\bigr)^{k}.
-\]
-If $p \mid s$, then $\omega^{s} = 1$ and the sum equals $p$; otherwise $\omega^{s} \neq 1$ (it is also a $p$-th root of unity since $(\omega^{s})^{p} = (\omega^p)^s = 1$), so the geometric sum
-\[
-  \sum_{k=0}^{p-1}(\omega^s)^k \;=\; \frac{(\omega^s)^p - 1}{\omega^s - 1}
-                                 \;=\; \frac{0}{\omega^s - 1} \;=\; 0.
-\]
+$\sum_k \alpha_k^s = \alpha^s \sum_{k=0}^{p-1} (\omega^s)^k$. If $p \mid s$, $\omega^s = 1$ and the sum is $p$; otherwise $\omega^s \neq 1$ is a $p$-th root of unity and the geometric sum vanishes.
 \end{proof}
 
-\begin{corollary}[Vanishing of $\Sigma_P$]\label{cor:sigma-vanishing}
-For every $p \geq 2$ and every $s \in \mathbb{Z}$ with $p \nmid s$,
-$\Sigma_P(s) = 0$.
-\end{corollary}
-
-\begin{proof}
-Immediate from Definition~\ref{def:sigma-P} and Theorem~\ref{thm:cyclotomic-vanishing}.
-\end{proof}
-
-\begin{corollary}[Closed-form product of derivative values]\label{cor:spectral-determinant}
-For every $p \geq 1$ and $x \neq 0$,
-\[
-  \prod_{k=0}^{p-1} P'(\alpha_k)
-   \;=\; (-1)^{p-1}\,\frac{p^p}{x^{p-1}}.
-\]
-\end{corollary}
-
-\begin{proof}
-From $P'(\alpha_k) = p/(x\alpha_k)$,
-\[
-  \prod_{k=0}^{p-1} P'(\alpha_k)
-    \;=\; \frac{p^p}{x^p \cdot \prod_{k=0}^{p-1} \alpha_k}.
-\]
-Vieta's formulas applied to the monic polynomial $P(z) = z^p - 1/x$ (leading coefficient $1$, constant term $-1/x$) give $\prod_{k=0}^{p-1} \alpha_k = (-1)^p \cdot (-1/x) = (-1)^{p+1}/x$. Substituting,
-\[
-  \prod_{k=0}^{p-1} P'(\alpha_k)
-    \;=\; \frac{p^p}{x^p} \cdot \frac{x}{(-1)^{p+1}}
-    \;=\; (-1)^{p-1}\,\frac{p^p}{x^{p-1}},
-\]
-since $(-1)^{-(p+1)} = (-1)^{p+1} = (-1)^{p-1}$.
-\end{proof}
-
-%=====================================================================
-\section{The energy-zeta $Z_P$ as $\Sigma_P(2\cdot)$}
-\label{sec:energy-zeta}
-%=====================================================================
-
-Define the \emph{energy} at the $k$-th root by $E_P(\alpha_k) := P'(\alpha_k)^{2}$. The associated energy sum is
-\[
-  Z_P(s) \;:=\; \sum_{k=0}^{p-1} E_P(\alpha_k)^{-s}
-        \;=\; \sum_{k=0}^{p-1} P'(\alpha_k)^{-2s}.
-\]
-
-\begin{theorem}[Energy-zeta reduction]\label{thm:energy-zeta-reduction}
-For every $p \geq 1$, $x \neq 0$, and $s \in \mathbb{Z}$,
-\[
-  Z_P(s) \;=\; \Sigma_P(2s).
-\]
-\end{theorem}
-
-\begin{proof}
-$Z_P(s) = \sum_k (P'(\alpha_k)^2)^{-s} = \sum_k P'(\alpha_k)^{-2s} = \Sigma_P(2s)$, by definition.
-\end{proof}
-
-\begin{corollary}[Special values of $Z_P$]\label{cor:energy-special}
-For $p \geq 3$:
+The relevant consequences for this paper are:
 \begin{enumerate}
-  \item[(i)] $Z_P(0) = p$.
-  \item[(ii)] $Z_P(1) = \Sigma_P(2) = 0$.
-  \item[(iii)] $Z_P(-1) = \Sigma_P(-2) = 0$.
+  \item[(i)] $\displaystyle \sum_{k=0}^{p-1} \nu_k = \frac{x}{p}\sum_k \alpha_k = 0$ for $p \geq 2$ (case $s = 1$).
+  \item[(ii)] Closed-form product: $\displaystyle \prod_{k=0}^{p-1} P'(\alpha_k) = \frac{p^p}{x^p \prod_k \alpha_k} = (-1)^{p-1}\,\frac{p^p}{x^{p-1}}$, using $\prod_k \alpha_k = (-1)^{p+1}/x$ by Vieta on $z^p - 1/x$.
+  \item[(iii)] For $p \geq 3$: $\sum_k P'(\alpha_k)^{-2} = (x/p)^2 \sum_k \alpha_k^2 = 0$, and similarly $\sum_k P'(\alpha_k)^2 = 0$ (case $s = 2$, $p \geq 3$, $p \nmid 2$). The three special values $\sum_k 1$, $\sum_k P'(\alpha_k)^{-2}$, $\sum_k P'(\alpha_k)^2$ at $s = 0, \pm 1$ respectively equal $p$, $0$, $0$ --- a ``cyclotomic cancellation'' of all non-constant moments.
 \end{enumerate}
-\end{corollary}
 
-\begin{proof}
-For (i), $Z_P(0) = \sum_k 1 = p$. For (ii), apply Corollary~\ref{cor:sigma-vanishing} with $s = 2$: since $p \geq 3$ implies $p \nmid 2$, $\Sigma_P(2) = 0$. For (iii), the same corollary with $s = -2$: $p \geq 3$ implies $p \nmid -2$, so $\Sigma_P(-2) = 0$.
-\end{proof}
+These three items are the arithmetic ingredients used implicitly in Part~II: (i) is the vanishing of the first residue sum that underlies the a.e.-continuity analysis, and (ii)--(iii) normalize constants in auxiliary bounds. Items (i)--(iii) have been cross-checked symbolically in arbitrary precision for $p \in \{2, 3, 5, 7, 10\}$ and representative $x$ (real and complex).
 
-\begin{remark}[Electrostatic interpretation]\label{rem:electrostatic}
-Viewing the $p$ cyclotomic roots as unit charges placed at $\alpha_0, \ldots, \alpha_{p-1}$, with self-energy $E_P(\alpha_k) = P'(\alpha_k)^2$ and capacitance $1/E_P(\alpha_k)$, the three values above read:
-\begin{itemize}
-  \item total self-energy $\sum_k E_P(\alpha_k) = 0$ (for $p \geq 3$, total energy cancels cyclotomically);
-  \item total capacitance $\sum_k 1/E_P(\alpha_k) = 0$ (same cancellation);
-  \item only the count $Z_P(0) = p$ survives.
-\end{itemize}
-The Pandrosion cyclotomic anchor family is, in this sense, a \emph{perfectly balanced electrostatic system} for $p \geq 3$. For $p = 2$, the vanishings fail (since $p \mid 2$ in that case) and the system is degenerate.
+\begin{remark}[Multi-start compatibility bundle]\label{rem:multistart-balance}
+Combining (i) with the Part~II structural results: for $x, p, \alpha$ under the standard hypotheses, (A) $\sum_k \nu_k = 0$, (B) the multi-start image lies in the cyclotomic anchor set, (C) the Voronoï-nearest target is unique a.e., (D) the Voronoï boundary is Lebesgue-null (Theorem~\ref{thm:julia-null}), (E) the Borel solution map is continuous a.e.\ (Theorem~\ref{thm:ae-continuous}). All five statements are separately proven above; the bundling is a compatibility observation, not a new theorem.
+\end{remark}
+
+\begin{remark}[Symmetry of the cyclotomic Voronoï diagram]\label{rem:voronoi-symmetry}
+The rotation $T_\omega : z \mapsto \omega z$ is a Euclidean isometry permuting $\alpha_k \to \alpha_{(k+1)\bmod p}$, hence permuting the Voronoï cells $V_k := \{z : \|\alpha_k - z\| < \|\alpha_j - z\|, \forall j \neq k\}$ by $T_\omega(V_k) = V_{(k+1)\bmod p}$. For any rotation-invariant Borel measure, $\mu(V_k)$ is independent of $k$. This equipartition by cyclic symmetry is an elementary observation; it records that the basin bounds of Proposition~\ref{prop:basin-lower-bound} are distributed uniformly across the anchor indices.
 \end{remark}
 
 %=====================================================================
-\section{Multi-start spectral balance}
-\label{sec:spectral-balance}
-%=====================================================================
-
-Combining the vanishing identity of Corollary~\ref{cor:sigma-vanishing} with the a.e.-structural results of Part~II yields a unified statement.
-
-\begin{theorem}[Multi-start spectral balance]\label{thm:spectral-balance}
-Under the standard hypotheses of Part~II (namely $x \in \mathbb{C}^\ast$, $p \geq 2$, $\alpha \in \mathbb{C}^\ast$ with $\alpha^p = 1/x$, and $S_p(\alpha_k) \neq 0$ for every $k$), all five of the following hold simultaneously:
-\begin{enumerate}
-  \item[(A)] \textbf{Spectral-weight balance:} $\displaystyle \sum_{k=0}^{p-1} \nu_k = 0$, where $\nu_k = x\alpha_k/p$.
-  \item[(B)] \textbf{Multi-start image:} for every $z \in \mathbb{C}$, the Borel multi-start target (Definition~\ref{def:borel-selector}) lies in $\{\alpha_0, \ldots, \alpha_{p-1}\}$.
-  \item[(C)] \textbf{A.e.\ uniqueness:} for Lebesgue-a.e.\ $z \in \mathbb{C}$, the Voronoï-nearest anchor to $z$ is unique.
-  \item[(D)] \textbf{Julia-null:} the Voronoï boundary $\mathrm{VorBdy}$ has 2-dimensional Lebesgue measure zero.
-  \item[(E)] \textbf{A.e.\ continuity:} the Borel solution map $\Phi$ is continuous at Lebesgue-a.e.\ $z$.
-\end{enumerate}
-\end{theorem}
-
-\begin{proof}
-(A) is Corollary~\ref{cor:sigma-vanishing} at $s = 1$: $\Sigma_P(1) = 0$, i.e.\ $\sum_k 1/P'(\alpha_k) = \sum_k \nu_k = 0$. (B) is tautological from the definition of the Borel selector (Section~\ref{sec:measurability}). (C) follows from (D) since on the complement of the Voronoï boundary, the nearest-anchor map is single-valued. (D) is Theorem~\ref{thm:julia-null}. (E) is Theorem~\ref{thm:ae-continuous}.
-\end{proof}
-
-\begin{remark}[What the balance theorem says]
-Theorem~\ref{thm:spectral-balance} is a glue statement: each of (A)--(E) is proven separately elsewhere. Its value is in the bundling: the cyclotomic-anchor family simultaneously satisfies a \emph{finite arithmetic constraint} (A), a \emph{measure-theoretic constraint} (D), and a \emph{regularity constraint} (E). This three-way compatibility justifies using cyclotomic anchors rather than an arbitrary root labelling.
-\end{remark}
-
-%=====================================================================
-\part{Four exceptional theorems}
-%=====================================================================
-
-Part~IV collects four theorems that emerged from the formalization effort. Each is stated in ordinary mathematical prose with a self-contained proof using only the tools already developed (quadratic contraction, Vieta, cyclotomic symmetry, Taylor bound). No Fatou--Julia machinery or advanced complex dynamics is required.
-
-%=====================================================================
-\section{No-cycle theorem for multi-start Steffensen orbits}
+\section{No-cycle theorem for multi-start orbits}
 \label{sec:no-cycle}
 %=====================================================================
 
@@ -1803,25 +1682,24 @@ Let $(x, p, \alpha)$ satisfy the standard hypotheses, and let $z_0 \in \overline
 \end{theorem}
 
 \begin{proof}
-The three-step construction of Part~II supplies constants $K_\sigma, R_\sigma$ with $K_\sigma R_\sigma \leq 1/2$ and the quadratic bound
+The three-step construction of Part~II supplies $K_\sigma, R_\sigma$ with $K_\sigma R_\sigma \leq 1/2$ and
 \[
   |\sigma_{p,x}(z) - \alpha| \;\leq\; K_\sigma\,|z - \alpha|^2
   \qquad \text{on } \overline{B}(\alpha, R_\sigma).
 \]
-For $z \in \overline{B}(\alpha, R_\sigma/2)$, i.e.\ $|z - \alpha| \leq R_\sigma/2$,
+For $z \in \overline{B}(\alpha, R_\sigma/2)$, $|z - \alpha| \leq R_\sigma/2$ gives
 \[
   |\sigma_{p,x}(z) - \alpha|
-   \;\leq\; K_\sigma\,|z - \alpha|\,\cdot\,|z - \alpha|
-   \;\leq\; K_\sigma \cdot \frac{R_\sigma}{2} \cdot |z - \alpha|
-   \;\leq\; \frac{1}{4}\,|z - \alpha|,
+   \;\leq\; K_\sigma \cdot (R_\sigma/2) \cdot |z - \alpha|
+   \;\leq\; \tfrac14\,|z - \alpha|.
 \]
-using $K_\sigma R_\sigma \leq 1/2$. Hence $\sigma_{p,x}$ restricted to $\overline{B}(\alpha, R_\sigma/2)$ is $\tfrac14$-Lipschitz with $\alpha$ as fixed point, and $\sigma_{p,x}(\overline{B}(\alpha, R_\sigma/2)) \subset \overline{B}(\alpha, R_\sigma/8) \subset \overline{B}(\alpha, R_\sigma/2)$.
+Hence $\sigma_{p,x}$ restricted to $\overline{B}(\alpha, R_\sigma/2)$ is $\tfrac14$-Lipschitz with $\alpha$ as fixed point, and $\sigma_{p,x}(\overline{B}(\alpha, R_\sigma/2)) \subset \overline{B}(\alpha, R_\sigma/2)$.
 
-Write $w_j := \sigma_{p,x}^j(z_0)$. By induction on $j$, $|w_j - \alpha| \leq 4^{-j}|z_0 - \alpha|$. Suppose now $w_n = w_m$ with $0 \leq n < m$. By the same induction applied from $w_n$ onwards, $|w_m - \alpha| \leq 4^{-(m-n)}|w_n - \alpha|$. Combined with $w_n = w_m$, this gives
+Write $w_j := \sigma_{p,x}^j(z_0)$; then $|w_j - \alpha| \leq 4^{-j}|z_0 - \alpha|$ by induction. Suppose $w_n = w_m$ with $n < m$. Applying the same bound from index $n$: $|w_m - \alpha| \leq 4^{-(m-n)}|w_n - \alpha|$. Combined with $w_n = w_m$:
 \[
-  |w_n - \alpha| \;\leq\; 4^{-(m-n)}|w_n - \alpha|.
+  |w_n - \alpha| \;\leq\; 4^{-(m-n)}|w_n - \alpha|,
 \]
-Since $m - n \geq 1$, $4^{-(m-n)} \leq 1/4 < 1$, forcing $|w_n - \alpha| = 0$, i.e.\ $w_n = \alpha$. The orbit is constant at $\alpha$ from index $n$ onwards.
+and $4^{-(m-n)} < 1$ forces $|w_n - \alpha| = 0$.
 \end{proof}
 
 \begin{corollary}[Acyclicity of seeded multi-start orbits]\label{cor:seeded-acyclic}
@@ -1829,67 +1707,7 @@ For every $(x, p, \alpha, z)$ in the hypotheses of Theorem~\ref{thm:multistart},
 \end{corollary}
 
 \begin{proof}
-By construction the seed lies in $\overline{B}(\alpha, R_\sigma/2)$ (Definition~\ref{def:seed}), so Theorem~\ref{thm:no-cycle} applies.
-\end{proof}
-
-%=====================================================================
-\section{The spectral determinant formula}
-\label{sec:spectral-determinant-thm}
-%=====================================================================
-
-\begin{theorem}[Spectral determinant]\label{thm:spectral-det-main}
-For every $p \geq 1$ and $x \in \mathbb{C}^\ast$,
-\[
-  \prod_{k=0}^{p-1} P'(\alpha_k)
-   \;=\; (-1)^{p-1}\,\frac{p^p}{x^{p-1}}.
-\]
-\end{theorem}
-
-\begin{proof}
-This is Corollary~\ref{cor:spectral-determinant}, restated for visibility.
-\end{proof}
-
-\begin{corollary}[Discriminant of $z^p - 1/x$]\label{cor:discriminant}
-The discriminant of the Pandrosion polynomial is
-\[
-  \mathrm{disc}(z^p - 1/x)
-   \;=\; (-1)^{p(p+1)/2}\,\frac{p^p}{x^{p-1}}.
-\]
-\end{corollary}
-
-\begin{proof}
-For a monic polynomial $P$ of degree $p$, $\mathrm{disc}(P) = (-1)^{p(p-1)/2}\prod_k P'(\alpha_k)$. Combining with Theorem~\ref{thm:spectral-det-main}:
-\[
-  \mathrm{disc}(z^p - 1/x)
-   \;=\; (-1)^{p(p-1)/2} \cdot (-1)^{p-1} \cdot \frac{p^p}{x^{p-1}}.
-\]
-The sign $(-1)^{p(p-1)/2 + (p-1)} = (-1)^{(p-1)(p/2 + 1)} = (-1)^{(p-1)(p+2)/2}$. A parity check (cases $p \equiv 0, 1, 2, 3 \pmod 4$) shows $(p-1)(p+2)/2 \equiv p(p+1)/2 \pmod 2$, so $\mathrm{disc} = (-1)^{p(p+1)/2}\,p^p/x^{p-1}$.
-\end{proof}
-
-Numerically verified for $(p, x) \in \{(3, 2), (5, 3), (7, 10), (3, 1{+}2i), (4, -1{+}i)\}$ to 30 decimal digits in arbitrary-precision arithmetic (\texttt{latex/benchmark\_complex.py}).
-
-%=====================================================================
-\section{Cyclotomic Voronoï equipartition}
-\label{sec:voronoi-equipartition}
-%=====================================================================
-
-\begin{theorem}[Equipartition of cyclotomic Voronoï cells]\label{thm:voronoi-equipartition}
-Let $\gamma_k = \alpha\omega^k$, $k = 0, \ldots, p-1$, be the cyclotomic anchor family, and let $V_k := \{z \in \mathbb{C} : \|\gamma_k - z\| < \|\gamma_j - z\|\ \forall j \neq k\}$ be the open Voronoï cell of $\gamma_k$. Then the rotation $T_\omega : z \mapsto \omega z$ satisfies $T_\omega(V_k) = V_{(k+1)\bmod p}$. Consequently, for every rotation-invariant Borel measure $\mu$ on $\mathbb{C}$ (e.g.\ Lebesgue measure restricted to any origin-centred disk),
-\[
-  \mu(V_0) \;=\; \mu(V_1) \;=\; \cdots \;=\; \mu(V_{p-1}).
-\]
-\end{theorem}
-
-\begin{proof}
-$T_\omega$ is an isometry of $\mathbb{C}$ (preserves Euclidean distance). It permutes anchors via $T_\omega(\gamma_k) = \omega \cdot \alpha\omega^k = \alpha\omega^{k+1} = \gamma_{(k+1) \bmod p}$. For $z \in V_k$, the Voronoï inequalities $\|\gamma_k - z\| < \|\gamma_j - z\|$ for $j \neq k$ become, after applying $T_\omega$, $\|\gamma_{k+1} - T_\omega z\| < \|\gamma_{j+1} - T_\omega z\|$ for $j + 1 \not\equiv k + 1 \pmod p$, which is exactly $T_\omega z \in V_{(k+1) \bmod p}$. Since $T_\omega$ is a bijection, $T_\omega(V_k) = V_{(k+1) \bmod p}$. Rotation-invariance of $\mu$ gives $\mu(V_{k+1}) = \mu(T_\omega V_k) = \mu(V_k)$, whence equipartition.
-\end{proof}
-
-\begin{corollary}[Per-cell lower bound]\label{cor:cell-bound}
-Each Voronoï cell contains the disk of radius $\tfrac12 \min_{j \neq k}\|\gamma_j - \gamma_k\|$ centred at $\gamma_k$, hence $\mu(V_k) \geq \pi \cdot (\tfrac12 \min_{j\neq k}\|\gamma_j - \gamma_k\|)^2$ when $\mu$ is Lebesgue and the disk is contained in the support.
-\end{corollary}
-
-\begin{proof}
-If $\|z - \gamma_k\| < \tfrac12 \min_{j\neq k}\|\gamma_j - \gamma_k\|$, then for any $j \neq k$, $\|z - \gamma_j\| \geq \|\gamma_j - \gamma_k\| - \|z - \gamma_k\| > \tfrac12 \|\gamma_j - \gamma_k\| \geq \|z - \gamma_k\|$, so $z \in V_k$.
+The seed lies in $\overline{B}(\alpha, R_\sigma/2)$ (Definition~\ref{def:seed}), so Theorem~\ref{thm:no-cycle} applies.
 \end{proof}
 
 %=====================================================================
