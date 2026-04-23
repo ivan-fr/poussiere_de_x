@@ -89,4 +89,5 @@ import Pandrosion.Core.MasterTotal
 import Pandrosion.Core.MasterTotalEffective
 import Pandrosion.Core.MeasurableSolutionMap
 import Pandrosion.Core.PandrosionJuliaNull
+import Pandrosion.Core.FatouContinuity
 import Pandrosion.Legacy
