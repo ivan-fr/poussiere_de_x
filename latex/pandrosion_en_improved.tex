@@ -48,7 +48,7 @@ We identify the unique fixed point $s^* = x^{-1/p}$, show that the convergence i
   \lambda_{p,x} = \frac{(\alpha - 1)\,\sum_{k=1}^{p-1} k\,\alpha^{p-1-k}}{\sum_{k=0}^{p-1} \alpha^k},
   \qquad \alpha = x^{1/p}.
 \]
-This ratio depends only on the target $\alpha$ and provides a concise ``convergence signature'' for Pandrosion's method.  Building on this formula we obtain non-asymptotic error bounds, prove that $\lambda_{p,x}$ is monotonic in both the order $p$ and the argument $x$, extend the construction to the case $0<x<1$ (where convergence becomes oscillatory), and determine an optimal starting point that minimizes the initial error.  We further show that Steffensen's acceleration applied to the Pandrosion iteration yields \emph{quadratic} convergence, and we propose a simple scaling strategy that exploits the monotonicity of $\lambda_{p,x}$ to reduce the computational cost for large $x$.  Taken together, these results situate an ancient geometric procedure within modern fixed-point theory and suggest derivative-free root-finding algorithms inspired by Pandrosion.
+This ratio depends only on the target $\alpha$; throughout the paper we refer to it as the \emph{convergence signature} of Pandrosion's method, a memorable shorthand for what is formally the standard asymptotic error constant $h'(s^*)$ of a linearly convergent fixed-point iteration.  Building on this formula we obtain non-asymptotic error bounds, prove that $\lambda_{p,x}$ is monotonic in both the order $p$ and the argument $x$, extend the construction to the case $0<x<1$ (where convergence becomes oscillatory), and determine an optimal starting point that minimizes the initial error.  We further show that Steffensen's acceleration applied to the Pandrosion iteration yields \emph{quadratic} convergence, and we propose a simple scaling strategy that exploits the monotonicity of $\lambda_{p,x}$ to reduce the computational cost for large $x$.  Taken together, these results situate an ancient geometric procedure within modern fixed-point theory and suggest derivative-free root-finding algorithms inspired by Pandrosion.
 \end{abstract}
 
 \tableofcontents
@@ -617,7 +617,15 @@ Then $\Lambda < 1$ and for all $n \geq 0$:
   \label{eq:nonasymp_bound}
   |s_n - s^*| \leq \Lambda^n \, |s_0 - s^*|.
 \end{equation}
-Consequently, $|v_n - \alpha| \leq (p-1) x\, s^{*\,p-2} \cdot \Lambda^n |s_0 - s^*| + O(\Lambda^{2n})$.
+Consequently,
+\[
+  |v_n - \alpha| \;\leq\; (p-1)\,\alpha^2 \cdot \Lambda^n\, |s_0 - s^*| \;+\; O(\Lambda^{2n}).
+\]
+The prefactor follows from a Taylor expansion of $v(s) = x\, s^{p-1}$ at $s^* = \alpha^{-1}$:
+\[
+  v(s) - v(s^*) \;=\; x\,(p-1)\,(s^*)^{p-2}\,(s - s^*) + O((s - s^*)^2),
+\]
+and $x\,(p-1)\,(s^*)^{p-2} = (p-1)\, x\, x^{-(p-2)/p} = (p-1)\, x^{2/p} = (p-1)\,\alpha^2$.
 \end{theorem}
 
 \begin{proof}
@@ -640,7 +648,16 @@ and on $(0,1)$ both $S_p$ and $S_p'$ are increasing, so the numerator is attaine
 \end{remark}
 
 \begin{example}
-For $p = 3$, $x = 2$, $s_0 = 0.5$: $\Lambda \approx 0.327$, so $|s_n - s^*| \leq 0.327^n \cdot 0.294$. After $n = 10$ iterations: $|s_{10} - s^*| \leq 4.6 \times 10^{-6}$. The asymptotic ratio $\lambda_{3,2} \approx 0.220$ is reached after a few iterations.
+For $p = 3$, $x = 2$, $s_0 = 0.5$ (so $s^* = 2^{-1/3} \approx 0.7937$), one evaluates $h'$ at both endpoints of the interval $[s_0, s^*] = [0.5, 0.7937]$:
+\[
+  h'(s) = \tfrac{x-1}{x} \cdot \frac{S'_3(s)}{S_3(s)^2}
+        = \tfrac{1}{2} \cdot \frac{1 + 2s}{(1 + s + s^2)^2}.
+\]
+At $s = 0.5$: $S_3(0.5) = 1.75$, $S'_3(0.5) = 2$, so $h'(0.5) = \tfrac{1}{2} \cdot 2/(1.75)^2 \approx 0.3265$. At $s = s^*$: $h'(s^*) = \lambda_{3,2} \approx 0.2202$. Therefore
+\[
+  \Lambda \;=\; \max_{s \in [0.5, s^*]} h'(s) \;=\; h'(0.5) \;\approx\; 0.327,
+\]
+since $h'$ is decreasing on this interval. The bound~\eqref{eq:nonasymp_bound} gives $|s_n - s^*| \leq 0.327^n \cdot |0.5 - s^*| \leq 0.327^n \cdot 0.294$, so $|s_{10} - s^*| \leq 4.6 \times 10^{-6}$. The asymptotic ratio $\lambda_{3,2} \approx 0.220$ is reached after a few iterations.
 \end{example}
 
 %=====================================================================
@@ -945,35 +962,13 @@ With scaling and Steffensen acceleration combined, Pandrosion's ancient geometri
 \label{sec:conclusion}
 %=====================================================================
 
-Starting from Pandrosion's geometric construction for $\cbrt{2}$, we have uncovered a universal structure: the iteration
-\[
-  s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)},
-\]
-whose fixed point is $s^* = x^{-1/p}$ and whose output $v_n = x \cdot s_n^{p-1}$ converges to $x^{1/p}$. The convergence is linear, with exact contraction ratio
-\[
-  \lambda_{p,x} = \frac{(\alpha-1)\displaystyle\sum_{k=1}^{p-1} k\,\alpha^{p-1-k}}{\displaystyle\sum_{k=0}^{p-1}\alpha^k}, \qquad \alpha = x^{1/p},
-\]
-which depends only on the target $\alpha$ and the order $p$. This is the \textbf{convergence signature} of Pandrosion's method.
+The central tension of this paper is between Pandrosion's ancient geometric construction — an order-one iteration requiring only a ruler and parallels — and modern acceleration theory. Once the universal iteration $s_{n+1} = 1 - (x-1)/(x\,S_p(s_n))$ is written down, three ingredients suffice to make it competitive: the closed-form contraction ratio $\lambda_{p,x}$ (Theorem~\ref{thm:lambda}), the preconditionings of Propositions~\ref{prop:optimal_start} and~\ref{prop:scaling}, and the Aitken $\Delta^2$ upgrade (Theorem~\ref{thm:steffensen}). Together they turn Pandrosion into a derivative-free, quadratically convergent scheme with a quadratic constant $K_S \ll K_{\text{Newton}}$ and an iteration count that, for large $x$, collapses from hundreds to single digits.
+
+The closed-form signature $\lambda_{p,x}$ is the hinge: it is monotone in both $p$ and $x$ (Theorem~\ref{thm:monotonicity}), has an explicit large-$p$ limit $1 - \ln(x)/(x-1)$ (Proposition~\ref{prop:limits}), and admits a clean threshold analysis for $x < 1$ (Proposition~\ref{prop:x_small}). The rest of the paper is built on this object.
 
 \medskip
 
-Beyond this central result, we have established:
-\begin{itemize}
-  \item \textbf{Non-asymptotic bounds} (Theorem~\ref{thm:nonasymp}): $|s_n - s^*| \leq \Lambda^n |s_0 - s^*|$ for all $n$, with explicit $\Lambda$.
-  \item \textbf{Double monotonicity} (Theorem~\ref{thm:monotonicity}): $\lambda_{p,x}$ is increasing in both $p$ and $x$.
-  \item \textbf{Extension to $x < 1$} (Proposition~\ref{prop:x_small}): the method converges with \emph{oscillatory} contraction ratio $\lambda < 0$, with $|\lambda| < 1$.
-  \item \textbf{Optimal starting point} (Proposition~\ref{prop:optimal_start}): $s_0 = h(1) = 1 - (x-1)/(xp)$ minimizes the initial residual.
-  \item \textbf{Steffensen acceleration} (Theorem~\ref{thm:steffensen}): Aitken's $\Delta^2$ process transforms Pandrosion's linear method into a quadratically convergent, derivative-free method with constant $K_S \ll K_{\text{Newton}}$.
-  \item \textbf{Scaling optimization} (Proposition~\ref{prop:scaling}): exploiting the monotonicity of $\lambda_{p,x}$, a simple change of variable reduces large-$x$ problems to $x' \approx 1$, cutting the contraction ratio by up to $39\times$ and collapsing iteration counts from hundreds to single digits.
-\end{itemize}
-
-\medskip
-
-The coexistence of \emph{five} distinct residual profiles (Pandrosion, bisection, secant, Newton, Steffensen--Pandrosion) for the same target $\alpha = \cbrt{2}$ illustrates the central thesis: \textbf{the residual profile is a property of the method, not of the number.}
-
-\medskip
-
-\textbf{Perspectives.} It would be natural to study generalized nonlinear Pandrosion constructions (with other polynomials replacing $S_p$), to investigate whether higher-order Steffensen variants produce even faster convergence, or to analyze the topological structure of the basin of attraction for $x < 1$ in higher dimensions. The close relationship between Pandrosion's iteration and the arithmetic of roots also suggests connections with continued fraction algorithms that deserve further exploration.
+\textbf{Perspectives.} Natural extensions are generalized nonlinear Pandrosion constructions (with other polynomials replacing $S_p$); higher-order acceleration variants; a deeper topological study of the divergence regime $x < x^\ast_p$ in~$\mathbb{C}$. None of these is attempted here.
 
 %=====================================================================
 \begin{thebibliography}{9}

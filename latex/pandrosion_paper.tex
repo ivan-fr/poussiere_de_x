@@ -285,10 +285,9 @@ claim any number-theoretic content and the analogy should be read as
 typographic, not mathematical. In particular, nothing in this paper
 bears on the Riemann Hypothesis or on any transcendental question.
 
-The phrase ``Niveau 5 conjecture'' is our own internal name for an
-a.e.-convergence statement on the plain Pandrosion iteration that we
-use as a target of Theorem~\ref{thm:niveau5}; it does not appear under
-this label in the classical literature.
+(The label ``Niveau~5'' used in Theorem~\ref{thm:niveau5} and in the
+Lean module naming is internal bookkeeping for the corpus and has no
+external attestation; see the footnote in~\S\ref{sec:multistart}.)
 
 \subsection{Reading order}
 
@@ -703,9 +702,12 @@ Numerical experiments at $(x, p) = (2, 3)$ (Python sweep over
 $[-3, 3]^2$ at $200 \times 200$ resolution) show that roughly
 $0.015\%$ of initial points converge instead to a non-principal
 anchor, so the plain-iteration version of the statement is
-\emph{false}. We refer to this local statement as ``Niveau~5'' in
-the Lean corpus for internal bookkeeping; the label is ours and does
-not correspond to any externally attested conjecture.
+\emph{false}.\footnote{In the Lean corpus this a.e.-statement is
+tracked internally under the label ``Niveau~5'' (modules
+\texttt{Niveau5Master}, \texttt{Niveau5StrictMultiStart}, etc.). The
+label is ours; it does not correspond to any externally attested
+conjecture, and there is no ``Niveau~4'' hidden elsewhere — it is
+simply internal bookkeeping.}
 
 \begin{theorem}[Multi-start version]\label{thm:niveau5}
 Under the standard hypotheses on $(x, p, \alpha)$, the multi-start
@@ -874,9 +876,11 @@ log-scale growth in $p$ for fixed $x$.}
 
 \subsection{Vanishing of $\zeta_P$ at integer arguments}
 
-The following proposition is a direct consequence of the geometric-sum
-vanishing on roots of unity. We record it here because it is used
-elsewhere in the corpus; nothing about it is number-theoretic.
+The following proposition is \emph{not} a new identity: it is the
+$s \leftrightarrow m+1$ relabeling of Proposition~\ref{thm:zeta-higher}.
+We record it separately only because its statement uses the letter
+$s$ (as in $\zeta_P(s)$) rather than the exponent~$m$, and because
+downstream Lean modules cite this form directly.
 
 \begin{proposition}[Vanishing of $\zeta_P$ on $1 \leq s \leq p-1$]
 \label{thm:zeta-RH}
@@ -887,10 +891,12 @@ $1 \leq s \leq p-1$,
 \]
 \end{proposition}
 
-With $\omega = e^{2\pi i / p}$, one has
-$\zeta_P(s) = (x/p)^s \sum_k \alpha_k^s$, and the sum vanishes because
-$\sum_{k=0}^{p-1} (\omega^s)^k = 0$ when $p \nmid s$. The proof is one
-line.
+Proof. From $P'(\alpha_k) = p/(x\,\alpha_k)$ one gets
+$P'(\alpha_k)^{-s} = (x/p)^s\, \alpha_k^s$, so
+$\zeta_P(s) = (x/p)^s \sum_k \alpha_k^s$. Applying
+Proposition~\ref{thm:zeta-higher} with $m = s - 1 \in \{0, 1, \dots, p-2\}$
+(using $1/P'(\alpha_k) = x\alpha_k/p$) gives $\sum_k \alpha_k^s = 0$,
+and the conclusion follows.
 
 \begin{figure}[H]
 \centering
@@ -961,14 +967,16 @@ a $1/4$-contraction on $B(\alpha, R_\alpha/2)$, itself a consequence
 of $K_\alpha \cdot R_\alpha \leq 1/2$.
 
 %======================================================================
-\section{Short structural observations on four classical problems}
+\section{Short structural observations}
 \label{sec:open-problems}
 %======================================================================
 
-We record four places where the Pandrosion setting intersects a
-classical or open problem. None of the material below constitutes
-progress on the underlying problem; each subsection states what the
-corpus contributes and, just as importantly, what it does not.
+We record two places (Kung--Traub, McMullen) where the Pandrosion
+setting intersects a classical or open problem, and one explicit
+out-of-scope note for two further classical themes (Lehmer,
+Smale~17). None of the material below constitutes progress on the
+underlying problems; each subsection states what the corpus
+contributes and, just as importantly, what it does not.
 
 \subsection{Kung--Traub upper bound for $c \geq 3$ (open since 1974)}
 
@@ -1043,16 +1051,26 @@ The 121-module corpus is organised in dependency layers:
         rate, global loglog convergence, real-line $p = 2$
         unconditional discharge.
   \item \textbf{Multi-start} (\S95--\S101): universal convergence,
-        target selection, Niveau~5 resolution, explicit iteration
-        count.
+        target selection, the multi-start reformulation of the
+        ``Niveau~5'' a.e.-convergence statement (Theorem~\ref{thm:niveau5}
+        — note that the plain-iteration version is numerically
+        \emph{false}; what the module establishes is the multi-start
+        theorem, not a proof of the original a.e.\ statement),
+        explicit iteration count.
   \item \textbf{Measure/topology} (\S102--\S105): Borel measurability,
         Voronoï frontier Lebesgue-null, a.e.\ continuity.
   \item \textbf{Finite-zeta identities} (\S106--\S111): the identities
         of Section~\ref{sec:zeta}.
   \item \textbf{Classical specializations} (\S112--\S122): as listed
         in Section~\ref{sec:classical}.
-  \item \textbf{Open-problem engagements} (\S123): as listed in
-        Section~\ref{sec:open-problems}.
+  \item \textbf{Short structural observations} (\S123,
+        \texttt{PandrosionOpenProblems}): named \texttt{Prop}s for
+        Kung--Traub ($c\geq 3$) and McMullen 1987, matching
+        Section~\ref{sec:open-problems}. The module also contains
+        statement-level \texttt{Prop}s for Lehmer and Smale~17 that
+        are retained for historical reasons; these are not used by
+        any other module and should be read as out-of-scope notes,
+        consistent with the paper text.
 \end{itemize}
 
 \begin{figure}[H]
