@@ -101,4 +101,7 @@ import Pandrosion.Core.PandrosionAitkenSchwarz
 import Pandrosion.Core.PandrosionKungTraubC3
 import Pandrosion.Core.PandrosionSmaleSeventeenth
 import Pandrosion.Core.PandrosionRiemannHypothesis
+import Pandrosion.Core.PandrosionAberthEhrlich
+import Pandrosion.Core.PandrosionKronecker
+import Pandrosion.Core.PandrosionGalois
 import Pandrosion.Legacy
