@@ -474,3 +474,33 @@ ROADMAP terminée. Pour avancer, l'utilisateur doit soit :
 3. **Lancer `lean-check`** pour audit axiomatique strict.
 
 Recommandation : option 1 (nouveau ROADMAP avec direction explicite).
+
+---
+
+## Session 8 résumé (autonomous, bonus consolidation)
+
+**État corpus début** : 89 modules verts (ROADMAP empty).
+**État corpus fin** : 91 modules verts.
+
+### Bonus ajoutés (au-delà ROADMAP original)
+- **§90 CombinedDomainX2** : Tendsto h^n sur `{Re z ≥ 1/2} ∪ {|z| ≥ 2}`,
+  unifie §67 + §77 en un seul énoncé.
+- **§91 IterCountConcreteX2** : preuve concrète "4 itérations
+  suffisent pour ε = 1/100" via `(104/259)^4 · (1/4) ≤ 1/100` (norm_num).
+  Premier théorème "compte certifié" explicite.
+
+### Observations session 8
+- Avec ROADMAP empty, ajouts proactifs de modules de consolidation.
+- Pattern §91 reproductible pour autres ε : `(104/259)^N · (1/4) ≤ ε`
+  via norm_num pour ε rationnel concret. Suite future : §92 ε = 10⁻⁶,
+  §93 ε = 10⁻⁹, etc.
+
+### Prochaine session : recommandation
+
+ROADMAP toujours empty (sauf bonus session 8). Pour avancer
+significativement, l'utilisateur doit définir un nouveau ROADMAP avec
+des cibles plus ambitieuses (Mathlib dynamics, formal series,
+extension à p ≥ 5, etc.) OU lancer `lean-check` pour audit final.
+
+Sessions futures sans nouveau ROADMAP produiront à nouveau des bonus
+de consolidation ou s'arrêteront idle.
