@@ -81,4 +81,5 @@ import Pandrosion.Core.IterCountConcreteX2
 import Pandrosion.Core.MultiStartSigmaX2
 import Pandrosion.Core.LoglogUniversalMultiStartX2
 import Pandrosion.Core.LoglogUniversalMultiStartGeneric
+import Pandrosion.Core.MasterUniversel
 import Pandrosion.Legacy
