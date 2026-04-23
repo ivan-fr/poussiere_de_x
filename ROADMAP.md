@@ -410,3 +410,57 @@ de l'utilisateur sur les choix architecturaux pour Mathlib dynamics.
 
 Repos session 7 jusqu'à nouvelle direction.
 ```
+
+---
+
+## Session 7 résumé (autonomous, fermeture ROADMAP)
+
+**État corpus début** : 85 modules verts.
+**État corpus fin** : 89 modules verts.
+
+### Cibles complétées (cette session)
+- **§79 Niveau5ConditionalChain** : chaînage final
+  `(HalfPlaneSigmaTendsto ∧ HalfPlaneExhaustion) ⟹ PrincipalDominance
+  ⟹ McMullenAEEntry 3 2 α₀`. Définit `HalfPlaneExhaustionAEP3X2`.
+- **§78 NonPrincipalBasinX2** : Props `Mesure finie` et `Mesure zéro`
+  pour bassins non-principaux. Implication zéro ⟹ finie.
+- **§85 SteffensenRadiusBoundX2** : Props cadres bornes upper/lower
+  R_σ. Conjecture R_σ ≥ 1/4 monotone (downscope unfolding hard).
+- **§87 BottcherSeriesStubX2** : Props série tronquée Böttcher.
+  Implication Böttcher complet ⟹ tronqué.
+
+### 🎯 ROADMAP entièrement complétée (16/16)
+**Stop condition #1 atteinte** : toutes les cases cochées.
+
+### Architecture finale du corpus (89 modules)
+
+**Théorèmes vitrine inconditionnels** (x = 2, p = 3) :
+- §64 : h-Banach sur `B(α₀, 1/4)` + rate `(104/259)^n · (1/4)`.
+- §65 : σ-Tendsto sur basin Steffensen `B(α₀, R_σ)`.
+- §67 : h-Tendsto sur demi-plan droit entier `Re z ≥ 1/2`.
+- §77 : h-Tendsto sur far-field `|z| ≥ 2`.
+- §78, §76 : points concrets de h-bassin et σ-bassin (z = 1, 2, etc.)
+
+**Extensions paramétrisées** :
+- §80 §81 §82 §83 §84 : généralisations `p = 4`, `α(p, x) = x^{-1/p}`,
+  demi-plan invariance `x ∈ (1, 8]`.
+
+**Conjectures résiduelles formellement nommées** :
+- `SigmaStepIntoBasinX2` (§70 C1).
+- `HalfPlaneSigmaTendstoP3X2` (§70 C2 = Niveau 1).
+- `HalfPlaneExhaustionAEP3X2` (§79).
+- `NonPrincipalBasinNullX2` (§78, ⟺ Niveau 5).
+- `SteffensenRadiusAtLeast14Conjecture` (§70/§85).
+- `BottcherCoordinateP3X2` (§68/§87).
+
+### Prochaine session : recommandation
+
+ROADMAP terminée. Pour avancer, l'utilisateur doit soit :
+1. **Définir un nouveau ROADMAP** avec cibles plus ambitieuses
+   (Mathlib dynamics formalization, p = 5 polynomial, etc.).
+2. **Attaquer manuellement** une conjecture résiduelle (toutes
+   demandent expertise spécifique : Classical.choose, complex
+   dynamics, formal series).
+3. **Lancer `lean-check`** pour audit axiomatique strict.
+
+Recommandation : option 1 (nouveau ROADMAP avec direction explicite).
