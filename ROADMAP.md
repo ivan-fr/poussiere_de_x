@@ -314,3 +314,45 @@ Recommandation : repos session 5, attendre validation utilisateur
 sur direction (Mathlib dynamics? sympy-aided polynomial?).
 Sinon : §85 explicit Steffensen radius via unfolding.
 ```
+
+---
+
+## Session 5 résumé (autonomous, downscopes ponctuels)
+
+**État corpus début** : 82 modules verts.
+**État corpus fin** : 84 modules verts.
+
+### Cibles complétées (downscopes ponctuels)
+- **§74 SigmaConcretePointsX2** : `σ_closed(1) = 353/444`, `σ_closed(2)
+  = 5571/6888`, et `|σ_closed(z) - α₀| < 1/4` à ces deux points
+  (via `α₀ ∈ [3/4, 1]` + linarith). Vérification ponctuelle de C1.
+- **§75 SigmaEquivPointsX2** : `steffensen_step_C 2 3 (1) =
+  sigma_x2_closed (1) = 353/444`. Calcul direct via norm_num après
+  unfold. Building block pour preuve générale future, évite
+  field_simp degré 18+.
+
+### Observations session 5
+- Les downscopes "ponctuels" sont productifs : prouver C1 à des
+  points concrets démontre la *plausibilité* du full bound sans
+  l'analyse polynomiale lourde.
+- `norm_num` après `unfold + simp [Sp_C_p3]` ferme les calculs
+  rationnels constants efficacement (build §75 en 9s).
+- L'équivalence steffensen_step_C ↔ sigma_x2_closed à un point
+  concret prend ~9s ; full general theorem hung 5 min via field_simp
+  (cf. session 4 §84 incident).
+
+### Cibles bloquées identiques à session 4
+- §76 §77b §78 §79 §85 §87.
+
+### Prochaine session : suggestion de prompt
+
+```
+Lis ROADMAP.md Session 5 résumé. Cibles restantes :
+- §76 HalfPlaneSigmaTendstoP3X2 — peut être chaîné conditionnellement
+  sur R_σ ≥ 1/4 (§70 SteffensenRadiusAtLeast14), via §75 partial pour
+  σ(1) ∈ B(α₀, 1/4).
+- §85 Explicit Steffensen radius — refonte §33.
+- §77b §78 §79 §87 — dynamique complexe out of scope.
+
+Recommandation : §76 conditionnel chain (10-15 min, faisable).
+```
