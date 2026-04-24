@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 
-\title{Smale's Mean Value Conjecture Is a Pandrosion Ratio Bound}
+\title{Smale's Mean Value Conjecture as a Pandrosion Ratio Bound}
 \author{Ivan Besevic}
 \date{April 2026}
 
@@ -96,7 +96,7 @@ The result is \emph{exact}: the ratio is identically $1/2$ for all $z$ and all q
 
 \section{Proof for $n = 3$: sharp bound}
 
-\begin{theorem}
+\begin{theorem}[Cubic case in Pandrosion form]
 For any cubic $P(z) = (z - \alpha)(z - \beta)(z - \gamma)$ and any $z$ with $P'(z) \ne 0$, there exists a critical point $\zeta$ of $P$ with:
 \begin{equation}
 \left|\frac{Q(z, \zeta)}{P'(z)}\right| \;\le\; \frac{2}{3}.
@@ -105,19 +105,44 @@ The bound $2/3$ is attained when $P(z) = z^3 - 1$ and $z \to \infty$.
 \end{theorem}
 
 \begin{proof}
-Let $\zeta_1, \zeta_2$ be the two critical points. By the explicit calculation of $Q(z, \cdot)$ as a degree-2 polynomial in the second argument, we have:
-\begin{equation*}
-Q(z, \zeta_j) \;=\; \zeta_j^2 + \zeta_j z + z^2 - (\alpha + \beta + \gamma)(\zeta_j + z) + (\alpha\beta + \alpha\gamma + \beta\gamma).
-\end{equation*}
-The product formula gives:
-\begin{equation*}
-Q(z, \zeta_1) \cdot Q(z, \zeta_2) \;=\; \mathrm{Res}_w\!\left( Q(z, w), \frac{P'(w)}{3} \right).
-\end{equation*}
-A direct computation (verified numerically for $10^4$ random cubics) shows that:
-\begin{equation*}
-\min(|Q(z, \zeta_1)|, |Q(z, \zeta_2)|) \;\le\; \frac{2}{3} |P'(z)|,
-\end{equation*}
-with equality when the roots form an equilateral triangle and $|z| \to \infty$.
+Translate the marked point to the origin and divide by $P'(z)$; the ratio
+$Q(z,\zeta)/P'(z)$ is unchanged by this affine normalisation. We may therefore
+write
+\[
+P(w)=a w^3+b w^2+w+P(0), \qquad P'(0)=1.
+\]
+At a critical point $\zeta$,
+\[
+3a\zeta^2+2b\zeta+1=0
+\]
+and
+\[
+Q(0,\zeta)=\frac{P(\zeta)-P(0)}{\zeta}
+          =a\zeta^2+b\zeta+1
+          =\frac{b\zeta+2}{3}.
+\]
+If $b=0$, both critical values satisfy $|Q(0,\zeta)|=2/3$ and we are done.
+Assume $b\ne 0$ and set $t_j=b\zeta_j+2$ for the two critical points. Eliminating
+$a/b^2$ from the quadratic
+\[
+\frac{3a}{b^2}(t-2)^2+2t-3=0
+\]
+shows that the two numbers $t_1,t_2$ satisfy
+\[
+2t_1t_2-3(t_1+t_2)+4=0,
+\qquad\text{equivalently}\qquad
+(2t_1-3)(2t_2-3)=1.
+\]
+If both $|t_1|>2$ and $|t_2|>2$, then each point $2t_j$ lies outside the disk
+of radius $4$ centered at the origin, so its distance from $3$ is strictly
+larger than $1$: $|2t_j-3|>1$. This contradicts
+$(2t_1-3)(2t_2-3)=1$. Hence $\min_j |t_j|\le 2$, and therefore
+\[
+\min_j |Q(0,\zeta_j)|=\frac{1}{3}\min_j |t_j|\le \frac{2}{3}
+=\frac{2}{3}|P'(0)|.
+\]
+Undoing the affine normalisation gives the stated inequality for the original
+point $z$.
 \end{proof}
 
 \section{Numerical verification for $n = 5, \dots, 10$}
@@ -125,7 +150,10 @@ with equality when the roots form an equilateral triangle and $|z| \to \infty$.
 We use extremal optimisation (Nelder--Mead with 200 random restarts) to find the maximum of $\min_\zeta |Q(z, \zeta)/P'(z)|$ over all configurations.
 
 \begin{remark}
-The extremal ratio appears to converge to a limit $\approx 0.85$ as $n \to \infty$, well below the Smale bound $(n - 1)/n \to 1$. This suggests that the conjecture has a large ``safety margin'' for large $n$ and is hardest at small $n$.
+The extremal ratios in the table are numerical optima over the tested
+parameterisation and restart budget; they are not certified global maxima.
+They suggest, but do not prove, that the sampled families have a substantial
+margin below the Smale bound for larger $n$.
 \end{remark}
 
 \begin{center}
@@ -186,9 +214,9 @@ In the Pandrosion root-finding algorithm, critical points act as ``waypoints'' i
 
 \section{Connection to Paper 7}
 
-The Pandrosion descent constant $\Lambda \le e^{-\pi/2} \approx 0.208$ from [4] gives a \emph{stronger} bound than the Smale MVC in the multi-start setting: the Pandrosion contraction per epoch is $\le 0.208$, while the Smale MVC only guarantees a contraction factor $\le (n - 1)/n \le 1$.
+The conditional Pandrosion descent constant $\Lambda \le e^{-\pi/2} \approx 0.208$ from [4] concerns a multi-start algorithmic setting, not the pointwise inequality of Smale's MVC. It should not be read as a proof of the MVC or as a replacement for it.
 
-However, the Smale MVC applies to \emph{any single point} $z$ (not just points on the Cauchy circle), and it identifies critical points as the natural targets. The two results are complementary: the MVC gives a pointwise bound, while the descent constant gives a global convergence guarantee.
+The two statements are therefore complementary: the MVC is a pointwise critical-point bound for every marked point $z$, whereas the descent constant is a conditional convergence estimate for a specific algorithm and start strategy.
 
 \section{Conclusion}
 

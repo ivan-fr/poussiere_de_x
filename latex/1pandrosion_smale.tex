@@ -350,11 +350,19 @@ Under the hypotheses of Theorem~\ref{thm:pp-id}, define $1/\omega_k = (F_{z_0}(z
 \end{equation}
 \end{theorem}
 
-\begin{theorem}[Pandrosion regularisation of Newton's singularity]\label{thm:reg}
+\begin{proposition}[Pandrosion regularisation away from level collisions]\label{thm:reg}
 For $z_0$ on the Cauchy circle $|z_0| = R = 1 + \rho$ and any $z \ne z_0$:
 $$ |Q(z_0, z)| = \frac{|P(z) - P(z_0)|}{|z - z_0|} \ge \frac{||P(z_0)| - |P(z)||}{|z - z_0|}. $$
-Since $|P(z_0)| \ge (R - \rho)^d = 1$ (for monic $P$) and $P(z_0) \ne 0$, the divided difference $Q(z_0, z)$ \textbf{never vanishes} for $z_0$ on the Cauchy circle, unlike $P'(z)$ which vanishes at critical points.
-\end{theorem}
+Consequently, on any sublevel region $|P(z)| \le \theta |P(z_0)|$ with
+$0\le\theta<1$, the divided difference is bounded below by
+\[
+|Q(z_0,z)|\ge \frac{(1-\theta)|P(z_0)|}{|z-z_0|}.
+\]
+Thus the Pandrosion denominator is regular on strict residual sublevels of the
+anchor. It may still vanish at level collisions $P(z)=P(z_0)$ with $z\ne z_0$;
+the statement is a conditional regularisation, not a global non-vanishing
+theorem.
+\end{proposition}
 
 \begin{remark}[Pandrosion vs. Newton: eliminating the $\Sigma$ barrier]
 The three Pandrosion theorems above reveal a fundamental structural advantage over Newton's method for Smale's 17th problem:
@@ -364,10 +372,10 @@ The three Pandrosion theorems above reveal a fundamental structural advantage ov
                   & \textbf{Newton} & \textbf{Pandrosion} \\
 \midrule
 Denominator       & $P'(z)$ & $Q(z_0, z) = (P(z) - P(z_0))/(z - z_0)$ \\
-At critical points & $P'(z) = 0$ & $|Q| \ge (R^d - (2\rho)^d)/(1 + 2\rho) \gg 0$ \\
+At critical points & $P'(z) = 0$ & regular if $P(z)\ne P(z_0)$ and quantified on sublevels \\
 Sum identity      & $\sum 1/w_k = 1$ & $\sum 1/\omega_k = d - P'/Q \approx d$ \\
 Product bound     & $\le e^{-1 + \Sigma/2}$ (conditional) & exact: $P(z_0) \prod Q_k/Q^d$ \\
-$\Sigma$ condition & $\bar\Sigma < 2$ (unproved) & \textbf{no analogue needed} \\
+$\Sigma$ condition & $\bar\Sigma < 2$ (unproved) & replaced by level-collision control \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -423,7 +431,7 @@ where the constant $c > 0$ is independent of $d$ and $P$.
 \end{conjecture}
 
 \begin{remark}[Refutation of the strict universal form, and the resolution in Part~VII]\label{rem:conj-status}
-The \emph{strict universal} form of Conjecture~\ref{conj:abd} (asserting the bound for \emph{every} normalised $P$) was refuted by computational search reported in Part~VII~\cite{besevic7}: there exist root constellations and internal anchors $z_0$ acting as exact stagnation traps, where the geometric sum of logarithms $\Sigma_{\log} > 0$ and $|P(z_K)| \approx |P(z_0)|$. This refutation is consistent with McMullen's topological impossibility theorem~\cite{mcmullen} for purely rational iterative schemes of degree $d \ge 4$. Part~VII resolves the obstruction by introducing a derivative-free \emph{non-holomorphic fallback} (Steffensen-Pandrosion-Armijo), whose descent is established as a quantitative theorem (Theorem~3.3 of \cite{besevic7}), and an analytic $\gamma$-damped variant (Theorem~4.2 of \cite{besevic7}), restoring the deterministic worst-case bound to $O(d^2 \log d)$. The conjecture above is retained in this Part~I as the natural open question for the \emph{purely rational} adaptive scheme; Theorem~\ref{thm:smale17-cond} below should be read as a conditional result on Conjecture~\ref{conj:abd}, with the unconditional $O(d^2 \log^2 d)$ and $O(d^2 \log d)$ bounds appearing in Part~VII~\cite{besevic7}.
+The \emph{strict universal} form of Conjecture~\ref{conj:abd} (asserting the bound for \emph{every} normalised $P$) was refuted by computational search reported in Part~VII~\cite{besevic7}: there exist root constellations and internal anchors $z_0$ acting as exact stagnation traps, where the geometric sum of logarithms $\Sigma_{\log} > 0$ and $|P(z_K)| \approx |P(z_0)|$. This refutation is consistent with McMullen's topological impossibility theorem~\cite{mcmullen} for purely rational iterative schemes of degree $d \ge 4$. Part~VII addresses the obstruction by introducing a derivative-free \emph{non-holomorphic fallback} (Steffensen-Pandrosion-Armijo) and an analytic $\gamma$-damped variant, giving conditional BSS bounds under explicit non-degeneracy and basin-entry hypotheses. The conjecture above is retained in this Part~I as the natural open question for the \emph{purely rational} adaptive scheme; Theorem~\ref{thm:smale17-cond} below should be read as a conditional result on Conjecture~\ref{conj:abd}.
 \end{remark}
 
 \subsection{The contraction ratio theorem}
@@ -540,7 +548,7 @@ We have extended Pandrosion's geometric iteration from $\mathbb{R}^+$ to $\mathb
 \item \textbf{Empirical performance}: with the adaptive Pandrosion-$T_3$ ($K = 3$, Steffensen), the mean block descent is $\approx -5$ nats per epoch, independently of $d$, achieving $100\%$ convergence on all tested families up to $d = 500$.
 \end{itemize}
 
-\paragraph{What remains open.} Theorems~\ref{thm:pp-id}--\ref{thm:reg} provide an exact product factorisation and a bounded divided difference, eliminating the conditional $\bar\Sigma < 2$ barrier that blocks Newton-based proofs. The remaining gap is isolated by the \emph{Amortised Block Descent Conjecture}~\ref{conj:abd}: each $K$-epoch should reduce $|P|$ by a factor $e^{-c}$ with $c > 0$ universal. Its strict universal form is known to be false (Remark~\ref{rem:conj-status} and \cite{besevic7}); what remains plausible is a relaxed form holding off a measure-zero set of anchors. The roadmap (Remark~\ref{rem:conj-status}) decomposes this into three layers: scaling reduction (proved for $z^d - 1$), cluster domination (proved), and sum-of-logs bound (observed numerically; proof open). Under this conjectural form, Theorem~\ref{thm:smale17-cond} records a \emph{conditional} derivative-free $O(d^2 \log d)$-operation BSS bound for univariate root-finding. The multivariate extension to systems (Section~\ref{sec:multivariate}) is an algorithmic companion to the unconditional average-case resolutions of Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}, not a replacement for them.
+\paragraph{What remains open.} Theorems~\ref{thm:pp-id}--\ref{thm:reg} provide an exact product factorisation and a divided-difference regularisation on strict residual sublevels. They do not remove all global obstructions: level collisions $P(z)=P(z_0)$ and stagnation traps remain possible. The remaining gap is isolated by the \emph{Amortised Block Descent Conjecture}~\ref{conj:abd}: each $K$-epoch should reduce $|P|$ by a factor $e^{-c}$ with $c > 0$ universal on an appropriate generic class. Its strict universal form is known to be false (Remark~\ref{rem:conj-status} and \cite{besevic7}); what remains plausible is a relaxed form holding off a lower-dimensional exceptional set of anchors. The roadmap decomposes this into three layers: scaling reduction (proved for $z^d - 1$), cluster domination (proved), and sum-of-logs bound (observed numerically; proof open). Under this conjectural form, Theorem~\ref{thm:smale17-cond} records a \emph{conditional} derivative-free $O(d^2 \log d)$-operation BSS bound for univariate root-finding. The multivariate extension to systems (Section~\ref{sec:multivariate}) is an algorithmic companion to the unconditional average-case resolutions of Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}, not a replacement for them.
 
 \paragraph{Perspectives.}
 \begin{itemize}
@@ -566,7 +574,7 @@ We have extended Pandrosion's geometric iteration from $\mathbb{R}^+$ to $\mathb
 \bibitem{mcmullen} C. McMullen, ``Families of rational maps and iterative root-finding algorithms,'' Annals of Mathematics, 125(3) (1987), 467--493.
 \bibitem{hss} J. H. Hubbard, D. Schleicher, S. Sutherland, ``How to find all roots of complex polynomials by Newton's method,'' Invent. Math. \textbf{146} (2001), 1--33.
 \bibitem{shubsmale} M. Shub and S. Smale, ``Complexity of B\'ezout's theorem I: Geometric aspects,'' J. Amer. Math. Soc. \textbf{6} (1993), 459--501.
-\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- Breaking McMullen's Barrier and the Resolution of Smale's 17th Problem}. Preprint, 2026.
+\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- A derivative-free adaptive Pandrosion scheme with non-holomorphic fallback}. Preprint, 2026.
 \bibitem{besevic8} I. Besevic, \textit{Universitas Pandrosion: Part VIII --- The Geometric-Decreasing Start Strategy}. Preprint, 2026.
 \bibitem{besevic-mvc-series} I. Besevic, \textit{Universitas Pandrosion: Parts II--VI on Smale's Mean Value Conjecture (1981)}. Preprint series, 2026.
 \bibitem{smale1981} S. Smale, ``The fundamental theorem of algebra and complexity theory,'' Bull. Amer. Math. Soc. \textbf{4} (1981), 1--36. \emph{(The Mean Value Conjecture, often abbreviated MVC, originates here.)}

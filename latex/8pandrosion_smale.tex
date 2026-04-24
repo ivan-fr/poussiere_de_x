@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 
-\title{Universitas Pandrosion: Part VIII \\ The Geometric-Decreasing Start Strategy: \\ Eliminating the Worst-Case Phase Transition for Pandrosion-T2}
+\title{Universitas Pandrosion: Part VIII \\ The Geometric-Decreasing Start Strategy \\ Empirical Phase-Transition Suppression for Pandrosion-T2}
 \author{I. Besevic}
 \date{April 2026}
 
@@ -140,7 +140,7 @@ There exist universal constants $d_0$ and $\delta > 0$ such that for all $d \ge 
 $$ \Pr[s^\star_B > d^{1/2 - \delta}] \;\le\; e^{-\Omega(d^\delta)}. $$
 \end{conjecture}
 
-The conjecture asserts that B not only avoids the phase transition empirically observed for A, but does so with sub-exponential tail probability. Proving this would yield an unconditional average-case bound of $\mathbb{E}[\mathrm{cost}_B] = O(d \log d)$ on a much broader ensemble than the unitarily-invariant Kostlan--Smale measure of Part~VII Theorem~4.2.
+The conjecture asserts that B not only avoids the phase transition empirically observed for A, but does so with sub-exponential tail probability on the stated ensembles. Proving it, together with the amortised Armijo lemma below and the basin-entry assumptions inherited from Part~VII, would yield a conditional average-case bound of $\mathbb{E}[\mathrm{cost}_B] = O(d \log d)$ on a broader ensemble than the unitarily-invariant Kostlan--Smale model.
 
 \section{Combined Empirical Bound}
 
@@ -218,7 +218,7 @@ The reframing is deliberately sober: the Pandrosion-$T_2$ scheme with Strategy-B
 
 \begin{thebibliography}{99}
 \bibitem{besevic1} I. Besevic, \textit{Pandrosion Operator and Smale's 17th Problem}. Universitas Pandrosion, Part I (2026).
-\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- Breaking McMullen's Barrier and the Resolution of Smale's 17th Problem}. Preprint, 2026.
+\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- A derivative-free adaptive Pandrosion scheme with non-holomorphic fallback}. Preprint, 2026.
 \bibitem{mcmullen} C. McMullen, \textit{Families of rational maps and iterative root-finding algorithms}. Annals of Mathematics, 125(3) (1987), 467--493.
 \bibitem{beltranpardo} C. Beltr\'an and L. M. Pardo, \textit{Smale's 17th problem: Average polynomial time to compute affine and projective solutions}. J. Amer. Math. Soc. \textbf{22} (2009), 363--385.
 \bibitem{lairez} P. Lairez, \textit{A deterministic algorithm to compute approximate roots of polynomial systems in polynomial average time}. Found. Comput. Math. \textbf{17} (2017), 1265--1292.
