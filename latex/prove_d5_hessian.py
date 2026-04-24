@@ -7,8 +7,11 @@ Phi(a, b) = min_j |q̃(c_j(a,b))|^2 at the extremal (a, b) = (0, 0).
 Important status:
     This is not a complete strict-local-maximum proof. The first-order certificate
     proves descent in the da_im, db_re, and db_im directions. The da_re direction
-    has zero first-order rate and must be handled by a second-order calculation
-    or by the numerical perturbation table in 6pandrosion_smale.tex.
+    has zero first-order rate; this script closes that one-axis obstruction by
+    an exact b=0, a real computation:
+        min |q_j|^2 = 16/25 - 4 a^2/25.
+    A full uniform local proof still requires the mixed second-order estimate
+    in a cone around the da_re axis.
 """
 from __future__ import annotations
 import sympy as sp
@@ -150,10 +153,23 @@ The four first-order rates sum to zero, and their sum of squares is
 Therefore, whenever (da_im, db_re, db_im) is nonzero, at least one rate is
 strictly negative and Phi decreases at first order in that direction.
 
-The pure da_re direction has all first-order rates equal to zero. The script
-therefore does NOT prove a full strict local maximum. It proves the symbolic
-part used in 6pandrosion_smale.tex and leaves the da_re direction to a
-second-order symbolic calculation or to the numerical check reported there.
+The pure da_re direction has all first-order rates equal to zero. On that axis
+we can compute exactly: with b=0 and a real, y=c^2 satisfies
+
+  5 y^2 + 3 a y + 1 = 0,        q = 4/5 + (2/5) a y.
+
+For the two y-values, y_1+y_2=-3a/5 and y_1 y_2=1/5, hence
+
+  q_1 q_2 = 16/25 - 4 a^2/25.
+
+For |a| < 2/sqrt(3), the two y-values are conjugate up to the real scaling and
+the two q-values have equal modulus, so
+
+  min_j |q_j|^2 = 16/25 - 4 a^2/25 < 16/25  for a != 0.
+
+Thus the missing coordinate axis descends quadratically. This still does NOT
+prove the full local maximum uniformly in mixed directions; that requires a
+second-order cone estimate around the da_re axis.
 """, flush=True)
 
 
