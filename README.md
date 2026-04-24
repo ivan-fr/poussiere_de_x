@@ -1,6 +1,6 @@
 # Universitas Pandrosion
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19731204.svg)](https://doi.org/10.5281/zenodo.19731204)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19733297.svg)](https://doi.org/10.5281/zenodo.19733297)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![Universitas Pandrosion CI](https://github.com/ivan-fr/poussiere_de_x/actions/workflows/ci.yml/badge.svg)](https://github.com/ivan-fr/poussiere_de_x/actions)
 
@@ -10,7 +10,7 @@ adaptive-anchor generalisation to arbitrary complex polynomials and to
 multivariate polynomial systems (the proper setting of Smale's 17th problem),
 plus reproducible numerical experiments.
 
-**Cite this work:** DOI [10.5281/zenodo.19731204](https://zenodo.org/records/19731204)
+**Cite this work:** DOI [10.5281/zenodo.19733297](https://zenodo.org/records/19733297)
 
 ## The Nine-Paper Corpus (`articles/`)
 
@@ -448,8 +448,8 @@ and the Smale MVC exposition with a new proof candidate at `d = 5` (Part VI).
   title  = {Universitas Pandrosion: Formally Verified Pandrosion-Steffensen Iteration (Lean 4) and Companion Papers on Polynomial Root-Finding and Smale's Mean Value Conjecture},
   author = {Besevic, Ivan},
   year   = {2026},
-  doi    = {10.5281/zenodo.19731204},
-  url    = {https://zenodo.org/records/19731204},
+  doi    = {10.5281/zenodo.19733297},
+  url    = {https://zenodo.org/records/19733297},
   note   = {Nine-paper corpus. Paper 0: 34-module Lean 4 verification of Pandrosion-Steffensen for z^p = x, 296 theorems, 0 sorry, 0 off-whitelist axiom, fully unconditional axiom-clean RealMcMullenP2 on R at p=2, x>1. Parts I-VIII: analytical and numerical companions on the adaptive-anchor generalisation, multivariate Smale 17 setting (complementing Lairez 2017), non-holomorphic fallback, and Smale MVC (including a d=5 proof candidate in Part VI subject to peer review).}
 }
 ```
