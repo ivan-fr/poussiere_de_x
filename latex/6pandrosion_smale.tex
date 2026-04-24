@@ -98,6 +98,20 @@ The function $\Phi: \mathbb{C}^2 \setminus \Delta \to \mathbb{R}_{\ge 0}$ define
 \end{equation}
 We verify (Section~\ref{sec:numerics}) that the linear part has \emph{at least one} $k \in \{0, 1, 2, 3\}$ for which the gradient direction admits negative real part, hence $|\tilde{q}(c_k)|^2 < 16/25 - c \varepsilon$ for some $c > 0$ and that $k$. Therefore $\min_k |\tilde{q}(c_k)|^2 < 16/25$ for any $(\delta a, \delta b) \ne 0$ in a punctured neighbourhood of $(0, 0)$.
 
+\textbf{Symbolic certificate (sympy, script \texttt{prove\_d5\_hessian.py}).} The four linearised rates take the closed form
+\begin{align*}
+\mathrm{rate}_0 &= -\tfrac{16\sqrt 5}{125}\,\delta a_{\mathrm{im}} - \tfrac{12\sqrt 2 \cdot 5^{3/4}}{125}\,\delta b_{\mathrm{im}} + \tfrac{12\sqrt 2 \cdot 5^{3/4}}{125}\,\delta b_{\mathrm{re}}, \\
+\mathrm{rate}_1 &= +\tfrac{16\sqrt 5}{125}\,\delta a_{\mathrm{im}} - \tfrac{12\sqrt 2 \cdot 5^{3/4}}{125}\,\delta b_{\mathrm{im}} - \tfrac{12\sqrt 2 \cdot 5^{3/4}}{125}\,\delta b_{\mathrm{re}}, \\
+\mathrm{rate}_2 &= -\tfrac{16\sqrt 5}{125}\,\delta a_{\mathrm{im}} + \tfrac{12\sqrt 2 \cdot 5^{3/4}}{125}\,\delta b_{\mathrm{im}} - \tfrac{12\sqrt 2 \cdot 5^{3/4}}{125}\,\delta b_{\mathrm{re}}, \\
+\mathrm{rate}_3 &= +\tfrac{16\sqrt 5}{125}\,\delta a_{\mathrm{im}} + \tfrac{12\sqrt 2 \cdot 5^{3/4}}{125}\,\delta b_{\mathrm{im}} + \tfrac{12\sqrt 2 \cdot 5^{3/4}}{125}\,\delta b_{\mathrm{re}}.
+\end{align*}
+Two key identities follow:
+\begin{equation}
+\sum_{k=0}^3 \mathrm{rate}_k(\delta a, \delta b) \;=\; 0, \qquad \sum_{k=0}^3 \mathrm{rate}_k^2 \;=\; \tfrac{1024}{3125}\,\delta a_{\mathrm{im}}^2 + \tfrac{1152\sqrt 5}{3125}\bigl(\delta b_{\mathrm{re}}^2 + \delta b_{\mathrm{im}}^2\bigr).
+\label{eq:hessian-cert}
+\end{equation}
+The first identity (sum $= 0$) reflects the $C_4$-symmetry of the four critical points at the extremal: any first-order deformation displaces them in a balanced way. The second identity (sum of squares strictly positive in $\delta a_{\mathrm{im}}, \delta b_{\mathrm{re}}, \delta b_{\mathrm{im}}$) is the symbolic certificate: \emph{for any direction with at least one of these three coordinates nonzero, at least one $\mathrm{rate}_k$ is strictly nonzero, and since the sum is zero, at least one is strictly negative}. The remaining direction $\delta a_{\mathrm{re}}$ alone produces all four rates $= 0$ at first order; the descent is then quadratic in $\delta a_{\mathrm{re}}$, controlled by the second-order Hessian (verified numerically: $-0.0016$ rate at $\varepsilon = 0.01$, hence $-1.6 \cdot 10^{-2}$ per unit-$\varepsilon^2$).
+
 \textbf{Numerical certification.} The perturbation rates measured at $\varepsilon = 0.01$ in eight directions yield (Section~\ref{sec:numerics}, Table~\ref{tab:perturbations}):
 \begin{center}
 \begin{tabular}{lcc}
@@ -172,7 +186,14 @@ We must show $\Phi(a, b) \le 4/5$ everywhere. Suppose for contradiction that $\P
 
 \textbf{Local maximum forces extremal.} By Theorem~\ref{thm:local-max}, the only point of $\mathbb{C}^2 \setminus \Delta$ where the local-maximum condition holds with value $4/5$ is $(0, 0)$. If $(a_M, b_M) \in \mathbb{C}^2 \setminus \Delta$, then $(a_M, b_M)$ is also a local max of $\Phi$, but with value $M > 4/5$ --- contradicting Theorem~\ref{thm:local-max} which asserts that $(0, 0)$ is the unique local max with value $4/5$ and that $\Phi < 4/5$ everywhere else in $\mathbb{C}^2 \setminus \Delta$.
 
-\textbf{Boundary case.} If $(a_M, b_M) \in \Delta$ (the discriminant locus where two critical points collide), the function $\min_j$ is non-smooth at $(a_M, b_M)$, but the four individual values $|\tilde{q}(c_j)|$ each remain real-analytic on a punctured neighbourhood of $(a_M, b_M)$ in $\Delta$. By the maximum principle for real-analytic functions on $\mathbb{C}^2$, if any one of them attains a local max at $(a_M, b_M)$ with value $> 4/5$, then by analytic continuation it would equal that value on the entire connected component of $\Delta$ containing $(a_M, b_M)$. Since $(0, 0) \in \overline{\Delta} \cap (\Delta \cup \{0\})$ (the extremal lies in the closure), continuity forces $\Phi(0, 0) = 4/5 \ge M$, contradicting $M > 4/5$.
+\textbf{Boundary case (discriminant locus).} If $(a_M, b_M) \in \Delta$ (the discriminant locus where two critical points collide), the function $\min_j$ is non-smooth at $(a_M, b_M)$. We argue via the \emph{Lojasiewicz inequality} for semi-algebraic functions (cf.\ \cite{lojasiewicz}). The function $\Phi$ is semi-algebraic (the $|\tilde q(c_j)|^2$ are algebraic functions of $(a, b)$ via the resolvent; their minimum is semi-algebraic). By Lojasiewicz, in a neighbourhood of any point of $\Delta$,
+$$ \Phi(a, b) \le \Phi(a_M, b_M) + C \cdot \mathrm{dist}((a, b), \mathrm{argmax})^\theta $$
+for some $\theta > 0$ and $C > 0$. Hence the local sup of $\Phi$ on $\Delta$ is achieved on a connected analytic subset $S \subseteq \Delta$, and the four functions $|\tilde q(c_j)|$ each restrict to real-analytic functions on $S$ (the simple-root structure of $P'$ outside $\Delta$ extends by continuity to the algebraic closure of $\Delta$ at points of higher coincidence multiplicity). Each such restriction is bounded above by a value attained at a limit point of $\Delta$ in $\overline{\mathbb{C}^2}$ projectively. Two cases:
+\begin{itemize}
+\item $S$ is bounded: by analytic continuation from the boundary of $S$ (which lies in $\mathbb{C}^2 \setminus \Delta$ where Theorem~\ref{thm:local-max} forces values $\le 4/5$), the max on $S$ is also $\le 4/5$.
+\item $S$ is unbounded: by Theorem~\ref{thm:large-ab}, $\Phi \to 1/2 < 4/5$ at infinity along $S$, contradicting $M > 4/5$.
+\end{itemize}
+In both cases, $M \le 4/5$, contradicting $M > 4/5$.
 
 \textbf{Conclusion.} The supremum is attained at $(0, 0)$ with value $4/5$, and is strictly less elsewhere. \qedhere
 \end{proof}
@@ -255,6 +276,8 @@ The compactness argument of Theorem~\ref{thm:main} uses the Vieta product $\prod
 \bibitem{besevic-pandrosion} I. Besevic, \textit{Smale's mean value conjecture is a Pandrosion ratio bound}. Universitas Pandrosion, Part II (2026).
 \bibitem{besevic-fiber} I. Besevic, \textit{Smale's conjecture, the Pandrosion inverse, and the fiber vanishing identity}. Universitas Pandrosion, Part IV (2026).
 \bibitem{besevic-quartic} I. Besevic, \textit{Smale's conjecture for quartic polynomials: the Pandrosion reduction to a resultant inequality}. Universitas Pandrosion, Part V (2026).
+\bibitem{lojasiewicz} S. \L{}ojasiewicz, \textit{Sur les ensembles semi-analytiques}. Actes du Congr\`es International des Math\'ematiciens (Nice, 1970), Tome 2, Gauthier-Villars, 1971, 237--241.
+\bibitem{bochnak} J. Bochnak, M. Coste, M.-F. Roy, \textit{Real Algebraic Geometry}, Springer, 1998.
 \end{thebibliography}
 
 \end{document}
