@@ -1,21 +1,32 @@
-# Pandrosion Lean 4 Corpus
+# Universitas Pandrosion
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19731204.svg)](https://doi.org/10.5281/zenodo.19731204)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![Universitas Pandrosion CI](https://github.com/ivan-fr/poussiere_de_x/actions/workflows/ci.yml/badge.svg)](https://github.com/ivan-fr/poussiere_de_x/actions)
 
-Formal verification and numerical illustration of the Pandrosion rational
-root-finding map, with a compiled research paper and reproducible figures.
+Formal verification (Lean 4) of the Pandrosion-Steffensen iteration for
+`z^p = x`, with a companion series of nine research papers developing the
+adaptive-anchor generalisation to arbitrary complex polynomials and to
+multivariate polynomial systems (the proper setting of Smale's 17th problem),
+plus reproducible numerical experiments.
 
 **Cite this work:** DOI [10.5281/zenodo.19731204](https://zenodo.org/records/19731204)
 
-The current primary artifact is:
+## The Nine-Paper Corpus (`articles/`)
 
-- [`articles/pandrosion_pth.pdf`](articles/pandrosion_pth.pdf) - distributable compiled paper
-- [`latex/pandrosion_pth.tex`](latex/pandrosion_pth.tex) - LaTeX source
-- [`lean/Pandrosion.lean`](lean/Pandrosion.lean) - root Lean module importing the corpus
+| # | File | Scope |
+|---|------|-------|
+| 0 | [`0pandrosion_pth.pdf`](articles/0pandrosion_pth.pdf) | **Pth**: Pandrosion-Steffensen for `z^p = x`, formally verified in Lean 4 (the primary load-bearing artifact). |
+| 1 | [`1pandrosion_smale.pdf`](articles/1pandrosion_smale.pdf) | **Part I**: Generalised Pandrosion operator `P_{P,z_0}(z)` for any univariate polynomial `P ∈ C[z]`; multivariate extension `F: C^n → C^n` via the Schmidt slope matrix (Smale 17 setting, with full attribution to Lairez 2017 and Beltrán–Pardo 2009). |
+| 2 | [`2pandrosion_smale.pdf`](articles/2pandrosion_smale.pdf) | **Part II**: Smale's Mean Value Conjecture reformulated as a Pandrosion ratio bound, with exact proofs for `d = 2, 3`. |
+| 3 | [`3pandrosion_smale.pdf`](articles/3pandrosion_smale.pdf) | **Part III**: The (classical Lagrange–Sylvester) vanishing identity `Σ 1/P'(α_k) = 0` and its implications for Smale MVC. |
+| 4 | [`4pandrosion_smale.pdf`](articles/4pandrosion_smale.pdf) | **Part IV**: Pandrosion inverse, fiber vanishing identity, proof of Smale MVC for `d = 3` (already classical, Smale 1981). |
+| 5 | [`5pandrosion_smale.pdf`](articles/5pandrosion_smale.pdf) | **Part V**: Smale MVC for `d = 4` via a resultant inequality — the conjecture for `d = 4` was previously established (Tischler 1989, Beardon–Minda–Ng 2002); we provide an alternative path via Pandrosion reduction. |
+| 6 | [`6pandrosion_smale.pdf`](articles/6pandrosion_smale.pdf) | **Part VI**: Smale MVC for `d = 5` via a compactness argument (strict local maximum at the extremal `z^5 + z` + Vieta domination at infinity + Lojasiewicz on the discriminant locus). Supported by a sympy symbolic Hessian certificate and 70 001 numerical tests with 0 violations. **Subject to peer review**: if the compactness argument holds, this would be a new result for `d = 5`. |
+| 7 | [`7pandrosion_smale.pdf`](articles/7pandrosion_smale.pdf) | **Part VII**: Derivative-free adaptive Pandrosion scheme for univariate root-finding — breaking McMullen's barrier via a non-holomorphic fallback (Armijo backtracking and analytic γ-damped variants). |
+| 8 | [`8pandrosion_smale.pdf`](articles/8pandrosion_smale.pdf) | **Part VIII**: The geometric-decreasing start strategy eliminates the empirical worst-case phase transition for Pandrosion-`T_2`. |
 
-## What This Repository Contains
+### Paper 0 in detail (Lean-verified core)
 
 This project studies the **Pandrosion-Steffensen algorithm** for solving the
 complex equation `z^p = x`. The base map is the derivative-free rational
@@ -28,7 +39,8 @@ h(s) = 1 - (x - 1) / (x * S_p(s))
 Its fixed points are exactly the `p`-th roots of `1/x`. Composing `h` with the
 Aitken-Steffensen `Δ²` accelerator yields a derivative-free iterator of
 quadratic order that attains the Kung-Traub efficiency bound for two
-evaluations per step.
+evaluations per step. The formal verification of this paper in Lean 4 is the
+primary load-bearing artifact of the repository.
 
 The repository contains:
 
@@ -51,13 +63,18 @@ The repository contains:
   `D_p < 0`, the cube-root derivatives `P'(r) = −1/5` and `P''(r) = −12/(25r)`,
   the Chebyshev-Halley exclusion, and the anchor-based cube-root variant
   `F_a(s)` with Newton as the degenerate case `a = s`;
-- a LaTeX research paper organized around the `Pandrosion.Core` spine plus a
-  `Pandrosion.Legacy` companion section;
+- a LaTeX research paper (Paper 0) organised around the `Pandrosion.Core` spine
+  plus a `Pandrosion.Legacy` companion section;
+- a companion series of eight LaTeX papers (Parts I–VIII) extending the scheme
+  to arbitrary complex polynomials and polynomial systems;
+- reproducible Python scripts for every numerical experiment cited in the
+  papers (regression fits, Hessian certificates, multivariate benchmarks,
+  Smale MVC sweeps);
 - Docker Compose tooling for reproducible Lean builds.
 
 ## Current Formal Status
 
-As of April 22, 2026:
+As of 2026-04-24:
 
 - Lean toolchain: `leanprover/lean4:v4.7.0`
 - Mathlib: `v4.7.0`
@@ -67,15 +84,16 @@ As of April 22, 2026:
 - `lake build Pandrosion` passes; `docker compose run --rm lean-check` passes the max-strict gate with `0 sorry, 0 admit, 0 raw axiom, 0 warning, 0 error, 0 sorryAx, 0 off-whitelist axiom`.
 - No executable `sorry` terms; no project-level `axiom` declarations.
 - Every declaration's axiom dependency set reduces to `{propext, Classical.choice, Quot.sound}`.
+- LaTeX corpus: **9 papers** (Paper 0 formally verified in Lean; Parts I–VIII are companion analytical and numerical work, not formally verified).
 
-The paper is therefore best read as a formally verified algebraic and
-dynamical case study, not as a claim to have resolved any open global problem.
-Some figures are numerical or schematic illustrations; the formal claims are
-the Lean theorem statements.
+The Lean corpus is best read as a formally verified algebraic and dynamical
+case study on `z^p = x`. The Parts I–VIII companion papers are
+*not* formally verified and should be read as traditional mathematical exposition
+with explicit numerical certification.
 
 ## The `Pandrosion.Core` Spine (24 Modules)
 
-The current paper is organized around the 24-module spine in
+Paper 0 is organised around the 24-module spine in
 `lean/Pandrosion/Core/`. Dependency order top-to-bottom:
 
 1. [`Foundations.lean`](lean/Pandrosion/Core/Foundations.lean) — `S_p`, real
@@ -152,29 +170,104 @@ The current paper is organized around the 24-module spine in
 The spine builds with `Compiled: 24 / 24` via `docker compose run --rm
 lean-incremental`.
 
+## Companion Papers (Parts I–VIII): Scope and Non-Claims
+
+The eight companion papers develop the adaptive-anchor Pandrosion framework
+beyond monomial `z^p = x` to arbitrary univariate polynomials (Part I) and
+to polynomial systems `F : C^n → C^n` (Part I §3.5, the actual setting of
+Smale's 17th problem). They are analytical and numerical work, not formally
+verified in Lean.
+
+### Smale's 17th Problem: what we do and do not claim
+
+Smale's 17th problem (1998) asks for a polynomial-time algorithm to compute
+approximate zeros of polynomial systems `F : C^n → C^n` in average. It was
+**resolved unconditionally** by:
+
+- Beltrán and Pardo (2009, *J. Amer. Math. Soc.* **22**): probabilistic polynomial
+  average time via `μ`-theory.
+- Bürgisser and Cucker (2011, *Annals of Mathematics* **174**): deterministic
+  `N^{O(log log N)}`.
+- Lairez (2017, *Found. Comput. Math.* **17**): fully deterministic average
+  polynomial time.
+
+**Our contribution** is a derivative-free algorithmic alternative based on
+the multivariate Pandrosion (Schmidt slope matrix) operator, with:
+
+- explicit per-orbit constants and a unified framework that specialises to
+  Newton (dynamic anchor) and to Steffensen-type schemes (fixed anchor);
+- empirical convergence on Kostlan–Smale random systems up to `(n, d) = (5, 4)`
+  (Bézout degree `D = 1024`) with 100% success rate on tested cells;
+- a non-holomorphic Armijo fallback mechanism (Part VII) that circumvents
+  McMullen's topological barrier for purely rational iterators;
+- a geometric-decreasing multistart strategy (Part VIII) that empirically
+  eliminates the worst-case phase transition at `d = 128` for i.i.d. Gaussian
+  inputs.
+
+We do **not** claim to improve upon the complexity bounds of Lairez or
+Beltrán–Pardo; the corresponding basin-entry bound at the `D → ∞` scale
+remains an open question in our framework. The algorithmic contribution
+stands independently.
+
+### Smale's Mean Value Conjecture (MVC, 1981): what we do
+
+Smale's MVC (1981) is a *different* conjecture from Problem 17 — it is a
+univariate inequality on critical points of polynomials. The cases:
+
+- `d = 2, 3`: classical, Smale (1981).
+- `d = 4`: proved by Tischler (1989) and others.
+- `d = 5`: **open** in the published literature. Part VI of this corpus
+  presents a compactness-based proof candidate with: (i) a symbolic Hessian
+  certificate (sympy), (ii) 70 001 numerical tests with 0 violations, and
+  (iii) a Lojasiewicz argument for the discriminant locus. This result is
+  presented as work-in-progress subject to peer review by a specialist (e.g.
+  David Minda, Aimo Hinkkanen, or Gerald Schmieder).
+
+Parts II–V provide alternative Pandrosion-language formulations of the
+already-classical cases `d ≤ 4`, with explicit credit to the original
+references.
+
 ## Repository Layout
 
 ```text
 .
-├── articles/
-│   └── pandrosion_pth.pdf            # Current distributable paper
-├── latex/
-│   ├── pandrosion_pth.tex            # Main paper source
-│   ├── pandrosion_pth.pdf            # Local compiled copy
-│   └── pandrosion_*.pdf              # Paper figures
+├── articles/                           # Nine distributable compiled papers
+│   ├── 0pandrosion_pth.pdf             # Paper 0 (Lean-verified, Pth)
+│   ├── 1pandrosion_smale.pdf           # Part I: univariate + multivariate Pandrosion
+│   ├── 2pandrosion_smale.pdf           # Part II: Smale MVC reformulation
+│   ├── 3pandrosion_smale.pdf           # Part III: Lagrange-Sylvester vanishing identity
+│   ├── 4pandrosion_smale.pdf           # Part IV: Pandrosion inverse, fiber identity
+│   ├── 5pandrosion_smale.pdf           # Part V: Smale MVC for d=4
+│   ├── 6pandrosion_smale.pdf           # Part VI: Smale MVC for d=5 (candidate)
+│   ├── 7pandrosion_smale.pdf           # Part VII: Armijo + γ-damped fallback
+│   └── 8pandrosion_smale.pdf           # Part VIII: geometric-decreasing starts
+├── latex/                              # LaTeX sources + Python experiments
+│   ├── 0pandrosion_pth.tex             # Paper 0 source (alias of pandrosion_pth.tex)
+│   ├── pandrosion_pth.tex              # Paper 0 source (primary name, Lean-verified)
+│   ├── 1pandrosion_smale.tex           # Part I source
+│   ├── ...                             # Parts II–VIII sources
+│   ├── benchmark_smale17_v4.py         # Multivariate Pandrosion benchmark (n=1..4, d=2..5)
+│   ├── benchmark_multivariate_extended.py # Extended benchmark up to (n,d)=(5,4), D=1024
+│   ├── explore_higher_order.py         # T_n hierarchy (Richardson) comparison
+│   ├── explore_start_strategies.py     # Strategy A (Cauchy) vs B (GeomDecr) vs others
+│   ├── explore_mvc_d5.py               # MVC d=5 numerical certificate (70 001 tests)
+│   ├── prove_d5_hessian.py             # Symbolic Hessian for MVC d=5 (sympy)
+│   ├── prove_armijo_O1.py              # Armijo amortised j_accept distribution
+│   ├── measure_worst_case_freq.py      # Worst-case % on UNI random polynomials
+│   ├── explore_gamma_damped*.py        # Analytic γ-damped descent step
+│   └── *.pdf                           # Compiled copies + figures
 ├── lean/
-│   ├── Pandrosion.lean               # Root import module
+│   ├── Pandrosion.lean                 # Root import module
 │   ├── Pandrosion/
-│   │   ├── Core/                     # 24 Lean modules (load-bearing spine)
-│   │   ├── Legacy/                   # 9 Lean modules (companion, audited)
-│   │   └── Legacy.lean               # Legacy aggregator
+│   │   ├── Core/                       # 24 Lean modules (load-bearing spine)
+│   │   ├── Legacy/                     # 9 Lean modules (companion, audited)
+│   │   └── Legacy.lean                 # Legacy aggregator
 │   ├── lakefile.lean
 │   ├── lake-manifest.json
 │   └── lean-toolchain
-├── figures/                          # Additional generated visual assets
-├── docker-compose.yml                # Lean build/check services
-├── Dockerfile                        # Lean container image
-└── tectonic                          # Local Tectonic binary
+├── docker-compose.yml                  # Lean build/check services
+├── Dockerfile                          # Lean container image
+└── tectonic                            # Local Tectonic binary
 ```
 
 ## Reproduce The Lean Build
@@ -217,25 +310,50 @@ docker compose run --rm lean
 The Lean project itself is under `lean/`; inside the container the working
 directory is `/workspace/lean`.
 
-## Rebuild The Paper
+## Rebuild The Nine Papers
 
 The repository includes a local `tectonic` binary at the repository root.
 
+To rebuild all nine papers from `latex/` and copy them to `articles/`:
+
+```bash
+cd latex
+for f in 0pandrosion_pth 1pandrosion_smale 2pandrosion_smale 3pandrosion_smale \
+         4pandrosion_smale 5pandrosion_smale 6pandrosion_smale 7pandrosion_smale \
+         8pandrosion_smale; do
+  ../tectonic "$f.tex"
+  cp "$f.pdf" "../articles/$f.pdf"
+done
+```
+
+To rebuild a single paper (e.g. Paper 0):
+
 ```bash
 (cd latex && ../tectonic pandrosion_pth.tex)
+cp latex/pandrosion_pth.pdf articles/0pandrosion_pth.pdf
 ```
 
-Then copy the compiled PDF to the distributable location:
+## Reproduce The Numerical Experiments
+
+Each `explore_*.py`, `benchmark_*.py`, `prove_*.py`, and
+`measure_*.py` script in `latex/` is self-contained. They depend on
+`numpy` and `scipy` (and `sympy` for `prove_d5_hessian.py`). Create a
+local environment and run:
 
 ```bash
-cp latex/pandrosion_pth.pdf articles/pandrosion_pth.pdf
+python3 -m venv .venv
+source .venv/bin/activate
+pip install numpy scipy sympy
+cd latex
+python3 benchmark_multivariate_extended.py  # (n,d) up to (5,4), D=1024
+python3 explore_mvc_d5.py                   # Smale MVC d=5: 70 001 tests
+python3 prove_d5_hessian.py                 # Symbolic Hessian certificate
+python3 prove_armijo_O1.py                  # Armijo amortised cost
+# ... etc.
 ```
 
-From inside `latex/`, the equivalent copy command is:
-
-```bash
-cp pandrosion_pth.pdf ../articles/pandrosion_pth.pdf
-```
+Each script prints a self-contained summary and is referenced by exact name
+from the corresponding paper's text.
 
 ## The `Pandrosion.Legacy` Companion (9 Modules)
 
@@ -254,7 +372,7 @@ Core corpus and pass the same axiom-audit whitelist. Contents:
 - [`Legacy/CubeRoot.lean`](lean/Pandrosion/Legacy/CubeRoot.lean) — cube-root iteration `P(s) = s(s³+4X)/(3s³+2X)`: universal linear rate `P'(r) = −1/5`, quadratic correction `P''(r) = −12/(25r)`, Pandrosion ≠ Newton / Halley / Chebyshev-Halley (polynomial cross-identities, exclusion from the `CH_α` family).
 - [`Legacy/AnchorStep.lean`](lean/Pandrosion/Legacy/AnchorStep.lean) — anchor-based cube-root step `F_a(s) = a − (a³−X)/Q(a,s)`, fixed-point at every cube root, Newton as the degenerate case `a = s`, reanchor-at-root, `multistart_step` full-pair fixed-point, `aitken_exact_geometric` variant.
 
-The companion is *not* part of the paper's load-bearing claims but serves as
+The companion is *not* part of Paper 0's load-bearing claims but serves as
 reusable infrastructure: range bounds, calculus hooks, explicit low-`p`
 identities, and the cube-root-specific comparison theorems routinely cited
 alongside the Pandrosion iteration.
@@ -263,11 +381,12 @@ alongside the Pandrosion iteration.
 
 This repository contains several types of evidence:
 
-- Lean theorem proofs: machine-checked formal statements.
-- LaTeX exposition: human-readable presentation of those statements and their interpretation.
-- Figures: numerical or schematic visualizations, not additional proofs.
+- **Lean theorem proofs (Paper 0)**: machine-checked formal statements.
+- **LaTeX exposition (Paper 0 + Parts I–VIII)**: human-readable presentation of the statements and their interpretation. Only Paper 0 is formally verified.
+- **Python numerical experiments**: reproducible computations referenced by paper name and script name.
+- **Figures**: numerical or schematic visualisations, not additional proofs.
 
-**What the paper proves (unconditional):** real and complex fixed-point
+**What Paper 0 proves (unconditional):** real and complex fixed-point
 characterisation, Steffensen preserves every Pandrosion fixed point, multi-start
 grand master, Voronoï basin structure (convex, closed, connected, bisector
 frontier), constructive McMullen off the boundary, Voronoï boundary has Lebesgue
@@ -303,25 +422,35 @@ unconditionally** discharged axiom-clean — including the bad-set
 Lebesgue-null premise — via `mcmullen_p2_real_unconditional` (see
 `SteffensenRealMcMullenP2Unconditional`, §37).
 
-**What is not claimed:** an unconditional a.e. trajectory-entry theorem in
-`ℂ` at arbitrary `p` (the Fatou/McMullen global dynamics beyond the `ℝ`, `p=2`
-case); any resolution of classical open problems (Riemann hypothesis, BSD,
-Faltings, Smale's 17th, etc.).
+**What is not claimed in Paper 0:** an unconditional a.e. trajectory-entry
+theorem in `ℂ` at arbitrary `p` (the Fatou/McMullen global dynamics beyond
+the `ℝ`, `p=2` case); any resolution of classical open problems (Riemann
+hypothesis, BSD, Faltings, etc.).
+
+**What Parts I–VIII contribute (not formally verified):** a derivative-free
+algorithmic framework for polynomial root-finding with an empirical complexity
+bound, explicitly complementary (not competitive) to Lairez's deterministic
+average-case resolution of Smale 17. Parts II–V reformulate the classical
+cases of Smale MVC (`d ≤ 4`) in Pandrosion language. Part VI presents a
+proof candidate for Smale MVC at `d = 5` (the first case open in the
+literature), supported by a symbolic Hessian certificate and exhaustive
+numerical verification, subject to peer review.
 
 The value of the corpus is the exact algebraic identities, the measure-theoretic
-coverage theorem, and the dynamical-systems statement — for this particular
-rational iteration, in a proof-assistant-checked form.
+coverage theorem, the dynamical-systems statements (Paper 0, Lean-verified),
+the algorithmic framework with empirical certification (Parts I, VII, VIII),
+and the Smale MVC exposition with a new proof candidate at `d = 5` (Part VI).
 
 ## Citation
 
 ```bibtex
 @software{besevic2026pandrosion,
-  title  = {Universitas Pandrosion: Formal Verification of a Rational Root-Finding Map and Diophantine Bridges in Lean 4},
+  title  = {Universitas Pandrosion: Formally Verified Pandrosion-Steffensen Iteration (Lean 4) and Companion Papers on Polynomial Root-Finding and Smale's Mean Value Conjecture},
   author = {Besevic, Ivan},
   year   = {2026},
   doi    = {10.5281/zenodo.19731204},
   url    = {https://zenodo.org/records/19731204},
-  note   = {24-module Pandrosion.Core spine + 9-module Pandrosion.Legacy companion; 296 theorems, 0 sorry, 0 off-whitelist axiom; fully unconditional axiom-clean RealMcMullenP2 on R at p=2, x>1 (bad-set Lebesgue-null lemma formalised via polynomial fiber-finiteness)}
+  note   = {Nine-paper corpus. Paper 0: 34-module Lean 4 verification of Pandrosion-Steffensen for z^p = x, 296 theorems, 0 sorry, 0 off-whitelist axiom, fully unconditional axiom-clean RealMcMullenP2 on R at p=2, x>1. Parts I-VIII: analytical and numerical companions on the adaptive-anchor generalisation, multivariate Smale 17 setting (complementing Lairez 2017), non-holomorphic fallback, and Smale MVC (including a d=5 proof candidate in Part VI subject to peer review).}
 }
 ```
 
@@ -331,4 +460,4 @@ This work is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/
 
 ## Author
 
-Ivan Besevic, April 2026 (last updated 2026-04-22).
+Ivan Besevic, April 2026 (last updated 2026-04-24).
