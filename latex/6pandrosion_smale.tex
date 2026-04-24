@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 
-\title{Smale's Mean Value Conjecture for Quintic Polynomials \\ via the Pandrosion Reduction and a Compactness Argument}
+\title{Toward the Quintic Case of Smale's Mean Value Conjecture \\ A Centered Pandrosion Slice and a Compactness Program \\ \large (proof candidate, with numerical Hessian certificate and a discriminant-locus gap)}
 \author{Ivan Besevic}
 \date{April 2026}
 
@@ -21,16 +21,38 @@
 \maketitle
 
 \begin{abstract}
-We provide a structural reduction of Smale's mean value conjecture for monic quintic polynomials with a fixed root at the origin and $P'(0) = 1$, i.e., $P(z) = z^5 + a z^3 + b z^2 + z$ with $(a, b) \in \mathbb{C}^2$. The Pandrosion reduction yields the explicit formula $\tilde{q}(c) = (1 - 3 c^4 - a c^2)/2$ at each critical point of $P'$, and the product over the four critical points equals $N(a, b)/625$ with $N(a, b) = 16 a^4 - 4 a^3 b^2 - 128 a^2 + 144 a b^2 - 27 b^4 + 256$. We prove that the extremal polynomial $P_0(z) = z^5 + z$ achieves $|\tilde{q}(c)| = 4/5$ at all four critical points (Theorem~\ref{thm:extremal}), that this value is a strict local maximum of $\min_j |\tilde{q}(c_j)|$ over $\mathbb{C}^2$ (Theorem~\ref{thm:local-max}), and that $\min_j |\tilde{q}(c_j)| \to 1/2$ as $\|(a, b)\| \to \infty$ via Vieta's formula $\prod c_j = 1/5$ (Theorem~\ref{thm:large-ab}). Combined with the continuity of $\min_j |\tilde{q}(c_j)|$ off the critical-discriminant locus, these three results establish Smale's bound $\min_j |\tilde{q}(c_j)| \le 4/5$ for $d = 5$ \emph{everywhere} except possibly on the codimension-$1$ discriminant locus, where the bound is recovered by a perturbation argument (Theorem~\ref{thm:main}). The proof is supported by exhaustive numerical verification ($70{,}001$ polynomials tested, $0$ violations) and connects to the Beardon--Minda--Ng hyperbolic-metric framework~\cite{beardon} and the Sutherland--Tischler classification~\cite{tischler}.
+We propose a structural reduction for the \emph{centered two-parameter quintic slice}
+$P(z)=z^5+a z^3+b z^2+z$, with a fixed root at the origin and $P'(0)=1$.
+This slice contains the extremal family but is not asserted to represent every
+marked quintic polynomial. The Pandrosion reduction yields the explicit formula
+$\tilde{q}(c)=(1-3c^4-a c^2)/2$ at each critical point of $P'$, and the product
+over the four critical points equals $N(a,b)/625$ with
+$N(a,b)=16a^4-4a^3b^2-128a^2+144ab^2-27b^4+256$. We establish three ingredients:
+(i) the extremal polynomial $P_0(z)=z^5+z$ achieves $|\tilde q(c)|=4/5$ at all
+four critical points (rigorous); (ii) a mixed symbolic/numerical local-descent
+certificate at $(0,0)$; (iii) asymptotic evidence and partial estimates showing
+descent away from compact parameter sets. Combining these gives a
+\emph{proof-candidate program for the centered slice}, not a proof of the full
+quintic MVC. The remaining gaps are explicit: the full Hessian certificate in
+the $\delta a_{\mathrm{re}}$ direction, a rigorous treatment of the discriminant
+locus, and a separate reduction from general marked quintics to this centered
+slice if one wants a proof of the unrestricted $d=5$ case.
 \end{abstract}
+
+\paragraph{Scope statement.} The main statement (Theorem~\ref{thm:main}) is a proof candidate for the centered slice only, not a completed proof of Smale's MVC for all quintics. Theorems~\ref{thm:product}, \ref{thm:extremal}, and \ref{thm:vieta} are rigorous. Two steps currently rely on mixed symbolic/numerical support: (a) the strict-local-maximum claim of Theorem~\ref{thm:local-max} has a symbolic certificate eliminating three of the four real perturbation directions but falls back to a numerical second-order check for $\delta a_{\mathrm{re}}$; (b) the discriminant-locus case of the compactness argument in Theorem~\ref{thm:main} uses a \L{}ojasiewicz sketch that is not worked out in full. A fully rigorous proof of Smale's MVC for $d = 5$ would additionally require proving that no extremal configuration is lost outside this centered slice.
 
 \section{Setup and the Pandrosion reduction}
 
-Without loss of generality (after affine normalisation $z \mapsto \alpha z + \beta$ and scaling), every monic polynomial of degree $5$ with a marked root at the origin and $P'(0) = 1$ takes the form
+We restrict to the centered two-parameter slice
 \begin{equation}
 P(z) = z^5 + a z^3 + b z^2 + z, \qquad (a, b) \in \mathbb{C}^2.
 \label{eq:normal-form}
 \end{equation}
+This is \emph{not} claimed to be a lossless normal form for all marked quintics:
+a general monic quintic with $P(0)=0$ and $P'(0)=1$ also has a $z^4$ term and
+an independent $z^2,z^3$ coupling after affine changes. The slice is chosen
+because it contains the symmetric extremal $z^5+z$ and is algebraically rigid
+enough for explicit resultant computations.
 The critical points are the roots of
 \begin{equation}
 P'(c) = 5 c^4 + 3 a c^2 + 2 b c + 1 = 0,
@@ -84,7 +106,7 @@ Note that $\tilde{q}(c_k) = 4/5$ is the same complex value at all four critical 
 
 \section{Local maximum at the extremal: Hessian negative-definite}
 
-\begin{theorem}[Strict local maximum at $(0, 0)$]\label{thm:local-max}
+\begin{theorem}[Candidate strict local maximum at $(0, 0)$]\label{thm:local-max}
 The function $\Phi: \mathbb{C}^2 \setminus \Delta \to \mathbb{R}_{\ge 0}$ defined by $\Phi(a, b) := \min_j |\tilde{q}(c_j(a, b))|^2$ (where $\Delta$ is the critical-discriminant locus on which two critical points collide) is real-analytic on $\mathbb{C}^2 \setminus \Delta$, and $(0, 0) \in \mathbb{C}^2 \setminus \Delta$ is a \emph{strict local maximum} of $\Phi$ with value $\Phi(0, 0) = (4/5)^2 = 16/25$.
 \end{theorem}
 
@@ -149,32 +171,41 @@ For all $(a, b) \in \mathbb{C}^2$, the four critical points $c_j$ of $P'$ satisf
 Vieta's formula for the quartic $5 z^4 + 3 a z^2 + 2 b z + 1$ gives $\prod c_j = (\text{constant term})/(\text{leading}) = 1/5$.
 \end{proof}
 
-\begin{theorem}[Asymptotic descent]\label{thm:large-ab}
-As $\|(a, b)\| \to \infty$ in $\mathbb{C}^2$,
+\begin{proposition}[Asymptotic descent program]\label{thm:large-ab}
+The numerical and sectorial evidence supports the following asymptotic statement:
+as $\|(a, b)\| \to \infty$ in $\mathbb{C}^2$,
 \begin{equation}
 \liminf_{\|(a, b)\| \to \infty} \min_{j} |\tilde{q}(c_j(a, b))| = \frac{1}{2}.
 \end{equation}
-In particular, for any $\varepsilon > 0$, the set $\{(a, b) : \min_j |\tilde{q}(c_j)| > 4/5 - \varepsilon\}$ is bounded.
-\end{theorem}
+If proved uniformly in all projective directions, this would imply that for any
+$\varepsilon>0$ the set
+$\{(a,b):\min_j|\tilde q(c_j)|>4/5-\varepsilon\}$ is bounded.
+\end{proposition}
 
-\begin{proof}
+\begin{proof}[Partial proof and numerical certificate]
 By Theorem~\ref{thm:vieta}, $\prod c_j = 1/5$, hence $\min_j |c_j| \le (1/5)^{1/4} \approx 0.6687$, uniformly in $(a, b)$. For the smallest critical point $c_*$, we have $|c_*|^2 \le (1/5)^{1/2}$, so by \eqref{eq:q-tilde},
 \begin{equation}
 |\tilde{q}(c_*)| = \frac{|1 - 3 c_*^4 - a c_*^2|}{2}.
 \end{equation}
 For large $|a|$, $a c_*^2$ dominates if $|c_*| \gtrsim 1$. However, the dominant root $c_{**}$ (with $|c_{**}| \to \infty$) carries the divergence of $a$, and the smaller roots are pushed toward $0$: by Vieta and the Newton identities, when $|a| \to \infty$ with $b$ fixed, the smallest root satisfies $c_* \sim 1/\sqrt{a}$ (so $a c_*^2 \to 1$ and $\tilde{q}(c_*) \to 0$), while the largest satisfies $c_{**} \sim \sqrt{-3 a/5}$ (so $a c_{**}^2 \sim -3 a^2/5 \to \infty$ but is excluded from the minimum).
 
-Numerical verification (\verb|explore_mvc_d5.py|, Step 5 of large-$|a|+|b|$ regime): for samples with $|a| \in [1, 600]$ and $|b| \in [0.7, 500]$, the median $\min_j |\tilde{q}(c_j)|$ is in $[0.499, 0.605]$, never exceeding $0.605$ on $120$ tested samples.
+This proves descent along the coordinate regimes where one parameter is large
+and the other is bounded, and gives the mechanism expected in mixed regimes.
+It is not a uniform projective proof over all directions $[a:b]\in\mathbb{P}^1$.
+Numerical verification (\verb|explore_mvc_d5.py|, Step 5 of large-$|a|+|b|$
+regime): for samples with $|a|\in[1,600]$ and $|b|\in[0.7,500]$, the median
+$\min_j|\tilde q(c_j)|$ is in $[0.499,0.605]$, never exceeding $0.605$ on
+$120$ tested samples.
 \end{proof}
 
 \section{The main theorem}
 
-\begin{theorem}[Smale's MVC for $d = 5$]\label{thm:main}
-For every $(a, b) \in \mathbb{C}^2$, the polynomial $P(z) = z^5 + a z^3 + b z^2 + z$ admits a critical point $c$ with
+\begin{theorem}[Centered quintic slice --- proof candidate]\label{thm:main}
+\emph{Claim, conditional on the gaps identified in the Scope statement:} for every $(a, b) \in \mathbb{C}^2$, the polynomial $P(z) = z^5 + a z^3 + b z^2 + z$ admits a critical point $c$ with
 \begin{equation}
 \left|\frac{P(c)}{c}\right| \le \frac{4}{5},
 \end{equation}
-with equality if and only if $(a, b) = (0, 0)$ (i.e., $P = z^5 + z$, up to rotation $z \mapsto \omega z$ with $\omega^4 = 1$).
+with equality if and only if $(a, b) = (0, 0)$ (i.e., $P = z^5 + z$, up to rotation $z \mapsto \omega z$ with $\omega^4 = 1$). The argument below is rigorous away from the discriminant locus $\Delta$ modulo the Hessian certificate of Theorem~\ref{thm:local-max}; the treatment of $\Delta$ uses a \L{}ojasiewicz sketch that we do not consider complete. In the strict mathematical sense, both the centered-slice statement and the unrestricted MVC for $d = 5$ should therefore be regarded as \emph{open after this paper}, with the remaining gaps made explicit.
 \end{theorem}
 
 \begin{proof}
@@ -199,7 +230,7 @@ In both cases, $M \le 4/5$, contradicting $M > 4/5$.
 \end{proof}
 
 \begin{remark}[Comparison with the literature on $d = 5$]
-The case $d = 5$ of Smale's MVC was previously open (cf.\ \cite{beardon, conte-vu, dubinin}). The best general bound for arbitrary $d$ is $4(d - 1)/d$, due to Beardon, Minda, and Ng~\cite{beardon}. For $d \le 4$, the sharp bound $(d - 1)/d$ was established by Smale himself for $d \le 3$~\cite{smale1981} and by various authors for $d = 4$ (cf.\ Tischler~\cite{tischler}, Sutherland--Tischler, and \cite{conte-vu} for related Blaschke-product results). Our proof for $d = 5$ relies on three ingredients: the explicit Pandrosion reduction \eqref{eq:q-tilde}, the strict-local-max Hessian argument at $(0, 0)$, and the Vieta-domination asymptotics --- all enabled by the choice of normal form \eqref{eq:normal-form}, which exploits the fixed root at the origin.
+The case $d = 5$ of Smale's MVC remains open in the strict mathematical sense (cf.\ \cite{beardon, conte-vu, dubinin}); our Theorem~\ref{thm:main} is a proof candidate for a centered slice, not a closed proof of the full quintic case. The best general unconditional bound for arbitrary $d$ is $4(d - 1)/d$, due to Beardon, Minda, and Ng~\cite{beardon}. For $d \le 4$, the sharp bound $(d - 1)/d$ was established by Smale himself for $d \le 3$~\cite{smale1981} and by various authors for $d = 4$ (cf.\ Tischler~\cite{tischler}, Sutherland--Tischler, and \cite{conte-vu} for related Blaschke-product results). Our reduction rests on three ingredients: the explicit Pandrosion reduction \eqref{eq:q-tilde}, a strict-local-max Hessian argument at $(0, 0)$ (rigorous in three of four real directions, numerical in the fourth), and the Vieta-domination asymptotics within the slice \eqref{eq:normal-form}.
 \end{remark}
 
 \section{Numerical verification}\label{sec:numerics}
@@ -255,7 +286,7 @@ $d$ & Sharp bound $(d - 1)/d$ & Extremal & Reference \\
 2 & $1/2$ & $z^2 - z$ & Smale (1981)~\cite{smale1981} (exact) \\
 3 & $2/3$ & $z^3 - z$ & Smale (1981)~\cite{smale1981} \\
 4 & $3/4$ & $z^4 - z$ & Tischler~\cite{tischler}; cf.\ Beardon--Minda--Ng~\cite{beardon} \\
-\textbf{5} & $\boldsymbol{4/5}$ & $\boldsymbol{z^5 + z}$ & \textbf{This paper} \\
+\textbf{5} & $\boldsymbol{4/5}$ & $\boldsymbol{z^5 + z}$ & \textbf{Open; centered-slice candidate here} \\
 \midrule
 $\ge 6$ & $(d-1)/d$ (conjectured) & $z^d - z$ (conjectured) & Open \\
 \bottomrule

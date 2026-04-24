@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 
-\title{Smale's Conjecture, the Pandrosion Inverse, \\ and the Fiber Vanishing Identity}
+\title{A Structural Pandrosion Reduction for Smale's Mean Value Conjecture \\ The Inverse Quotient and the Fiber Vanishing Identity}
 \author{Ivan Besevic}
 \date{April 2026}
 
@@ -22,8 +22,10 @@
 \maketitle
 
 \begin{abstract}
-We develop a framework for Smale's mean value conjecture based on the \emph{Pandrosion inverse}: the reverse evaluation of the Pandrosion quotient from a critical point to the origin. This yields three main results. First, the Smale ratio decomposes as $S(c) = |c| \cdot \prod |z_j|$ where $z_j$ are the co-fiber points of the critical value. Second, we prove the \emph{fiber vanishing identity} $\sum 1/((\alpha_j - c)^2 P'(\alpha_j)) = 0$ and the \emph{fiber-bridge} $\sum 1/((\alpha_j - c) P'(\alpha_j)) = -1/P(c)$, which define an orthogonality structure $\mathbf{u} \perp \mathbf{v}$, $\mathbf{u} \perp 1/\mathbf{v}$ in $\mathbb{C}^d$. Third, we prove the \emph{Pandrosion reduction}: at each critical point, $R(c) = \tilde q(c)/d$ where $\tilde q(0) = d - 1$, reducing Smale's conjecture to the statement that $\tilde q$ does not exceed its value at the origin at every root of $P'$. We give a complete proof for $d = 3$ and a first-order perturbation proof for all $d$.
+We develop a framework for Smale's mean value conjecture based on the \emph{Pandrosion inverse}: the reverse evaluation of the Pandrosion quotient from a critical point to the origin. This yields three observations. First, the Smale ratio decomposes as $S(c) = |c| \cdot \prod |z_j|$ where $z_j$ are the co-fiber points of the critical value. Second, we record the \emph{fiber vanishing identity} $\sum 1/((\alpha_j - c)^2 P'(\alpha_j)) = 0$ and the \emph{fiber-bridge} $\sum 1/((\alpha_j - c) P'(\alpha_j)) = -1/P(c)$, which together define an orthogonality structure $\mathbf{u} \perp \mathbf{v}$, $\mathbf{u} \perp 1/\mathbf{v}$ in $\mathbb{C}^d$. Third, we record the \emph{Pandrosion reduction}: at each critical point, $R(c) = \tilde q(c)/d$ where $\tilde q(0) = d - 1$, reducing Smale's conjecture to the statement that $\tilde q$ does not exceed its value at the origin at every root of $P'$. For $d = 3$ we give a closed algebraic proof in the Pandrosion normal form; for general $d$ we give only a first-order (linear) perturbation result at the extremal $z^d - z$, which does not extend to a proof for $d \ge 4$.
 \end{abstract}
+
+\paragraph{Scope statement.} The results of this paper are a structural reduction, not a proof of Smale's MVC for $d \ge 4$. The $d = 3$ section is now a closed algebraic proof in the normal form $P(z)=z^3+bz^2+z$. The ``perturbation proof for all $d$'' of Section~\ref{sec:pert} below is only a first-order (linear) stability statement, not a full local maximum, and certainly not a global bound. Readers seeking the sharper (but still incomplete) $d = 5$ analysis should consult Part VI.
 
 \section{Setup and notation}
 
@@ -112,7 +114,7 @@ Smale's conjecture is equivalent to: for all choices of $a_1 = 1, a_2, \dots, a_
 \end{corollary}
 
 \begin{remark}
-At the extremal $P = z^d - z$: all $a_k = 0$ except $a_1 = -1$ (with our sign convention, $R(z) = z^{d-1} - 1$, adjusting normalisation). Then $\tilde q \equiv d - 1$ is constant, and $S = (d-1)/d$ for all critical points. Any non-trivial coefficient makes $\tilde q$ non-constant, lowering the minimum below $d - 1$.
+At the extremal $P = z^d - z$: all $a_k = 0$ except $a_1 = -1$ (with our sign convention, $R(z) = z^{d-1} - 1$, adjusting normalisation). Then $\tilde q$ is constant and $S=(d-1)/d$ for all critical points. The numerical evidence suggests that non-trivial coefficient perturbations lower the minimum, but this remark is not used as a proof for $d \ge 4$.
 \end{remark}
 
 \section{Proof for $d = 3$}
@@ -122,26 +124,43 @@ Smale's conjecture holds for $d = 3$, with equality only for $P(z) = z^3 - z$ (u
 \end{theorem}
 
 \begin{proof}
-Write $P(z) = z^3 + bz^2 + z$, so $R(z) = z^2 + bz + 1$ and $P'(z) = 3z^2 + 2bz + 1$. The critical points satisfy $3c^2 + 2bc + 1 = 0$, giving $c^2 = (-2bc - 1)/3$. Therefore:
-\begin{equation*}
-R(c) = c^2 + bc + 1 = \frac{-2bc - 1}{3} + bc + 1 = \frac{bc + 2}{3}.
-\end{equation*}
-The two values are $x_k = bc_k + 2 = (6 - b^2 \pm b\sqrt{b^2 - 3})/3$.
+Write $P(z)=z^3+bz^2+z$, so $R(z)=z^2+bz+1$ and
+$P'(z)=3z^2+2bz+1$. At a critical point $c$,
+\[
+3c^2+2bc+1=0,
+\qquad
+R(c)=c^2+bc+1=\frac{bc+2}{3}.
+\]
+If $b=0$, both critical points give $|R(c)|=2/3$.
 
-For \textbf{real} $b$ with $|b| > \sqrt{3}$: $\sqrt{b^2 - 3} < |b|$, so $|b\sqrt{b^2 - 3}| < b^2$. Taking the appropriate sign:
-\begin{equation*}
-|x_1| \;=\; \frac{|6 - b^2 + b\sqrt{b^2 - 3}|}{3} \;<\; \frac{|6|}{3} \;=\; 2.
-\end{equation*}
-Hence $S_1 = |x_1|/3 < 2/3$. For $|b| \le \sqrt{3}$: $c_1 = \bar c_2$, so $S_1 = S_2 = \sqrt{|4 - b^2|}/3 \le 2/3$.
-
-For \textbf{complex} $b$: verified numerically with $200{,}000$ samples and optimisation, giving $\sup \min S = 2/3$ attained at $b = 0$.
+Assume $b\ne0$ and set $t_j=bc_j+2$ for the two critical points. Substituting
+$c=(t-2)/b$ into the critical equation gives
+\[
+A(t-2)^2+2t-3=0,\qquad A:=\frac{3}{b^2}.
+\]
+Thus $t_1+t_2=4-2/A$ and $t_1t_2=4-3/A$; eliminating $A$ gives
+\[
+2t_1t_2-3(t_1+t_2)+4=0,
+\qquad\text{or}\qquad
+(2t_1-3)(2t_2-3)=1.
+\]
+If both $|t_1|$ and $|t_2|$ were strictly larger than $2$, then both
+$|2t_j-3|$ would be strictly larger than $1$ (the point $3$ is at distance
+$1$ from the circle $|2t|=4$). Their product would then have modulus larger
+than $1$, contradicting $(2t_1-3)(2t_2-3)=1$. Therefore some $j$ has
+$|t_j|\le2$, and hence
+\[
+\min_j |R(c_j)|=\frac{1}{3}\min_j |t_j|\le\frac{2}{3}.
+\]
+Equality occurs at $b=0$, i.e. at $P(z)=z^3+z$ in this normalisation; after
+rotation this is the usual extremal family.
 \end{proof}
 
-\section{Perturbation proof for general $d$}
+\section{First-order perturbation stability for general $d$}\label{sec:pert}
 
-\begin{theorem}
-At the extremal $P = z^d - z$, Smale's bound $\min S \le (d - 1)/d$ is stable under first-order perturbations.
-\end{theorem}
+\begin{proposition}[First-order stability at the extremal --- not a global proof]
+At the extremal $P = z^d - z$, the bound $\min S \le (d - 1)/d$ is stable under first-order perturbations: there is no tangent direction in parameter space along which all critical values strictly exceed $(d-1)/d$ at first order. This is a linear-in-$\varepsilon$ statement and does \emph{not} imply a strict local maximum, let alone a global bound.
+\end{proposition}
 
 \begin{proof}
 At the extremal, critical points are $c_k = d^{-1/(d-1)} \omega^k$ where $\omega = e^{2\pi i/(d-1)}$. Write $\tilde q(z) = (d - 1) + z\, r(z)$ for a perturbation $r$ of degree $d - 3$. Then:
@@ -168,11 +187,11 @@ $d$ & $\sup \min S \,/\, (d-1)/d$ & Tests & Status \\
 \end{tabular}
 \end{center}
 
-Zero violations across all degrees. The extremal $z^d - z$ is the unique global maximiser.
+Zero violations were observed across all tested degrees. The statement that the extremal family is the unique global maximiser remains empirical for $d \ge 4$ in this note.
 
 \section{Conclusion}
 
-The Pandrosion inverse reveals Smale's conjecture as a statement about the branched covering $z \mapsto P(z)$: the Smale ratio equals the product of co-fiber distances (Theorem~2.3), and is controlled by the polynomial $\tilde q$ of degree $d - 2$ whose value at the origin is exactly $d - 1$ (Theorem~4.1). The conjecture reduces to showing that this degree-$(d - 2)$ polynomial cannot exceed its value at the origin at \emph{every} root of its companion polynomial $P'/d$ of degree $d - 1$. The perturbation argument (Theorem~6.1) establishes first-order stability, and the full coupling between $\tilde q$ and $P'/d$ through the shared coefficients $a_2, \dots, a_{d-1}$ is the key remaining challenge.
+The Pandrosion inverse reads Smale's conjecture as a statement about the branched covering $z \mapsto P(z)$: the Smale ratio equals the product of co-fiber distances (Theorem~2.3), and is controlled by the polynomial $\tilde q$ of degree $d - 2$ whose value at the origin is exactly $d - 1$ (Theorem~4.1). The conjecture reduces to showing that this degree-$(d - 2)$ polynomial cannot exceed its value at the origin at \emph{every} root of its companion polynomial $P'/d$ of degree $d - 1$. The first-order perturbation result of Section~\ref{sec:pert} is a linear stability statement only; the full coupling between $\tilde q$ and $P'/d$ through the shared coefficients $a_2, \dots, a_{d-1}$ is what remains unresolved, and what blocks a proof for $d \ge 4$ from this angle.
 
 \begin{thebibliography}{99}
 \bibitem{smale1981} S. Smale, \textit{The fundamental theorem of algebra and complexity theory}. Bull. Amer. Math. Soc. \textbf{4} (1981), 1--36.

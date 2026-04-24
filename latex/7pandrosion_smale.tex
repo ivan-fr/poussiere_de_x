@@ -5,7 +5,7 @@
 \geometry{margin=1in}
 \usepackage{hyperref}
 
-\title{Universitas Pandrosion: Part VII \\ A Derivative-Free Adaptive Pandrosion Scheme for Univariate Polynomial Root-Finding \\ Breaking McMullen's Barrier via a Non-Holomorphic Fallback}
+\title{Universitas Pandrosion: Part VII \\ A Derivative-Free Adaptive Pandrosion Scheme for Univariate Polynomial Root-Finding \\ Non-Holomorphic Fallbacks and Conditional Complexity Bounds}
 \author{I. Besevic}
 \date{April 2026}
 
@@ -21,10 +21,24 @@
 \maketitle
 
 \begin{abstract}
-The sixth note of this series introduced the Amortised Block Descent Conjecture (Conjecture 5.1) for the adaptive Pandrosion-T3 scheme. In this final note, we formally refute the strict universality of Conjecture 5.1 for pure rational iterators, showing that any such iterator on $\mathbb{C}$ for degree $d \ge 4$ contains isolated stagnation traps within the root convex hull, a consequence of McMullen's topological impossibility theorem. We bypass this topological barrier by injecting a derivative-free, non-holomorphic fallback mechanism based on the absolute residual modulus $|P(z)|$. The fallback is no longer a fixed-step Steffensen update --- whose descent is not provable in the absence of size control on $|P(z_0)|$ --- but an \emph{Armijo-backtracking} variant whose descent is established as a quantitative theorem (Theorem~\ref{thm:descent}). This modification restores the global unconditional descent of the algorithm. As a result, we prove two complementary bounds for the deterministic, multi-start Pandrosion-$T_n$ scheme with non-holomorphic fallback: (i) using the Armijo backtracking fallback (Definition~\ref{def:armijo}), the bound is $O(d^2 \log^2 d)$ BSS operations (Theorem~\ref{thm:smale17}); (ii) using the analytic $\gamma$-damped step (Definition~\ref{def:gamma-damped}), the bound improves to $O(d^2 \log d)$ BSS operations (Theorem~\ref{thm:smale17-d2logd}), matching the original target of this series with a fully quantitative proof. Both results are subject to Theorem~\ref{conj:nondegen} on the (Lebesgue measure-zero) set of degenerate anchors. The univariate algorithm presented here admits a formal multivariate lifting via the Schmidt slope matrix of Part~I~\cite[\S 3.5]{besevic1}; whether the lifted algorithm attains an unconditional bound comparable to Lairez~\cite{lairez} is open (cf.\ Part~I, Remark on honest accounting of the multivariate per-orbit cost). The univariate bounds above are unconditional descents per epoch but conditional on the basin-entry conjecture for the global complexity; in the multivariate setting both the per-epoch descent and the basin-entry bound are open.
+The sixth note of this series introduced the Amortised Block Descent Conjecture
+for the adaptive Pandrosion-T3 scheme. Here we document computational
+counterexamples to its strict universal form for pure rational iterators and
+explain why this is consistent with McMullen's topological obstruction for
+generally convergent rational root-finders in degree $d\ge4$. We then add a
+derivative-free, non-holomorphic fallback based on the residual modulus $|P(z)|$.
+The fallback is an Armijo-backtracking variant whose descent is proved under
+explicit local $\gamma$-bounds (Theorem~\ref{thm:descent}). This yields two
+conditional univariate complexity statements for the multi-start
+Pandrosion-$T_n$ scheme: $O(d^2\log^2 d)$ with Armijo backtracking and
+$O(d^2\log d)$ with an analytic $\gamma$-damped step, conditional on the
+non-degeneracy and basin-entry assumptions stated below. These results are
+algorithmic companions to, not replacements for, the unconditional average-case
+resolutions of Smale's 17th problem by Beltr\'an--Pardo~\cite{beltranpardo} and
+Lairez~\cite{lairez}.
 \end{abstract}
 
-\paragraph{Scope clarification.} This paper resolves the \emph{algorithmic descent} problem for univariate polynomials and provides the multivariate framework lifting to Smale's 17th problem (1998, \cite{smale1998}). We are \emph{not} claiming a complexity-theoretic improvement upon the deterministic average-case bound of Lairez~\cite{lairez} or the probabilistic bound of Beltr\'an--Pardo~\cite{beltranpardo}, which together resolve Smale 17 in the formal sense. Our contribution is a derivative-free algorithmic alternative with explicit per-orbit constants, empirically verified on multivariate Smale-17-style Kostlan--Smale ensembles up to $(n, d) = (4, 3)$ via the multivariate Pandrosion operator of \cite[\S 3.5]{besevic1}.
+\paragraph{Scope clarification.} This paper addresses the \emph{per-epoch algorithmic descent} problem for univariate polynomials and formulates a multivariate extension. The results are of two kinds: (a) quantitative per-epoch descent statements (Theorems~\ref{thm:descent} and \ref{thm:gamma-descent}), proved under explicit analytic hypotheses on the Smale $\gamma$-invariant and the finite-difference error; (b) global BSS-complexity statements (Theorems~\ref{thm:smale17} and \ref{thm:smale17-d2logd}), which combine (a) with the non-degeneracy conjecture \ref{conj:nondegen} and a basin-entry argument modelled on Beltr\'an--Pardo $\mu$-theory. We do \emph{not} claim a complexity-theoretic improvement upon Lairez~\cite{lairez} or Beltr\'an--Pardo~\cite{beltranpardo}. The multivariate global bound is open.
 
 \section{Introduction: The Stagnation Traps and McMullen's Barrier}
 The adaptive Pandrosion-T3 scheme introduced in Part VI relies on the scaling principle to avoid the exponentially slow convergence of the fixed-anchor base map. The Amortised Block Descent (Conjecture 5.1) posited that for any anchor $z_0$ and any normalized polynomial $P$, the adaptive scheme would achieve a strict descent $|P(z_K)| \le \exp(-c)|P(z_0)|$ per epoch.
@@ -34,7 +48,7 @@ However, computational search via high-dimensional optimization reveals that Con
 The existence of such traps is not a defect of the Pandrosion operator, but rather a manifestation of a deep topological obstruction discovered by McMullen \cite{mcmullen}. McMullen proved that there exists no generally convergent purely iterative algorithm (i.e., a rational map over $\mathbb{C}$) for finding roots of polynomials of degree $d \ge 4$. Since the Pandrosion-T3 epoch map $z \mapsto z_K(z_0, z)$ is fundamentally a rational map for a fixed anchor, it cannot escape the creation of chaotic traps or unstable manifolds within the convex hull of the roots.
 
 \section{The Derivative-Free Non-Holomorphic Fallback}
-To obtain an unconditional descent guarantee for the univariate adaptive Pandrosion scheme --- and, by the multivariate lifting of Part~I~\cite[\S 3.5]{besevic1}, a derivative-free algorithm of the same form for systems addressing Smale's 17th problem (already resolved unconditionally by Lairez~\cite{lairez}) --- we must side-step McMullen's barrier. The critical insight, mirroring the target-dependent seed for $p$-th roots, is to break the purely iterative rational structure of the algorithm by introducing a continuous, non-holomorphic evaluation check.
+To obtain an unconditional per-epoch descent guarantee for the univariate adaptive Pandrosion scheme --- and, by the multivariate lifting of Part~I~\cite[\S 3.5]{besevic1}, a derivative-free algorithm of the same form for polynomial systems (for which Smale's 17th problem was resolved unconditionally by Lairez~\cite{lairez}) --- we step \emph{outside} McMullen's hypothesis of purely rational iterators. The critical insight, mirroring the target-dependent seed for $p$-th roots, is to augment the rational iteration with a continuous, non-holomorphic evaluation check. This does not contradict McMullen's impossibility theorem for rational maps; it simply leaves his class.
 
 In the BSS (Blum-Shub-Smale) model of computation, branching on inequalities over real numbers (such as comparing moduli) costs $O(1)$ operations. We thus modify the adaptive Pandrosion-T3 scheme by introducing a \textit{Fallback Mechanism}.
 
@@ -124,11 +138,11 @@ $$ |P(z_{new})|^2 \;\le\; |P(z_0)|^2 - 2 \sigma \beta^{j^\star} \delta \;\le\; |
 (using $\beta^{j^\star} \delta \ge |P(z_0)|^2/(32\gamma)$ from the bounds above). This is \eqref{eq:descent}.
 \end{proof}
 
-\begin{theorem}[Non-degeneracy of Cauchy starts]\label{conj:nondegen}
+\begin{conjecture}[Non-degeneracy of Cauchy starts]\label{conj:nondegen}
 Under any absolutely continuous measure on the unit-norm polynomials of degree $d \ge 2$ (in particular Kostlan--Smale, i.i.d.\ Gaussian, or uniform on the projective space), the set of polynomials for which the Armijo fallback of Definition~\ref{def:armijo} declares any of the $d$ Cauchy starts ``degenerate'' (i.e.\ no $j \le j_{\max}$ satisfies Armijo for all $u \in \{\pm 1, \pm i\}$) has Lebesgue measure zero in the projective space $\mathbb{P}(\mathcal{P}_d)$.
-\end{theorem}
+\end{conjecture}
 
-\begin{proof}
+\begin{proof}[Evidence and reduction to a semi-algebraic exclusion]
 Let $\mathcal{B}_d \subset \mathbb{P}(\mathcal{P}_d)$ denote the set of degenerate polynomials. We claim $\mathcal{B}_d$ is a finite union of proper real-algebraic subvarieties of $\mathbb{P}(\mathcal{P}_d)$, hence has Lebesgue measure zero by Whitney's theorem on real-algebraic sets.
 
 Fix a Cauchy start $z_0 = R_P \cdot e^{i 2\pi k/d}$ where $R_P = 1 + \max_j |a_j/a_d|$ is the Cauchy bound. For each direction $u \in \{\pm 1, \pm i\}$ and each Armijo trial index $j \in \{0, 1, \dots, j_{\max}\}$, define the polynomial
@@ -137,13 +151,22 @@ where $z_j^{(k, u)} = z_0^{(k)} - \beta^j P(z_0^{(k)})/Q^{(u)}_{\text{steff}}$ a
 
 A polynomial $P$ is degenerate at start $z_0^{(k)}$ if and only if, for every $j \le j_{\max}$ and every $u \in \{\pm 1, \pm i\}$, either $F_{k, u, j}(P) > 0$ (Armijo rejects) or $|Q^{(u)}_{\text{steff}}| < 10^{-50}$ (probe degeneracy). The latter condition defines an algebraic subvariety of codimension $\ge 1$ (it requires $P(z_0^{(k)} + \varepsilon u) = P(z_0^{(k)})$, which is the vanishing of one polynomial in the coefficients). The former is a semi-algebraic constraint.
 
-The set of polynomials for which Armijo rejects at every $(j, u)$ for every $k$ is the intersection of $4 \cdot d \cdot (j_{\max} + 1)$ semi-algebraic constraints, each of which is satisfied with strict inequality on an open dense set (by Theorem~\ref{thm:descent} applied to a generic polynomial with $P'(z_0^{(k)}) \ne 0$ and $\gamma(P, z_0^{(k)}) < \infty$). Therefore $\mathcal{B}_d$ is contained in the union of the closures of the rejection sets, which is contained in the algebraic locus $\{P : \exists k, \exists u : Q^{(u)}_{\text{steff}}(P) = 0\}$. This locus is a finite union of proper algebraic varieties, hence Lebesgue-null in $\mathbb{P}(\mathcal{P}_d)$.
+The set of polynomials for which Armijo rejects at every $(j,u)$ for every $k$
+is an intersection of semi-algebraic inequalities. Showing that this
+semi-algebraic set has empty interior, or that its positive-dimensional pieces
+lie inside the algebraic probe-degeneracy locus, is the missing step. The
+argument above reduces the conjecture to this explicit real-algebraic
+exclusion; it is not by itself a proof.
 
 The empirical verification: in $10^4$ independent draws across $d \in \{16, 32, 64, 128\}$ from each of the three measures (Kostlan--Smale, i.i.d.\ Gaussian, uniform-projective), no polynomial fell into $\mathcal{B}_d$, consistent with the measure-zero conclusion.
 \end{proof}
 
-\begin{remark}[Status upgrade from conjecture to theorem]
-The original Part~VII (preprint, April 2026 v1) listed the non-degeneracy as Conjecture~4.2 ``verified numerically over $10^4$ random polynomials.'' The proof above, applying Whitney's theorem on real-algebraic sets to the explicit semi-algebraic description of degeneracy, upgrades the conjecture to a theorem. The label is preserved as \verb|conj:nondegen| for backward compatibility with cross-references.
+\begin{remark}[Why this remains a conjecture]
+The semi-algebraic description is useful because it makes the exceptional set
+auditable, but semi-algebraic rejection inequalities alone do not imply
+Lebesgue measure zero. A complete proof must show that persistent rejection
+forces an algebraic degeneracy, or otherwise establish a transversality
+statement for the Armijo inequalities.
 \end{remark}
 
 \begin{lemma}[Beltr\'an--Pardo bound on $\gamma_{\max}$ for one Cauchy start]\label{lem:bp-gamma}
@@ -154,7 +177,7 @@ Let $P \in \mathbb{C}[z]$ be a unit-norm polynomial of degree $d$ with simple ro
 This is a Cauchy-circle reformulation of Theorem~3.1 of Beltr\'an--Pardo~\cite{beltranpardo} (cf.\ also \cite[Theorem 4.4]{lairez} for the deterministic version). Beltr\'an--Pardo prove that the average of Smale's $\mu$-invariant $\mu(P, z)^2 = \|P\|_W^2 \cdot \|P'(z)^{-1}\|^2$ over the standard initial set (Hubbard--Schleicher--Sutherland) is bounded by a universal constant: $\mathbb{E}_P [\min_k \mu(P, z_0^{(k)})^2] \le C_\mu \cdot d$. Since $\gamma(P, z) \le \mu(P, z) \cdot \mathrm{poly}(d)/|z|^d$ on the Cauchy circle, and the Pandrosion orbit contracts $|z|$ toward the root cluster (Theorem~5.4 of Part~I), the orbit-supremum of $\gamma$ is bounded by the initial value times a contraction factor. The probability that all $d$ starts give $\gamma_{\max} > \gamma_0$ is $\le (\Pr[\gamma_{\max}^{(0)} > \gamma_0])^d$ if the events were independent, and $O(1/d)$ by the negative-association argument of \cite[\S 5]{beltranpardo}.
 \end{proof}
 
-\begin{theorem}[Univariate worst-case BSS bound, Armijo variant]\label{thm:smale17}
+\begin{theorem}[Conditional univariate BSS bound, Armijo variant]\label{thm:smale17}
 Assume Conjecture~\ref{conj:nondegen}. The multi-start Pandrosion-$T_n$ scheme with the Armijo fallback of Definition~\ref{def:armijo}, initiated from $d$ equidistant points on the Cauchy circle, finds an approximate zero of any degree-$d$ polynomial $P$ in
 $$ O(d^2 \log^2 d) $$
 arithmetic operations in the BSS model. Lifting to systems via the multivariate Pandrosion operator of Part~I~\cite[Definition~3.5]{besevic1} yields the corresponding bound $O(D^2 \log^2 D)$ for systems of B\'ezout degree $D = d^n$, conditional on the multivariate analogue of Conjecture~\ref{conj:nondegen}. This complements but does not improve upon the unconditional deterministic bound of Lairez~\cite{lairez}.
@@ -224,8 +247,8 @@ The RHS is minimised at $\lambda^\star = 7/(32 \widehat\beta^2 \widehat\gamma)$;
 The Armijo backtracking of Definition~\ref{def:armijo} guarantees descent only after up to $O(\log d)$ probes, with average cost $O(1)$ probes (Lemma~5.1 of Part~VIII). The $\gamma$-damped step of Definition~\ref{def:gamma-damped} guarantees descent in exactly $4$ probes \emph{always}, by the analytic damping $\lambda = C_{\text{damp}}/\widehat\alpha$. The price is one additional probe per fallback (three probes instead of two, plus the verification).
 \end{remark}
 
-\begin{theorem}[Univariate worst-case BSS bound, $\gamma$-damped variant]\label{thm:smale17-d2logd}
-Assume Theorem~\ref{conj:nondegen} (proved via Whitney's theorem). The multi-start Pandrosion-$T_n$ scheme of Definition~\ref{def:gamma-damped}, initiated from $d$ equispaced Cauchy starts, finds an approximate zero of any degree-$d$ univariate polynomial $P \in \mathbb{C}[z]$ in
+\begin{theorem}[Conditional univariate BSS bound, $\gamma$-damped variant]\label{thm:smale17-d2logd}
+Assume Conjecture~\ref{conj:nondegen} and the basin-entry hypothesis used in Lemma~\ref{lem:bp-gamma}. The multi-start Pandrosion-$T_n$ scheme of Definition~\ref{def:gamma-damped}, initiated from $d$ equispaced Cauchy starts, finds an approximate zero of any degree-$d$ univariate polynomial $P \in \mathbb{C}[z]$ in
 $$ O(d^2 \log d) $$
 arithmetic operations in the BSS model. Lifting to systems via Part~I~\cite[\S 3.5]{besevic1} gives the analogous $O(D^2 \log D)$ bound for systems of B\'ezout degree $D = d^n$.
 \end{theorem}
@@ -263,8 +286,8 @@ $$ \Pr_{P}\!\left[\,\text{Pandrosion-}T_n\text{ with Armijo fallback from } z_0 
 By unitary invariance of the KS measure, the probability does not depend on which of the $d$ points is chosen. Let $X_k$ be the indicator that orbit $k$ converges in $\le E_{\max}$ epochs. By \eqref{eq:beltranpardo}, $\mathbb{E}[\sum_k X_k] \ge \kappa d$, and since $X_k$ are exchangeable, $\Pr[X_k = 1] = \mathbb{E}[X_k] \ge \kappa$.
 \end{proof}
 
-\begin{theorem}[Average-case complexity under KS]\label{thm:avg}
-Assume Conjecture~\ref{conj:nondegen}. Under the Kostlan--Smale measure, the expected BSS cost of the multi-start Pandrosion-$T_n$ scheme with Armijo fallback, halted as soon as one orbit enters the basin, is
+\begin{theorem}[Conditional average-case complexity under KS]\label{thm:avg}
+Assume Conjecture~\ref{conj:nondegen}, the Beltr\'an--Pardo basin-entry transfer in Lemma~\ref{lem:bp-gamma}, and the negative-association estimate used below. Under the Kostlan--Smale measure, the expected BSS cost of the multi-start Pandrosion-$T_n$ scheme with Armijo fallback, halted as soon as one orbit enters the basin, is
 $$ \mathbb{E}_{P \sim \text{KS}_d}\!\left[\,\text{cost}(P)\,\right] \;=\; O(d \log^2 d). $$
 \end{theorem}
 
@@ -285,9 +308,9 @@ Drawing the starting Cauchy point uniformly at random and halting at the first b
 A regression of $\log(\text{cost})$ against $\log d$ and $\log\log d$ on six adversarial families (degrees $d \in \{4, 8, 16, 32, 64, 128\}$, with the Fallback enabled) yields slopes $\alpha \in [0.28, 2.00]$, with $\alpha \approx 1$ on average across the families that admit a single-start convergence. Crucially, on the same families with the Fallback \emph{disabled}, the convergence rate at $d = 128$ collapses (e.g., $0/128$ Chebyshev starts, $5/128$ multiscale starts, $14/128$ Gaussian starts), exactly matching the McMullen prediction and confirming that the Fallback is not a cosmetic addition but a topological necessity.
 
 \section{Conclusion}
-The discovery of stagnation traps within the adaptive Pandrosion scheme highlights the inescapable reality of McMullen's barrier for purely iterative rational maps. By acknowledging this topological limit, we adapted the algorithmic structure itself.
+The existence of stagnation traps inside the adaptive Pandrosion scheme matches the topological obstruction of McMullen~\cite{mcmullen} for purely iterative rational maps of degree $d \ge 4$. We step outside that class by adjoining a non-holomorphic modulus check, in the same spirit as the target-dependent seed used for $p$-th roots in Part~II.
 
-Just as the target-dependent seed circumvented the barrier for $p$-th roots in $\mathbb{C}$ (Part II), the non-holomorphic modulus branching circumvents it for generalized polynomials. We provide two quantitative variants of the fallback: an Armijo backtracking line search (Definition~\ref{def:armijo}) yielding the worst-case bound $O(d^2 \log^2 d)$ of Theorem~\ref{thm:smale17}, and an analytic $\gamma$-damped step (Definition~\ref{def:gamma-damped}, leveraging Smale's $\alpha$-test) yielding the improved bound $O(d^2 \log d)$ of Theorem~\ref{thm:smale17-d2logd}. The latter eliminates the worst-case backtracking factor by computing the second-order divided difference at one additional probe, giving an unconditional descent ratio $1 - C_{\text{damp}}/2$ in exactly four oracle calls. The resulting Pandrosion-$T_n$ algorithm marries ancient derivative-free geometric iteration with modern BSS complexity theory. The average-case bound $\mathbb{E}_{\text{KS}}[\text{cost}] = O(d \log^2 d)$ of Theorem~\ref{thm:avg} (improved to $O(d \log d)$ for the $\gamma$-damped variant) further demonstrates that random polynomials are solved in nearly-linear time.
+We record two quantitative per-epoch descent results under explicit analytic hypotheses on Smale's $\gamma$-invariant: an Armijo-backtracking variant (Definition~\ref{def:armijo}, Theorem~\ref{thm:descent}) and an analytic $\gamma$-damped variant (Definition~\ref{def:gamma-damped}, Theorem~\ref{thm:gamma-descent}). Combined with Theorem~\ref{conj:nondegen} and a Beltr\'an--Pardo--based basin-entry argument (Lemma~\ref{lem:bp-gamma}), they yield the conditional BSS bounds $O(d^2 \log^2 d)$ and $O(d^2 \log d)$ of Theorems~\ref{thm:smale17} and \ref{thm:smale17-d2logd}. These bounds are \emph{not} improvements upon Beltr\'an--Pardo~\cite{beltranpardo} or Lairez~\cite{lairez}; they record a derivative-free algorithmic alternative with explicit per-orbit constants. The average-case bound $\mathbb{E}_{\text{KS}}[\text{cost}] = O(d \log^2 d)$ of Theorem~\ref{thm:avg} is conditional on the same ingredients and on the negative-association step invoked in its proof.
 
 \begin{thebibliography}{99}
 \bibitem{besevic1} I. Besevic, \textit{Pandrosion Operator and Smale's 17th Problem}. Universitas Pandrosion, Part I (2026).

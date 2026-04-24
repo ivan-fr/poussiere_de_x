@@ -1,12 +1,14 @@
 """
-Rigorous Hessian computation for the d=5 MVC compactness proof.
+Symbolic first-order certificate for the d=5 centered-slice MVC program.
 
-Goal: compute analytically, using sympy, the full real-Hessian matrix of
-Phi(a, b) = min_j |q̃(c_j(a,b))|^2 at the extremal (a, b) = (0, 0), and prove
-strict negative-definiteness on the 4-real-dimensional tangent space.
+Goal: compute analytically, using sympy, the first-order variation of
+Phi(a, b) = min_j |q̃(c_j(a,b))|^2 at the extremal (a, b) = (0, 0).
 
-This complements the numerical perturbation table in 6pandrosion_smale.tex with
-an exact symbolic certificate.
+Important status:
+    This is not a complete strict-local-maximum proof. The first-order certificate
+    proves descent in the da_im, db_re, and db_im directions. The da_re direction
+    has zero first-order rate and must be handled by a second-order calculation
+    or by the numerical perturbation table in 6pandrosion_smale.tex.
 """
 from __future__ import annotations
 import sympy as sp
@@ -19,7 +21,7 @@ def main():
     b = b_re + sp.I * b_im
 
     print("=" * 78, flush=True)
-    print("Symbolic Hessian of Phi(a,b) = min_j |q̃(c_j)|^2 at (0,0)", flush=True)
+    print("Symbolic first-order rates for Phi(a,b)=min_j |q̃(c_j)|^2 at (0,0)", flush=True)
     print("=" * 78, flush=True)
 
     # Critical points at (0,0): c^4 = -1/5
@@ -134,24 +136,24 @@ def main():
             all_min_negative = False
         print(f"  {name:<25} ({rates_str})  {m:>+8.4f}{flag}", flush=True)
 
-    print(f"\n  Conclusion: min_k rate_k < 0 for every test direction: "
+    print(f"\n  Conclusion: first-order descent in every tested direction: "
           f"{'PASS' if all_min_negative else 'FAIL'}", flush=True)
 
-    # Symbolic worst-case via Lagrange multipliers
     print("\n" + "=" * 78, flush=True)
-    print("CERTIFICATE: at (a,b)=(0,0), Phi has strict local maximum", flush=True)
+    print("CERTIFICATE STATUS: partial first-order certificate", flush=True)
     print("=" * 78, flush=True)
     print("""
-The 4 linear forms rate_k(da_re, da_im, db_re, db_im) all sum to a negative
-quadratic form on the 4-real-dimensional space of (da_re, da_im, db_re, db_im).
-The minimum over the 4 forms is upper-bounded by their average, which is
-strictly negative for any nonzero direction. Hence:
-  Phi(eps * direction) < Phi(0) - C * eps  + O(eps^2)
-for some C > 0 depending on the direction, but bounded uniformly over the
-unit sphere by the minimum over the 4 forms (which is a continuous function
-of the direction on a compact set).
-This is the symbolic backbone of Theorem 4.1 of 6pandrosion_smale.tex
-(Strict local maximum at (0,0)).
+The four first-order rates sum to zero, and their sum of squares is
+
+  1024/3125 * da_im^2 + 1152*sqrt(5)/3125 * (db_re^2 + db_im^2).
+
+Therefore, whenever (da_im, db_re, db_im) is nonzero, at least one rate is
+strictly negative and Phi decreases at first order in that direction.
+
+The pure da_re direction has all first-order rates equal to zero. The script
+therefore does NOT prove a full strict local maximum. It proves the symbolic
+part used in 6pandrosion_smale.tex and leaves the da_re direction to a
+second-order symbolic calculation or to the numerical check reported there.
 """, flush=True)
 
 

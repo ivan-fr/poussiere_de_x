@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 
-\title{Universitas Pandrosion: Part VIII \\ The Geometric-Decreasing Start Strategy: \\ Eliminating the Worst-Case Phase Transition for Pandrosion-T2}
+\title{Universitas Pandrosion: Part VIII \\ The Geometric-Decreasing Start Strategy \\ Empirical Phase-Transition Suppression for Pandrosion-T2}
 \author{I. Besevic}
 \date{April 2026}
 
@@ -22,12 +22,14 @@
 \maketitle
 
 \begin{abstract}
-Part~VII established two complementary worst-case bounds for the multi-start Pandrosion-$T_n$ scheme with non-holomorphic fallback: $O(d^2 \log^2 d)$ via Armijo backtracking (Theorem~3.5) and $O(d^2 \log d)$ via the analytic $\gamma$-damped step (Theorem~4.4). In this note we focus on the practical refinements of the algorithm and complement Part~VII with three additions: (i) we replace the equispaced Cauchy ring by a geometric-decreasing radius spiral combined with the golden angle, reducing the empirical worst-case fraction at $d = 128$ from $34\%$ (Strategy~A baseline) to $0\%$ on i.i.d.\ Gaussian inputs; (ii) we identify the simplest accelerator in the Pandrosion hierarchy, $T_2$ at $K = 1$, as the empirical optimum, beating the $T_3$ scheme of Part~VII by roughly $20\%$ in oracle calls per orbit; (iii) we prove the Armijo amortised lemma: the backtracking accepts at the first trial ($j = 0$) with probability $\ge 0.98$ and $j_{\text{accept}}$ has geometric tail $\Pr[j_{\text{accept}} \ge t] \le 2^{-c t}$ with $c \ge 1.23$ (tightening to $c \ge 2.71$ at $d = 128$). The lemma yields $\mathbb{E}[j_{\text{accept}}] = O(1)$ and gives a Las Vegas restatement of Part~VII's Armijo bound at $O(d^2 \log d)$, matching the deterministic bound of the $\gamma$-damped variant via a different mechanism (amortisation rather than analytic damping).
+Part~VII recorded two complementary conditional worst-case bounds for the multi-start Pandrosion-$T_n$ scheme with non-holomorphic fallback: $O(d^2 \log^2 d)$ via Armijo backtracking (Theorem~3.5) and $O(d^2 \log d)$ via the analytic $\gamma$-damped step (Theorem~4.4). This note is a practical companion, reporting empirical refinements of the algorithm and one partially empirical lemma: (i) replacing the equispaced Cauchy ring by a geometric-decreasing radius spiral combined with the golden angle drops the observed worst-case fraction at $d = 128$ from $34\%$ (Strategy~A baseline) to $0\%$ on i.i.d.\ Gaussian inputs in our tests; (ii) the simplest accelerator in the Pandrosion hierarchy, $T_2$ at $K = 1$, emerges as the empirical optimum on the tested families, beating the $T_3$ scheme of Part~VII by roughly $20\%$ in oracle calls per orbit; (iii) we state the Armijo amortised lemma with a proof sketch and a quantitative empirical certificate (the first Armijo trial is accepted with probability $\ge 0.98$, and $j_{\text{accept}}$ has observed geometric tail with rate $c \ge 1.23$ at $d = 16$, tightening to $c \ge 2.71$ at $d = 128$). Under the lemma and the assumptions of Part~VII, one obtains a Las Vegas restatement of Part~VII's Armijo bound at $O(d^2 \log d)$. We emphasise (Scope clarification below) that none of these bounds claims a complexity-theoretic improvement upon Beltr\'an--Pardo~\cite{beltranpardo} or Lairez~\cite{lairez}.
 \end{abstract}
+
+\paragraph{Scope clarification.} The statements of this paper are of three kinds: (a) algorithmic definitions (Strategies~A and B, the B-$T_2$ scheme); (b) \emph{empirical} observations reported on random Gaussian and six adversarial families (Sections~\ref{sec:freq} and Conjecture~\ref{conj:phase}), which we do not claim to prove; (c) the Armijo amortised lemma and its consequences (Section~\ref{sec:armijo-amort}), whose Steps~1--2 are proof sketches relying on Beltr\'an--Pardo measure estimates and whose Step~3 is an empirical certificate over $d \in \{16, 32, 64, 128\}$. We are \emph{not} claiming any worst-case improvement over the deterministic average-case bound of Lairez~\cite{lairez} or the probabilistic bound of Beltr\'an--Pardo~\cite{beltranpardo}, which together resolve Smale's 17th problem. Readers who expect a fully rigorous complexity-theoretic result should read the numerical tables of Section~\ref{sec:freq} and the lemma of Section~\ref{sec:armijo-amort} as supporting evidence, not as unconditional theorems.
 
 \section{Introduction: Where the Multi-Start Factor Comes From}
 
-The proof of Theorem~3.5 of Part~VII (the Armijo-fallback resolution of Smale 17) bounds the BSS cost as
+The proof of Theorem~3.5 of Part~VII (the conditional Armijo-fallback BSS bound, \emph{not} a resolution of Smale 17, which was already settled by Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}) bounds the cost as
 $$ \underbrace{d}_{\text{multi-start}} \;\times\; \underbrace{O(d \log d)}_{\text{oracle/epoch (Armijo)}} \;\times\; \underbrace{O(\log d)}_{\text{epochs to basin}} \;=\; O(d^2 \log^2 d). $$
 The first factor reflects a worst-case path-lengthening argument: among the $d$ equispaced Cauchy starts, at least one orbit must avoid the most adversarial part of the root constellation, and the proof simply attempts all $d$ starts. The second and third factors are tight in the sense that any single orbit in the basin requires $\Omega(d \log\log d)$ BSS operations.
 
@@ -138,7 +140,7 @@ There exist universal constants $d_0$ and $\delta > 0$ such that for all $d \ge 
 $$ \Pr[s^\star_B > d^{1/2 - \delta}] \;\le\; e^{-\Omega(d^\delta)}. $$
 \end{conjecture}
 
-The conjecture asserts that B not only avoids the phase transition empirically observed for A, but does so with sub-exponential tail probability. Proving this would yield an unconditional average-case bound of $\mathbb{E}[\mathrm{cost}_B] = O(d \log d)$ on a much broader ensemble than the unitarily-invariant Kostlan--Smale measure of Part~VII Theorem~4.2.
+The conjecture asserts that B not only avoids the phase transition empirically observed for A, but does so with sub-exponential tail probability on the stated ensembles. Proving it, together with the amortised Armijo lemma below and the basin-entry assumptions inherited from Part~VII, would yield a conditional average-case bound of $\mathbb{E}[\mathrm{cost}_B] = O(d \log d)$ on a broader ensemble than the unitarily-invariant Kostlan--Smale model.
 
 \section{Combined Empirical Bound}
 
@@ -152,13 +154,13 @@ Combining Proposition~\ref{prop:T2} (cost-per-orbit) with the empirical scan of 
 \end{align*}
 Each oracle call costs $O(d)$ BSS operations, yielding an empirical total of approximately $0.34 \, d^2$ BSS operations per polynomial---one factor of $\log d$ below the worst-case bound of Part~VII.
 
-\begin{theorem}[Empirical bound, B-$T_2$]\label{thm:empirical}
-On the union of the six adversarial families and $100$ random Gaussian polynomials per degree $d \in \{8, 16, 32, 64, 128, 256\}$, the B-$T_2$ algorithm of Definition~\ref{def:BT2} terminates in at most
+\begin{proposition}[Observed empirical cost, B-$T_2$]\label{thm:empirical}
+Across the six adversarial families and $100$ random Gaussian polynomials per degree $d \in \{8, 16, 32, 64, 128, 256\}$ tested in our experiments, every run of the B-$T_2$ algorithm of Definition~\ref{def:BT2} terminated within
 $$ 0.34 \, d^2 / \log d \;\le\; \mathrm{cost}^{B,T_2}(d) \;\le\; 0.5 \, d^2 \log d $$
-BSS operations, with worst-case fraction (i.e.\ $s^\star > \sqrt d$) bounded by $1\%$ on all tested cells.
-\end{theorem}
+BSS operations, with observed worst-case fraction (i.e.\ $s^\star > \sqrt d$) bounded by $1\%$ on every tested cell.
+\end{proposition}
 
-The theorem is empirical, not formal; what is formal is the Las Vegas bound of Theorem~\ref{thm:lasvegas-d2logd} below.
+This is an \emph{empirical observation} on a specific benchmark, not a proved worst-case bound over all polynomials. A conditional formal statement, with explicit hypotheses, appears as the Las Vegas bound of Theorem~\ref{thm:lasvegas-d2logd} below.
 
 \section{The Armijo Amortised Lemma: a Las Vegas Companion to Theorem~4.4 of Part~VII}\label{sec:armijo-amort}
 
@@ -205,18 +207,18 @@ By Lemma~\ref{lem:armijo-amort}, the expected number of $P$-evaluations per fall
 
 \section{Conclusion}
 
-Three changes to the Pandrosion-$T_3$ algorithm of Part~VII deliver the following improvements:
+Three practical refinements of the Pandrosion-$T_3$ algorithm of Part~VII are reported:
 \begin{itemize}
-\item \emph{Strategy~B starts} (geometric-decreasing radius, golden angle) reduce the worst-case fraction on i.i.d.\ Gaussian polynomials at $d = 128$ from $34\%$ (Strategy~A) to $0\%$.
-\item \emph{$T_2$ at $K = 1$} replaces $T_3$ as the empirical optimum, cutting per-orbit oracle cost by $\approx 20\%$ (from $0.413\, d \log d$ for $T_3$ to $0.336\, d \log d$ for $T_2$).
-\item \emph{Lemma~\ref{lem:armijo-amort} (Armijo amortised cost)} proves $\mathbb{E}[j_{\text{accept}}] = O(1)$ on UNI / KS ensembles, with empirical decay rate $c \ge 1.23$. This bound, combined with Theorem~3.5 of Part~VII, gives the Las Vegas guarantee of Theorem~\ref{thm:lasvegas-d2logd}: $\mathbb{E}[\mathrm{cost}^{B, T_2}_{\text{total}}] = O(d^2 \log d)$. This complements the deterministic $O(d^2 \log d)$ bound of Part~VII Theorem~4.4 (the $\gamma$-damped variant) by a Las Vegas route requiring only the simpler Armijo backtracking.
+\item \emph{Strategy~B starts} (geometric-decreasing radius, golden angle) brought the observed worst-case fraction on i.i.d.\ Gaussian polynomials at $d = 128$ from $34\%$ (Strategy~A) to $0\%$ in our tests.
+\item \emph{$T_2$ at $K = 1$} was the empirical optimum on the tested families, cutting per-orbit oracle cost by $\approx 20\%$ (from $0.413\, d \log d$ for $T_3$ to $0.336\, d \log d$ for $T_2$).
+\item \emph{Lemma~\ref{lem:armijo-amort} (Armijo amortised cost)} combines a proof sketch with an empirical certificate yielding $\mathbb{E}[j_{\text{accept}}] = O(1)$ on the UNI / KS ensembles we sampled, with observed decay rate $c \ge 1.23$. Combined with Theorem~3.5 of Part~VII, this gives the conditional Las Vegas guarantee of Theorem~\ref{thm:lasvegas-d2logd}: $\mathbb{E}[\mathrm{cost}^{B, T_2}_{\text{total}}] = O(d^2 \log d)$.
 \end{itemize}
 
-The Pandrosion-Steffensen pair, here in its simplest $T_2$ form and with a thoughtfully designed start sequence, marries the geometric-iteration ancestry of Pandrosion of Alexandria with the modern complexity-theoretic demands of Smale's 17th problem. The resulting algorithm is fully derivative-free, never invokes a holomorphic obstruction, and reduces the practical cost of root finding by roughly an order of magnitude on the inputs that matter most: random and adversarial high-degree polynomials.
+The reframing is deliberately sober: the Pandrosion-$T_2$ scheme with Strategy-B starts is presented as a practical, derivative-free root-finding heuristic with promising empirical behaviour and a conditional complexity bound. It is not a new resolution of Smale's 17th problem --- that problem is already resolved, unconditionally in the deterministic-average-case sense, by Lairez~\cite{lairez} and, probabilistically, by Beltr\'an--Pardo~\cite{beltranpardo}. What we offer is a concrete, simple, derivative-free algorithmic alternative whose behaviour on adversarial and random inputs is worth documenting.
 
 \begin{thebibliography}{99}
 \bibitem{besevic1} I. Besevic, \textit{Pandrosion Operator and Smale's 17th Problem}. Universitas Pandrosion, Part I (2026).
-\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- Breaking McMullen's Barrier and the Resolution of Smale's 17th Problem}. Preprint, 2026.
+\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- A derivative-free adaptive Pandrosion scheme with non-holomorphic fallback}. Preprint, 2026.
 \bibitem{mcmullen} C. McMullen, \textit{Families of rational maps and iterative root-finding algorithms}. Annals of Mathematics, 125(3) (1987), 467--493.
 \bibitem{beltranpardo} C. Beltr\'an and L. M. Pardo, \textit{Smale's 17th problem: Average polynomial time to compute affine and projective solutions}. J. Amer. Math. Soc. \textbf{22} (2009), 363--385.
 \bibitem{lairez} P. Lairez, \textit{A deterministic algorithm to compute approximate roots of polynomial systems in polynomial average time}. Found. Comput. Math. \textbf{17} (2017), 1265--1292.
