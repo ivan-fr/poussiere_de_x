@@ -33,13 +33,13 @@ four critical points (rigorous); (ii) a mixed symbolic/numerical local-descent
 certificate at $(0,0)$; (iii) asymptotic evidence and partial estimates showing
 descent away from compact parameter sets. Combining these gives a
 \emph{proof-candidate program for the centered slice}, not a proof of the full
-quintic MVC. The remaining gaps are explicit: the full Hessian certificate in
-the $\delta a_{\mathrm{re}}$ direction, a rigorous treatment of the discriminant
-locus, and a separate reduction from general marked quintics to this centered
-slice if one wants a proof of the unrestricted $d=5$ case.
+quintic MVC. The remaining gaps are explicit: the mixed second-order cone
+estimate around the $\delta a_{\mathrm{re}}$ axis, a rigorous treatment of the
+discriminant locus, and a separate reduction from general marked quintics to
+this centered slice if one wants a proof of the unrestricted $d=5$ case.
 \end{abstract}
 
-\paragraph{Scope statement.} The main statement (Theorem~\ref{thm:main}) is a proof candidate for the centered slice only, not a completed proof of Smale's MVC for all quintics. Theorems~\ref{thm:product}, \ref{thm:extremal}, and \ref{thm:vieta} are rigorous. Two steps currently rely on mixed symbolic/numerical support: (a) the strict-local-maximum claim of Theorem~\ref{thm:local-max} has a symbolic certificate eliminating three of the four real perturbation directions but falls back to a numerical second-order check for $\delta a_{\mathrm{re}}$; (b) the discriminant-locus case of the compactness argument in Theorem~\ref{thm:main} uses a \L{}ojasiewicz sketch that is not worked out in full. A fully rigorous proof of Smale's MVC for $d = 5$ would additionally require proving that no extremal configuration is lost outside this centered slice.
+\paragraph{Scope statement.} The main statement (Theorem~\ref{thm:main}) is a proof candidate for the centered slice only, not a completed proof of Smale's MVC for all quintics. Theorems~\ref{thm:product}, \ref{thm:extremal}, and \ref{thm:vieta} are rigorous. Two steps currently rely on mixed symbolic/numerical support: (a) the local-maximum claim of Theorem~\ref{thm:local-max} has a symbolic first-order certificate in the $\delta a_{\mathrm{im}},\delta b_{\mathrm{re}},\delta b_{\mathrm{im}}$ directions and an exact quadratic descent computation on the pure $\delta a_{\mathrm{re}}$ axis, but still needs a uniform mixed second-order cone estimate around that axis; (b) the discriminant-locus case of the compactness argument in Theorem~\ref{thm:main} uses a \L{}ojasiewicz sketch that is not worked out in full. A fully rigorous proof of Smale's MVC for $d = 5$ would additionally require proving that no extremal configuration is lost outside this centered slice.
 
 \section{Setup and the Pandrosion reduction}
 
@@ -104,9 +104,9 @@ The critical equation reduces to $5 c^4 + 1 = 0$, so $c^4 = -1/5$ and $c^2 = \pm
 Note that $\tilde{q}(c_k) = 4/5$ is the same complex value at all four critical points (independent of $k$). This degeneracy is the key feature of $P_0$ that makes it the unique extremal: any deformation breaks the symmetry and creates at least one critical point with $|\tilde{q}| < 4/5$. We make this precise in Theorem~\ref{thm:local-max}.
 \end{remark}
 
-\section{Local maximum at the extremal: Hessian negative-definite}
+\section{Local maximum at the extremal: partial symbolic certificate}
 
-\begin{theorem}[Candidate strict local maximum at $(0, 0)$]\label{thm:local-max}
+\begin{theorem}[Candidate local maximum at $(0, 0)$]\label{thm:local-max}
 The function $\Phi: \mathbb{C}^2 \setminus \Delta \to \mathbb{R}_{\ge 0}$ defined by $\Phi(a, b) := \min_j |\tilde{q}(c_j(a, b))|^2$ (where $\Delta$ is the critical-discriminant locus on which two critical points collide) is real-analytic on $\mathbb{C}^2 \setminus \Delta$, and $(0, 0) \in \mathbb{C}^2 \setminus \Delta$ is a \emph{strict local maximum} of $\Phi$ with value $\Phi(0, 0) = (4/5)^2 = 16/25$.
 \end{theorem}
 
@@ -118,7 +118,11 @@ The function $\Phi: \mathbb{C}^2 \setminus \Delta \to \mathbb{R}_{\ge 0}$ define
 |\tilde{q}(c_k(\delta a, \delta b))|^2 = \frac{16}{25} - 2 \mathrm{Re}\!\bigl[\overline{\tilde{q}(c_k^{(0)})} \cdot (\partial_a \tilde{q})|_{c_k^{(0)}} \cdot \delta a + \overline{\tilde{q}(c_k^{(0)})} \cdot (\partial_b \tilde{q})|_{c_k^{(0)}} \cdot \delta b\bigr] + O(\varepsilon^2).
 \label{eq:linear-pert}
 \end{equation}
-We verify (Section~\ref{sec:numerics}) that the linear part has \emph{at least one} $k \in \{0, 1, 2, 3\}$ for which the gradient direction admits negative real part, hence $|\tilde{q}(c_k)|^2 < 16/25 - c \varepsilon$ for some $c > 0$ and that $k$. Therefore $\min_k |\tilde{q}(c_k)|^2 < 16/25$ for any $(\delta a, \delta b) \ne 0$ in a punctured neighbourhood of $(0, 0)$.
+The linear part has at least one negative component whenever
+$(\delta a_{\mathrm{im}},\delta b_{\mathrm{re}},\delta b_{\mathrm{im}})\ne0$.
+Therefore $\min_k|\tilde q(c_k)|^2<16/25-c\varepsilon+O(\varepsilon^2)$ in
+those directions. The pure $\delta a_{\mathrm{re}}$ axis has zero first-order
+rate and must be handled at second order.
 
 \textbf{Symbolic certificate (sympy, script \texttt{prove\_d5\_hessian.py}).} The four linearised rates take the closed form
 \begin{align*}
@@ -132,7 +136,19 @@ Two key identities follow:
 \sum_{k=0}^3 \mathrm{rate}_k(\delta a, \delta b) \;=\; 0, \qquad \sum_{k=0}^3 \mathrm{rate}_k^2 \;=\; \tfrac{1024}{3125}\,\delta a_{\mathrm{im}}^2 + \tfrac{1152\sqrt 5}{3125}\bigl(\delta b_{\mathrm{re}}^2 + \delta b_{\mathrm{im}}^2\bigr).
 \label{eq:hessian-cert}
 \end{equation}
-The first identity (sum $= 0$) reflects the $C_4$-symmetry of the four critical points at the extremal: any first-order deformation displaces them in a balanced way. The second identity (sum of squares strictly positive in $\delta a_{\mathrm{im}}, \delta b_{\mathrm{re}}, \delta b_{\mathrm{im}}$) is the symbolic certificate: \emph{for any direction with at least one of these three coordinates nonzero, at least one $\mathrm{rate}_k$ is strictly nonzero, and since the sum is zero, at least one is strictly negative}. The remaining direction $\delta a_{\mathrm{re}}$ alone produces all four rates $= 0$ at first order; the descent is then quadratic in $\delta a_{\mathrm{re}}$, controlled by the second-order Hessian (verified numerically: $-0.0016$ rate at $\varepsilon = 0.01$, hence $-1.6 \cdot 10^{-2}$ per unit-$\varepsilon^2$).
+The first identity (sum $= 0$) reflects the $C_4$-symmetry of the four critical points at the extremal: any first-order deformation displaces them in a balanced way. The second identity (sum of squares strictly positive in $\delta a_{\mathrm{im}}, \delta b_{\mathrm{re}}, \delta b_{\mathrm{im}}$) is the symbolic certificate: \emph{for any direction with at least one of these three coordinates nonzero, at least one $\mathrm{rate}_k$ is strictly nonzero, and since the sum is zero, at least one is strictly negative}. The remaining direction $\delta a_{\mathrm{re}}$ alone produces all four rates $= 0$ at first order. On that axis the descent is exact: when $b=0$ and $a\in\mathbb{R}$, the two values $y=c^2$ satisfy $5y^2+3ay+1=0$ and
+\[
+q = \frac45+\frac25 ay,
+\qquad
+q_1q_2=\frac{16}{25}-\frac{4a^2}{25}.
+\]
+For $|a|<2/\sqrt3$ the two $q$-values have equal modulus, hence
+\[
+\min_j |\tilde q(c_j)|^2=\frac{16}{25}-\frac{4a^2}{25}<\frac{16}{25}
+\quad (a\ne0).
+\]
+What remains for a complete local proof is a uniform second-order cone estimate
+for mixed directions approaching the $\delta a_{\mathrm{re}}$ axis.
 
 \textbf{Numerical certification.} The perturbation rates measured at $\varepsilon = 0.01$ in eight directions yield (Section~\ref{sec:numerics}, Table~\ref{tab:perturbations}):
 \begin{center}
@@ -151,11 +167,14 @@ $(\tfrac{1}{2}, \tfrac{\sqrt{3}}{2})$ & $0.6360850$ & $-0.391527$ \\
 \bottomrule
 \end{tabular}
 \end{center}
-All rates are strictly negative, confirming the strict local-maximum property.
+All finite-$\varepsilon$ tests decrease; the first-order symbolic certificate
+explains every direction except the pure $a_{\mathrm{re}}$ axis, where the
+descent is quadratic and given by the exact formula above.
 \end{proof}
 
-\begin{remark}[Quartic vs.\ quadratic descent in $\delta a$]
-The rate $-0.001600$ in direction $(+1, 0)$ is anomalously small because the linear part of \eqref{eq:linear-pert} happens to vanish for $\delta b = 0$ (the four critical points retain their $C_4$-symmetry under $a$-deformation alone, so the four values move together). The descent in this direction is therefore quadratic, not linear, in $\varepsilon$. This is consistent with the Hessian structure of the Smale problem in the perturbation theory of \cite{tischler}.
+\begin{remark}[Quadratic descent in $\delta a_{\mathrm{re}}$]
+The rate $-0.001600$ in direction $(+1, 0)$ is anomalously small because the linear part of \eqref{eq:linear-pert} vanishes for the pure real-$a$ direction. The exact computation above gives
+$\Phi(a,0)=16/25-4a^2/25$ for real $a$ near $0$, so at $\varepsilon=0.01$ the drop is $4\varepsilon^2/25=0.000016$, i.e.\ the displayed rate $(\Phi-\Phi(0))/\varepsilon=-0.0016$.
 \end{remark}
 
 \section{Asymptotic descent at infinity: Vieta domination}
@@ -230,7 +249,7 @@ In both cases, $M \le 4/5$, contradicting $M > 4/5$.
 \end{proof}
 
 \begin{remark}[Comparison with the literature on $d = 5$]
-The case $d = 5$ of Smale's MVC remains open in the strict mathematical sense (cf.\ \cite{beardon, conte-vu, dubinin}); our Theorem~\ref{thm:main} is a proof candidate for a centered slice, not a closed proof of the full quintic case. The best general unconditional bound for arbitrary $d$ is $4(d - 1)/d$, due to Beardon, Minda, and Ng~\cite{beardon}. For $d \le 4$, the sharp bound $(d - 1)/d$ was established by Smale himself for $d \le 3$~\cite{smale1981} and by various authors for $d = 4$ (cf.\ Tischler~\cite{tischler}, Sutherland--Tischler, and \cite{conte-vu} for related Blaschke-product results). Our reduction rests on three ingredients: the explicit Pandrosion reduction \eqref{eq:q-tilde}, a strict-local-max Hessian argument at $(0, 0)$ (rigorous in three of four real directions, numerical in the fourth), and the Vieta-domination asymptotics within the slice \eqref{eq:normal-form}.
+The case $d = 5$ of Smale's MVC remains open in the strict mathematical sense (cf.\ \cite{beardon, conte-vu, dubinin}); our Theorem~\ref{thm:main} is a proof candidate for a centered slice, not a closed proof of the full quintic case. The best general unconditional bound for arbitrary $d$ is $4(d - 1)/d$, due to Beardon, Minda, and Ng~\cite{beardon}. For $d \le 4$, the sharp bound $(d - 1)/d$ was established by Smale himself for $d \le 3$~\cite{smale1981} and by various authors for $d = 4$ (cf.\ Tischler~\cite{tischler}, Sutherland--Tischler, and \cite{conte-vu} for related Blaschke-product results). Our reduction rests on three ingredients: the explicit Pandrosion reduction \eqref{eq:q-tilde}, a partial local-maximum certificate at $(0, 0)$ (first-order in three real directions and exact quadratic descent on the pure real-$a$ axis), and the Vieta-domination asymptotics within the slice \eqref{eq:normal-form}.
 \end{remark}
 
 \section{Numerical verification}\label{sec:numerics}
@@ -256,7 +275,7 @@ Random complex & scale $100$  & $5\,000$  & $0.6560$ & $\le 4/5$ \\
 
 \begin{table}[h]
 \centering
-\caption{Perturbation rates from the extremal $(0, 0)$ in eight directions, certifying the strict local-maximum claim of Theorem~\ref{thm:local-max}. All rates are strictly negative.}
+\caption{Perturbation rates from the extremal $(0, 0)$ in eight directions. The pure real-$a$ direction descends quadratically; the other displayed directions descend already at first order.}
 \label{tab:perturbations}
 \begin{tabular}{lcc}
 \toprule
@@ -294,7 +313,7 @@ $\ge 6$ & $(d-1)/d$ (conjectured) & $z^d - z$ (conjectured) & Open \\
 \end{center}
 
 \begin{remark}[Why our proof does not directly extend to $d \ge 6$]
-The compactness argument of Theorem~\ref{thm:main} uses the Vieta product $\prod c_j = 1/d$ to bound $\min_j |c_j| \le d^{-1/(d-1)}$, which gives an asymptotic descent toward $(d-1)/(2d)$ as $\|(a, b, \dots)\| \to \infty$. For $d \ge 6$, the dimension of the parameter space $(a_2, \dots, a_{d-1}) \in \mathbb{C}^{d-2}$ grows, and the Hessian computation at the extremal becomes a $\binom{d-1}{2}$-dimensional problem instead of two-dimensional. The local-maximum proof at the extremal is in principle identical (perturbation in $d - 2$ complex parameters), but the explicit verification of strict negativity of all eigenvalues requires a separate computation for each $d$. We expect the same proof strategy to extend to $d = 6, 7$, with combinatorial complexity growing as $d$ but no fundamental obstacle.
+The compactness argument of Theorem~\ref{thm:main} uses the Vieta product $\prod c_j = 1/d$ to bound $\min_j |c_j| \le d^{-1/(d-1)}$, which gives an asymptotic descent toward $(d-1)/(2d)$ as $\|(a, b, \dots)\| \to \infty$. For $d \ge 6$, the dimension of the parameter space $(a_2, \dots, a_{d-1}) \in \mathbb{C}^{d-2}$ grows, and the local perturbation computation at the extremal becomes higher-dimensional. The strategy may still extend, but each $d$ requires a separate symbolic certificate and a separate treatment of mixed higher-order directions.
 \end{remark}
 
 \begin{thebibliography}{99}
