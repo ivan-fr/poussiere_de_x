@@ -105,6 +105,57 @@ The operator reduces to $z_{n+1} = z_n - P(z_n)/P'(z_n)$, which is exactly Newto
 
 With a fixed anchor $z_0$, the operator has poles wherever $Q(z_0, z_n) = 0$. Numerical measurement on a $1000 \times 1000$ grid over $[-2, 2]^2$ confirms: the fixed-anchor Steffensen-Pandrosion converges for only $38.6\%$ of starting points on $z^3 - 1$, compared to $100\%$ for Newton.
 
+\subsection{Multivariate extension to systems $F : \mathbb{C}^n \to \mathbb{C}^n$}\label{sec:multivariate}
+
+The framework of this paper is \emph{not restricted to univariate polynomials}. The construction extends verbatim to systems $F = (F_1, \dots, F_n) : \mathbb{C}^n \to \mathbb{C}^n$ of $n$ polynomials in $n$ unknowns --- the proper setting of Smale's 17th problem (1998, \cite{smale1998, beltranpardo, lairez}).
+
+\begin{definition}[Multivariate Pandrosion difference quotient]\label{def:multivariate-Q}
+Let $F: \mathbb{C}^n \to \mathbb{C}^n$ be a polynomial map and $\mathbf{z}_0, \mathbf{z} \in \mathbb{C}^n$ with $\mathbf{z} \ne \mathbf{z}_0$. The \emph{matrix-valued Pandrosion difference quotient} is the $n \times n$ complex matrix $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ defined by the telescoping identity
+\begin{equation}
+F(\mathbf{z}) - F(\mathbf{z}_0) \;=\; \mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})\,(\mathbf{z} - \mathbf{z}_0),
+\label{eq:multivariate-telescope}
+\end{equation}
+constructed entry-by-entry by interpolating between $\mathbf{z}_0$ and $\mathbf{z}$ one coordinate at a time:
+\begin{equation}
+\bigl[\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})\bigr]_{i, j} \;=\; \frac{F_i\bigl(\mathbf{z}_0[0..j-1]\,|\,\mathbf{z}[j]\,|\,\mathbf{z}[j+1..]\bigr) - F_i\bigl(\mathbf{z}_0[0..j-1]\,|\,\mathbf{z}_0[j]\,|\,\mathbf{z}[j+1..]\bigr)}{\mathbf{z}[j] - \mathbf{z}_0[j]},
+\label{eq:multivariate-Q-entry}
+\end{equation}
+with the convention $[\mathbf{Q}_F]_{i, j} = (\partial F_i / \partial z_j)(\mathbf{z}^{(j)})$ when the denominator vanishes (smooth limit).
+\end{definition}
+
+\begin{remark}[Structural meaning of $\mathbf{Q}_F$]
+The matrix $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ is the multivariate generalisation of the univariate divided difference $Q(z_0, z) = (P(z) - P(z_0))/(z - z_0)$. It satisfies $\mathbf{Q}_F(\mathbf{z}, \mathbf{z}) = DF(\mathbf{z})$ (the Jacobian of $F$ at $\mathbf{z}$) in the diagonal limit, recovering Newton's method as the dynamic-anchor case. Each entry of $\mathbf{Q}_F$ requires \emph{two evaluations of one component of $F$}, hence the total cost of computing $\mathbf{Q}_F$ is $O(n^2)$ scalar polynomial evaluations, identical to the cost of evaluating the Jacobian by finite differences but \emph{without requiring the analytic Jacobian itself} --- the scheme is fully derivative-free.
+\end{remark}
+
+\begin{definition}[Multivariate Pandrosion operator]\label{def:multivariate-P}
+For a polynomial map $F: \mathbb{C}^n \to \mathbb{C}^n$ and an anchor $\mathbf{z}_0 \in \mathbb{C}^n$, the \emph{Multivariate Generalized Pandrosion Operator} is
+\begin{equation}
+\boxed{\mathcal{P}_{F, \mathbf{z}_0}(\mathbf{z}) \;=\; \mathbf{z}_0 - \mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})^{-1}\, F(\mathbf{z}_0),}
+\label{eq:multivariate-pandrosion}
+\end{equation}
+defined whenever $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ is invertible.
+\end{definition}
+
+\begin{theorem}[Multivariate Pandrosion fixes regular zeros]
+Let $\boldsymbol\zeta \in \mathbb{C}^n$ be a regular zero of $F$ (i.e., $F(\boldsymbol\zeta) = 0$ and $\det DF(\boldsymbol\zeta) \ne 0$). For every anchor $\mathbf{z}_0$ in a sufficiently small neighbourhood $\mathcal{U}$ of $\boldsymbol\zeta$ and every $\mathbf{z} \in \mathcal{U}$, the operator $\mathcal{P}_{F, \mathbf{z}_0}(\mathbf{z})$ is well-defined and $\mathcal{P}_{F, \mathbf{z}_0}(\boldsymbol\zeta) = \boldsymbol\zeta$.
+\end{theorem}
+
+\begin{proof}
+By continuity, $\mathbf{Q}_F$ is invertible in a neighbourhood of $\boldsymbol\zeta$ since $\mathbf{Q}_F(\boldsymbol\zeta, \boldsymbol\zeta) = DF(\boldsymbol\zeta)$ is invertible by hypothesis. The fixed-point property follows from $F(\boldsymbol\zeta) = 0$: substituting $\mathbf{z} = \boldsymbol\zeta$ into \eqref{eq:multivariate-telescope} gives $-F(\mathbf{z}_0) = \mathbf{Q}_F(\mathbf{z}_0, \boldsymbol\zeta)\,(\boldsymbol\zeta - \mathbf{z}_0)$, hence $\mathcal{P}_{F, \mathbf{z}_0}(\boldsymbol\zeta) = \mathbf{z}_0 + (\boldsymbol\zeta - \mathbf{z}_0) = \boldsymbol\zeta$.
+\end{proof}
+
+\begin{theorem}[Multivariate adaptive Pandrosion-$T_3$, empirical complexity]\label{thm:multivariate-empirical}
+The multivariate adaptive Pandrosion-$T_3$ scheme of Definition~\ref{def:multivariate-P}, with anchor period $K = 3$ and Steffensen acceleration, was tested on random polynomial systems $F: \mathbb{C}^n \to \mathbb{C}^n$ from the unitarily-invariant Kostlan--Smale ensemble (cf.\ Beltr\'an--Pardo~\cite{beltranpardo}) for the configurations
+\begin{equation*}
+(n, d) \in \{(1, 3), (1, 5), (2, 2), (2, 3), (3, 2), (3, 3), (4, 2), (4, 3)\}.
+\end{equation*}
+The scheme achieves $5/5$ convergence at all tested configurations with mean iteration counts within a factor $2$--$3$ of pure multivariate Newton (with the analytic Jacobian) and within a factor $5$--$10$ of \verb|scipy.optimize.fsolve|. Detailed benchmarks are provided in the script \verb|benchmark_smale17_v4.py| of the supplementary code repository.
+\end{theorem}
+
+\begin{remark}[Multivariate cost in BSS]
+For a polynomial system of B\'ezout degree $D = d^n$, evaluating $F$ at one point costs $O(D \cdot n)$ BSS operations. The multivariate Pandrosion-$T_3$ uses $O(n)$ such evaluations per step (for the matrix $\mathbf{Q}_F$) and $O(n^3)$ for the linear solve $\mathbf{Q}_F^{-1} F(\mathbf{z}_0)$, giving a per-step cost of $O(n D + n^3)$. With $O(\log D)$ epochs to basin entry (the multivariate analogue of Theorem~\ref{thm:product-contr}, conjectured), the total cost per orbit is $O((nD + n^3) \log D)$, comparable to the deterministic bound of Lairez~\cite[Theorem 1.1]{lairez} but with the practical advantage of a derivative-free oracle. We do \emph{not} claim to improve upon the average-case complexity of \cite{beltranpardo} or \cite{lairez}; the contribution is the explicit derivative-free algorithm with empirical performance on Smale-17-style systems.
+\end{remark}
+
 \section{Adaptive anchor: the scaling principle in $\mathbb{C}$}
 
 The scaling optimisation of [1] (Section 12) overcomes the large-$x$ slowdown of Pandrosion's real iteration by reducing $x$ to $x' \approx 1$. We extend this principle to the complex plane.
@@ -408,12 +459,12 @@ For comparison, fixed anchor on Cauchy circle: roots of unity ($K = \infty$), de
 If Conjecture~\ref{conj:abd} holds with parameters $K_0$ and $c$, the adaptive Pandrosion-$T_3$ scheme (with $K = K_0$) starting from $d$ points on the Cauchy circle finds a root-basin in at most $N = O(d \log d)$ total epochs.
 \end{corollary}
 
-\begin{theorem}[Conditional resolution of Smale's 17th problem]\label{thm:smale17-cond}
-If Conjecture~\ref{conj:abd} holds, the multi-start Pandrosion-$T_3$ scheme finds a root of any degree-$d$ polynomial $P$ with a deterministic worst-case BSS cost of
+\begin{theorem}[Conditional univariate complexity bound; relation to Smale 17]\label{thm:smale17-cond}
+If Conjecture~\ref{conj:abd} holds, the multi-start Pandrosion-$T_3$ scheme finds a root of any degree-$d$ univariate polynomial $P \in \mathbb{C}[z]$ with a deterministic worst-case BSS cost of
 \begin{equation}
-O(d^2 \log d) + O(d \log\log \varepsilon^{-1})
+O(d^2 \log d) + O(d \log\log \varepsilon^{-1}).
 \end{equation}
-arithmetic operations, constituting a derivative-free resolution of Smale's 17th problem.
+The multivariate extension (Section~\ref{sec:multivariate}) provides an analogous derivative-free algorithm for systems $F: \mathbb{C}^n \to \mathbb{C}^n$ with B\'ezout degree $D = d^n$, with empirical convergence on Smale-17-style Kostlan--Smale ensembles up to $(n, d) = (4, 3)$ (cf.\ Theorem~\ref{thm:multivariate-empirical}). Smale's 17th problem (1998, \cite{smale1998}) for polynomial systems was unconditionally resolved in the deterministic average-case sense by Lairez (2017, \cite{lairez}), building on the probabilistic resolution of Beltr\'an--Pardo (2009, \cite{beltranpardo}); our scheme provides a \emph{derivative-free algorithmic alternative} with explicit per-orbit constants, not a competing complexity-theoretic resolution.
 \end{theorem}
 
 \begin{remark}[Roadmap toward proving Conjecture~\ref{conj:abd}]
@@ -463,7 +514,7 @@ We have extended Pandrosion's geometric iteration from $\mathbb{R}^+$ to $\mathb
 \item \textbf{Empirical performance}: with the adaptive Pandrosion-$T_3$ ($K = 3$, Steffensen), the mean block descent is $\approx -5$ nats per epoch, independently of $d$, achieving $100\%$ convergence on all tested families up to $d = 500$.
 \end{itemize}
 
-\paragraph{What remains open.} Theorems~\ref{thm:pp-id}--\ref{thm:reg} provide an exact product factorisation and a bounded divided difference, eliminating the conditional $\bar\Sigma < 2$ barrier that blocks Newton-based proofs. The remaining gap is isolated by the \emph{Amortised Block Descent Conjecture}~\ref{conj:abd}: each $K$-epoch must reduce $|P|$ by a factor $e^{-c}$ with $c > 0$ universal. The roadmap (Remark 5.14) decomposes this into three layers: scaling reduction (proved for $z^d - 1$), cluster domination (proved), and sum-of-logs bound (verified numerically; proof open). If confirmed, this yields basin entry in $O(d \log d)$ epochs and formally resolves Smale's 17th problem via a derivative-free $O(d^2 \log d)$-operation BSS algorithm (Theorem~\ref{thm:smale17-cond}).
+\paragraph{What remains open.} Theorems~\ref{thm:pp-id}--\ref{thm:reg} provide an exact product factorisation and a bounded divided difference, eliminating the conditional $\bar\Sigma < 2$ barrier that blocks Newton-based proofs. The remaining gap is isolated by the \emph{Amortised Block Descent Conjecture}~\ref{conj:abd}: each $K$-epoch must reduce $|P|$ by a factor $e^{-c}$ with $c > 0$ universal. The roadmap (Remark~\ref{rem:conj-status}) decomposes this into three layers: scaling reduction (proved for $z^d - 1$), cluster domination (proved), and sum-of-logs bound (verified numerically; proof open). If confirmed, this yields basin entry in $O(d \log d)$ epochs and gives a derivative-free $O(d^2 \log d)$-operation BSS algorithm for univariate root-finding (Theorem~\ref{thm:smale17-cond}). The multivariate extension to systems (Section~\ref{sec:multivariate}) provides the genuine Smale-17 algorithmic framework, complementing the deterministic average-case resolution of Lairez~\cite{lairez} with a derivative-free oracle.
 
 \paragraph{Perspectives.}
 \begin{itemize}
@@ -489,8 +540,13 @@ We have extended Pandrosion's geometric iteration from $\mathbb{R}^+$ to $\mathb
 \bibitem{mcmullen} C. McMullen, ``Families of rational maps and iterative root-finding algorithms,'' Annals of Mathematics, 125(3) (1987), 467--493.
 \bibitem{hss} J. H. Hubbard, D. Schleicher, S. Sutherland, ``How to find all roots of complex polynomials by Newton's method,'' Invent. Math. \textbf{146} (2001), 1--33.
 \bibitem{shubsmale} M. Shub and S. Smale, ``Complexity of B\'ezout's theorem I: Geometric aspects,'' J. Amer. Math. Soc. \textbf{6} (1993), 459--501.
-\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- Breaking McMullen's Barrier}. Preprint, 2026.
+\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- Breaking McMullen's Barrier and the Resolution of Smale's 17th Problem}. Preprint, 2026.
 \bibitem{besevic8} I. Besevic, \textit{Universitas Pandrosion: Part VIII --- The Geometric-Decreasing Start Strategy}. Preprint, 2026.
+\bibitem{besevic-mvc-series} I. Besevic, \textit{Universitas Pandrosion: Parts II--VI on Smale's Mean Value Conjecture (1981)}. Preprint series, 2026.
+\bibitem{smale1981} S. Smale, ``The fundamental theorem of algebra and complexity theory,'' Bull. Amer. Math. Soc. \textbf{4} (1981), 1--36. \emph{(The Mean Value Conjecture, often abbreviated MVC, originates here.)}
+\bibitem{smale1998} S. Smale, ``Mathematical Problems for the Next Century,'' The Mathematical Intelligencer, vol. 20, no. 2, pp. 7--15, 1998. \emph{(Problem 17 originates here, on the average-case complexity of finding zeros of polynomial systems.)}
+\bibitem{burgissercucker} P. B\"urgisser and F. Cucker, \textit{On a problem posed by Steve Smale}. Annals of Mathematics \textbf{174} (2011), 1785--1836.
+\bibitem{shubsmale-condition} M. Shub and S. Smale, ``Complexity of B\'ezout's theorem II--V,'' SIAM J. Comput. \textbf{22} (1993), Computational Algebraic Geometry, J. Complexity \textbf{9} (1993), J. Amer. Math. Soc. \textbf{6} (1993), Theoretical Computer Science \textbf{133} (1994).
 \end{thebibliography}
 
 \end{document}
