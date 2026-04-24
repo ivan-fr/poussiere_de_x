@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 
-\title{Smale's Mean Value Conjecture for Quintic Polynomials \\ via the Pandrosion Reduction and a Compactness Argument}
+\title{Toward Smale's Mean Value Conjecture for Quintic Polynomials \\ A Pandrosion Reduction and a Compactness Argument \\ \large (proof candidate, with numerical Hessian certificate and a discriminant-locus gap)}
 \author{Ivan Besevic}
 \date{April 2026}
 
@@ -21,8 +21,10 @@
 \maketitle
 
 \begin{abstract}
-We provide a structural reduction of Smale's mean value conjecture for monic quintic polynomials with a fixed root at the origin and $P'(0) = 1$, i.e., $P(z) = z^5 + a z^3 + b z^2 + z$ with $(a, b) \in \mathbb{C}^2$. The Pandrosion reduction yields the explicit formula $\tilde{q}(c) = (1 - 3 c^4 - a c^2)/2$ at each critical point of $P'$, and the product over the four critical points equals $N(a, b)/625$ with $N(a, b) = 16 a^4 - 4 a^3 b^2 - 128 a^2 + 144 a b^2 - 27 b^4 + 256$. We prove that the extremal polynomial $P_0(z) = z^5 + z$ achieves $|\tilde{q}(c)| = 4/5$ at all four critical points (Theorem~\ref{thm:extremal}), that this value is a strict local maximum of $\min_j |\tilde{q}(c_j)|$ over $\mathbb{C}^2$ (Theorem~\ref{thm:local-max}), and that $\min_j |\tilde{q}(c_j)| \to 1/2$ as $\|(a, b)\| \to \infty$ via Vieta's formula $\prod c_j = 1/5$ (Theorem~\ref{thm:large-ab}). Combined with the continuity of $\min_j |\tilde{q}(c_j)|$ off the critical-discriminant locus, these three results establish Smale's bound $\min_j |\tilde{q}(c_j)| \le 4/5$ for $d = 5$ \emph{everywhere} except possibly on the codimension-$1$ discriminant locus, where the bound is recovered by a perturbation argument (Theorem~\ref{thm:main}). The proof is supported by exhaustive numerical verification ($70{,}001$ polynomials tested, $0$ violations) and connects to the Beardon--Minda--Ng hyperbolic-metric framework~\cite{beardon} and the Sutherland--Tischler classification~\cite{tischler}.
+We propose a structural reduction of Smale's mean value conjecture for monic quintic polynomials with a fixed root at the origin and $P'(0) = 1$, i.e., $P(z) = z^5 + a z^3 + b z^2 + z$ with $(a, b) \in \mathbb{C}^2$. The Pandrosion reduction yields the explicit formula $\tilde{q}(c) = (1 - 3 c^4 - a c^2)/2$ at each critical point of $P'$, and the product over the four critical points equals $N(a, b)/625$ with $N(a, b) = 16 a^4 - 4 a^3 b^2 - 128 a^2 + 144 a b^2 - 27 b^4 + 256$. We establish three ingredients: (i) the extremal polynomial $P_0(z) = z^5 + z$ achieves $|\tilde{q}(c)| = 4/5$ at all four critical points (Theorem~\ref{thm:extremal}, rigorous); (ii) a symbolic/numerical Hessian certificate that $(0,0)$ is a strict local maximum of $\min_j |\tilde{q}(c_j)|^2$ in the complement of the discriminant locus $\Delta$ (Theorem~\ref{thm:local-max}); (iii) an asymptotic estimate $\min_j |\tilde{q}(c_j)| \to 1/2$ as $\|(a, b)\| \to \infty$ via Vieta's formula $\prod c_j = 1/5$ (Theorem~\ref{thm:large-ab}). Combining (i)--(iii) with the continuity of $\min_j |\tilde{q}(c_j)|$ off $\Delta$, Theorem~\ref{thm:main} is a \emph{proof candidate} for $d = 5$: its argument is rigorous away from $\Delta$ modulo the Hessian certificate, but the treatment of the discriminant locus itself invokes a \L{}ojasiewicz--analytic-continuation sketch that we consider incomplete, and the symbolic certificate in Theorem~\ref{thm:local-max} verifies the linear-in-$\varepsilon$ descent in three of the four real coordinates and falls back to a numerical check for the direction $\delta a_{\mathrm{re}}$. The construction is supported by exhaustive numerical verification ($70{,}001$ polynomials tested, $0$ violations) and connects to the Beardon--Minda--Ng hyperbolic-metric framework~\cite{beardon} and the Sutherland--Tischler classification~\cite{tischler}. We do \emph{not} claim the conjecture for $d = 5$ is proved in full by this paper; we claim a reduction to two explicit semi-algebraic tasks (the full Hessian certificate in the $\delta a_{\mathrm{re}}$ direction, and the discriminant-locus boundary analysis).
 \end{abstract}
+
+\paragraph{Scope statement.} The main theorem (Theorem~\ref{thm:main}) is stated as a proof candidate, not a completed proof. Three steps are rigorous: Theorems~\ref{thm:product}, \ref{thm:extremal}, \ref{thm:vieta}, \ref{thm:large-ab}. Two steps currently rely on mixed symbolic/numerical support: (a) the strict-local-maximum claim of Theorem~\ref{thm:local-max} has a symbolic certificate eliminating three of the four real perturbation directions but falls back to a numerical second-order check for $\delta a_{\mathrm{re}}$; (b) the discriminant-locus case of the compactness argument in Theorem~\ref{thm:main} uses a \L{}ojasiewicz sketch that is not worked out in full. A fully rigorous proof of Smale's MVC for $d = 5$ would therefore require closing these two gaps; our contribution is the reduction that isolates them.
 
 \section{Setup and the Pandrosion reduction}
 
@@ -169,12 +171,12 @@ Numerical verification (\verb|explore_mvc_d5.py|, Step 5 of large-$|a|+|b|$ regi
 
 \section{The main theorem}
 
-\begin{theorem}[Smale's MVC for $d = 5$]\label{thm:main}
-For every $(a, b) \in \mathbb{C}^2$, the polynomial $P(z) = z^5 + a z^3 + b z^2 + z$ admits a critical point $c$ with
+\begin{theorem}[Smale's MVC for $d = 5$ --- proof candidate]\label{thm:main}
+\emph{Claim, conditional on the gaps identified in the Scope statement:} for every $(a, b) \in \mathbb{C}^2$, the polynomial $P(z) = z^5 + a z^3 + b z^2 + z$ admits a critical point $c$ with
 \begin{equation}
 \left|\frac{P(c)}{c}\right| \le \frac{4}{5},
 \end{equation}
-with equality if and only if $(a, b) = (0, 0)$ (i.e., $P = z^5 + z$, up to rotation $z \mapsto \omega z$ with $\omega^4 = 1$).
+with equality if and only if $(a, b) = (0, 0)$ (i.e., $P = z^5 + z$, up to rotation $z \mapsto \omega z$ with $\omega^4 = 1$). The argument below is rigorous away from the discriminant locus $\Delta$ modulo the Hessian certificate of Theorem~\ref{thm:local-max}; the treatment of $\Delta$ uses a \L{}ojasiewicz sketch that we do not consider complete. In the strict mathematical sense, the MVC for $d = 5$ should therefore be regarded as \emph{open after this paper}, with the remaining gaps made explicit.
 \end{theorem}
 
 \begin{proof}
@@ -199,7 +201,7 @@ In both cases, $M \le 4/5$, contradicting $M > 4/5$.
 \end{proof}
 
 \begin{remark}[Comparison with the literature on $d = 5$]
-The case $d = 5$ of Smale's MVC was previously open (cf.\ \cite{beardon, conte-vu, dubinin}). The best general bound for arbitrary $d$ is $4(d - 1)/d$, due to Beardon, Minda, and Ng~\cite{beardon}. For $d \le 4$, the sharp bound $(d - 1)/d$ was established by Smale himself for $d \le 3$~\cite{smale1981} and by various authors for $d = 4$ (cf.\ Tischler~\cite{tischler}, Sutherland--Tischler, and \cite{conte-vu} for related Blaschke-product results). Our proof for $d = 5$ relies on three ingredients: the explicit Pandrosion reduction \eqref{eq:q-tilde}, the strict-local-max Hessian argument at $(0, 0)$, and the Vieta-domination asymptotics --- all enabled by the choice of normal form \eqref{eq:normal-form}, which exploits the fixed root at the origin.
+The case $d = 5$ of Smale's MVC remains open in the strict mathematical sense (cf.\ \cite{beardon, conte-vu, dubinin}); our Theorem~\ref{thm:main} is a proof candidate, not a closed proof, as indicated in the Scope statement. The best general unconditional bound for arbitrary $d$ is $4(d - 1)/d$, due to Beardon, Minda, and Ng~\cite{beardon}. For $d \le 4$, the sharp bound $(d - 1)/d$ was established by Smale himself for $d \le 3$~\cite{smale1981} and by various authors for $d = 4$ (cf.\ Tischler~\cite{tischler}, Sutherland--Tischler, and \cite{conte-vu} for related Blaschke-product results). Our reduction for $d = 5$ rests on three ingredients: the explicit Pandrosion reduction \eqref{eq:q-tilde}, a strict-local-max Hessian argument at $(0, 0)$ (rigorous in three of four real directions, numerical in the fourth), and the Vieta-domination asymptotics --- all enabled by the choice of normal form \eqref{eq:normal-form}, which exploits the fixed root at the origin.
 \end{remark}
 
 \section{Numerical verification}\label{sec:numerics}

@@ -21,8 +21,10 @@
 \maketitle
 
 \begin{abstract}
-We reformulate Smale's mean value conjecture as a bound on the Pandrosion quotient: $\min_{P'(c) = 0} |Q(0, c)|/|Q(0, 0)| \le (d - 1)/d$, where $Q(z, w) = P(w)/w$. The Pandrosion vanishing identity $\zeta_P(1) = \sum 1/P'(\alpha_k) = 0$ (Paper~30), specialised to a root at the origin, yields the constraint $1 = -\sum 1/(\alpha_k R'(\alpha_k))$, from which Cauchy--Schwarz gives $\min_k |\alpha_k R'(\alpha_k)| \le d - 1$. We identify the extremal polynomial $P = z^d - z$, which attains $\min_c |P(c)/c|/|P'(0)| = (d - 1)/d$ exactly for every $d$. The conjecture is verified on $40{,}000$ random polynomials ($d = 2, \dots, 9$) with zero violations.
+We reformulate Smale's mean value conjecture as a bound on the Pandrosion quotient: $\min_{P'(c) = 0} |Q(0, c)|/|Q(0, 0)| \le (d - 1)/d$, where $Q(z, w) = P(w)/w$. The classical Lagrange--Sylvester identity $\sum 1/P'(\alpha_k) = 0$ (written here in Pandrosion notation as $\zeta_P(1) = 0$), specialised to a root at the origin, yields the constraint $1 = -\sum 1/(\alpha_k R'(\alpha_k))$, from which the triangle inequality gives $\min_k |\alpha_k R'(\alpha_k)| \le d - 1$. This is a root-side bound, not a direct critical-point bound. We identify the extremal polynomial $P = z^d - z$, which attains $\min_c |P(c)/c|/|P'(0)| = (d - 1)/d$ exactly for every $d$, and report a numerical sweep over $40{,}000$ random polynomials ($d = 2, \dots, 9$) with no violations. Section~5 describes what an eventual proof would still require; this paper supplies structural constraints, not a full proof.
 \end{abstract}
+
+\paragraph{Scope statement.} We do \emph{not} claim a proof of Smale's MVC for any $d \ge 4$. Section~2 derives a \emph{root-side} bound $\min_k |\alpha_k R'(\alpha_k)| \le d - 1$ from the classical Lagrange--Sylvester identity; Section~3 gives the critical-point identity $S(c) = |c R'(c)|$; Section~5 explains why these two ingredients alone do not close the MVC and what a completed argument would still need.
 
 \section{Smale's conjecture in Pandrosion form}
 
@@ -126,7 +128,7 @@ Combining the ingredients:
 \item \textbf{Extremal}: $P = z^d - z$ achieves equality, confirming the constant $(d - 1)/d$.
 \end{enumerate}
 
-The full proof of Smale's conjecture reduces to showing that the interaction between the vanishing identity (specialised) and the critical point identity forces $\min_c S(c) \le (d - 1)/d$. The vanishing identity provides the key constraint that is absent from purely geometric approaches.
+A complete proof of Smale's conjecture would require showing that the interaction between the specialised vanishing identity and the critical point identity forces $\min_c S(c) \le (d - 1)/d$. The ingredients above give a \emph{root-side} bound ($\min_k |\alpha_k R'(\alpha_k)| \le d - 1$) and identify the extremal polynomial $z^d - z$; they do not yet provide a sharp critical-point bound, and we do not claim one here.
 
 \section{Verification}
 

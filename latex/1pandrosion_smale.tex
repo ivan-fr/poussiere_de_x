@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 
-\title{Pandrosion Operator and Smale's 17th Problem \\ \large Universal polynomial evaluation, non-local geometry, and the Euler product connection}
+\title{A Pandrosion Operator for Derivative-Free Polynomial Root-Finding \\ \large Universal polynomial evaluation, non-local geometry, and an algorithmic companion to Smale's 17th problem}
 \author{Ivan Besevic}
 \date{April 2026}
 
@@ -46,11 +46,11 @@ for real $x > 0$ and integer $p \ge 2$. That construction, rooted in Pandrosion 
 
 A natural question arises: \emph{does Pandrosion's iteration extend to $\mathbb{C}$?} Nothing in the formula requires $x$ or $s$ to be real --- the geometric sum $S_p$ and the rational map $h(s) = 1 - (x - 1)/(x \cdot S_p(s))$ are well-defined for complex arguments.
 
-This extension is not merely formal. By moving to $\mathbb{C}$, we uncover foundational properties:
+This extension is not merely formal. By moving to $\mathbb{C}$, we expose three structural features:
 \begin{itemize}
-\item \textbf{General Polynomial Resolution}: Pandrosion's root-finding sequence uniquely categorises as an anchor-based difference quotient evaluation applicable uniformly across arbitrary polynomials (Smale's 17th problem algorithm).
-\item \textbf{Fractal boundaries}: the complex topologies generate self-similar boundaries identifying a distinct family of geometric fractals contrasting mechanically against Newton sets.
-\item \textbf{A bridge to number theory}: the infinite geometric sum $S_\infty(s) = (1 - s)^{-1}$ models Euler geometric products natively inside the analytic bounds relevant practically to Riemann's hypothesis constraints.
+\item \textbf{Uniform anchor-based evaluation}: Pandrosion's iteration is a special case of an anchor-based difference-quotient scheme applicable to any polynomial in $\mathbb{C}[z]$, and lifts formally to polynomial systems via a matrix-valued quotient $\mathbf{Q}_F$. This provides a derivative-free algorithmic framework of independent interest, and an algorithmic companion to --- \emph{not} a competing complexity-theoretic resolution of --- Smale's 17th problem (already resolved by Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}).
+\item \textbf{Fractal boundary structure}: the induced complex dynamics exhibit self-similar basin boundaries distinct from those of Newton's method. We describe this structure qualitatively and do not claim new results on complex dynamics itself.
+\item \textbf{A structural rewriting of the Euler product}: the infinite geometric sum $S_\infty(s) = (1 - s)^{-1}$ recasts the Euler factors of $\zeta(s)$ as ``infinite Pandrosion sums''. This is a notational observation and implies \emph{no} consequence for the Riemann Hypothesis.
 \end{itemize}
 
 \paragraph{Outline.} Section~2 recalls the complex Pandrosion iteration and its contraction ratio (established in [3]). Section~3 presents the universal polynomial generalization. Section~4 introduces the adaptive-anchor algorithm. Section~5 develops the rigorous convergence theory. Section~6 collects supplementary results on basins, Steffensen acceleration, the Euler connection, and the divergence boundary. Section~7 concludes.
@@ -540,7 +540,7 @@ We have extended Pandrosion's geometric iteration from $\mathbb{R}^+$ to $\mathb
 \item \textbf{Empirical performance}: with the adaptive Pandrosion-$T_3$ ($K = 3$, Steffensen), the mean block descent is $\approx -5$ nats per epoch, independently of $d$, achieving $100\%$ convergence on all tested families up to $d = 500$.
 \end{itemize}
 
-\paragraph{What remains open.} Theorems~\ref{thm:pp-id}--\ref{thm:reg} provide an exact product factorisation and a bounded divided difference, eliminating the conditional $\bar\Sigma < 2$ barrier that blocks Newton-based proofs. The remaining gap is isolated by the \emph{Amortised Block Descent Conjecture}~\ref{conj:abd}: each $K$-epoch must reduce $|P|$ by a factor $e^{-c}$ with $c > 0$ universal. The roadmap (Remark~\ref{rem:conj-status}) decomposes this into three layers: scaling reduction (proved for $z^d - 1$), cluster domination (proved), and sum-of-logs bound (verified numerically; proof open). If confirmed, this yields basin entry in $O(d \log d)$ epochs and gives a derivative-free $O(d^2 \log d)$-operation BSS algorithm for univariate root-finding (Theorem~\ref{thm:smale17-cond}). The multivariate extension to systems (Section~\ref{sec:multivariate}) provides the genuine Smale-17 algorithmic framework, complementing the deterministic average-case resolution of Lairez~\cite{lairez} with a derivative-free oracle.
+\paragraph{What remains open.} Theorems~\ref{thm:pp-id}--\ref{thm:reg} provide an exact product factorisation and a bounded divided difference, eliminating the conditional $\bar\Sigma < 2$ barrier that blocks Newton-based proofs. The remaining gap is isolated by the \emph{Amortised Block Descent Conjecture}~\ref{conj:abd}: each $K$-epoch should reduce $|P|$ by a factor $e^{-c}$ with $c > 0$ universal. Its strict universal form is known to be false (Remark~\ref{rem:conj-status} and \cite{besevic7}); what remains plausible is a relaxed form holding off a measure-zero set of anchors. The roadmap (Remark~\ref{rem:conj-status}) decomposes this into three layers: scaling reduction (proved for $z^d - 1$), cluster domination (proved), and sum-of-logs bound (observed numerically; proof open). Under this conjectural form, Theorem~\ref{thm:smale17-cond} records a \emph{conditional} derivative-free $O(d^2 \log d)$-operation BSS bound for univariate root-finding. The multivariate extension to systems (Section~\ref{sec:multivariate}) is an algorithmic companion to the unconditional average-case resolutions of Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}, not a replacement for them.
 
 \paragraph{Perspectives.}
 \begin{itemize}

@@ -21,10 +21,12 @@
 \maketitle
 
 \begin{abstract}
-We show that Smale's Mean Value Conjecture (1981) is equivalent to a bound on the \emph{Pandrosion ratio} at critical points. For a polynomial $P$ of degree $n$ and any point $z$, the conjecture asserts that there exists a critical point $\zeta$ with
+We record that Smale's Mean Value Conjecture (1981) can be restated as a bound on the \emph{Pandrosion ratio} at critical points. For a polynomial $P$ of degree $n$ and any point $z$, the conjecture is equivalent to the statement that there exists a critical point $\zeta$ with
 $$ \left|\frac{Q(z, \zeta)}{P'(z)}\right| \;\le\; \frac{n - 1}{n}, $$
-where $Q(z, \zeta) = (P(\zeta) - P(z))/(\zeta - z)$ is the Pandrosion difference quotient. This reformulation reveals the conjecture as a statement about the \emph{quality of critical points as Pandrosion targets}: each critical point mediates a Pandrosion step that is within a factor $(n - 1)/n$ of Newton's step. We prove the equivalence for all $n$, verify the sharp bound computationally for $n \le 10$, and show that for $n = 2$ and $n = 3$ the bound is attained \emph{exactly} (ratio $= 1/2$ and $2/3$ respectively). We establish a new \emph{product identity}: the product $\prod_j |Q(z, \zeta_j)/P'(z)|$ over all critical points equals $|P(z)|^{n-1}/|P'(z)|^{n-1}$ (up to leading coefficient), connecting the conjecture to the Pandrosion product theory of [4].
+where $Q(z, \zeta) = (P(\zeta) - P(z))/(\zeta - z)$ is the Pandrosion difference quotient. This reformulation reads the conjecture as a statement about the \emph{quality of critical points as Pandrosion targets}: each critical point mediates a Pandrosion step that is within a factor $(n - 1)/n$ of Newton's step. We prove the equivalence for all $n$ (trivial in this form), recover the known exact values for $n = 2, 3$ (ratio $= 1/2$ and $2/3$), report extremal-ratio optimisations for $n \le 10$, and record a product identity: $\prod_j Q(z, \zeta_j) = \mathrm{Res}(R, P'/n)$ over all critical points, connecting the ratio bound to the resultant of $R(w) = (P(w)-P(z))/(w-z)$ and $P'/n$.
 \end{abstract}
+
+\paragraph{Scope statement.} This paper is a reformulation, not a new resolution of Smale's MVC. Sections~2 and~3 reproduce the exact values for $n = 2, 3$ in the Pandrosion language; Section~4 reports numerical optimisations for $n = 5, \dots, 10$; Section~5 records a product identity. We do \emph{not} claim progress on the conjecture for $n \ge 5$; the companion Parts IV--VI develop the framework further, and Part VI (``proof candidate'' for $d = 5$) should be read with the gaps made explicit there.
 
 \section{Introduction}
 
