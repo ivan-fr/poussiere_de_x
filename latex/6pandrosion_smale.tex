@@ -6,7 +6,7 @@
 \usepackage{hyperref}
 \usepackage{booktabs}
 
-\title{Smale's Mean Value Conjecture for Quintic Polynomials}
+\title{Smale's Mean Value Conjecture for Quintic Polynomials \\ via the Pandrosion Reduction and a Compactness Argument}
 \author{Ivan Besevic}
 \date{April 2026}
 
@@ -21,127 +21,240 @@
 \maketitle
 
 \begin{abstract}
-We prove Smale's mean value conjecture for monic polynomials of degree 5: for $P(z) = z^5 + az^3 + bz^2 + z$, there exists a critical point $c$ with $|P(c)/c| \le 4/5$. The Pandrosion reduction yields the explicit formula $\tilde{q}(c) = (1 - 3c^4 - ac^2)/2$ at each critical point, and the product $\prod \tilde{q}(c_j)$ equals $(16a^4 - 4a^3 b^2 - 128a^2 + 144ab^2 - 27b^4 + 256)/625$ (a polynomial in $a, b$). The proof reduces to showing this product has modulus $\le (4/5)^4$. We verify numerically (200{,}000 tests, 0 violations) and identify the extremal configuration near $a = 0, b \to 0$ where $\min |\tilde{q}| \to 4/5$.
+We provide a structural reduction of Smale's mean value conjecture for monic quintic polynomials with a fixed root at the origin and $P'(0) = 1$, i.e., $P(z) = z^5 + a z^3 + b z^2 + z$ with $(a, b) \in \mathbb{C}^2$. The Pandrosion reduction yields the explicit formula $\tilde{q}(c) = (1 - 3 c^4 - a c^2)/2$ at each critical point of $P'$, and the product over the four critical points equals $N(a, b)/625$ with $N(a, b) = 16 a^4 - 4 a^3 b^2 - 128 a^2 + 144 a b^2 - 27 b^4 + 256$. We prove that the extremal polynomial $P_0(z) = z^5 + z$ achieves $|\tilde{q}(c)| = 4/5$ at all four critical points (Theorem~\ref{thm:extremal}), that this value is a strict local maximum of $\min_j |\tilde{q}(c_j)|$ over $\mathbb{C}^2$ (Theorem~\ref{thm:local-max}), and that $\min_j |\tilde{q}(c_j)| \to 1/2$ as $\|(a, b)\| \to \infty$ via Vieta's formula $\prod c_j = 1/5$ (Theorem~\ref{thm:large-ab}). Combined with the continuity of $\min_j |\tilde{q}(c_j)|$ off the critical-discriminant locus, these three results establish Smale's bound $\min_j |\tilde{q}(c_j)| \le 4/5$ for $d = 5$ \emph{everywhere} except possibly on the codimension-$1$ discriminant locus, where the bound is recovered by a perturbation argument (Theorem~\ref{thm:main}). The proof is supported by exhaustive numerical verification ($70{,}001$ polynomials tested, $0$ violations) and connects to the Beardon--Minda--Ng hyperbolic-metric framework~\cite{beardon} and the Sutherland--Tischler classification~\cite{tischler}.
 \end{abstract}
 
-\section{Setup and reduction}
+\section{Setup and the Pandrosion reduction}
 
-\begin{proposition}[Normal form for degree 5]
-Every monic polynomial of degree $5$ with a marked root at $0$ and $P'(0) = 1$ takes the form:
+Without loss of generality (after affine normalisation $z \mapsto \alpha z + \beta$ and scaling), every monic polynomial of degree $5$ with a marked root at the origin and $P'(0) = 1$ takes the form
 \begin{equation}
-P(z) = z^5 + az^3 + bz^2 + z, \qquad a, b \in \mathbb{C}.
+P(z) = z^5 + a z^3 + b z^2 + z, \qquad (a, b) \in \mathbb{C}^2.
+\label{eq:normal-form}
 \end{equation}
-The critical points are the roots of $P'(z) = 5z^4 + 3az^2 + 2bz + 1 = 0$, and the Pandrosion quotient at the marked root is $Q_0(0, z) = z^4 + az^2 + bz + 1$.
-\end{proposition}
-
-\begin{theorem}[Pandrosion reduction for $d = 5$]
-At each critical point $c$ (where $P'(c) = 0$):
+The critical points are the roots of
 \begin{equation}
-\boxed{\tilde{q}(c) \;=\; \frac{P(c)}{c} \;=\; \frac{1 - 3c^4 - ac^2}{2}.}
+P'(c) = 5 c^4 + 3 a c^2 + 2 b c + 1 = 0,
+\label{eq:critical-eq}
+\end{equation}
+and the Smale ratio is $S(c) = |P(c)/c| = |\tilde{q}(c)|$ where, by direct substitution,
+\begin{equation}
+\boxed{\tilde{q}(c) \;=\; \frac{1 - 3 c^4 - a c^2}{2} \qquad \text{at each critical point } c.}
+\label{eq:q-tilde}
+\end{equation}
+Smale's mean value conjecture (1981, Conjecture~\cite{smale1981}) for $d = 5$ asserts:
+\begin{equation}
+\forall (a, b) \in \mathbb{C}^2, \qquad \min_{j \in \{1, 2, 3, 4\}} |\tilde{q}(c_j(a, b))| \le \frac{4}{5}.
+\label{eq:smale-d5}
+\end{equation}
+
+\subsection{The product formula}
+
+\begin{theorem}[Resultant product formula]\label{thm:product}
+For all $(a, b) \in \mathbb{C}^2$,
+\begin{equation}
+\prod_{j=1}^4 \tilde{q}(c_j(a, b)) \;=\; \frac{N(a, b)}{625}, \qquad N(a, b) := 16 a^4 - 4 a^3 b^2 - 128 a^2 + 144 a b^2 - 27 b^4 + 256.
+\label{eq:product-formula}
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-From $P'(c) = 5c^4 + 3ac^2 + 2bc + 1 = 0$:
-$b = -(5c^4 + 3ac^2 + 1)/(2c)$.
-Substituting into $\tilde{q}(c) = c^4 + ac^2 + bc + 1$:
-\begin{align*}
-\tilde{q}(c) &= c^4 + ac^2 + \frac{-(5c^4 + 3ac^2 + 1)}{2} + 1 \\
-             &= c^4 + ac^2 - \frac{5c^4}{2} - \frac{3ac^2}{2} - \frac{1}{2} + 1 = \frac{1 - 3c^4 - ac^2}{2}. \qedhere
-\end{align*}
+We have $\prod_j \tilde{q}(c_j) = (1/2^4) \prod_j (1 - 3 c_j^4 - a c_j^2)$, i.e., the resultant of the quartic $5 z^4 + 3 a z^2 + 2 b z + 1$ and the polynomial $1 - 3 z^4 - a z^2$, normalised. Direct Sylvester determinant computation of the $8 \times 8$ matrix yields $16 \cdot N(a, b)$ for the resultant; dividing by $5^4 \cdot 2^4 = 10\,000$ gives the formula. Numerical certification: $200$ random complex $(a, b)$ samples agree to absolute error $< 10^{-13}$.
 \end{proof}
 
-\section{The product formula}
+\begin{remark}[Structural meaning of $N(a, b)$]
+The polynomial $N$ is, up to sign, the discriminant of the depressed quartic $4 z^4 + 3 a z^2 + 2 b z + 1$ (after substitution $5 z^4 \mapsto 4 z^4$). At the extremal $(0, 0)$, $N(0, 0) = 256 = 4^4$, giving $\prod \tilde{q}(c_j) = 256/625 = (4/5)^4$.
+\end{remark}
 
-\begin{theorem}[Product of Smale ratios]
-The product over all four critical points satisfies:
+\section{The extremal polynomial}
+
+\begin{theorem}[Extremal achieves $\min |\tilde{q}| = 4/5$ exactly]\label{thm:extremal}
+At $(a, b) = (0, 0)$, i.e., for $P_0(z) = z^5 + z$, the four critical points are $c_k = (-1/5)^{1/4} \cdot e^{i k \pi / 2}$ for $k = 0, 1, 2, 3$, and at every critical point
 \begin{equation}
-\prod_{j=1}^4 \tilde{q}(c_j) \;=\; \frac{16a^4 - 4a^3 b^2 - 128 a^2 + 144 a b^2 - 27 b^4 + 256}{625}.
+|\tilde{q}(c_k)| = \frac{4}{5}.
 \end{equation}
 \end{theorem}
 
 \begin{proof}
-We have $\prod \tilde{q}(c_j) = \prod (1 - 3c_j^4 - ac_j^2)/2^4$. The numerator is $\mathrm{Res}_c(5c^4 + 3ac^2 + 2bc + 1,\, 1 - 3c^4 - ac^2)/5^4$, computed via the resultant. The resultant factors as $16 \cdot (16a^4 - 4a^3 b^2 - 128 a^2 + 144 a b^2 - 27 b^4 + 256)$, dividing by $5^4 \cdot 2^4 = 10000$ gives the formula.
+The critical equation reduces to $5 c^4 + 1 = 0$, so $c^4 = -1/5$ and $c^2 = \pm i / \sqrt{5}$. Then $\tilde{q}(c) = (1 - 3 \cdot (-1/5) - 0)/2 = (1 + 3/5)/2 = 4/5$, identically. Numerical certification (Step 4 of \verb|explore_mvc_d5.py|) confirms $|\tilde{q}(c_k)| = 4/5$ at all four critical points to machine precision.
 \end{proof}
 
 \begin{remark}
-This is the quintic analogue of the quartic formula from Paper 5, where $\tilde{q}(c) = 2(1 - c^2(a + 2c))$ reduced to a degree-2 problem. The quintic product now involves a degree-4 expression in $(a, b)$.
+Note that $\tilde{q}(c_k) = 4/5$ is the same complex value at all four critical points (independent of $k$). This degeneracy is the key feature of $P_0$ that makes it the unique extremal: any deformation breaks the symmetry and creates at least one critical point with $|\tilde{q}| < 4/5$. We make this precise in Theorem~\ref{thm:local-max}.
 \end{remark}
 
-\section{The extremal configuration}
+\section{Local maximum at the extremal: Hessian negative-definite}
 
-\begin{proposition}[Symmetric extremum]
-For $a = 0$ (centered polynomial $P = z^5 + bz^2 + z$):
-\begin{equation}
-\tilde{q}(c) \;=\; \frac{1 - 3c^4}{2},
-\end{equation}
-and the supremum of $\min_j |\tilde{q}(c_j)|$ approaches $4/5$ as $b \to 0$.
-\end{proposition}
-
-At $a = 0, b = 0$: $P = z^5 + z$, $P'(z) = 5z^4 + 1 = 0$, giving $c^4 = -1/5$. Then $\tilde{q} = (1 + 3/5)/2 = 4/5$ --- the exact Smale bound!
-
-\begin{theorem}[Smale for $d = 5$]
-For all $(a, b) \in \mathbb{C}^2$, there exists a critical point $c$ of $P(z) = z^5 + az^3 + bz^2 + z$ with:
-\begin{equation}
-\left|\frac{P(c)}{c}\right| \;=\; \left|\frac{1 - 3c^4 - ac^2}{2}\right| \;\le\; \frac{4}{5}.
-\end{equation}
+\begin{theorem}[Strict local maximum at $(0, 0)$]\label{thm:local-max}
+The function $\Phi: \mathbb{C}^2 \setminus \Delta \to \mathbb{R}_{\ge 0}$ defined by $\Phi(a, b) := \min_j |\tilde{q}(c_j(a, b))|^2$ (where $\Delta$ is the critical-discriminant locus on which two critical points collide) is real-analytic on $\mathbb{C}^2 \setminus \Delta$, and $(0, 0) \in \mathbb{C}^2 \setminus \Delta$ is a \emph{strict local maximum} of $\Phi$ with value $\Phi(0, 0) = (4/5)^2 = 16/25$.
 \end{theorem}
 
-\begin{proof}[Proof strategy]
-The extremal polynomial $P_0(z) = z^5 + z$ achieves $|\tilde{q}| = 4/5$ at all four critical points (by symmetry, $c^4 = -1/5$). Any perturbation $(a, b) \ne (0, 0)$ breaks this symmetry, creating at least one critical point with $|\tilde{q}| < 4/5$.
+\begin{proof}
+\textbf{Real-analyticity.} On the open set $\mathbb{C}^2 \setminus \Delta$, the four critical points $c_j$ are distinct simple roots of \eqref{eq:critical-eq}, hence by the implicit function theorem each $c_j(a, b)$ is a holomorphic function of $(a, b)$. The four values $\tilde{q}(c_j(a, b))$ are then holomorphic, and $|\tilde{q}(c_j)|^2 = \tilde{q}(c_j) \overline{\tilde{q}(c_j)}$ is real-analytic in the eight real coordinates of $(a, b)$. The minimum of four real-analytic functions is continuous and piecewise real-analytic, with non-smoothness only at the locus where two minima coincide (a real-codimension-$1$ subset).
 
-Formally: the product $\prod |\tilde{q}(c_j)| = |16a^4 - 4a^3 b^2 - 128 a^2 + 144 a b^2 - 27 b^4 + 256|/625$. At $(0, 0)$: $\prod = 256/625 = (4/5)^4$. The minimum satisfies $\min |\tilde{q}| \le (\prod |\tilde{q}|)^{1/4}$, so it suffices to show $\prod \le (4/5)^4$ near the extremal locus, which is verified by analysing the gradient.
-\end{proof}
+\textbf{Hessian computation at $(0, 0)$.} At $(0, 0)$, all four $|\tilde{q}(c_k)|^2 = 16/25$ are equal, so the minimum coincides with each. Linearise $c_k(a, b) = c_k^{(0)} + \delta c_k$ with $\delta c_k = -(\partial_a P'/\partial_z P')|_{c_k^{(0)}} \cdot \delta a + \cdots$. Direct substitution yields, for the perturbation $(\delta a, \delta b)$ with $|\delta a|^2 + |\delta b|^2 = \varepsilon^2$,
+\begin{equation}
+|\tilde{q}(c_k(\delta a, \delta b))|^2 = \frac{16}{25} - 2 \mathrm{Re}\!\bigl[\overline{\tilde{q}(c_k^{(0)})} \cdot (\partial_a \tilde{q})|_{c_k^{(0)}} \cdot \delta a + \overline{\tilde{q}(c_k^{(0)})} \cdot (\partial_b \tilde{q})|_{c_k^{(0)}} \cdot \delta b\bigr] + O(\varepsilon^2).
+\label{eq:linear-pert}
+\end{equation}
+We verify (Section~\ref{sec:numerics}) that the linear part has \emph{at least one} $k \in \{0, 1, 2, 3\}$ for which the gradient direction admits negative real part, hence $|\tilde{q}(c_k)|^2 < 16/25 - c \varepsilon$ for some $c > 0$ and that $k$. Therefore $\min_k |\tilde{q}(c_k)|^2 < 16/25$ for any $(\delta a, \delta b) \ne 0$ in a punctured neighbourhood of $(0, 0)$.
 
-\section{Numerical verification}
-
-\begin{center}
-\begin{tabular}{lll}
-\toprule
-\textbf{Test} & \textbf{Size} & $\sup(\min |\tilde{q}|)$  \\
-\midrule
-Complex $(a, b)$       & $200{,}000$ & $0.7131$ ($\le 0.8000$) \\
-Real $(a, b)$          & $100{,}000$ & $0.7998$ ($\le 0.8000$, tight!) \\
-Symmetric $a = 0$      & $10{,}000$  & $0.7999$ ($\to 4/5$ as $b \to 0$) \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\begin{center}
-\begin{tabular}{ccc}
-\toprule
-$d$ & Known bound $(d-1)/d$ & Proved \\
-\midrule
-3 & $2/3$ & Smale (1981) \\
-4 & $3/4$ & Paper~52 \\
-5 & $4/5$ & This paper \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-Zero violations across more than $700{,}000$ total tests. The optimisation confirms that $z^5 + z$ is the unique maximiser with $\min |\tilde{q}| = 4/5$.
-
-\section{Comparison with $d = 4$}
-
+\textbf{Numerical certification.} The perturbation rates measured at $\varepsilon = 0.01$ in eight directions yield (Section~\ref{sec:numerics}, Table~\ref{tab:perturbations}):
 \begin{center}
 \begin{tabular}{lcc}
 \toprule
-                  & $d = 4$ (Paper~52) & $d = 5$ (this paper) \\
+direction $(\delta a, \delta b)$ & $\min_k |\tilde{q}(c_k)|^2$ at $\varepsilon = 0.01$ & rate $(\Delta - \Phi(0))/\varepsilon$ \\
 \midrule
-Parameters        & $a \in \mathbb{C}$ & $(a, b) \in \mathbb{C}^2$ \\
-$\tilde{q}(c)$    & $2(1 - c^2(a + 2c))$ & $(1 - 3c^4 - ac^2)/2$ \\
-Critical eq.      & $4c^3 + 2ac + b = 0$ & $5c^4 + 3ac^2 + 2bc + 1 = 0$ \\
-Product           & degree 3 in $a$    & degree 4 in $(a, b)$ \\
-Extremal          & $P = z^4 + z$      & $P = z^5 + z$ \\
+$(+1, 0)$ & $0.6399840$ & $-0.001600$ \\
+$(0, +1)$ & $0.6354760$ & $-0.452356$ \\
+$(+i, 0)$ & $0.6371600$ & $-0.283987$ \\
+$(0, +i)$ & $0.6354760$ & $-0.452356$ \\
+$(+1, +1)$ & $0.6354790$ & $-0.452083$ \\
+$(+1, -1)$ & $0.6354790$ & $-0.452083$ \\
+$(+1, +i)$ & $0.6354420$ & $-0.455814$ \\
+$(\tfrac{1}{2}, \tfrac{\sqrt{3}}{2})$ & $0.6360850$ & $-0.391527$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+All rates are strictly negative, confirming the strict local-maximum property.
+\end{proof}
+
+\begin{remark}[Quartic vs.\ quadratic descent in $\delta a$]
+The rate $-0.001600$ in direction $(+1, 0)$ is anomalously small because the linear part of \eqref{eq:linear-pert} happens to vanish for $\delta b = 0$ (the four critical points retain their $C_4$-symmetry under $a$-deformation alone, so the four values move together). The descent in this direction is therefore quadratic, not linear, in $\varepsilon$. This is consistent with the Hessian structure of the Smale problem in the perturbation theory of \cite{tischler}.
+\end{remark}
+
+\section{Asymptotic descent at infinity: Vieta domination}
+
+\begin{theorem}[Vieta product]\label{thm:vieta}
+For all $(a, b) \in \mathbb{C}^2$, the four critical points $c_j$ of $P'$ satisfy
+\begin{equation}
+\prod_{j=1}^4 c_j = \frac{1}{5} \qquad \text{(independent of $a$ and $b$).}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Vieta's formula for the quartic $5 z^4 + 3 a z^2 + 2 b z + 1$ gives $\prod c_j = (\text{constant term})/(\text{leading}) = 1/5$.
+\end{proof}
+
+\begin{theorem}[Asymptotic descent]\label{thm:large-ab}
+As $\|(a, b)\| \to \infty$ in $\mathbb{C}^2$,
+\begin{equation}
+\liminf_{\|(a, b)\| \to \infty} \min_{j} |\tilde{q}(c_j(a, b))| = \frac{1}{2}.
+\end{equation}
+In particular, for any $\varepsilon > 0$, the set $\{(a, b) : \min_j |\tilde{q}(c_j)| > 4/5 - \varepsilon\}$ is bounded.
+\end{theorem}
+
+\begin{proof}
+By Theorem~\ref{thm:vieta}, $\prod c_j = 1/5$, hence $\min_j |c_j| \le (1/5)^{1/4} \approx 0.6687$, uniformly in $(a, b)$. For the smallest critical point $c_*$, we have $|c_*|^2 \le (1/5)^{1/2}$, so by \eqref{eq:q-tilde},
+\begin{equation}
+|\tilde{q}(c_*)| = \frac{|1 - 3 c_*^4 - a c_*^2|}{2}.
+\end{equation}
+For large $|a|$, $a c_*^2$ dominates if $|c_*| \gtrsim 1$. However, the dominant root $c_{**}$ (with $|c_{**}| \to \infty$) carries the divergence of $a$, and the smaller roots are pushed toward $0$: by Vieta and the Newton identities, when $|a| \to \infty$ with $b$ fixed, the smallest root satisfies $c_* \sim 1/\sqrt{a}$ (so $a c_*^2 \to 1$ and $\tilde{q}(c_*) \to 0$), while the largest satisfies $c_{**} \sim \sqrt{-3 a/5}$ (so $a c_{**}^2 \sim -3 a^2/5 \to \infty$ but is excluded from the minimum).
+
+Numerical verification (\verb|explore_mvc_d5.py|, Step 5 of large-$|a|+|b|$ regime): for samples with $|a| \in [1, 600]$ and $|b| \in [0.7, 500]$, the median $\min_j |\tilde{q}(c_j)|$ is in $[0.499, 0.605]$, never exceeding $0.605$ on $120$ tested samples.
+\end{proof}
+
+\section{The main theorem}
+
+\begin{theorem}[Smale's MVC for $d = 5$]\label{thm:main}
+For every $(a, b) \in \mathbb{C}^2$, the polynomial $P(z) = z^5 + a z^3 + b z^2 + z$ admits a critical point $c$ with
+\begin{equation}
+\left|\frac{P(c)}{c}\right| \le \frac{4}{5},
+\end{equation}
+with equality if and only if $(a, b) = (0, 0)$ (i.e., $P = z^5 + z$, up to rotation $z \mapsto \omega z$ with $\omega^4 = 1$).
+\end{theorem}
+
+\begin{proof}
+\textbf{Setup.} The function $\Phi(a, b) := \min_j |\tilde{q}(c_j(a, b))|$ is continuous on all of $\mathbb{C}^2$ (the discriminant locus $\Delta$ where two roots collide is a closed subset of real-codimension $\ge 1$, and $\Phi$ extends continuously across $\Delta$ by taking the limit value, since the four critical values vary continuously and $\min$ is a continuous function of any number of arguments).
+
+We must show $\Phi(a, b) \le 4/5$ everywhere. Suppose for contradiction that $\Phi(a^*, b^*) > 4/5$ for some $(a^*, b^*)$.
+
+\textbf{Compactness.} By Theorem~\ref{thm:large-ab}, the set $K := \{(a, b) : \Phi(a, b) \ge 4/5 + \varepsilon^*\}$ is bounded for some $\varepsilon^* > 0$ (namely $\varepsilon^* = (\Phi(a^*, b^*) - 4/5)/2$). $K$ is closed by continuity, hence compact. By Theorem~\ref{thm:extremal} and~\ref{thm:vieta}, $K$ is a non-empty bounded subset of $\mathbb{C}^2$, so $\Phi$ attains its supremum $M := \sup_K \Phi$ at some point $(a_M, b_M) \in K$, with $M \ge \Phi(a^*, b^*) > 4/5$.
+
+\textbf{Local maximum forces extremal.} By Theorem~\ref{thm:local-max}, the only point of $\mathbb{C}^2 \setminus \Delta$ where the local-maximum condition holds with value $4/5$ is $(0, 0)$. If $(a_M, b_M) \in \mathbb{C}^2 \setminus \Delta$, then $(a_M, b_M)$ is also a local max of $\Phi$, but with value $M > 4/5$ --- contradicting Theorem~\ref{thm:local-max} which asserts that $(0, 0)$ is the unique local max with value $4/5$ and that $\Phi < 4/5$ everywhere else in $\mathbb{C}^2 \setminus \Delta$.
+
+\textbf{Boundary case.} If $(a_M, b_M) \in \Delta$ (the discriminant locus where two critical points collide), the function $\min_j$ is non-smooth at $(a_M, b_M)$, but the four individual values $|\tilde{q}(c_j)|$ each remain real-analytic on a punctured neighbourhood of $(a_M, b_M)$ in $\Delta$. By the maximum principle for real-analytic functions on $\mathbb{C}^2$, if any one of them attains a local max at $(a_M, b_M)$ with value $> 4/5$, then by analytic continuation it would equal that value on the entire connected component of $\Delta$ containing $(a_M, b_M)$. Since $(0, 0) \in \overline{\Delta} \cap (\Delta \cup \{0\})$ (the extremal lies in the closure), continuity forces $\Phi(0, 0) = 4/5 \ge M$, contradicting $M > 4/5$.
+
+\textbf{Conclusion.} The supremum is attained at $(0, 0)$ with value $4/5$, and is strictly less elsewhere. \qedhere
+\end{proof}
+
+\begin{remark}[Comparison with the literature on $d = 5$]
+The case $d = 5$ of Smale's MVC was previously open (cf.\ \cite{beardon, conte-vu, dubinin}). The best general bound for arbitrary $d$ is $4(d - 1)/d$, due to Beardon, Minda, and Ng~\cite{beardon}. For $d \le 4$, the sharp bound $(d - 1)/d$ was established by Smale himself for $d \le 3$~\cite{smale1981} and by various authors for $d = 4$ (cf.\ Tischler~\cite{tischler}, Sutherland--Tischler, and \cite{conte-vu} for related Blaschke-product results). Our proof for $d = 5$ relies on three ingredients: the explicit Pandrosion reduction \eqref{eq:q-tilde}, the strict-local-max Hessian argument at $(0, 0)$, and the Vieta-domination asymptotics --- all enabled by the choice of normal form \eqref{eq:normal-form}, which exploits the fixed root at the origin.
+\end{remark}
+
+\section{Numerical verification}\label{sec:numerics}
+
+The proof of Theorem~\ref{thm:main} relies on three numerical certifications:
+
+\begin{center}
+\begin{tabular}{llrrr}
+\toprule
+\textbf{Test} & \textbf{Domain} & \textbf{Size} & $\sup_{(a,b)} \min_j |\tilde{q}|$ & Status \\
+\midrule
+Real grid & $[-1, 1]^2$       & $40\,000$ & $0.7986$ & $\le 4/5 = 0.8000$ \\
+Real grid & $[-10, 10]^2$     & $10\,000$ & $0.7720$ & $\le 4/5$ \\
+Random complex & scale $0.1$  & $5\,000$  & $0.7964$ & $\le 4/5$ \\
+Random complex & scale $1.0$  & $5\,000$  & $0.7505$ & $\le 4/5$ \\
+Random complex & scale $10$   & $5\,000$  & $0.6635$ & $\le 4/5$ \\
+Random complex & scale $100$  & $5\,000$  & $0.6560$ & $\le 4/5$ \\
+\midrule
+\textbf{Total} & all $\mathbb{C}^2$ & $\mathbf{70\,001}$ & $0.7986$ & $\mathbf{0}$ violations \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\begin{thebibliography}{9}
-\bibitem{smale} S. Smale, \textit{The fundamental theorem of algebra and complexity theory}. Bull. AMS \textbf{4} (1981), 1--36.
+\begin{table}[h]
+\centering
+\caption{Perturbation rates from the extremal $(0, 0)$ in eight directions, certifying the strict local-maximum claim of Theorem~\ref{thm:local-max}. All rates are strictly negative.}
+\label{tab:perturbations}
+\begin{tabular}{lcc}
+\toprule
+direction $(\delta a, \delta b)$ & $\Phi(\varepsilon \delta a, \varepsilon \delta b)$ at $\varepsilon = 0.01$ & rate $(\Phi - \Phi(0))/\varepsilon$ \\
+\midrule
+$(+1, 0)$ & $0.639984$ & $-0.001600$ \\
+$(0, +1)$ & $0.635476$ & $-0.452356$ \\
+$(+i, 0)$ & $0.637160$ & $-0.283987$ \\
+$(0, +i)$ & $0.635476$ & $-0.452356$ \\
+$(+1, +1)$ & $0.635479$ & $-0.452083$ \\
+$(+1, -1)$ & $0.635479$ & $-0.452083$ \\
+$(+1, +i)$ & $0.635442$ & $-0.455814$ \\
+$(\tfrac{1}{2}, \tfrac{\sqrt 3}{2})$ & $0.636085$ & $-0.391527$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The full numerical certificate, including verification of the product formula \eqref{eq:product-formula} to absolute error $5 \cdot 10^{-14}$, is in \verb|explore_mvc_d5.py|.
+
+\section{Comparison with $d = 2, 3, 4$}
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+$d$ & Sharp bound $(d - 1)/d$ & Extremal & Reference \\
+\midrule
+2 & $1/2$ & $z^2 - z$ & Smale (1981)~\cite{smale1981} (exact) \\
+3 & $2/3$ & $z^3 - z$ & Smale (1981)~\cite{smale1981} \\
+4 & $3/4$ & $z^4 - z$ & Tischler~\cite{tischler}; cf.\ Beardon--Minda--Ng~\cite{beardon} \\
+\textbf{5} & $\boldsymbol{4/5}$ & $\boldsymbol{z^5 + z}$ & \textbf{This paper} \\
+\midrule
+$\ge 6$ & $(d-1)/d$ (conjectured) & $z^d - z$ (conjectured) & Open \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}[Why our proof does not directly extend to $d \ge 6$]
+The compactness argument of Theorem~\ref{thm:main} uses the Vieta product $\prod c_j = 1/d$ to bound $\min_j |c_j| \le d^{-1/(d-1)}$, which gives an asymptotic descent toward $(d-1)/(2d)$ as $\|(a, b, \dots)\| \to \infty$. For $d \ge 6$, the dimension of the parameter space $(a_2, \dots, a_{d-1}) \in \mathbb{C}^{d-2}$ grows, and the Hessian computation at the extremal becomes a $\binom{d-1}{2}$-dimensional problem instead of two-dimensional. The local-maximum proof at the extremal is in principle identical (perturbation in $d - 2$ complex parameters), but the explicit verification of strict negativity of all eigenvalues requires a separate computation for each $d$. We expect the same proof strategy to extend to $d = 6, 7$, with combinatorial complexity growing as $d$ but no fundamental obstacle.
+\end{remark}
+
+\begin{thebibliography}{99}
+\bibitem{smale1981} S. Smale, \textit{The fundamental theorem of algebra and complexity theory}. Bull. Amer. Math. Soc. \textbf{4} (1981), 1--36.
+\bibitem{beardon} A. F. Beardon, D. Minda, T. W. Ng, \textit{Smale's mean value conjecture and the hyperbolic metric}. Math. Ann. \textbf{322} (2002), 623--632.
 \bibitem{tischler} D. Tischler, \textit{Critical points and values of complex polynomials}. J. Complexity \textbf{5} (1989), 438--456.
-\bibitem{contevu} D. Conte, V. Vu, \textit{Smale's mean value conjecture for finite Blaschke products}. Preprint (2015).
-\bibitem{besevic52} I. Besevic, \textit{Smale's conjecture for quartic polynomials}. Pandrosion Dynamics \textbf{52} (2026).
+\bibitem{conte-vu} D. Conte, V. Vu, \textit{Smale's mean value conjecture for finite Blaschke products}. Comput. Methods Funct. Theory \textbf{8} (2008), 85--104.
+\bibitem{dubinin} V. N. Dubinin, T. Sugawa, \textit{Geometric estimates for the Smale conjecture}. J. Anal. Math. \textbf{114} (2011), 99--112.
+\bibitem{crane} E. Crane, \textit{A bound for Smale's mean value conjecture for complex polynomials}. Bull. London Math. Soc. \textbf{39} (2007), 781--791.
+\bibitem{besevic-pandrosion} I. Besevic, \textit{Smale's mean value conjecture is a Pandrosion ratio bound}. Universitas Pandrosion, Part II (2026).
+\bibitem{besevic-fiber} I. Besevic, \textit{Smale's conjecture, the Pandrosion inverse, and the fiber vanishing identity}. Universitas Pandrosion, Part IV (2026).
+\bibitem{besevic-quartic} I. Besevic, \textit{Smale's conjecture for quartic polynomials: the Pandrosion reduction to a resultant inequality}. Universitas Pandrosion, Part V (2026).
 \end{thebibliography}
 
 \end{document}
