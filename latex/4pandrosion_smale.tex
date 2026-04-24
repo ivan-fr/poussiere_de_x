@@ -53,10 +53,12 @@ $Q_2(c, 0) = -P(c)/c^2$, and since $Q_2$ is monic, $|Q_2(c, 0)| = \prod |z_j|$. 
 
 \section{The three-identity system}
 
-\begin{theorem}[Root vanishing]
+\begin{theorem}[Root vanishing --- classical Lagrange--Sylvester identity]
+For any polynomial $P$ of degree $d \ge 2$ with simple roots $\alpha_0, \dots, \alpha_{d-1}$,
 \begin{equation}
 \sum_{j=0}^{d-1} \frac{1}{P'(\alpha_j)} \;=\; 0.
 \end{equation}
+This is the partial-fraction identity for $1/P(z)$ in the limit $z \to \infty$ (the coefficient of $1/z$ in the Laurent expansion of $1/P$ vanishes when $\deg P \ge 2$); see Markushevich~\cite{markushevich}, Vol.~I, Ch.~5. We restate it here in Pandrosion notation for the use of \S\ref{sec:reduction}.
 \end{theorem}
 
 \begin{theorem}[Fiber-bridge]
@@ -88,7 +90,7 @@ With $u_j = 1/((\alpha_j - c) P'(\alpha_j))$ and $v_j = \alpha_j - c$:
 \end{equation}
 \end{proposition}
 
-\section{The Pandrosion reduction}
+\section{The Pandrosion reduction}\label{sec:reduction}
 
 \begin{theorem}[Pandrosion reduction]
 At each critical point $c$ (where $P'(c) = 0$):
@@ -180,6 +182,7 @@ The Pandrosion inverse reveals Smale's conjecture as a statement about the branc
 \bibitem{crane} E. Crane, \textit{A bound for Smale's mean value conjecture for complex polynomials}. Bull. London Math. Soc. \textbf{39} (2007), 781--791.
 \bibitem{dubinin} V. N. Dubinin, T. Sugawa, \textit{Geometric estimates for the Smale conjecture}. J. Anal. Math. \textbf{114} (2011), 99--112.
 \bibitem{besevic-quintic} I. Besevic, \textit{Smale's mean value conjecture for quintic polynomials}. Universitas Pandrosion, Part VI (2026).
+\bibitem{markushevich} A. I. Markushevich, \textit{Theory of Functions of a Complex Variable}, 3 vols., 2nd ed., AMS Chelsea Publishing, 1977.
 \end{thebibliography}
 
 \end{document}

@@ -109,7 +109,9 @@ With a fixed anchor $z_0$, the operator has poles wherever $Q(z_0, z_n) = 0$. Nu
 
 The framework of this paper is \emph{not restricted to univariate polynomials}. The construction extends verbatim to systems $F = (F_1, \dots, F_n) : \mathbb{C}^n \to \mathbb{C}^n$ of $n$ polynomials in $n$ unknowns --- the proper setting of Smale's 17th problem (1998, \cite{smale1998, beltranpardo, lairez}).
 
-\begin{definition}[Multivariate Pandrosion difference quotient]\label{def:multivariate-Q}
+\paragraph{Acknowledgment of classical prior art.} The matrix-valued divided difference $\mathbf{Q}_F$ that we use is \emph{not new}. It is the \emph{Schmidt slope matrix} (also called the \emph{Steffensen divided difference operator for systems}), introduced in \cite{schmidt1963} and developed systematically in \cite[Chapter 11]{ortegarheinboldt1970}. The corresponding fixed-point iteration $\mathbf{z}_{n+1} = \mathbf{z}_0 - \mathbf{Q}_F^{-1} F(\mathbf{z}_0)$ is the classical \emph{multivariate secant method} when the anchor is fixed, and reduces to multivariate Newton when the anchor tracks the iterate. Recent derivative-free methods exploiting variants of this slope matrix include Grau-S\'anchez--Noguera--Amat~\cite{grausanchez2011} (Ostrowski-type), Amat--Busquier~\cite{amat-busquier} (Steffensen-Newton hybrids), and the textbook treatment of Potra--Pt\'ak~\cite{potraptak1984}. Our \emph{specific} contribution here is not the slope matrix itself, but its combination with: (i) the \emph{periodic adaptive reanchoring} of Definition~\ref{def:adaptive-pandrosion-recall} (the scaling principle borrowed from \cite{besevic-real}), (ii) the higher-order Aitken-Steffensen acceleration $T_3$, and (iii) the non-holomorphic fallback of \cite{besevic7}. We restate Schmidt's slope matrix below for self-containment.
+
+\begin{definition}[Schmidt slope matrix; multivariate Pandrosion difference quotient]\label{def:multivariate-Q}
 Let $F: \mathbb{C}^n \to \mathbb{C}^n$ be a polynomial map and $\mathbf{z}_0, \mathbf{z} \in \mathbb{C}^n$ with $\mathbf{z} \ne \mathbf{z}_0$. The \emph{matrix-valued Pandrosion difference quotient} is the $n \times n$ complex matrix $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ defined by the telescoping identity
 \begin{equation}
 F(\mathbf{z}) - F(\mathbf{z}_0) \;=\; \mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})\,(\mathbf{z} - \mathbf{z}_0),
@@ -123,9 +125,13 @@ constructed entry-by-entry by interpolating between $\mathbf{z}_0$ and $\mathbf{
 with the convention $[\mathbf{Q}_F]_{i, j} = (\partial F_i / \partial z_j)(\mathbf{z}^{(j)})$ when the denominator vanishes (smooth limit).
 \end{definition}
 
-\begin{remark}[Structural meaning of $\mathbf{Q}_F$]
-The matrix $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ is the multivariate generalisation of the univariate divided difference $Q(z_0, z) = (P(z) - P(z_0))/(z - z_0)$. It satisfies $\mathbf{Q}_F(\mathbf{z}, \mathbf{z}) = DF(\mathbf{z})$ (the Jacobian of $F$ at $\mathbf{z}$) in the diagonal limit, recovering Newton's method as the dynamic-anchor case. Each entry of $\mathbf{Q}_F$ requires \emph{two evaluations of one component of $F$}, hence the total cost of computing $\mathbf{Q}_F$ is $O(n^2)$ scalar polynomial evaluations, identical to the cost of evaluating the Jacobian by finite differences but \emph{without requiring the analytic Jacobian itself} --- the scheme is fully derivative-free.
+\begin{remark}[Structural meaning of $\mathbf{Q}_F$ and its history]
+The matrix $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ is the multivariate generalisation of the univariate divided difference $Q(z_0, z) = (P(z) - P(z_0))/(z - z_0)$, originally constructed by Schmidt~\cite{schmidt1963} for the analysis of the multivariate secant method. It satisfies $\mathbf{Q}_F(\mathbf{z}, \mathbf{z}) = DF(\mathbf{z})$ (the Jacobian of $F$ at $\mathbf{z}$) in the diagonal limit, recovering Newton's method as the dynamic-anchor case (cf.\ \cite[Theorem 11.2.5]{ortegarheinboldt1970}). Each entry of $\mathbf{Q}_F$ requires \emph{two evaluations of one component of $F$}, hence the total cost of computing $\mathbf{Q}_F$ is $O(n^2)$ scalar polynomial evaluations, identical to the cost of evaluating the Jacobian by finite differences but \emph{without requiring the analytic Jacobian itself} --- the scheme is fully derivative-free.
 \end{remark}
+
+\begin{definition}[Adaptive reanchoring; restated for the multivariate case]\label{def:adaptive-pandrosion-recall}
+The multivariate adaptive Pandrosion-$T_3$ scheme alternates: (a) $K = 3$ Steffensen-accelerated steps of $\mathcal{P}_{F, \mathbf{z}_0}$ from a fixed anchor $\mathbf{z}_0$, then (b) reanchor $\mathbf{z}_0 \leftarrow \mathbf{z}_K$. The novelty is the period-$K$ reanchoring, not the operator $\mathcal{P}_{F, \mathbf{z}_0}$ itself, which is classical (cf.\ above).
+\end{definition}
 
 \begin{definition}[Multivariate Pandrosion operator]\label{def:multivariate-P}
 For a polynomial map $F: \mathbb{C}^n \to \mathbb{C}^n$ and an anchor $\mathbf{z}_0 \in \mathbb{C}^n$, the \emph{Multivariate Generalized Pandrosion Operator} is
@@ -144,16 +150,22 @@ Let $\boldsymbol\zeta \in \mathbb{C}^n$ be a regular zero of $F$ (i.e., $F(\bold
 By continuity, $\mathbf{Q}_F$ is invertible in a neighbourhood of $\boldsymbol\zeta$ since $\mathbf{Q}_F(\boldsymbol\zeta, \boldsymbol\zeta) = DF(\boldsymbol\zeta)$ is invertible by hypothesis. The fixed-point property follows from $F(\boldsymbol\zeta) = 0$: substituting $\mathbf{z} = \boldsymbol\zeta$ into \eqref{eq:multivariate-telescope} gives $-F(\mathbf{z}_0) = \mathbf{Q}_F(\mathbf{z}_0, \boldsymbol\zeta)\,(\boldsymbol\zeta - \mathbf{z}_0)$, hence $\mathcal{P}_{F, \mathbf{z}_0}(\boldsymbol\zeta) = \mathbf{z}_0 + (\boldsymbol\zeta - \mathbf{z}_0) = \boldsymbol\zeta$.
 \end{proof}
 
-\begin{theorem}[Multivariate adaptive Pandrosion-$T_3$, empirical complexity]\label{thm:multivariate-empirical}
+\begin{proposition}[Empirical observation, multivariate adaptive Pandrosion-$T_3$]\label{thm:multivariate-empirical}
 The multivariate adaptive Pandrosion-$T_3$ scheme of Definition~\ref{def:multivariate-P}, with anchor period $K = 3$ and Steffensen acceleration, was tested on random polynomial systems $F: \mathbb{C}^n \to \mathbb{C}^n$ from the unitarily-invariant Kostlan--Smale ensemble (cf.\ Beltr\'an--Pardo~\cite{beltranpardo}) for the configurations
 \begin{equation*}
 (n, d) \in \{(1, 3), (1, 5), (2, 2), (2, 3), (3, 2), (3, 3), (4, 2), (4, 3)\}.
 \end{equation*}
-The scheme achieves $5/5$ convergence at all tested configurations with mean iteration counts within a factor $2$--$3$ of pure multivariate Newton (with the analytic Jacobian) and within a factor $5$--$10$ of \verb|scipy.optimize.fsolve|. Detailed benchmarks are provided in the script \verb|benchmark_smale17_v4.py| of the supplementary code repository.
-\end{theorem}
+The scheme achieves $5/5$ convergence at all tested configurations with mean iteration counts within a factor $2$--$3$ of pure multivariate Newton (with the analytic Jacobian) and within a factor $5$--$10$ of \verb|scipy.optimize.fsolve|. The largest tested configuration $(n, d) = (4, 3)$ corresponds to B\'ezout degree $D = 81$. \emph{This is an empirical observation, not a theorem; the convergence guarantee at the scale relevant to Smale 17 ($D \to \infty$) is open.} Detailed benchmarks are in \verb|benchmark_smale17_v4.py|.
+\end{proposition}
 
-\begin{remark}[Multivariate cost in BSS]
-For a polynomial system of B\'ezout degree $D = d^n$, evaluating $F$ at one point costs $O(D \cdot n)$ BSS operations. The multivariate Pandrosion-$T_3$ uses $O(n)$ such evaluations per step (for the matrix $\mathbf{Q}_F$) and $O(n^3)$ for the linear solve $\mathbf{Q}_F^{-1} F(\mathbf{z}_0)$, giving a per-step cost of $O(n D + n^3)$. With $O(\log D)$ epochs to basin entry (the multivariate analogue of Theorem~\ref{thm:product-contr}, conjectured), the total cost per orbit is $O((nD + n^3) \log D)$, comparable to the deterministic bound of Lairez~\cite[Theorem 1.1]{lairez} but with the practical advantage of a derivative-free oracle. We do \emph{not} claim to improve upon the average-case complexity of \cite{beltranpardo} or \cite{lairez}; the contribution is the explicit derivative-free algorithm with empirical performance on Smale-17-style systems.
+\begin{remark}[Honest accounting of the multivariate per-orbit cost]
+For a polynomial system of B\'ezout degree $D = d^n$, evaluating $F$ at one point costs $O(D \cdot n)$ BSS operations. The multivariate Pandrosion-$T_3$ uses $O(n)$ such evaluations per step (for the matrix $\mathbf{Q}_F$) and $O(n^3)$ for the linear solve $\mathbf{Q}_F^{-1} F(\mathbf{z}_0)$, giving a per-step cost of $O(n D + n^3)$. \emph{If} a multivariate analogue of Theorem~\ref{thm:product-contr} could be established giving $O(\log D)$ epochs to basin entry, the per-orbit cost would be $O((nD + n^3) \log D)$. We emphasise:
+\begin{itemize}
+\item This $O(\log D)$ epoch bound is \textbf{essentially the difficulty of Smale 17 itself} and is \emph{not} established by any of our arguments. Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez} achieve the analogous bound via deep $\mu$-theory and homotopy continuation respectively, methods orthogonal to ours.
+\item The per-orbit cost above must be multiplied by the number of starts (heuristically $D$, by analogy with the univariate case) for a system-level total.
+\item Our empirical validation extends only to $(n, d) = (4, 3)$, far below the asymptotic regime relevant to Smale 17.
+\end{itemize}
+\textbf{Honest summary.} The multivariate Pandrosion-$T_3$ is a derivative-free algorithmic alternative whose \emph{practical} performance matches Newton with analytic Jacobian on small-scale Smale-17-style benchmarks. Whether it admits an unconditional polynomial average-case complexity bound \emph{of the same order} as Lairez~\cite{lairez} is an \textbf{open question that we do not address}.
 \end{remark}
 
 \section{Adaptive anchor: the scaling principle in $\mathbb{C}$}
@@ -547,6 +559,11 @@ We have extended Pandrosion's geometric iteration from $\mathbb{R}^+$ to $\mathb
 \bibitem{smale1998} S. Smale, ``Mathematical Problems for the Next Century,'' The Mathematical Intelligencer, vol. 20, no. 2, pp. 7--15, 1998. \emph{(Problem 17 originates here, on the average-case complexity of finding zeros of polynomial systems.)}
 \bibitem{burgissercucker} P. B\"urgisser and F. Cucker, \textit{On a problem posed by Steve Smale}. Annals of Mathematics \textbf{174} (2011), 1785--1836.
 \bibitem{shubsmale-condition} M. Shub and S. Smale, ``Complexity of B\'ezout's theorem II--V,'' SIAM J. Comput. \textbf{22} (1993), Computational Algebraic Geometry, J. Complexity \textbf{9} (1993), J. Amer. Math. Soc. \textbf{6} (1993), Theoretical Computer Science \textbf{133} (1994).
+\bibitem{schmidt1963} J. W. Schmidt, ``Eine \"Ubertragung der Regula Falsi auf Gleichungen in Banachr\"aumen,'' Z. Angew. Math. Mech. \textbf{43} (1963), 1--10. \emph{(Original definition of the divided-difference / slope matrix for nonlinear systems.)}
+\bibitem{ortegarheinboldt1970} J. M. Ortega and W. C. Rheinboldt, \textit{Iterative Solution of Nonlinear Equations in Several Variables}, Academic Press, New York, 1970. (Reprinted SIAM Classics in Applied Mathematics 30, 2000.) \emph{(Standard reference for the multivariate secant method and the slope matrix; cf.\ Chapter 11.)}
+\bibitem{potraptak1984} F. A. Potra and V. Pt\'ak, \textit{Nondiscrete Induction and Iterative Processes}, Pitman, London, 1984.
+\bibitem{grausanchez2011} M. Grau-S\'anchez, M. Noguera, and S. Amat, ``On the approximation of derivatives using divided difference operators preserving the local convergence order of iterative methods,'' arXiv:1110.2281 (2011).
+\bibitem{amat-busquier} S. Amat and S. Busquier, ``Convergence and numerical analysis of a family of two-step Steffensen's methods,'' Comput. Math. Appl. \textbf{49} (2005), 13--22.
 \end{thebibliography}
 
 \end{document}

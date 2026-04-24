@@ -51,7 +51,7 @@ where $R(z) = \prod_{k \ge 2} (z - \alpha_k)$ and $R'(\alpha_k) = \prod_{j \ne k
 \end{theorem}
 
 \begin{proof}
-The Pandrosion vanishing identity (Paper~30) gives $\sum_{k=1}^d 1/P'(\alpha_k) = 0$. Since $P(z) = z R(z)$: $P'(0) = R(0) = 1$ and $P'(\alpha_k) = \alpha_k R'(\alpha_k)$ for $k \ge 2$. Substituting: $1 + \sum_{k \ge 2} 1/(\alpha_k R'(\alpha_k)) = 0$. \qedhere
+The identity $\sum_{k=1}^d 1/P'(\alpha_k) = 0$ is the classical \emph{Lagrange--Sylvester partial fraction identity} for $1/P(z)$ when $\deg P \ge 2$ (cf.\ \cite[Ch.~5]{markushevich}); it follows from comparing the partial-fraction expansion $1/P(z) = \sum_k 1/(P'(\alpha_k)(z - \alpha_k))$ with the Laurent expansion $1/P(z) = O(1/z^d) = O(1/z^2)$ at infinity, the $1/z$ coefficient on the right being $-\sum_k 1/P'(\alpha_k)$. Specialised to $P(z) = z R(z)$ with $P'(0) = R(0) = 1$ and $P'(\alpha_k) = \alpha_k R'(\alpha_k)$ for $k \ge 2$, we get $1 + \sum_{k \ge 2} 1/(\alpha_k R'(\alpha_k)) = 0$. The Pandrosion-zeta presentation~$\zeta_P(1) = \sum 1/P'(\alpha_k) = 0$ is purely a notation; the underlying identity is classical. \qedhere
 \end{proof}
 
 \begin{corollary}[Root separation bound]
@@ -171,6 +171,7 @@ The Pandrosion vanishing identity $\zeta_P(1) = 0$ provides a new algebraic cons
 \bibitem{crane} E. Crane, \textit{A bound for Smale's mean value conjecture for complex polynomials}. Bull. London Math. Soc. \textbf{39} (2007), 781--791.
 \bibitem{besevic-pandrosion} I. Besevic, \textit{Pandrosion operator and Smale's 17th problem}. Universitas Pandrosion, Part I (2026).
 \bibitem{besevic-quintic} I. Besevic, \textit{Smale's mean value conjecture for quintic polynomials}. Universitas Pandrosion, Part VI (2026).
+\bibitem{markushevich} A. I. Markushevich, \textit{Theory of Functions of a Complex Variable}, 3 vols., 2nd ed., AMS Chelsea Publishing, 1977. \emph{(See Vol.\ I, Ch.~5, for the partial-fraction / Lagrange--Sylvester identities.)}
 \end{thebibliography}
 
 \end{document}

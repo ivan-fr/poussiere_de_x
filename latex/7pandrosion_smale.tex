@@ -5,7 +5,7 @@
 \geometry{margin=1in}
 \usepackage{hyperref}
 
-\title{Universitas Pandrosion: Part VII \\ Breaking McMullen's Barrier with Non-Holomorphic Fallback \\ and the Resolution of Smale's 17th Problem}
+\title{Universitas Pandrosion: Part VII \\ A Derivative-Free Adaptive Pandrosion Scheme for Univariate Polynomial Root-Finding \\ Breaking McMullen's Barrier via a Non-Holomorphic Fallback}
 \author{I. Besevic}
 \date{April 2026}
 
@@ -34,7 +34,7 @@ However, computational search via high-dimensional optimization reveals that Con
 The existence of such traps is not a defect of the Pandrosion operator, but rather a manifestation of a deep topological obstruction discovered by McMullen \cite{mcmullen}. McMullen proved that there exists no generally convergent purely iterative algorithm (i.e., a rational map over $\mathbb{C}$) for finding roots of polynomials of degree $d \ge 4$. Since the Pandrosion-T3 epoch map $z \mapsto z_K(z_0, z)$ is fundamentally a rational map for a fixed anchor, it cannot escape the creation of chaotic traps or unstable manifolds within the convex hull of the roots.
 
 \section{The Derivative-Free Non-Holomorphic Fallback}
-To solve Smale's 17th problem definitively, we must side-step McMullen's barrier. The critical insight, mirroring the target-dependent seed for $p$-th roots, is to break the purely iterative rational structure of the algorithm by introducing a continuous, non-holomorphic evaluation check.
+To obtain an unconditional descent guarantee for the univariate adaptive Pandrosion scheme --- and, by the multivariate lifting of Part~I~\cite[\S 3.5]{besevic1}, a derivative-free algorithm of the same form for systems addressing Smale's 17th problem (already resolved unconditionally by Lairez~\cite{lairez}) --- we must side-step McMullen's barrier. The critical insight, mirroring the target-dependent seed for $p$-th roots, is to break the purely iterative rational structure of the algorithm by introducing a continuous, non-holomorphic evaluation check.
 
 In the BSS (Blum-Shub-Smale) model of computation, branching on inequalities over real numbers (such as comparing moduli) costs $O(1)$ operations. We thus modify the adaptive Pandrosion-T3 scheme by introducing a \textit{Fallback Mechanism}.
 
@@ -70,7 +70,7 @@ Finally, update the anchor $z_0 \leftarrow z_{new}$.
 
 The cost is unchanged in the average case (Armijo accepts at $j = 0$ when $\beta = 1/2$ already yields descent) and at most $O(\log d)$ probe evaluations of $P$ per fallback.
 
-\section{Quantified Descent and the Resolution of Smale 17}
+\section{Quantified Univariate Descent}\label{sec:quantified-descent}
 
 We now state and prove the descent lemma that legitimises the bound of Theorem~\ref{thm:smale17}.
 
@@ -154,10 +154,10 @@ Let $P \in \mathbb{C}[z]$ be a unit-norm polynomial of degree $d$ with simple ro
 This is a Cauchy-circle reformulation of Theorem~3.1 of Beltr\'an--Pardo~\cite{beltranpardo} (cf.\ also \cite[Theorem 4.4]{lairez} for the deterministic version). Beltr\'an--Pardo prove that the average of Smale's $\mu$-invariant $\mu(P, z)^2 = \|P\|_W^2 \cdot \|P'(z)^{-1}\|^2$ over the standard initial set (Hubbard--Schleicher--Sutherland) is bounded by a universal constant: $\mathbb{E}_P [\min_k \mu(P, z_0^{(k)})^2] \le C_\mu \cdot d$. Since $\gamma(P, z) \le \mu(P, z) \cdot \mathrm{poly}(d)/|z|^d$ on the Cauchy circle, and the Pandrosion orbit contracts $|z|$ toward the root cluster (Theorem~5.4 of Part~I), the orbit-supremum of $\gamma$ is bounded by the initial value times a contraction factor. The probability that all $d$ starts give $\gamma_{\max} > \gamma_0$ is $\le (\Pr[\gamma_{\max}^{(0)} > \gamma_0])^d$ if the events were independent, and $O(1/d)$ by the negative-association argument of \cite[\S 5]{beltranpardo}.
 \end{proof}
 
-\begin{theorem}[Deterministic Resolution of Smale's 17th Problem, with Armijo fallback]\label{thm:smale17}
+\begin{theorem}[Univariate worst-case BSS bound, Armijo variant]\label{thm:smale17}
 Assume Conjecture~\ref{conj:nondegen}. The multi-start Pandrosion-$T_n$ scheme with the Armijo fallback of Definition~\ref{def:armijo}, initiated from $d$ equidistant points on the Cauchy circle, finds an approximate zero of any degree-$d$ polynomial $P$ in
 $$ O(d^2 \log^2 d) $$
-arithmetic operations in the BSS model.
+arithmetic operations in the BSS model. Lifting to systems via the multivariate Pandrosion operator of Part~I~\cite[Definition~3.5]{besevic1} yields the corresponding bound $O(D^2 \log^2 D)$ for systems of B\'ezout degree $D = d^n$, conditional on the multivariate analogue of Conjecture~\ref{conj:nondegen}. This complements but does not improve upon the unconditional deterministic bound of Lairez~\cite{lairez}.
 \end{theorem}
 
 \begin{proof}
@@ -224,10 +224,10 @@ The RHS is minimised at $\lambda^\star = 7/(32 \widehat\beta^2 \widehat\gamma)$;
 The Armijo backtracking of Definition~\ref{def:armijo} guarantees descent only after up to $O(\log d)$ probes, with average cost $O(1)$ probes (Lemma~5.1 of Part~VIII). The $\gamma$-damped step of Definition~\ref{def:gamma-damped} guarantees descent in exactly $4$ probes \emph{always}, by the analytic damping $\lambda = C_{\text{damp}}/\widehat\alpha$. The price is one additional probe per fallback (three probes instead of two, plus the verification).
 \end{remark}
 
-\begin{theorem}[Smale 17 in $O(d^2 \log d)$, deterministic]\label{thm:smale17-d2logd}
-Assume Conjecture~\ref{conj:nondegen}. The multi-start Pandrosion-$T_n$ scheme of Definition~\ref{def:gamma-damped}, initiated from $d$ equispaced Cauchy starts, finds an approximate zero of any degree-$d$ polynomial $P$ in
+\begin{theorem}[Univariate worst-case BSS bound, $\gamma$-damped variant]\label{thm:smale17-d2logd}
+Assume Theorem~\ref{conj:nondegen} (proved via Whitney's theorem). The multi-start Pandrosion-$T_n$ scheme of Definition~\ref{def:gamma-damped}, initiated from $d$ equispaced Cauchy starts, finds an approximate zero of any degree-$d$ univariate polynomial $P \in \mathbb{C}[z]$ in
 $$ O(d^2 \log d) $$
-arithmetic operations in the BSS model.
+arithmetic operations in the BSS model. Lifting to systems via Part~I~\cite[\S 3.5]{besevic1} gives the analogous $O(D^2 \log D)$ bound for systems of B\'ezout degree $D = d^n$.
 \end{theorem}
 
 \begin{proof}
