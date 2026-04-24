@@ -1,13 +1,13 @@
 # Pandrosion Lean 4 Corpus
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19712899.svg)](https://doi.org/10.5281/zenodo.19712899)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19731204.svg)](https://doi.org/10.5281/zenodo.19731204)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 [![Universitas Pandrosion CI](https://github.com/ivan-fr/poussiere_de_x/actions/workflows/ci.yml/badge.svg)](https://github.com/ivan-fr/poussiere_de_x/actions)
 
 Formal verification and numerical illustration of the Pandrosion rational
 root-finding map, with a compiled research paper and reproducible figures.
 
-**Cite this work:** DOI [10.5281/zenodo.19712899](https://zenodo.org/records/19712899)
+**Cite this work:** DOI [10.5281/zenodo.19731204](https://zenodo.org/records/19731204)
 
 The current primary artifact is:
 
@@ -319,8 +319,8 @@ rational iteration, in a proof-assistant-checked form.
   title  = {Universitas Pandrosion: Formal Verification of a Rational Root-Finding Map and Diophantine Bridges in Lean 4},
   author = {Besevic, Ivan},
   year   = {2026},
-  doi    = {10.5281/zenodo.19712899},
-  url    = {https://zenodo.org/records/19712899},
+  doi    = {10.5281/zenodo.19731204},
+  url    = {https://zenodo.org/records/19731204},
   note   = {24-module Pandrosion.Core spine + 9-module Pandrosion.Legacy companion; 296 theorems, 0 sorry, 0 off-whitelist axiom; fully unconditional axiom-clean RealMcMullenP2 on R at p=2, x>1 (bad-set Lebesgue-null lemma formalised via polynomial fiber-finiteness)}
 }
 ```
