@@ -1,5 +1,8 @@
 # LaTeX Workspace
 
+Archived release: [Zenodo record 19757311](https://zenodo.org/records/19757311)
+· DOI: [10.5281/zenodo.19757311](https://doi.org/10.5281/zenodo.19757311)
+
 This directory is intentionally split by artifact type:
 
 - `*.tex`: source papers and the combined-edition driver.
