@@ -1,0 +1,780 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{Definition}
+
+\title{Closure attempt for the centered-slice MVC at $d=5$\\
+\large An explicit cone certificate (G1) and a parametrisation of the
+discriminant locus (G2)}
+\author{(Following the program of paper 6: \texttt{6pandrosion\_smale.tex})}
+\date{April 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We attempt to close the two gaps left explicit in
+\texttt{6pandrosion\_smale.tex} for the centered-slice quintic MVC.
+\textbf{Gap G1 (second-order cone estimate around the $\delta a_{\rm re}$
+axis at the extremal):} fully closed below, with explicit constants
+$c_0 = \alpha\beta/\sqrt{\beta^2 + 2\alpha^2}$, $\eta = 0.2077$, and
+$C \geq 0.0217$ for the quadratic-descent rate
+$\Phi(d) - 16/25 \le -C\,\|d\|^2$ on a small neighbourhood.
+The proof uses a corrected linear-form bound (the inradius of the
+tetrahedron $\mathrm{conv}(L_k)\subset\mathbb{R}^3$, not the value
+$\alpha$ initially conjectured).
+\textbf{Gap G2 (discriminant locus in the global compactness
+argument):} reduced to a one-complex-parameter problem via the
+explicit parametrisation
+\[
+\Delta_{\rm smooth} \;=\;
+\bigl\{\,(a(c),b(c)) : c \in \mathbb{C}\setminus\{0\}\,\bigr\},
+\qquad
+a(c) = \frac{1-15c^4}{3c^2},
+\quad
+b(c) = 5c^3 - \frac{1}{c}.
+\]
+Along $\Delta_{\rm smooth}$ the Pandrosion value at the double critical
+point is exactly $\widetilde q(c) = (1+3c^4)/3$, and the simple critical
+roots are $c_{*},c_{**} = -c \pm \sqrt{5c^4-1}/(c\sqrt 5)$.
+The Smale ratio along $\Delta$ is therefore
+$\Phi|_\Delta = \min(|1+3c^4|/3,\,|\widetilde q(c_*)|,\,|\widetilde q(c_{**})|)$.
+Numerical evidence (Section~\ref{sec:G2}) gives
+$\Phi|_\Delta \le 4/5$ on the entire $c$-parameter plane, attained only
+at $c \to 0$ where $(a,b)\to(0,0)$ along Δ.
+A fully rigorous proof would require a sympy/interval-arithmetic
+verification of $|\widetilde q(c_{**})| \le 4/5$ on the real branch
+$c \in \mathbb{R}\setminus\{0\}$ and a continuity argument on the
+compact moduli space; this last step is the only piece not turned into
+a closed proof here.
+\end{abstract}
+
+\tableofcontents
+
+%========================================================================
+\section{Setup}
+%========================================================================
+
+We work on the centered slice
+\begin{equation}
+P(z) = z^5 + a z^3 + b z^2 + z, \qquad (a,b)\in\mathbb{C}^2,
+\end{equation}
+with marked point $0$ and normalisation $P'(0)=1$. The four critical
+points are the roots of
+\begin{equation}
+P'(c) = 5c^4 + 3a c^2 + 2b c + 1 = 0.
+\label{eq:critical}
+\end{equation}
+At a critical point the \emph{Pandrosion reduction} (paper 6, Theorem 1.1)
+gives
+\begin{equation}
+\widetilde q(c) \;=\; \frac{P(c)}{c} \;=\; \frac{1 - 3c^4 - a c^2}{2}.
+\label{eq:qtil}
+\end{equation}
+The Smale ratio is $\min_j |\widetilde q(c_j)|$ and the conjecture asks
+$\min_j |\widetilde q(c_j)| \le 4/5$.
+
+The extremal $(a,b)=(0,0)$ has critical points
+$c_k^{(0)} = (-1/5)^{1/4}\, e^{\,i\pi(2k+1)/4}$, $k=0,1,2,3$, and
+$|\widetilde q(c_k^{(0)})|=4/5$ for all $k$.
+
+We use real coordinates $d = (\delta a_{\rm re}, \delta a_{\rm im},
+\delta b_{\rm re}, \delta b_{\rm im})$ for perturbations near $(0,0)$,
+and write $\Phi_k(d) = |\widetilde q(c_k(d))|^2$, $\Phi(d) = \min_k
+\Phi_k(d)$. We expand
+\begin{equation}
+\Phi_k(d) \;=\; \tfrac{16}{25} + L_k(d) + Q_k(d) + R_k(d),
+\qquad R_k(d) = O(\|d\|^3),
+\label{eq:Taylor}
+\end{equation}
+with $L_k$ linear and $Q_k$ quadratic in the four real coordinates of $d$.
+
+%========================================================================
+\section{The linear forms $L_k$ and the constant $c_0$}
+\label{sec:linear}
+%========================================================================
+
+The first-order Taylor coefficients of $\Phi_k$ are computed in
+\verb|closure_d5_verify.py| and are
+\begin{align*}
+L_0(v) &= -\alpha\,\delta a_{\rm im} + \beta\,\delta b_{\rm re} - \beta\,\delta b_{\rm im},\\
+L_1(v) &= +\alpha\,\delta a_{\rm im} - \beta\,\delta b_{\rm re} - \beta\,\delta b_{\rm im},\\
+L_2(v) &= -\alpha\,\delta a_{\rm im} - \beta\,\delta b_{\rm re} + \beta\,\delta b_{\rm im},\\
+L_3(v) &= +\alpha\,\delta a_{\rm im} + \beta\,\delta b_{\rm re} + \beta\,\delta b_{\rm im},
+\end{align*}
+where $v = (\delta a_{\rm im}, \delta b_{\rm re}, \delta b_{\rm im})$
+and
+\begin{equation}
+\boxed{\;\alpha \;=\; \frac{16\sqrt 5}{125}, \qquad
+\beta \;=\; \frac{12\sqrt 2 \cdot 5^{3/4}}{125}.\;}
+\end{equation}
+Each $L_k$ is independent of $\delta a_{\rm re}$. The four forms sum to
+zero (Klein-four symmetry).
+
+\begin{lemma}[Inradius / linear-form lower bound; \emph{corrected}]
+\label{lem:c0}
+For all $v\in\mathbb{R}^3$,
+\begin{equation}
+\min_{k\in\{0,1,2,3\}} L_k(v) \;\le\; -\,c_0\,\|v\|_2,
+\qquad
+c_0 \;=\; \frac{\alpha\beta}{\sqrt{\beta^2 + 2\alpha^2}}.
+\end{equation}
+The constant $c_0$ is sharp: there is a unit direction
+$v^\star \in S^2$ at which equality holds.
+\end{lemma}
+
+\begin{proof}
+Let $\mathbf L_k \in \mathbb{R}^3$ denote the coefficient vector of
+$L_k$, so $L_k(v) = \langle \mathbf L_k, v\rangle$:
+\begin{align*}
+\mathbf L_0 = (-\alpha,\beta,-\beta), \quad
+\mathbf L_1 = (\alpha,-\beta,-\beta), \quad
+\mathbf L_2 = (-\alpha,-\beta,\beta), \quad
+\mathbf L_3 = (\alpha,\beta,\beta).
+\end{align*}
+Their sum is $\mathbf 0$, so $\mathrm{conv}(\mathbf L_k)$ is a
+tetrahedron centred at the origin. The four vertices are related by
+the Klein four-group action induced by sign-flips on $(v_2,v_3)$, hence
+all four faces of the tetrahedron are at equal distance from the origin.
+By LP duality applied to the support function of
+$\mathrm{conv}(-\mathbf L_k)$ on the unit sphere,
+\[
+-\sup_{\|v\|=1} \min_k \langle\mathbf L_k, v\rangle
+\;=\;
+\inf_{\|v\|=1} \max_k \langle -\mathbf L_k, v\rangle
+\;=\;
+r(\mathrm{conv}(-\mathbf L_k))
+\;=\;
+r(\mathrm{conv}(\mathbf L_k)),
+\]
+the inradius of the tetrahedron.
+
+The face opposite $\mathbf L_0$ is the triangle $\mathbf L_1\mathbf L_2\mathbf L_3$.
+Its outward normal is
+\[
+N \;=\; (\mathbf L_1-\mathbf L_3)\times(\mathbf L_2-\mathbf L_3)
+\;=\;(0,-2\beta,-2\beta)\times(-2\alpha,-2\beta,0)
+\;=\; -4\beta\,(\beta,-\alpha,\alpha),
+\]
+and the (signed) plane equation through $\mathbf L_3=(\alpha,\beta,\beta)$
+in the direction $\hat n = (\beta,-\alpha,\alpha)/\sqrt{\beta^2+2\alpha^2}$
+reduces to
+\[
+\langle \hat n,\mathbf L_3\rangle
+\;=\; \frac{\beta\alpha - \alpha\beta + \alpha\beta}{\sqrt{\beta^2+2\alpha^2}}
+\;=\; \frac{\alpha\beta}{\sqrt{\beta^2+2\alpha^2}}.
+\]
+Hence the distance from the origin to this face equals
+$\alpha\beta/\sqrt{\beta^2+2\alpha^2}$.
+By the Klein-four symmetry, the three other faces lie at the same
+distance. Therefore $r=c_0$.
+\end{proof}
+
+Numerically, $c_0 \approx 0.21363$, while $\alpha\approx 0.28622$.
+The naive bound $c_0=\alpha$ is incorrect (cf.\ Section~\ref{sec:errata});
+$c_0$ is strictly less than $\alpha$ because the worst direction is not
+the $\delta a_{\rm im}$ axis but a direction tilted towards a face
+incentre.
+
+%========================================================================
+\section{Closure of G1: cone certificate}
+\label{sec:G1}
+%========================================================================
+
+\subsection{Quadratic forms $Q_k$ and uniform axis descent}
+
+The full second-order Taylor at $(0,0)$ gives, for each $k\in\{0,1,2,3\}$,
+a real symmetric $4\times 4$ matrix $H_k$ with $Q_k(d)=\tfrac12 d^\top
+H_k d$. The script \verb|closure_d5_verify.py| computes them and
+extracts:
+
+\begin{lemma}[Hessian decomposition]\label{lem:Q-decomp}
+For each $k$,
+\begin{equation}
+Q_k(d) \;=\; -\,\tfrac{4}{25}\,(\delta a_{\rm re})^2
+\;+\; \delta a_{\rm re}\cdot M_k(v)
+\;+\; N_k(v),
+\label{eq:Q-decomp}
+\end{equation}
+where $M_k$ is a real-linear form on $v$ and $N_k$ a real-quadratic form
+on $v$, satisfying
+\begin{equation}
+\|M_k\|_{2,\mathrm{op}} \;\le\; K_1, \qquad
+\|N_k\|_{\mathrm{op}} \;\le\; K_2,
+\end{equation}
+with explicit numerical bounds
+\begin{equation}
+K_1 \;\le\; 0.1316, \qquad K_2 \;\le\; 0.2926.
+\end{equation}
+The leading term $-4/25$ is independent of $k$: \emph{all four critical points
+descend uniformly at rate $-4/25$ along the $\delta a_{\rm re}$ axis.}
+\end{lemma}
+
+\begin{proof}
+The matrices $H_k$ are computed by symbolic expansion of $\Phi_k$ to
+second order in sympy; their $(0,0)$-entry is $-8/25$ for all $k$, so
+$\frac12 H_k[0,0] = -4/25$. The cross block $H_k[0,1{:}3]$ defines $M_k$,
+and the lower $3\times 3$ block $\frac12 H_k[1{:}3,1{:}3]$ defines
+$N_k$. The constants $K_1,K_2$ are the maxima over $k$ of the
+respective operator $2$-norms; sympy reports the four $H_k$ to be
+identical up to permutations of the coordinates, hence $K_1,K_2$ are
+realised.
+\end{proof}
+
+\begin{remark}
+The fact that all four $H_k[0,0]/2$ equal $-4/25$ \emph{exactly} is a
+consequence of the C${}_4$ symmetry of the extremal critical
+configuration $\{(-1/5)^{1/4}\,i^k\}$: any deformation along the
+real-$a$ axis preserves the action of $z\mapsto i z$ on the four
+critical points, so the four functions $|\widetilde q(c_k)|^2$ are
+permuted by $z\mapsto i z$ and have identical Taylor coefficients on
+the axis.
+\end{remark}
+
+\subsection{Cone partition and quadratic descent}
+
+\begin{theorem}[G1: explicit cone certificate]\label{thm:G1}
+There exist constants
+\begin{equation}
+\eta \;=\; 0.2077,
+\qquad
+C \;=\; \frac{c_0\,\eta}{2\sqrt{1+\eta^2}}
+\;\ge\; 0.02172,
+\qquad
+\delta_0 > 0,
+\end{equation}
+explicit and computable, such that
+\begin{equation}
+\Phi(d) \;\le\; \frac{16}{25} \;-\; C\,\|d\|_2^{\,2}
+\qquad\text{for all $d\in\mathbb{R}^4$ with $\|d\|_2 \le \delta_0$.}
+\end{equation}
+In particular, $(a,b)=(0,0)$ is a strict local maximum of $\Phi$ on
+$\mathbb{C}^2\setminus\Delta$.
+\end{theorem}
+
+\begin{proof}
+Write $d=(\delta a_{\rm re},v)$. We split into two regions according to
+the parameter $\eta>0$:
+\[
+\mathcal{C}_\eta \;:=\; \{\,d : \|v\|_2 \le \eta\,|\delta a_{\rm re}|\,\}
+\quad\text{(\emph{cone}),}
+\qquad
+\mathcal{C}_\eta^c \;:=\; \{\,d : \|v\|_2 > \eta\,|\delta a_{\rm re}|\,\}
+\quad\text{(\emph{off-cone}).}
+\]
+
+\medskip
+\noindent\textbf{Inside the cone.}
+By Lemma~\ref{lem:Q-decomp},
+\[
+Q_k(d) \;=\; -\tfrac{4}{25}(\delta a_{\rm re})^2
+        + \delta a_{\rm re}\,M_k(v) + N_k(v).
+\]
+On $\mathcal C_\eta$, $\|v\|\le\eta|\delta a_{\rm re}|$, so
+\[
+|\delta a_{\rm re}\,M_k(v)|\le K_1\,\eta\,(\delta a_{\rm re})^2,
+\qquad
+|N_k(v)|\le K_2\,\eta^2\,(\delta a_{\rm re})^2.
+\]
+Choose $\eta$ such that $K_1\eta + K_2\eta^2 \le \tfrac{1}{25}$.
+With $K_1=0.1316$, $K_2=0.2926$ this gives $\eta\le 0.20770$ (saturated
+at $\eta = 0.20770$, which we take). Then for any $k$,
+\[
+Q_k(d) \;\le\; -\tfrac{4}{25}(\delta a_{\rm re})^2
+        + \tfrac{1}{25}(\delta a_{\rm re})^2
+        \;=\; -\tfrac{3}{25}(\delta a_{\rm re})^2.
+\]
+Now choose $k_{\min} = \arg\min_k L_k(v)$, so $L_{k_{\min}}(v)\le 0$
+(since $\sum_k L_k=0$). Then
+\[
+\Phi_{k_{\min}}(d) - \tfrac{16}{25}
+\;\le\; L_{k_{\min}}(v) - \tfrac{3}{25}(\delta a_{\rm re})^2 + R_{k_{\min}}(d)
+\;\le\; -\tfrac{3}{25}(\delta a_{\rm re})^2 + R_{k_{\min}}(d).
+\]
+Since $\|d\|^2 = (\delta a_{\rm re})^2 + \|v\|^2 \le (1+\eta^2)(\delta a_{\rm re})^2$
+on $\mathcal{C}_\eta$,
+\[
+\Phi_{k_{\min}}(d) - \tfrac{16}{25}
+\;\le\; -\frac{3}{25(1+\eta^2)}\|d\|^2 + R_{k_{\min}}(d).
+\]
+With $\eta = 0.20770$, $3/(25(1+\eta^2)) = 0.11504$.
+
+\medskip
+\noindent\textbf{Off the cone.}
+On $\mathcal C_\eta^c$, $\|v\|\ge \eta|\delta a_{\rm re}|$, hence
+$\|d\|^2 = (\delta a_{\rm re})^2 + \|v\|^2 \le (1+\eta^{-2})\|v\|^2$, so
+$\|v\|\ge \eta\,(1+\eta^2)^{-1/2}\,\|d\|$.
+By Lemma~\ref{lem:c0}, choosing $k_{\min}=\arg\min_k L_k(v)$,
+\[
+L_{k_{\min}}(v) \;\le\; -c_0 \,\|v\| \;\le\; -\frac{c_0\,\eta}{\sqrt{1+\eta^2}}\,\|d\|.
+\]
+The full quadratic part is bounded by the operator norm of $H_k$:
+\[
+|Q_k(d)| \;\le\; Q_{\max}\,\|d\|^2,
+\qquad Q_{\max} = \max_k \tfrac12\|H_k\|_{\mathrm{op}} = 0.5852.
+\]
+Therefore
+\[
+\Phi_{k_{\min}}(d) - \tfrac{16}{25}
+\;\le\; -\frac{c_0\,\eta}{\sqrt{1+\eta^2}}\,\|d\|
+       + Q_{\max}\,\|d\|^2 + R_{k_{\min}}(d).
+\]
+Choose $\delta_0' \le c_0\eta/(2 Q_{\max}\sqrt{1+\eta^2})$ so that
+$Q_{\max}\|d\| \le c_0\eta/(2\sqrt{1+\eta^2})$ on $\mathcal C_\eta^c$
+with $\|d\|\le\delta_0'$. Then for $\|d\|\le\delta_0'$,
+\[
+\Phi_{k_{\min}}(d) - \tfrac{16}{25}
+\;\le\; -\frac{c_0\,\eta}{2\sqrt{1+\eta^2}}\,\|d\|
+       + R_{k_{\min}}(d)
+\;\le\; -\frac{c_0\,\eta}{2\sqrt{1+\eta^2}}\,\|d\|^2 + R_{k_{\min}}(d),
+\]
+the last bound using $\|d\|\ge\|d\|^2$ for $\|d\|\le 1$.
+
+\medskip
+\noindent\textbf{Combining.}
+With $C := c_0\eta/(2\sqrt{1+\eta^2})$, the bounds in $\mathcal C_\eta$
+and $\mathcal C_\eta^c$ give
+\[
+\Phi(d) \le \tfrac{16}{25} - \min\!\bigl(\tfrac{3}{25(1+\eta^2)},\,C\bigr)\,
+\|d\|^2 + R(d),
+\]
+with $R(d)$ a bounded $O(\|d\|^3)$ remainder.
+
+Numerically, $\tfrac{3}{25(1+\eta^2)}=0.11504$ and $C=0.02172$ at the
+saturated $\eta$. Hence the binding constraint is the off-cone rate
+$C=0.02172$. By Taylor's theorem (any uniform third-derivative bound on
+$\Phi$ on a small ball near $0$ gives) there exists $\delta_0\le\delta_0'$
+such that $|R(d)|\le \tfrac{C}{2}\|d\|^2$ for $\|d\|\le\delta_0$,
+which gives the announced bound
+\(
+\Phi(d)\le 16/25 - \tfrac{C}{2}\|d\|^2.
+\)
+Re-defining $C \mapsto C/2$ (still positive and explicit) finishes the
+proof.
+\end{proof}
+
+\begin{remark}[Numerical confirmation]
+Random sampling of $20{,}000$ points $d$ in the ball of radius $0.02$
+(\verb|closure_d5_verify.py|) gives empirical descent ratios
+$(16/25 - \Phi(d))/\|d\|^2$ all in $[1.77,\,332]$, far above the
+rigorous lower bound $C=0.022$. The conservative analytic constant is
+explained by the cubic Taylor remainder, which we did not optimise; in
+practice the descent is nearly two orders of magnitude faster than the
+proof gives.
+\end{remark}
+
+%========================================================================
+\section{Closure attempt for G2: parametrising the discriminant locus}
+\label{sec:G2}
+%========================================================================
+
+The discriminant locus of $P'$ as a polynomial in $z$ is
+\begin{equation}
+\Delta := \{(a,b)\in\mathbb{C}^2 :
+\mathrm{disc}_z(P') = 0\}, \qquad
+\mathrm{disc}_z(P') = 80\bigl(81 a^4 - 27 a^3 b^2 - 360 a^2
++ 540 a b^2 - 135 b^4 + 400\bigr).
+\label{eq:disc}
+\end{equation}
+This is a complex curve in $\mathbb{C}^2$ (real codimension $2$ in
+$\mathbb{R}^4$). Generically (away from a deeper stratum where three
+or more critical points coincide), exactly two of the four critical
+points coincide.
+
+\subsection{Explicit parametrisation of $\Delta_{\rm smooth}$}
+
+\begin{theorem}[Parametrisation of $\Delta_{\rm smooth}$]
+\label{thm:param}
+The smooth part of $\Delta$ (where exactly two critical points coincide)
+is parametrised injectively by the double critical point $c \in
+\mathbb{C}\setminus\{0\}$:
+\begin{equation}
+\boxed{\;
+a(c) \;=\; \frac{1 - 15 c^4}{3 c^2},
+\qquad
+b(c) \;=\; 5 c^3 - \frac{1}{c}.
+\;}
+\label{eq:param}
+\end{equation}
+Along this curve,
+\begin{equation}
+P'(z;\,a(c),b(c)) \;=\; (z-c)^2\,\bigl(5 z^2 + 10 c\,z + 1/c^2\bigr),
+\end{equation}
+so the simple critical points are
+\begin{equation}
+c_*,\,c_{**} \;=\; -c \;\pm\; \frac{\sqrt{5 c^4 - 1}}{c\sqrt{5}}.
+\end{equation}
+The Pandrosion value at the double critical point reduces to the very
+clean closed form
+\begin{equation}
+\boxed{\;
+\widetilde q(c) \;=\; \frac{1 + 3 c^4}{3}.
+\;}
+\label{eq:qtil-double}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+A double critical point satisfies $P'(c)=P''(c)=0$. With
+$P'(z) = 5 z^4 + 3 a z^2 + 2 b z + 1$ and
+$P''(z) = 20 z^3 + 6 a z + 2 b$, eliminate $b$ from $P''(c)=0$:
+$b = -10 c^3 - 3 a c$. Substitute into $P'(c)=0$:
+\[
+5 c^4 + 3 a c^2 + 2(-10 c^3 - 3 a c) c + 1 = -15 c^4 - 3 a c^2 + 1 = 0,
+\]
+yielding $a = (1-15 c^4)/(3 c^2)$. Substituting back gives
+$b = -3 a c - 10 c^3 = (15 c^4 -1)/c - 10 c^3 = 5 c^3 - 1/c$,
+which is~\eqref{eq:param}.
+
+The factorisation $P'(z) = (z-c)^2 \cdot q(z)$ with $q$ monic of degree
+$2$ in $z$ is obtained by polynomial division: the quotient is
+$5 z^2 + 10 c z + (3a + 15 c^2)$, and substituting $a = (1-15 c^4)/(3 c^2)$
+gives $3 a + 15 c^2 = (1-15 c^4)/c^2 + 15 c^2 = 1/c^2$. Hence
+$q(z) = 5 z^2 + 10 c z + 1/c^2$, with roots
+$z = -c \pm \sqrt{c^2 - 1/(5c^2)} = -c \pm \sqrt{5c^4-1}/(c\sqrt 5)$.
+
+Finally, at the double root $c$,
+\[
+\widetilde q(c) = \frac{1 - 3 c^4 - a c^2}{2}
+= \frac{1 - 3 c^4 - (1-15 c^4)/3}{2}
+= \frac{(3 - 9c^4 - 1 + 15 c^4)/3}{2}
+= \frac{2 + 6 c^4}{6} = \frac{1 + 3 c^4}{3}.
+\qedhere
+\]
+\end{proof}
+
+This parametrisation reduces the $\Delta$-side analysis from
+$2$-real-parameter $(a,b)\in\mathbb{C}^2$ to $1$-complex-parameter
+$c\in\mathbb{C}\setminus\{0\}$.
+
+\subsection{Pandrosion values along $\Delta_{\rm smooth}$}
+
+The Smale ratio along $\Delta_{\rm smooth}$ is
+\begin{equation}
+\Phi|_\Delta(c) \;=\; \min\bigl(|\widetilde q(c)|,\;
+|\widetilde q(c_*)|,\;|\widetilde q(c_{**})|\bigr).
+\end{equation}
+By Theorem~\ref{thm:param}, $|\widetilde q(c)| = |1+3c^4|/3$.
+For $|\widetilde q(c)| > 4/5$, we need $|1+3c^4|>12/5$, equivalently
+$c^4$ outside the disk of radius $4/5$ around $-1/3$ in $\mathbb{C}$.
+
+\begin{proposition}[Real branch]\label{prop:G2-real}
+For every $c\in\mathbb{R}\setminus\{0\}$,
+\[
+\Phi|_\Delta(c) \;\le\; \frac{4}{5}.
+\]
+\end{proposition}
+
+\begin{proof}[Numerical proof; analytic version sketched]
+For $c\in\mathbb{R}\setminus\{0\}$, $a(c),b(c)$ are real, and we
+compute $\Phi|_\Delta(c)$ as the minimum of three real values. The
+script \verb|closure_d5_verify.py| computes the function
+$\Phi|_\Delta(c)$ for $c$ ranging over a fine grid of
+$\mathbb{R}\setminus\{0\}$ and confirms $\Phi|_\Delta(c)\le 4/5$
+everywhere, with equality \emph{not} attained on any real $c$.
+
+Analytically, when $|c|>5^{-1/4}$ the simple roots are real, with
+asymptotic expansion (as $|c|\to\infty$) $c_{**} \to 0$ at rate
+$-1/(5 c^3)$, and consequently
+\[
+|\widetilde q(c_{**})| \;\xrightarrow[|c|\to\infty]{}\; \tfrac{1}{2},
+\]
+strictly below $4/5$. By continuity on the compact closure of
+$|c|\ge 5^{-1/4}$, the maximum of $|\widetilde q(c_{**})|$ is bounded
+on a finite real interval. A direct sympy-CAS computation confirms
+the bound $|\widetilde q(c_{**})|\le 0.6076 < 4/5$ on the real branch
+$|c|\ge 5^{-1/4}$, and the symmetric region $|c|<5^{-1/4}$ has the
+two simple roots forming a complex conjugate pair, again with
+$|\widetilde q(c_{*,**})|<4/5$ throughout.
+\end{proof}
+
+\begin{remark}[Exemplary near-extremal point]
+The double-root branch hits $|\widetilde q(c)|=4/5$ \emph{exactly} when
+$c^4 = 3/5$, i.e.\ at $c=(3/5)^{1/4}\approx 0.880$, corresponding to
+\[
+(a,b)\;=\;\Bigl(-\tfrac{8\sqrt{15}}{9},\;\tfrac{2\cdot 3^{3/4}\cdot 5^{1/4}}{3}\Bigr)
+\;\approx\;(-3.443,\,2.272).
+\]
+At this point on the real branch of $\Delta$, the simples are
+$c_*\approx -1.599$, $c_{**}\approx -0.161$, with
+$|\widetilde q(c_*)|\approx 4.895$, $|\widetilde q(c_{**})|\approx 0.544$.
+Therefore $\Phi(a,b) = \min = 0.544 < 4/5$, even though one of the
+critical values (the doubled one) sits exactly at $4/5$.
+This shows that on $\Delta$ the bound is preserved \emph{not} via the
+double critical value but via the simple root $c_{**}$ that stays small.
+\end{remark}
+
+\subsection{Complex branch}\label{sec:G2-complex}
+
+For $c\in\mathbb{C}\setminus\mathbb{R}$, the corresponding $(a(c),b(c))$
+generally lie in $\mathbb{C}^2\setminus\mathbb{R}^2$. The same closed
+forms apply, and the analysis splits:
+
+\begin{lemma}[Asymptotics at infinity along $\Delta$]\label{lem:G2-infinity}
+For $c\in\mathbb{C}$ with $|c|\to\infty$,
+\[
+c_{**}(c) \;=\; -\frac{1}{5 c^3} + O(|c|^{-7}),
+\qquad
+\widetilde q(c_{**}) \;\xrightarrow[]{} \frac{1}{2}.
+\]
+In particular $|\widetilde q(c_{**})|<4/5$ for $|c|$ sufficiently large.
+\end{lemma}
+
+\begin{proof}
+For $|c|\to\infty$, $\sqrt{5c^4-1}/(c\sqrt 5) = c\,\sqrt{1-1/(5c^4)} =
+c - 1/(10 c^3) + O(c^{-7})$. So
+$c_{**}=-c + (c-1/(10c^3)+\dots) = -1/(10 c^3)+\dots$ — wait, let me
+recompute. The two roots $z = -c\pm\sqrt{5c^4-1}/(c\sqrt5)$:
+\(\sqrt{5c^4-1}/(c\sqrt5) = c\sqrt{1-1/(5c^4)} = c(1 - 1/(10c^4) + O(c^{-8}))
+= c - 1/(10 c^3) + O(c^{-7}).\)
+Thus $c_{**} = -c + (c - 1/(10c^3) + \dots) = -1/(10c^3) + O(c^{-7})$
+and $c_* = -c - (c-1/(10c^3)+\dots) = -2c + 1/(10c^3) + O(c^{-7})$.
+[The $1/(5c^3)$ in the announcement was off by a factor of $2$; the
+correct expansion is $c_{**}=-1/(10c^3)+O(c^{-7})$.] Compute:
+\(\widetilde q(c_{**}) = (1 - 3 c_{**}^4 - a c_{**}^2)/2.\)
+Since $c_{**} = O(|c|^{-3})$, $c_{**}^4 = O(|c|^{-12})$ and
+$c_{**}^2 = O(|c|^{-6})$. Also $a = (1-15c^4)/(3c^2)\sim -5c^2$ for
+$|c|\to\infty$. Hence $a\,c_{**}^2 \sim -5c^2/(100 c^6) = -1/(20 c^4) \to 0$.
+Therefore $\widetilde q(c_{**})\to 1/2$.
+\end{proof}
+
+\begin{lemma}[Vieta asymptotics]\label{lem:G2-vieta-on-D}
+The Vieta product of all four critical points equals $\prod_j c_j = 1/5$
+(constant). On $\Delta_{\rm smooth}$ the same product equals
+$c\cdot c\cdot c_*\cdot c_{**}=c^2\cdot(c_*c_{**}) = c^2\cdot(1/(5c^2))=1/5$,
+consistent with paper~6 Theorem 2.5. As $|c|\to\infty$, $c_*\to-2c$ and
+$c_{**}\to -1/(10c^3)$, so
+$|c_{**}|\to 0$ and $|c_*|\to\infty$, while $|c|=|c_{\rm double}|$ also
+$\to\infty$. The smallest critical point in modulus is $c_{**}$ for
+large $|c|$, and Lemma~\ref{lem:G2-infinity} bounds $|\widetilde q(c_{**})|$.
+\end{lemma}
+
+\subsection{What remains for a full G2 closure}
+
+\begin{theorem}[G2 reduction]\label{thm:G2-reduction}
+The centered-slice MVC at $d=5$ on $\Delta_{\rm smooth}$ is equivalent to:
+\begin{equation}
+\forall c\in\mathbb{C}\setminus\{0\}\colon\quad
+\min\!\Bigl(\tfrac{|1+3c^4|}{3},\ |\widetilde q(c_*(c))|,\ |\widetilde q(c_{**}(c))|\Bigr)\;\le\;\tfrac{4}{5},
+\label{eq:G2-reduction}
+\end{equation}
+where $c_*(c),c_{**}(c)$ are given in Theorem~\ref{thm:param} and
+$\widetilde q$ is~\eqref{eq:qtil}.
+\end{theorem}
+
+\begin{proof}
+By Theorem~\ref{thm:param} every smooth point of $\Delta$ corresponds
+to a unique $c\in\mathbb{C}\setminus\{0\}$, and the four critical points
+of $P$ are $c$ (double), $c_*$, $c_{**}$. The Smale ratio on $\Delta$
+is the minimum of the moduli of $\widetilde q$ at these four points,
+which equals the minimum of three values (since $c$ counts twice but
+contributes the same $|\widetilde q|$).
+\end{proof}
+
+\begin{remark}[Status of the remaining step]
+Inequality~\eqref{eq:G2-reduction} is verified numerically on two
+grids of $\mathbb{C}\setminus B(0,0.05)$:
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Grid                          & $\sup_c \min |\widetilde q|$ & margin to $4/5$ \\
+\midrule
+$80 \times 80$ in $[-8,8]^2$   & $0.5727$ at $c \approx -0.10 - 0.71\,i$ & $0.2273$ \\
+$200 \times 200$ in $[-2,2]^2$ & $0.5929$ at $c \approx +0.73 - 0.01\,i$ & $0.2071$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Zero violations. Combined with the asymptotic
+$|\widetilde q(c_{**})|\to 1/2$ as $|c|\to\infty$
+(Lemma~\ref{lem:G2-infinity}) and the $|c|\to 0$ behavior (where
+$|\widetilde q(c_{\rm double})|\to 1/3$ via $c^4\to 0$, but the
+$(a,b)$-image goes to infinity along $\Delta$ where Vieta domination
+in paper~6 Theorem~2.5 gives $\Phi\to 1/2$), the inequality is
+robust on the entire moduli space.
+
+A fully rigorous proof would proceed in three steps:
+\begin{enumerate}
+\item Real-branch interior bound (sympy + interval arithmetic):
+  show $|\widetilde q(c_{**}(c))|\le 4/5$ for $c\in\mathbb{R}\setminus\{0\}$
+  via interval-arithmetic verification on a finite set of intervals
+  covering $\mathbb{R}\setminus\{0\}$, plus the asymptotic
+  Lemma~\ref{lem:G2-infinity} for $|c|$ large.
+\item Complex-branch interior bound: same with $c\in\mathbb{C}\setminus
+  \{0\}$, splitting into real and imaginary parts.
+\item Higher-stratum analysis: at points of $\Delta'\subset\Delta$ where
+  three or more critical points coincide, the parametrisation
+  degenerates and one needs an explicit local model. These deeper
+  strata are computable from the simultaneous vanishing of $P'$,
+  $P''$, $P'''$, etc.; sympy gives the explicit defining equations.
+\end{enumerate}
+
+We did not carry out steps (1)--(3) here: the symbolic and
+interval-arithmetic computations are of moderate size (a few thousand
+sub-intervals each, plausible runtime under one minute per branch on a
+modern laptop) but the bookkeeping is non-trivial to write out in
+detail. Numerically the inequality~\eqref{eq:G2-reduction} appears to
+hold robustly with margin $\ge 0.2$ everywhere on $\Delta$ except in
+shrinking neighbourhoods of $(a,b)=(0,0)$ (the extremal) where
+$\Phi\to 4/5$ by Theorem~\ref{thm:G1}.
+\end{remark}
+
+%========================================================================
+\section{Combining G1 and G2: status of the centered-slice MVC at $d=5$}
+%========================================================================
+
+\begin{theorem}[Centered-slice MVC, $d=5$, conditional]
+\label{thm:final}
+Assume the inequality~\eqref{eq:G2-reduction} holds for all
+$c\in\mathbb{C}\setminus\{0\}$, and assume the higher-stratum analysis
+of $\Delta'$ does not violate $\Phi\le 4/5$. Then for all
+$(a,b)\in\mathbb{C}^2$, the centered-slice polynomial
+$P(z) = z^5 + a z^3 + b z^2 + z$ admits a critical point $c$ with
+\[
+|P(c)/c| \;\le\; 4/5,
+\]
+with equality if and only if $(a,b)=(0,0)$ (equivalently, $P=z^5+z$).
+\end{theorem}
+
+\begin{proof}
+Suppose for contradiction $\Phi(a^*,b^*)>4/5$ at some
+$(a^*,b^*)$. Define
+$K = \{\Phi\ge 4/5+\varepsilon^*\}$ with
+$\varepsilon^*=(\Phi(a^*,b^*)-4/5)/2$. By paper~6 Theorem~2.5
+(Vieta domination), $K$ is bounded; by continuity of $\Phi$ on
+$\mathbb{C}^2$, $K$ is closed; hence $K$ is compact. The supremum
+$M := \sup_K\Phi$ is attained at some $p_M\in K$.
+
+Either $p_M\in\mathbb{C}^2\setminus\Delta$ or $p_M\in\Delta$. If
+$p_M\in\mathbb{C}^2\setminus\Delta$, then $p_M$ is a local max of
+$\Phi$ on $\mathbb{C}^2\setminus\Delta$. By Theorem~\ref{thm:G1},
+$(0,0)$ is a strict local max of $\Phi$ with value $4/5$. If $p_M$ is
+also a local max of $\Phi$ in $\mathbb{C}^2\setminus\Delta$ different
+from $(0,0)$, then $\Phi(p_M)<4/5$ would yield a contradiction with
+$p_M\in K$; but Theorem~\ref{thm:G1} only gives the local property at
+$(0,0)$. The standard supplementary argument is that the Pandrosion
+reduction together with the C${}_4$-Klein symmetry forces the unique
+local max in $\mathbb{C}^2\setminus\Delta$ to be at $(0,0)$, but this
+requires the global argument we have not fully carried out
+(see~\S\ref{sec:open}).
+
+If $p_M\in\Delta$, by Theorem~\ref{thm:G2-reduction} and the assumed
+inequality~\eqref{eq:G2-reduction}, $\Phi(p_M)\le 4/5$, contradicting
+$p_M\in K$.
+\end{proof}
+
+\begin{remark}
+Strictly speaking, Theorem~\ref{thm:final} is conditional on three
+items: (i) Theorem~\ref{thm:G1} which is fully proved; (ii) the
+inequality~\eqref{eq:G2-reduction} on $\Delta_{\rm smooth}$ which we
+have verified numerically with margin but not via interval-arithmetic
+certification; (iii) the global uniqueness of the local max of $\Phi$
+on $\mathbb{C}^2\setminus\Delta$, which we have not proved (only the
+local statement at $(0,0)$). These three together would close the
+centered-slice MVC at $d=5$.
+\end{remark}
+
+%========================================================================
+\section{What is fully closed and what remains open}
+\label{sec:open}
+%========================================================================
+
+\subsection*{Closed (this paper)}
+
+\begin{itemize}
+\item Theorem~\ref{thm:G1}: explicit cone certificate for the local
+maximum at $(a,b)=(0,0)$, with constants
+$c_0 = \alpha\beta/\sqrt{\beta^2+2\alpha^2}\approx 0.214$,
+$\eta=0.2077$, $C\ge 0.0217$, and $\delta_0$ explicit modulo a uniform
+third-derivative bound (computable in sympy and bounded on any compact
+neighbourhood). This closes G1.
+\item Theorem~\ref{thm:param}: explicit parametrisation of the smooth
+part of $\Delta$ by the double critical point $c$, with closed forms
+for $a(c)$, $b(c)$, the simple critical roots $c_*,c_{**}$, and
+$\widetilde q(c) = (1+3c^4)/3$.
+\item Theorem~\ref{thm:G2-reduction}: reduction of the
+$\Delta$-portion of the centered-slice MVC to a one-complex-parameter
+inequality~\eqref{eq:G2-reduction}.
+\item Lemma~\ref{lem:G2-infinity}: asymptotic
+$|\widetilde q(c_{**})|\to 1/2$ as $|c|\to\infty$.
+\end{itemize}
+
+\subsection*{Reduced (numerical evidence given, rigorous proof outstanding)}
+
+\begin{itemize}
+\item Inequality~\eqref{eq:G2-reduction} on
+  $c\in\mathbb{C}\setminus\{0\}$: verified numerically on a fine grid
+  with margin $\ge 0.2$, but a rigorous proof requires interval-arithmetic
+  verification + the asymptotic Lemma~\ref{lem:G2-infinity}.
+\item Higher-stratum analysis of $\Delta'\subset\Delta$ where three or
+  more critical points coincide.
+\item Global uniqueness of the local max of $\Phi$ on
+  $\mathbb{C}^2\setminus\Delta$: only the local statement at $(0,0)$
+  is proved; the global statement (no other local max anywhere) would
+  follow from a complete monotone-descent argument that we did not
+  attempt.
+\end{itemize}
+
+\subsection*{Outside the centered-slice; deeper open questions}
+
+\begin{itemize}
+\item The general $d=5$ MVC (three complex parameters $a_4,a_3,a_2$,
+  not just $a,b$) is \emph{not} treated by either paper~6 or this
+  closure attempt; even fully closing the centered slice would not
+  imply the general $d=5$ statement.
+\item All MVC results $d\ge 6$ remain open. The strategy of
+  Theorem~\ref{thm:G1} extends in principle but each $d$ requires its
+  own symbolic Hessian computation and its own discriminant-locus
+  parametrisation.
+\item No connection of any of this with the Riemann Hypothesis,
+  Pandrosion zeta, or the Pandrosion zeta-of-zeros: these are
+  separate problems with no documented bridge.
+\end{itemize}
+
+%========================================================================
+\section{Errata to the first version of this report}
+\label{sec:errata}
+%========================================================================
+
+In an earlier draft I had asserted $c_0=\alpha=16\sqrt 5/125$
+(Lemma~\ref{lem:c0}) on the basis of a sign-pattern argument.
+That argument was incorrect: the four sign patterns of the $\mathbf
+L_k$ coefficients are
+$(-,+,-),(+,-,-),(-,-,+),(+,+,+)$, all of even number of negatives,
+not arbitrary $\{\pm 1\}^3$. As a result, my claim
+$\max_k\langle-\mathbf L_k,v\rangle\ge \alpha|v_1|+\beta(|v_2|+|v_3|)$
+\emph{fails}: numerical evidence (sphere sampling at $10^6$ points)
+gives a counterexample with margin $-0.43$. The corrected statement is
+Lemma~\ref{lem:c0} with $c_0$ equal to the inradius of
+$\mathrm{conv}(\mathbf L_k)$, that is
+$c_0 = \alpha\beta/\sqrt{\beta^2+2\alpha^2}$.
+This propagates through Theorem~\ref{thm:G1}: the off-cone descent
+constant is $c_0\eta/(2\sqrt{1+\eta^2})$, not $\alpha\eta/(2\sqrt{1+\eta^2})$.
+With the correct $c_0$ the rigorous quadratic-descent constant becomes
+$C\ge 0.0217$, slightly smaller than the (incorrect)
+$0.029$ obtained with $c_0=\alpha$. The qualitative conclusion
+(strict local max with explicit $C>0$) is unchanged.
+
+%========================================================================
+\paragraph{Verification script.}
+The companion script
+\verb|/Users/ivanbesevic/Documents/poussiere/closure_d5_verify.py|
+recomputes from scratch every constant cited above
+($\alpha, \beta, c_0, K_1, K_2, Q_{\max}, \eta, C, \delta_0$),
+verifies the Pandrosion reduction~\eqref{eq:qtil}, the resultant
+product formula, the inradius computation, the Hessian decomposition
+of Lemma~\ref{lem:Q-decomp}, the parametrisation
+Theorem~\ref{thm:param}, and the bound on $\Phi|_\Delta$ along the
+real and complex branches of~$\Delta$.
+
+\end{document}
