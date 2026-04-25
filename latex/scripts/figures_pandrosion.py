@@ -11,6 +11,7 @@ from matplotlib.collections import LineCollection
 import cmath
 import math
 import os
+from pathlib import Path
 
 # Global style
 plt.rcParams.update({
@@ -28,8 +29,8 @@ plt.rcParams.update({
     'savefig.pad_inches': 0.1,
 })
 
-OUT = "/Users/ivanbesevic/Documents/poussiere/latex/figs"
-os.makedirs(OUT, exist_ok=True)
+OUT = Path(__file__).resolve().parents[1] / "figs"
+OUT.mkdir(parents=True, exist_ok=True)
 
 # ---------- Pandrosion algorithm ----------
 def Sp(p, z):
@@ -170,7 +171,7 @@ def fig1_multistart_basins():
                  r'Pandrosion multi-start circumvents via $\alpha$-dependent seed — §95, §120',
                  fontsize=12, y=1.02)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig01_multistart_basins.png', dpi=180)
+    plt.savefig(OUT / 'fig01_multistart_basins.png', dpi=180)
     plt.close()
     print("Fig 1 ✓")
 
@@ -219,7 +220,7 @@ def fig2_cyclotomic_anchors():
                  r'for $z^p = 1/x$, $x = 2$ (§118-§119)',
                  fontsize=13, y=1.00)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig02_cyclotomic_anchors.png', dpi=200)
+    plt.savefig(OUT / 'fig02_cyclotomic_anchors.png', dpi=200)
     plt.close()
     print("Fig 2 ✓")
 
@@ -280,7 +281,7 @@ def fig3_loglog_convergence():
                  r'beats Smale 17 for $z^p = x$ (§115)',
                  fontsize=12, y=1.02)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig03_loglog_convergence.png', dpi=200)
+    plt.savefig(OUT / 'fig03_loglog_convergence.png', dpi=200)
     plt.close()
     print("Fig 3 ✓")
 
@@ -341,7 +342,7 @@ def fig4_voronoi_julia_null():
                  r'$\partial V$ is Lebesgue-null, multi-start deterministic a.e.',
                  fontsize=12, y=1.02)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig04_voronoi_julia_null.png', dpi=200)
+    plt.savefig(OUT / 'fig04_voronoi_julia_null.png', dpi=200)
     plt.close()
     print("Fig 4 ✓")
 
@@ -389,7 +390,7 @@ def fig5_pandrosion_riemann_analogy():
               r'finite $\zeta_P$ as concrete Riemann analog',
               fontsize=13, fontweight='bold', pad=18)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig05_riemann_analogy.png', dpi=200)
+    plt.savefig(OUT / 'fig05_riemann_analogy.png', dpi=200)
     plt.close()
     print("Fig 5 ✓")
 
@@ -453,7 +454,7 @@ def fig6_spectral_determinant():
                  r'closed form $\prod P^{\prime}(\alpha_k) = (-1)^{p-1} p^p / x^{p-1}$',
                  fontsize=12, y=1.02)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig06_spectral_determinant.png', dpi=200)
+    plt.savefig(OUT / 'fig06_spectral_determinant.png', dpi=200)
     plt.close()
     print("Fig 6 ✓")
 
@@ -534,7 +535,7 @@ def fig7_aitken_acceleration():
                  r'linear $h$ to quadratic $\sigma$',
                  fontsize=12, y=1.02)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig07_aitken_acceleration.png', dpi=200)
+    plt.savefig(OUT / 'fig07_aitken_acceleration.png', dpi=200)
     plt.close()
     print("Fig 7 ✓")
 
@@ -616,7 +617,7 @@ def fig8_fatou_julia_decomposition():
                  r'— §102 measurable, §103 Julia-null, §105 a.e. continuous',
                  fontsize=12, y=1.02)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig08_fatou_julia.png', dpi=180)
+    plt.savefig(OUT / 'fig08_fatou_julia.png', dpi=180)
     plt.close()
     print("Fig 8 ✓")
 
@@ -703,7 +704,7 @@ def fig9_spectral_balance():
                  r'— §106 zeta vanishing, §122 Vieta $e_1 = 0$',
                  fontsize=12, y=1.02)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig09_spectral_balance.png', dpi=180)
+    plt.savefig(OUT / 'fig09_spectral_balance.png', dpi=180)
     plt.close()
     print("Fig 9 ✓")
 
@@ -770,7 +771,7 @@ def fig10_module_graph():
                  r'— from foundations to publication',
                  fontsize=13, fontweight='bold', pad=10)
     plt.tight_layout()
-    plt.savefig(f'{OUT}/fig10_module_graph.png', dpi=200)
+    plt.savefig(OUT / 'fig10_module_graph.png', dpi=200)
     plt.close()
     print("Fig 10 ✓")
 

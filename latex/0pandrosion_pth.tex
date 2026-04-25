@@ -10,7 +10,7 @@
 \usepackage{array}
 \usepackage{lmodern}
 \usepackage{graphicx}
-\graphicspath{{./figs/}{./}}
+\graphicspath{{./figs/}{./figures/}{./}}
 \usepackage{float}
 \usepackage{subcaption}
 \usepackage{xcolor}
@@ -281,8 +281,8 @@ Pandrosion's construction relies on Thales' theorem applied to a rectangle. Cons
 
 \begin{figure}[H]
   \centering
-  \IfFileExists{pandrosion_geometry.pdf}
-    {\includegraphics[width=0.52\textwidth]{pandrosion_geometry.pdf}}
+  \IfFileExists{figures/pandrosion_geometry.pdf}
+    {\includegraphics[width=0.52\textwidth]{figures/pandrosion_geometry.pdf}}
     {\fbox{\parbox{0.52\textwidth}{\centering \vspace{2em}\textit{Figure pandrosion\_geometry.pdf not found.}\vspace{2em}}}}
   \caption{Pandrosion's geometric construction for $p=3$, $x=2$.
   The blue horizontal lines (steps $n=0,1,2,3$) converge toward the dashed red line,
@@ -489,8 +489,8 @@ For $p=3$, $x=2$ ($\lambda_{3,2} \approx 0.220$): $10$ decimal digits of accurac
 
 \begin{figure}[H]
   \centering
-  \IfFileExists{pandrosion_figures.pdf}
-    {\includegraphics[width=\textwidth]{pandrosion_figures.pdf}}
+  \IfFileExists{figures/pandrosion_figures.pdf}
+    {\includegraphics[width=\textwidth]{figures/pandrosion_figures.pdf}}
     {\fbox{\parbox{0.9\textwidth}{\centering \vspace{2em}\textit{Figure pandrosion\_figures.pdf not found.}\vspace{2em}}}}
   \caption{\textbf{Left:} Cobweb diagram of the iteration $s_{n+1} = h(s_n)$ for
   $p=3$, $x=2$, starting at $s_0=0.875$. The spiral converges to $s^* = 2^{-1/3}$
@@ -757,7 +757,7 @@ All coefficients of $B_p$ are strictly positive integers, so $B_p(\alpha) > 0$ f
 \end{proof}
 
 \begin{remark}[Closed forms and numerical verification]
-The closed forms $P_p(\alpha) = p \cdot D_p'(\alpha)$ and $B_p(\alpha) = \sum_{j=1}^p j\alpha^{j-1}$ emerged in the course of this write-up; a standalone script \texttt{latex/verify\_monotonicity.py} cross-checks both identities symbolically for $p \leq 20$ using SymPy, and confirms strict monotonicity of $\lambda_p(\alpha)$ for $2 \leq p \leq 20$, $\alpha \in [1.01, 100]$, and of $\lambda_{p,\alpha^p}$ for $2 \leq p \leq 50$, $\alpha \in \{1.1, 1.5, 2, 3, 10, 100\}$ using high-precision arithmetic as a consistency check. Monotonicity itself is proven analytically above; the numerical scan is purely a consistency check.
+The closed forms $P_p(\alpha) = p \cdot D_p'(\alpha)$ and $B_p(\alpha) = \sum_{j=1}^p j\alpha^{j-1}$ emerged in the course of this write-up; a standalone script \texttt{latex/scripts/verify\_monotonicity.py} cross-checks both identities symbolically for $p \leq 20$ using SymPy, and confirms strict monotonicity of $\lambda_p(\alpha)$ for $2 \leq p \leq 20$, $\alpha \in [1.01, 100]$, and of $\lambda_{p,\alpha^p}$ for $2 \leq p \leq 50$, $\alpha \in \{1.1, 1.5, 2, 3, 10, 100\}$ using high-precision arithmetic as a consistency check. Monotonicity itself is proven analytically above; the numerical scan is purely a consistency check.
 \end{remark}
 
 \begin{remark}
@@ -1066,7 +1066,7 @@ The bracketed coefficient simplifies to $-\lambda/2$, giving $(h(s)-s)^2/\Delta 
 \[
   T(s) - s^* = u - \frac{(h(s)-s)^2}{\Delta} = -\frac{\lambda h_2}{2(1-\lambda)}u^2 + O(u^3),
 \]
-which is the stated expansion; $T(s^*) = s^*$ and $T'(s^*) = 0$ are immediate, and the absolute value of the leading coefficient is $K_S$ as in~\eqref{eq:K_steffensen}. (The full symbolic derivation up to $O(u^3)$ is in \texttt{latex/verify\_monotonicity.py}.)
+which is the stated expansion; $T(s^*) = s^*$ and $T'(s^*) = 0$ are immediate, and the absolute value of the leading coefficient is $K_S$ as in~\eqref{eq:K_steffensen}. (The full symbolic derivation up to $O(u^3)$ is in \texttt{latex/scripts/verify\_monotonicity.py}.)
 \end{proof}
 
 \begin{remark}[Output-residual constant]\label{rem:K-output}
@@ -1174,8 +1174,8 @@ Evaluations of $S_p$ & --- & $6$ (total) \\
 
 \begin{figure}[H]
   \centering
-  \IfFileExists{pandrosion_steffensen.pdf}
-    {\includegraphics[width=\textwidth]{pandrosion_steffensen.pdf}}
+  \IfFileExists{figures/pandrosion_steffensen.pdf}
+    {\includegraphics[width=\textwidth]{figures/pandrosion_steffensen.pdf}}
     {\fbox{\parbox{0.9\textwidth}{\centering \vspace{2em}\textit{Figure pandrosion\_steffensen.pdf not found.}\vspace{2em}}}}
   \caption{\textbf{Left:} Error decay comparison for $\cbrt{2}$, counted per iterate (not per function evaluation; see Remark~\ref{rem:fair-comparison}).
   Steffensen--Pandrosion (blue diamonds) reaches machine precision in $3$~steps
@@ -1284,7 +1284,7 @@ With scaling and Steffensen acceleration combined, Pandrosion's ancient geometri
 \subsection{Multi-precision benchmark against Newton and Halley}
 \label{sec:benchmark}
 
-We close Part~I with an experimental sanity check: how does the full Steffensen--Pandrosion--scaling pipeline compare against textbook Newton and Halley iterations for $x^{1/p}$ at high precision? The script \texttt{latex/benchmark\_multiprec.py} runs the three methods in MPFR-backed arithmetic (via the \texttt{mpmath} library) at precision targets of $50$, $200$, and $500$ decimal digits, starting all three methods from the same integer seed $\lfloor x^{1/p} \rfloor$ and stopping on the same condition $|u^p - x|/x \leq 10^{-\text{digits}}$. Table~\ref{tab:benchmark} summarises the iteration counts; wall-clock times are reported in the repository.
+We close Part~I with an experimental sanity check: how does the full Steffensen--Pandrosion--scaling pipeline compare against textbook Newton and Halley iterations for $x^{1/p}$ at high precision? The script \texttt{latex/scripts/benchmark\_multiprec.py} runs the three methods in MPFR-backed arithmetic (via the \texttt{mpmath} library) at precision targets of $50$, $200$, and $500$ decimal digits, starting all three methods from the same integer seed $\lfloor x^{1/p} \rfloor$ and stopping on the same condition $|u^p - x|/x \leq 10^{-\text{digits}}$. Table~\ref{tab:benchmark} summarises the iteration counts; wall-clock times are reported in the repository.
 
 \begin{table}[H]
 \centering
@@ -1575,13 +1575,13 @@ The bound $\pi R_\sigma^2$ is a level-$0$ estimate and can be sharpened without 
 \[
   \mathrm{vol}(\Omega_k) \;\geq\; \sum_{m=0}^{M} \mathrm{vol}\!\bigl(\sigma_{p,x}^{-m}(\overline{B}(\gamma_k, R_\sigma/2))\bigr)
 \]
-for every $M$. Numerical exploration (script \texttt{latex/basin\_estimate.py}) on $(p, x) = (3, 2)$ finds $\Omega_0$ covering approximately $99.95\%$ of $[-1.5, 1.5]^2$, while the level-$0$ lower bound already gives $\mathrm{vol}(\Omega_0) \geq \pi R_\sigma^2 \approx 4\pi$ with empirical $R_\sigma \geq 2$ --- roughly $87\%$ of the test square, a substantial fraction. For $(p, x) = (7, 10)$ the empirical $R_\sigma \approx 0.37$ is tighter and the gap between level-$0$ bound and observed basin is larger, reflecting the onset of a non-trivial Julia boundary. A matching upper bound on $\mathrm{vol}(\Omega_k)$ would require Fatou--Julia machinery not used here and is left for future work.
+for every $M$. Numerical exploration (script \texttt{latex/scripts/basin\_estimate.py}) on $(p, x) = (3, 2)$ finds $\Omega_0$ covering approximately $99.95\%$ of $[-1.5, 1.5]^2$, while the level-$0$ lower bound already gives $\mathrm{vol}(\Omega_0) \geq \pi R_\sigma^2 \approx 4\pi$ with empirical $R_\sigma \geq 2$ --- roughly $87\%$ of the test square, a substantial fraction. For $(p, x) = (7, 10)$ the empirical $R_\sigma \approx 0.37$ is tighter and the gap between level-$0$ bound and observed basin is larger, reflecting the onset of a non-trivial Julia boundary. A matching upper bound on $\mathrm{vol}(\Omega_k)$ would require Fatou--Julia machinery not used here and is left for future work.
 \end{remark}
 
 \subsection{Multi-precision benchmark in the complex plane}
 \label{sec:benchmark-complex}
 
-Complementing the real-line benchmark of \S\ref{sec:benchmark}, the script \texttt{latex/benchmark\_complex.py} compares four methods on the complex problem $z^p = X$ for $X \in \mathbb{C}^\ast$:
+Complementing the real-line benchmark of \S\ref{sec:benchmark}, the script \texttt{latex/scripts/benchmark\_complex.py} compares four methods on the complex problem $z^p = X$ for $X \in \mathbb{C}^\ast$:
 \begin{itemize}
   \item Newton's iteration $z_{n+1} = ((p-1)z_n + X/z_n^{p-1})/p$;
   \item Halley's iteration $z_{n+1} = z_n \cdot ((p-1)z_n^p + (p+1)X)/((p+1)z_n^p + (p-1)X)$;
@@ -1935,7 +1935,7 @@ So items (1), (2), (3), (4) transport --- item (3) through a polynomial-to-polyn
 
 \subsection{Numerical evidence}
 
-The script \texttt{latex/benchmark\_general\_poly.py} applies the generalised Pandrosion--Steffensen scheme~\eqref{eq:h-P-general} to four non-monomial polynomials at $50$-digit precision, starting from $z_0 = 3 + 3i$. The radius $R_\sigma(P, \alpha_k)$ is estimated empirically by bisection on the circle $\partial B(\alpha_k, R)$.
+The script \texttt{latex/scripts/benchmark\_general\_poly.py} applies the generalised Pandrosion--Steffensen scheme~\eqref{eq:h-P-general} to four non-monomial polynomials at $50$-digit precision, starting from $z_0 = 3 + 3i$. The radius $R_\sigma(P, \alpha_k)$ is estimated empirically by bisection on the circle $\partial B(\alpha_k, R)$.
 
 \begin{table}[H]
 \centering
@@ -1960,7 +1960,7 @@ The iteration converges to every target root of every tested polynomial: the sch
 
 \subsection{Scaling with the degree $p$}
 
-A natural follow-up question: for fixed precision, does the iteration count scale with the degree $p$? The script \texttt{latex/benchmark\_large\_p.py} tests two families at $p \in \{3, 5, 10, 20, 50, 100, 200\}$, targeting the principal real root in each case at $50$-digit precision from $z_0 = 3 + 3i$:
+A natural follow-up question: for fixed precision, does the iteration count scale with the degree $p$? The script \texttt{latex/scripts/benchmark\_large\_p.py} tests two families at $p \in \{3, 5, 10, 20, 50, 100, 200\}$, targeting the principal real root in each case at $50$-digit precision from $z_0 = 3 + 3i$:
 \begin{enumerate}
   \item[(A)] $P(z) = z^p - 2$: the pure monomial, maximally well-conditioned.
   \item[(B)] $P(z) = z^p - z - 1$: Bring-style trinomial with one real root $\alpha \approx 2^{1/p}$ for large $p$.

@@ -231,7 +231,7 @@ references.
 
 ```text
 .
-├── articles/                           # Nine distributable compiled papers
+├── articles/                           # Distributable compiled papers + combined edition
 │   ├── 0pandrosion_pth.pdf             # Paper 0 (Lean-verified, Pth)
 │   ├── 1pandrosion_smale.pdf           # Part I: univariate + multivariate Pandrosion
 │   ├── 2pandrosion_smale.pdf           # Part II: Smale MVC reformulation
@@ -240,22 +240,25 @@ references.
 │   ├── 5pandrosion_smale.pdf           # Part V: Smale MVC for d=4
 │   ├── 6pandrosion_smale.pdf           # Part VI: Smale MVC for d=5 (candidate)
 │   ├── 7pandrosion_smale.pdf           # Part VII: Armijo + γ-damped fallback
-│   └── 8pandrosion_smale.pdf           # Part VIII: geometric-decreasing starts
-├── latex/                              # LaTeX sources + Python experiments
-│   ├── 0pandrosion_pth.tex             # Paper 0 source (alias of pandrosion_pth.tex)
-│   ├── pandrosion_pth.tex              # Paper 0 source (primary name, Lean-verified)
+│   ├── 8pandrosion_smale.pdf           # Part VIII: geometric-decreasing starts
+│   └── universitas_pandrosion_combined.pdf # Combined edition
+├── latex/                              # LaTeX sources, paper PDFs, figures, experiments
+│   ├── 0pandrosion_pth.tex             # Paper 0 source (Lean-verified Pth paper)
 │   ├── 1pandrosion_smale.tex           # Part I source
 │   ├── ...                             # Parts II–VIII sources
-│   ├── benchmark_smale17_v4.py         # Multivariate Pandrosion benchmark (n=1..4, d=2..5)
-│   ├── benchmark_multivariate_extended.py # Extended benchmark up to (n,d)=(5,4), D=1024
-│   ├── explore_higher_order.py         # T_n hierarchy (Richardson) comparison
-│   ├── explore_start_strategies.py     # Strategy A (Cauchy) vs B (GeomDecr) vs others
-│   ├── explore_mvc_d5.py               # MVC d=5 numerical certificate (70 001 tests)
-│   ├── prove_d5_hessian.py             # Symbolic Hessian for MVC d=5 (sympy)
-│   ├── prove_armijo_O1.py              # Armijo amortised j_accept distribution
-│   ├── measure_worst_case_freq.py      # Worst-case % on UNI random polynomials
-│   ├── explore_gamma_damped*.py        # Analytic γ-damped descent step
-│   └── *.pdf                           # Compiled copies + figures
+│   ├── scripts/                        # Reproducible Python experiments
+│   │   ├── benchmark_smale17_v4.py      # Multivariate Pandrosion benchmark
+│   │   ├── benchmark_multivariate_extended.py # Extended benchmark, D=1024
+│   │   ├── explore_higher_order.py      # T_n hierarchy comparison
+│   │   ├── explore_start_strategies.py  # Strategy A vs B vs others
+│   │   ├── explore_mvc_d5.py            # MVC d=5 numerical certificate
+│   │   ├── prove_d5_hessian.py          # Symbolic Hessian certificate
+│   │   ├── prove_armijo_O1.py           # Armijo j_accept distribution
+│   │   └── measure_worst_case_freq.py   # Worst-case frequency measurement
+│   ├── figures/                        # Paper figures and generated visual assets
+│   ├── figs/                           # Lean/Paper-0 figure set used by graphicspath
+│   ├── archive/                        # Legacy PDFs not used by the current build
+│   └── *.pdf                           # Compiled paper copies used by combined edition
 ├── lean/
 │   ├── Pandrosion.lean                 # Root import module
 │   ├── Pandrosion/
@@ -329,14 +332,14 @@ done
 To rebuild a single paper (e.g. Paper 0):
 
 ```bash
-(cd latex && ../tectonic pandrosion_pth.tex)
-cp latex/pandrosion_pth.pdf articles/0pandrosion_pth.pdf
+(cd latex && ../tectonic 0pandrosion_pth.tex)
+cp latex/0pandrosion_pth.pdf articles/0pandrosion_pth.pdf
 ```
 
 ## Reproduce The Numerical Experiments
 
 Each `explore_*.py`, `benchmark_*.py`, `prove_*.py`, and
-`measure_*.py` script in `latex/` is self-contained. They depend on
+`measure_*.py` script in `latex/scripts/` is self-contained. They depend on
 `numpy` and `scipy` (and `sympy` for `prove_d5_hessian.py`). Create a
 local environment and run:
 
@@ -344,7 +347,7 @@ local environment and run:
 python3 -m venv .venv
 source .venv/bin/activate
 pip install numpy scipy sympy
-cd latex
+cd latex/scripts
 python3 benchmark_multivariate_extended.py  # (n,d) up to (5,4), D=1024
 python3 explore_mvc_d5.py                   # Smale MVC d=5: 70 001 tests
 python3 prove_d5_hessian.py                 # Symbolic Hessian certificate

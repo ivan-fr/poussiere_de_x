@@ -5,7 +5,7 @@ Produces a family of four paper-quality figures visualizing the
 algorithmic geometry and convergence of the Pandrosion-Steffensen
 algorithm for z^p = x, matching the 21-module Lean 4 formalization.
 
-Figures emitted (into latex/latex/):
+Figures emitted (into latex/figures/core-overview/):
   fig_cyclotomic_basins.png     — cyclotomic anchors + Voronoï basins in C
   fig_loglog_convergence.png    — quadratic loglog tail from inside a basin
   fig_module_graph.png          — 21-module dependency DAG
@@ -23,8 +23,8 @@ from matplotlib.patches import FancyBboxPatch
 from matplotlib.collections import LineCollection
 import numpy as np
 
-OUT = Path(__file__).parent / "latex"
-OUT.mkdir(exist_ok=True)
+OUT = Path(__file__).resolve().parents[1] / "figures" / "core-overview"
+OUT.mkdir(parents=True, exist_ok=True)
 
 plt.rcParams.update({
     "font.family": "serif",

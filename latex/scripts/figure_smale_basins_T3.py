@@ -11,6 +11,7 @@ zones fractales restantes brillent (|P| residuel).
 from __future__ import annotations
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 
 def P(z):
@@ -120,7 +121,8 @@ def main():
         txt.set_color('white')
 
     plt.tight_layout()
-    out = '/Users/ivanbesevic/Documents/poussiere/latex/smale_reproduced_T3.png'
+    out = Path(__file__).resolve().parents[1] / 'figures' / 'smale_reproduced_T3.png'
+    out.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(out, dpi=150, facecolor=fig.get_facecolor())
     print(f"Saved -> {out}")
 

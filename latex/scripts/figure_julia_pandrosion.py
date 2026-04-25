@@ -2,7 +2,7 @@
 figure_julia_pandrosion.py
 
 Pandrosion-based analogue of Figure 13 of `p_previous_version.pdf`
-(alias `pandrosion_paper.pdf`).
+(archived as `latex/archive/legacy-pandrosion/pandrosion_paper.pdf`).
 
 Figure 13 of that paper shows the classical Julia set  z -> z^2 + c  with
 c = -0.7 + 0.27 i, used there as a *contrast*: a fractal boundary that
@@ -32,7 +32,7 @@ basin frontier analogue; per Part I, Section 6.1, for the adaptive
 scheme the boundaries empirically vanish altogether.  See also
 Paper 0 Section 17 (Lebesgue-null Voronoi frontier on h_{p,x}).
 
-Output: latex/julia_pandrosion_hd.png (HD, 2400 x 2400).
+Output: latex/figures/julia_pandrosion_hd.png (HD, 2400 x 2400).
 """
 
 from __future__ import annotations
@@ -40,13 +40,14 @@ from __future__ import annotations
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from pathlib import Path
 
 
-OUTPUT = "/Users/ivanbesevic/Documents/poussiere/latex/julia_pandrosion_hd.png"
+OUTPUT = Path(__file__).resolve().parents[1] / "figures" / "julia_pandrosion_hd.png"
 
 
 # ------------------------------------------------------------------
-# Pandrosion cubic map P_X (eq. 2 of pandrosion_paper.pdf)
+# Pandrosion cubic map P_X (eq. 2 of the archived pandrosion_paper.pdf)
 # ------------------------------------------------------------------
 def P_X(z: np.ndarray, X: complex) -> np.ndarray:
     z3 = z * z * z
@@ -153,6 +154,8 @@ def render(
     bailout: float = 1.0e6,
     output: str = OUTPUT,
 ) -> None:
+    output = Path(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
     basin, iters, roots = pandrosion_basins(
         X, res, box, max_iter, tol, bailout
     )

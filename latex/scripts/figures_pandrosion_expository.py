@@ -1,8 +1,8 @@
 """
 Regenerate the three figures used in pandrosion_en_improved.tex:
-    pandrosion_geometry.pdf
-    pandrosion_figures.pdf
-    pandrosion_steffensen.pdf
+    latex/figures/pandrosion_geometry.pdf
+    latex/figures/pandrosion_figures.pdf
+    latex/figures/pandrosion_steffensen.pdf
 
 Dependencies: numpy, matplotlib.
 """
@@ -369,7 +369,8 @@ def make_steffensen_figure(path: str) -> None:
 
 if __name__ == "__main__":
     import os
-    outdir = os.path.dirname(os.path.abspath(__file__))
+    outdir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "figures")
+    os.makedirs(outdir, exist_ok=True)
     plt.rcParams.update({
         "font.family": "serif",
         "mathtext.fontset": "cm",
@@ -378,5 +379,5 @@ if __name__ == "__main__":
     make_geometry_figure(os.path.join(outdir, "pandrosion_geometry.pdf"))
     make_cobweb_and_residuals_figure(os.path.join(outdir, "pandrosion_figures.pdf"))
     make_steffensen_figure(os.path.join(outdir, "pandrosion_steffensen.pdf"))
-    print("Wrote pandrosion_geometry.pdf, pandrosion_figures.pdf, "
-          "pandrosion_steffensen.pdf")
+    print("Wrote figures/pandrosion_geometry.pdf, figures/pandrosion_figures.pdf, "
+          "figures/pandrosion_steffensen.pdf")

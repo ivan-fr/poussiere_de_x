@@ -18,6 +18,7 @@ Polynome cible : P(z) = z^3 - 2.
 from __future__ import annotations
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 
 def P(z):
@@ -116,7 +117,8 @@ def main():
         txt.set_color('white')
 
     plt.tight_layout()
-    out = '/Users/ivanbesevic/Documents/poussiere/latex/smale_HQ.png'
+    out = Path(__file__).resolve().parents[1] / 'figures' / 'smale_HQ.png'
+    out.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(out, dpi=160, facecolor=fig.get_facecolor(), bbox_inches='tight')
     print(f"Saved -> {out}")
 
