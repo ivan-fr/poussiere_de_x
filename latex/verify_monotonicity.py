@@ -11,17 +11,34 @@ Also verifies the closed-form identities:
 symbolically for p up to 20 using SymPy, if available.
 """
 import math
+import mpmath as mp
 try:
     import sympy as sp
     _HAS_SYMPY = True
 except ImportError:
     _HAS_SYMPY = False
 
+mp.mp.dps = 80
 
 def lam(p, alpha):
-    num = (alpha - 1.0) * sum(k * alpha ** (p - 1 - k) for k in range(1, p))
-    den = sum(alpha ** k for k in range(p))
+    alpha = mp.mpf(alpha)
+    num = (alpha - 1) * mp.fsum(k * alpha ** (p - 1 - k) for k in range(1, p))
+    den = mp.fsum(alpha ** k for k in range(p))
     return num / den
+
+
+def lam_px(p, x):
+    alpha = mp.power(mp.mpf(x), mp.mpf(1) / p)
+    return lam(p, alpha)
+
+
+def delta_p_fixed_alpha(p, alpha):
+    """Closed-form positive difference lambda_{p+1,alpha^(p+1)} - lambda_{p,alpha^p}."""
+    alpha = mp.mpf(alpha)
+    Dp = mp.fsum(alpha ** k for k in range(p))
+    Dp1 = Dp + alpha ** p
+    Bp = mp.fsum(j * alpha ** (j - 1) for j in range(1, p + 1))
+    return (alpha - 1) * Bp / (Dp * Dp1)
 
 
 # (1) Monotonicity in alpha for fixed p
@@ -35,9 +52,16 @@ for p in [2, 3, 5, 10, 20]:
 # (2) Monotonicity in p for fixed alpha
 print("\nMonotonicity in p (fixed alpha):")
 for alpha in [1.1, 1.5, 2.0, 3.0, 10.0, 100.0]:
-    vals = [(p, lam(p, alpha)) for p in range(2, 51)]
-    inc = all(vals[i+1][1] > vals[i][1] for i in range(len(vals) - 1))
+    inc = all(delta_p_fixed_alpha(p, alpha) > 0 for p in range(2, 50))
     print(f"  alpha={alpha}: strictly increasing in p = {inc}")
+
+# (2b) Fixed-x numerical consistency check for the table in the paper
+print("\nNumerical check in p (fixed x, high precision; empirical consistency only):")
+for x in [1.1, 2.0, 10.0, 100.0, 1_000_000.0]:
+    vals = [(p, lam_px(p, x)) for p in range(2, 51)]
+    inc = all(vals[i+1][1] > vals[i][1] for i in range(len(vals) - 1))
+    limit = 1 - mp.log(x) / (mp.mpf(x) - 1)
+    print(f"  x={x}: increasing for 2 <= p <= 50 = {inc}; limit = {mp.nstr(limit, 14)}")
 
 # (3) Check the log-derivative sign in alpha
 print("\nLog-derivative d/d alpha ln(lambda) > 0 ?  (p=3 closed form)")

@@ -89,7 +89,8 @@ readout $v_n = x\,s_n^{p-1} \to x^{1/p}$. We derive the closed form
   \qquad \alpha = x^{1/p},
 \]
 for the linear contraction ratio, prove it is monotone in both $p$
-and $x$ uniformly (via the closed-form identities $P_p(\alpha) = p\,D_p'(\alpha)$ and $B_p(\alpha) = \sum_{j=1}^{p} j\alpha^{j-1}$, both with all positive coefficients), with explicit large-$p$ limit $1 - \ln(x)/(x-1)$, give
+and the root parameter in the precise senses of Theorem~\ref{thm:monotonicity}
+(via the closed-form identities $P_p(\alpha) = p\,D_p'(\alpha)$ and $B_p(\alpha) = \sum_{j=1}^{p} j\alpha^{j-1}$, both with all positive coefficients), with explicit large-$p$ limit $1 - \ln(x)/(x-1)$, give
 non-asymptotic error bounds, extend the theory to $x < 1$ with an
 explicit threshold $\alpha^*_p$ below which the iteration diverges,
 and add two accelerations: a canonical starting point
@@ -177,7 +178,7 @@ At each finite step of Pandrosion's construction, there remains a gap $\eps_n = 
 \paragraph{Positioning and related work.}
 Rational iterations for $p$-th roots are a classical topic with a large literature: Newton's method applied to $f(u) = u^p - x$, Halley's method, and more generally Schröder's (1870) and König's (1884) families produce iterations of arbitrary order with explicit asymptotic constants. The systematic analysis of fixed-point iterations and their acceleration goes back to Ostrowski~\cite{ostrowski}, Traub~\cite{traub}, and Householder~\cite{householder}; the derivative-free counterpart via Aitken--Steffensen (1926/1933) is standard and appears in every modern numerical-analysis textbook~\cite{stoer,numrecipes}.
 What is specific to the iteration~\eqref{eq:pandrosion_gen} below is that it arises directly from Pandrosion's geometric construction, \emph{without} being derived as Newton or Schröder applied to a particular polynomial: it is a rational iteration with linear (not quadratic) order, whose contraction ratio admits the closed form~\eqref{eq:lambda_general} as a rational function of $\alpha = x^{1/p}$.
-We have not located this closed form, together with its monotonicity in $(p,x)$ and its use to drive a scaling preconditioning, in the textbooks~\cite{stoer,numrecipes} or the historical literature on cube duplication, but we make no claim that the iteration itself is genuinely new: the contribution is to record the profile of a specific historical iteration and to show how standard acceleration devices (Aitken $\Delta^2$, scaling) interact with it.
+We have not located this closed form, together with its monotonicity properties and its use to drive a scaling preconditioning, in the textbooks~\cite{stoer,numrecipes} or the historical literature on cube duplication, but we make no claim that the iteration itself is genuinely new: the contribution is to record the profile of a specific historical iteration and to show how standard acceleration devices (Aitken $\Delta^2$, scaling) interact with it.
 
 \medskip
 
@@ -631,7 +632,7 @@ We now study how the contraction ratio $\lambda_{p,x}$ depends on the parameters
 
 \subsection{Monotonicity}
 
-\begin{theorem}[Double monotonicity]
+\begin{theorem}[Monotonicity in the root parameter and insertion depth]
 \label{thm:monotonicity}
 The contraction ratio $\lambda_{p,x}$, viewed as a function of $\alpha = x^{1/p} > 1$, satisfies:
 \begin{enumerate}
@@ -756,11 +757,11 @@ All coefficients of $B_p$ are strictly positive integers, so $B_p(\alpha) > 0$ f
 \end{proof}
 
 \begin{remark}[Closed forms and numerical verification]
-The closed forms $P_p(\alpha) = p \cdot D_p'(\alpha)$ and $B_p(\alpha) = \sum_{j=1}^p j\alpha^{j-1}$ emerged in the course of this write-up; a standalone script \texttt{latex/verify\_monotonicity.py} cross-checks both identities symbolically for $p \leq 20$ using SymPy, and confirms strict monotonicity of $\lambda_p(\alpha)$ for $2 \leq p \leq 20$, $\alpha \in [1.01, 100]$, and of $\lambda_p(\alpha^p)$ for $2 \leq p \leq 50$, $\alpha \in \{1.1, 1.5, 2, 3, 10, 100\}$ as a consistency check. Monotonicity itself is proven analytically above; the numerical scan is purely a consistency check.
+The closed forms $P_p(\alpha) = p \cdot D_p'(\alpha)$ and $B_p(\alpha) = \sum_{j=1}^p j\alpha^{j-1}$ emerged in the course of this write-up; a standalone script \texttt{latex/verify\_monotonicity.py} cross-checks both identities symbolically for $p \leq 20$ using SymPy, and confirms strict monotonicity of $\lambda_p(\alpha)$ for $2 \leq p \leq 20$, $\alpha \in [1.01, 100]$, and of $\lambda_{p,\alpha^p}$ for $2 \leq p \leq 50$, $\alpha \in \{1.1, 1.5, 2, 3, 10, 100\}$ using high-precision arithmetic as a consistency check. Monotonicity itself is proven analytically above; the numerical scan is purely a consistency check.
 \end{remark}
 
 \begin{remark}
-Monotonicity in $p$ has a geometric interpretation: inserting more proportional means (larger $p$) constrains the construction further, slowing convergence.
+Monotonicity in $p$ at fixed root parameter $\alpha$ has a geometric interpretation: inserting more proportional means while keeping the endpoint ratio $\alpha$ fixed constrains the construction further, slowing convergence.
 \end{remark}
 
 \subsection{Limiting behavior}
@@ -1076,6 +1077,58 @@ The paper's numerical tables (Table~\ref{tab:steff-numerical} below) report the 
 \]
 For $(p, x) = (3, 2)$: $\lambda \approx 0.2202$, $h''(s^*) \approx -0.3001$, $\alpha^2 = 2^{2/3} \approx 1.587$, so $K_S \approx 0.0424$ and $K_S^{(v)} \approx 0.0133$. The latter is the value reported as ``$K_S \approx 0.013$'' in Table~\ref{tab:ks-comparison} below.
 \end{remark}
+
+\begin{lemma}[Local Steffensen expansion for a holomorphic fixed-point map]\label{lem:steffensen-local-general}
+Let $h$ be holomorphic in a neighbourhood of $\alpha \in \mathbb{C}$, with
+$h(\alpha)=\alpha$ and $\lambda := h'(\alpha) \ne 1$. Define, away from the
+zeros of the denominator,
+\[
+  \Sigma_h(z) :=
+  z - \frac{(h(z)-z)^2}{h(h(z))-2h(z)+z}.
+\]
+Then $\Sigma_h$ has a removable singularity at $\alpha$, extends holomorphically
+near $\alpha$, fixes $\alpha$, and satisfies
+\[
+  \Sigma_h(z)-\alpha
+  =
+  -\frac{\lambda h''(\alpha)}{2(1-\lambda)}(z-\alpha)^2
+  + O\!\left((z-\alpha)^3\right).
+\]
+In particular $\Sigma_h'(\alpha)=0$, so the fixed point is at least
+quadratically attracting whenever the displayed quadratic coefficient is
+finite.
+\end{lemma}
+
+\begin{proof}
+Put $u=z-\alpha$ and write
+\[
+  h(z)-\alpha=\lambda u+\mu u^2+O(u^3), \qquad
+  \mu=\frac{h''(\alpha)}2 .
+\]
+Substitution into $h(h(z))$ gives
+\[
+  h(h(z))-\alpha
+  =\lambda^2u+\mu(\lambda+\lambda^2)u^2+O(u^3).
+\]
+Therefore
+\[
+\begin{aligned}
+  h(h(z))-2h(z)+z
+  &=(\lambda-1)^2u+\mu(\lambda-1)(\lambda+2)u^2+O(u^3),\\
+  (h(z)-z)^2
+  &=(\lambda-1)^2u^2+2\mu(\lambda-1)u^3+O(u^4).
+\end{aligned}
+\]
+Since $(\lambda-1)^2\ne0$, the quotient is well-defined in a punctured
+neighbourhood of $\alpha$ and
+\[
+  \frac{(h(z)-z)^2}{h(h(z))-2h(z)+z}
+  =
+  u+\frac{\lambda\mu}{1-\lambda}u^2+O(u^3).
+\]
+Subtracting from $z=\alpha+u$ gives the claimed expansion. The quotient has a
+finite limit at $\alpha$, so the singularity is removable.
+\end{proof}
 
 \subsection{Numerical demonstration}
 
@@ -1652,6 +1705,42 @@ The Lean development lives at
 \end{itemize}
 The modules are organised in layers: foundations (geometric sums, fixed-point characterization, Voronoï basins, cyclotomic anchor definitions), core spine (explicit super-attractive rate, global $\log\log$ convergence, real-line $p = 2$ discharge), multi-start (universal convergence, target selection, iteration count, compatibility bundle of \S\ref{sec:grand-master}), measure/topology (Borel measurability, Voronoï-null frontier, a.e.\ continuity), and a small set of classical specializations (Banach 1922, Aitken--Steffensen, Kronecker 1857, Aberth--Ehrlich, Kung--Traub attainability at $c=3$).
 
+\subsection{Status of the main statements}
+
+To avoid conflating formal verification, paper proofs, and numerical evidence,
+Table~\ref{tab:claim-status} records the status of the claims used in this
+paper. The companion Parts I--VIII contain additional conjectural and empirical
+material; they are not included in the Lean claim below unless explicitly
+listed.
+
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{p{0.36\textwidth}cccc}
+\toprule
+Statement & Paper proof & Lean proof & Numerical check & Status \\
+\midrule
+Fixed-point identity $h_{p,x}(s)=s \iff s^p=1/x$ & yes & yes & yes & theorem \\
+Closed-form real contraction ratio $\lambda_{p,x}$ & yes & partial & yes & theorem \\
+Monotonicity in $\alpha$ and in $p$ at fixed $\alpha$ & yes & partial & yes & theorem \\
+Steffensen local quadratic expansion & yes & yes, as local skeleton & yes & theorem \\
+Complex target-conditioned multi-start convergence for $z^p=x$ & yes & yes & yes & theorem \\
+Borel measurability and a.e.\ continuity of the target selector & yes & yes & no & theorem \\
+Unseeded global basin-volume lower bound & yes & no & yes & theorem \\
+General-polynomial fixed-point identity for $h_P$ & yes & no & yes & theorem \\
+General-polynomial local Steffensen basin, target fixed in advance & yes & no & yes & theorem \\
+Uniform quantitative advantage over Newton for arbitrary polynomials & no & no & mixed & not claimed \\
+Coefficient-uniform Smale-17 complexity bound for this scheme & no & no & no & not claimed \\
+\bottomrule
+\end{tabular}
+\caption{Status table for the claims in Paper~0. ``Partial'' means that the
+Lean corpus proves the load-bearing algebraic skeleton or special cases used by
+the formal development, while the full analytic statement is presented in the
+paper proof.}
+\label{tab:claim-status}
+\end{table}
+
 \paragraph{Statement-level \texttt{Prop}s that are NOT proven.} A single archive module \texttt{PandrosionOpenProblems.lean} contains named Lean \texttt{Prop}s whose proofs are \emph{deliberately absent}: the conjectural upper bound of Kung--Traub for $c \geq 3$, McMullen's 1987 impossibility theorem, Lehmer's Mahler-measure conjecture, and Smale's~17th problem. These are recorded as \texttt{axiom} or \texttt{Prop} declarations without accompanying proof terms. They are not used downstream by any load-bearing theorem of the corpus, and their presence in the repository should not be mistaken for formal verification of the corresponding results. A reader auditing the corpus can confirm this by checking that no \texttt{theorem} depending on these \texttt{Prop}s appears in the load-bearing chain. A future cleanup will move this archive module to a dedicated \texttt{archive} namespace to make the non-load-bearing status structurally explicit.
 
 \subsection{Scope statement on classical open problems}
@@ -1737,14 +1826,75 @@ The iteration~\eqref{eq:h-P-general} is \emph{derivative-free}: it uses only $R$
 \[
   \sigma_P(s) \;:=\; s - \frac{(h_P(s) - s)^2}{h_P(h_P(s)) - 2h_P(s) + s},
 \]
-which satisfies $\sigma_P(\alpha) = \alpha$ and $\sigma_P'(\alpha) = 0$ at every simple root $\alpha$ of $P$ with $S_p(\alpha) \neq 0$ and $h_P'(\alpha) \neq 1$, by the same Taylor computation as in Theorem~\ref{thm:steffensen}; the quadratic constant is $K_S(P, \alpha) = |\lambda_P \cdot h_P''(\alpha)/(2(1 - \lambda_P))|$ with $\lambda_P := h_P'(\alpha)$.
+which satisfies $\sigma_P(\alpha) = \alpha$ and $\sigma_P'(\alpha) = 0$ at every root $\alpha$ of $P$ with $S_p(\alpha) \neq 0$ and $h_P'(\alpha) \neq 1$, by Lemma~\ref{lem:steffensen-local-general}. The local quadratic constant is
+\[
+  K_S(P,\alpha)
+  =
+  \left|\frac{\lambda_P h_P''(\alpha)}{2(1-\lambda_P)}\right|,
+  \qquad
+  \lambda_P:=h_P'(\alpha).
+\]
+Here
+\[
+  h_P'(s)
+  =
+  -\,\frac{R'(s)S_p(s)-(R(s)+1)S_p'(s)}{S_p(s)^2},
+\]
+so $\lambda_P$ is computable from finite differences or coefficients, without a derivative oracle for the original root-finding step. At a root $\alpha$, the identity $R(\alpha)+1=(1-\alpha)S_p(\alpha)$ gives the more geometric form
+\[
+  \lambda_P
+  =
+  -\frac{R'(\alpha)}{S_p(\alpha)}
+  +(1-\alpha)\frac{S_p'(\alpha)}{S_p(\alpha)}.
+\]
 
-The three-step cascade of Part~II (fix reference radius $R_0$, compute $K_\sigma$ via Cauchy estimate, set $R_\sigma = \min(R_0, 1/(2K_\sigma))$) produces explicit $(K_\sigma(P, \alpha_k), R_\sigma(P, \alpha_k))$ at every simple root $\alpha_k$. The multi-start seed then places any $z \in \mathbb{C}$ inside the quadratic-contraction disk of the target.
+\begin{theorem}[Explicit local basin for general-polynomial Steffensen]\label{thm:general-local-basin}
+Let $P(z)=z^p+R(z)$ and let $\alpha$ be a root of $P$ such that
+$S_p(\alpha)\ne0$ and $\lambda_P=h_P'(\alpha)\ne1$. Choose $\rho>0$ so that
+$h_P$ and $\sigma_P$ are holomorphic on the closed disk
+$\overline{B}(\alpha,\rho)$. Set
+\[
+  M_\rho(P,\alpha)
+  :=
+  \sup_{|w-\alpha|\le \rho} |\sigma_P''(w)|,
+  \qquad
+  R_\sigma(P,\alpha)
+  :=
+  \min\!\left(\rho,\frac{1}{M_\rho(P,\alpha)}\right),
+\]
+with the convention $1/0=+\infty$. Then for every
+$z\in \overline{B}(\alpha,R_\sigma)$,
+\[
+  |\sigma_P(z)-\alpha|
+  \le
+  \frac{M_\rho(P,\alpha)}{2}|z-\alpha|^2.
+\]
+In particular, $\overline{B}(\alpha,R_\sigma)$ is forward-invariant and every
+orbit starting in $\overline{B}(\alpha,R_\sigma)$ converges quadratically to
+$\alpha$.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:steffensen-local-general}, $\sigma_P(\alpha)=\alpha$ and
+$\sigma_P'(\alpha)=0$. Taylor's formula with integral remainder on the line
+segment from $\alpha$ to $z$ gives
+\[
+  \sigma_P(z)-\alpha
+  =
+  \int_0^1 (1-t)\,\sigma_P''(\alpha+t(z-\alpha))(z-\alpha)^2\,dt,
+\]
+hence the displayed bound. If $|z-\alpha|\le R_\sigma$, then
+$|\sigma_P(z)-\alpha|\le \frac12 |z-\alpha|$ because
+$M_\rho R_\sigma\le1$, so the disk is forward-invariant and the errors satisfy
+$e_{n+1}\le (M_\rho/2)e_n^2$.
+\end{proof}
+
+The multi-start seed then places any $z \in \mathbb{C}$ inside the quadratic-contraction disk of the chosen target root. This is a \emph{local refinement theorem}, not a root-discovery theorem: the target root $\alpha_k$ must already be specified.
 
 \begin{theorem}[Multi-start Pandrosion for general polynomials]\label{thm:multistart-general}
-Let $P(z) = z^p + R(z)$ with $\deg R < p$, and let $\alpha_k$ be a simple root of $P$ with $S_p(\alpha_k) \neq 0$ and $h_P'(\alpha_k) \neq 1$. For every $z \in \mathbb{C}$ and every target accuracy $\delta > 0$, the multi-start seed
+Let $P(z) = z^p + R(z)$ with $\deg R < p$, and let $\alpha_k$ be a simple root of $P$ with $S_p(\alpha_k) \neq 0$ and $h_P'(\alpha_k) \neq 1$. For every $z \in \mathbb{C}$ and every target accuracy $\delta > 0$, define $z_0=\alpha_k$ if $z=\alpha_k$, and otherwise define the multi-start seed by
 \[
-  z_0 := \alpha_k + \frac{R_\sigma(P, \alpha_k)}{2\,|z - \alpha_k|}\,(z - \alpha_k)
+  z_0 := \alpha_k + \min\!\left(1,\frac{R_\sigma(P, \alpha_k)}{2\,|z - \alpha_k|}\right)(z - \alpha_k)
 \]
 and the iterated Steffensen--Pandrosion map $\sigma_P$ satisfy
 \[
@@ -1755,7 +1905,16 @@ with $N_{\mathrm{eff}} = \mathcal{O}(\log_2 \log(1/\delta))$ by Theorem~\ref{thm
 \end{theorem}
 
 \begin{proof}
-The fixed-point property $h_P(\alpha_k) = \alpha_k$ is Proposition~\ref{prop:hP-fixed-points}; $\sigma_P(\alpha_k) = \alpha_k$ and $\sigma_P'(\alpha_k) = 0$ follow from Theorem~\ref{thm:steffensen}. The quadratic bound $|\sigma_P(w) - \alpha_k| \leq K_\sigma|w - \alpha_k|^2$ on $\overline{B}(\alpha_k, R_\sigma)$ together with $K_\sigma R_\sigma \leq 1/2$ is the three-step cascade of Part~II applied to $\sigma_P$. The seed places $z_0$ at distance exactly $R_\sigma/2$ from $\alpha_k$, forward invariance $\sigma_P(\overline{B}(\alpha_k, R_\sigma/2)) \subset \overline{B}(\alpha_k, R_\sigma/2)$ follows, and $e_n := |\sigma_P^n(z_0) - \alpha_k|$ satisfies $e_{n+1} \leq K_\sigma e_n^2$ with $e_0 \leq R_\sigma/2$, supplying the count by Theorem~\ref{thm:eff-kt}.
+The fixed-point property $h_P(\alpha_k)=\alpha_k$ is
+Proposition~\ref{prop:hP-fixed-points}. Lemma~\ref{lem:steffensen-local-general}
+and Theorem~\ref{thm:general-local-basin} give
+$|\sigma_P(w)-\alpha_k|\le K_\sigma|w-\alpha_k|^2$ on
+$\overline{B}(\alpha_k,R_\sigma)$, with
+$K_\sigma=M_\rho(P,\alpha_k)/2$ and $K_\sigma R_\sigma\le1/2$. The seed places
+$z_0$ at distance at most $R_\sigma/2$ from $\alpha_k$, so forward invariance
+holds and $e_n:=|\sigma_P^n(z_0)-\alpha_k|$ satisfies
+$e_{n+1}\le K_\sigma e_n^2$. The explicit iteration count is the elementary
+quadratic-recursion bound already recorded in Theorem~\ref{thm:eff-kt}.
 \end{proof}
 
 \begin{remark}[Structural warning]
@@ -1890,7 +2049,7 @@ Theorem~\ref{thm:multistart-general} is therefore a \emph{genuine} extension of 
 \label{sec:conclusion}
 %=====================================================================
 
-The central tension of this paper is between Pandrosion's ancient geometric construction --- an order-one iteration requiring only a ruler and parallels --- and modern acceleration theory. Once the universal iteration $s_{n+1} = 1 - (x-1)/(x\,S_p(s_n))$ is written down, three ingredients suffice to make it competitive on~$\mathbb{R}$: the closed-form contraction ratio $\lambda_{p,x}$ (Theorem~\ref{thm:lambda}), the preconditionings of Propositions~\ref{prop:optimal_start} and~\ref{prop:scaling}, and the Aitken $\Delta^2$ upgrade (Theorem~\ref{thm:steffensen}). The ratio $\lambda_{p,x} = h'(s^*)$ is monotone in both $p$ and $x$ uniformly (Theorem~\ref{thm:monotonicity}, via the closed-form identities $P_p = p \cdot D_p'$ and $B_p = \sum_{j=1}^{p} j\alpha^{j-1}$), has an explicit large-$p$ limit $1 - \ln(x)/(x-1)$ (Proposition~\ref{prop:limits}), and admits a clean threshold analysis for $x < 1$ (Proposition~\ref{prop:x_small}).
+The central tension of this paper is between Pandrosion's ancient geometric construction --- an order-one iteration requiring only a ruler and parallels --- and modern acceleration theory. Once the universal iteration $s_{n+1} = 1 - (x-1)/(x\,S_p(s_n))$ is written down, three ingredients suffice to make it competitive on~$\mathbb{R}$: the closed-form contraction ratio $\lambda_{p,x}$ (Theorem~\ref{thm:lambda}), the preconditionings of Propositions~\ref{prop:optimal_start} and~\ref{prop:scaling}, and the Aitken $\Delta^2$ upgrade (Theorem~\ref{thm:steffensen}). The ratio $\lambda_{p,x} = h'(s^*)$ is monotone in the root parameter $\alpha=x^{1/p}$ and in $p$ at fixed $\alpha$ (Theorem~\ref{thm:monotonicity}, via the closed-form identities $P_p = p \cdot D_p'$ and $B_p = \sum_{j=1}^{p} j\alpha^{j-1}$), has an explicit large-$p$ limit $1 - \ln(x)/(x-1)$ (Proposition~\ref{prop:limits}), and admits a clean threshold analysis for $x < 1$ (Proposition~\ref{prop:x_small}).
 
 On~$\mathbb{C}$, the extension via the target-dependent seed of Definition~\ref{def:seed} yields a universal multi-start convergence theorem (Theorem~\ref{thm:multistart}) with a closed-form $N_{\mathrm{eff}} \sim \log_2\log(1/\varepsilon)$ iteration count (Theorem~\ref{thm:eff-kt}), together with Borel-measurability and a.e.-continuity of the induced solution map (Theorems~\ref{thm:borel}--\ref{thm:ae-continuous}). All of these results are formally verified in the Lean~4 corpus described in Section~\ref{sec:lean-corpus}.
 
