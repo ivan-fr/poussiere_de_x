@@ -51,6 +51,8 @@ Output: PNG figure saved to poussiere/.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -263,7 +265,7 @@ def plot_landscape() -> str:
     # Legend
     ax.legend(loc="upper left", fontsize=9)
 
-    out_path = "/sessions/festive-great-meitner/mnt/poussiere/mason_stothers_landscape.png"
+    out_path = Path(__file__).resolve().parents[1] / "figures" / "mason_stothers_landscape.png"
     plt.savefig(out_path, dpi=170, bbox_inches="tight")
     plt.close(fig)
     return out_path
@@ -318,7 +320,7 @@ def plot_quality_view() -> str:
     fig.colorbar(surf, shrink=0.55, aspect=12, pad=0.08, label="q")
     ax.legend(loc="upper left", fontsize=9)
 
-    out_path = "/sessions/festive-great-meitner/mnt/poussiere/mason_stothers_quality.png"
+    out_path = Path(__file__).resolve().parents[1] / "figures" / "mason_stothers_quality.png"
     plt.savefig(out_path, dpi=170, bbox_inches="tight")
     plt.close(fig)
     return out_path
@@ -384,7 +386,7 @@ def plot_disc_landscape() -> str:
     ax.view_init(elev=22, azim=-50)
     fig.colorbar(surf, shrink=0.55, aspect=12, pad=0.08, label="log|disc(b)|")
     ax.legend(loc="upper left", fontsize=9)
-    out_path = "/sessions/festive-great-meitner/mnt/poussiere/mason_stothers_disc.png"
+    out_path = Path(__file__).resolve().parents[1] / "figures" / "mason_stothers_disc.png"
     plt.savefig(out_path, dpi=170, bbox_inches="tight")
     plt.close(fig)
     return out_path
