@@ -21,9 +21,10 @@
 \maketitle
 
 \begin{abstract}
-The sixth note of this series introduced the Amortised Block Descent Conjecture
-for the adaptive Pandrosion-T3 scheme. Here we document computational
-counterexamples to its strict universal form for pure rational iterators and
+Part~I introduced the adaptive Pandrosion-$T_3$ scheme and an Amortised Block
+Descent program for turning local quotient identities into global descent. Here
+we document computational counterexamples to the strict universal form of that
+program for pure rational iterators and
 explain why this is consistent with McMullen's topological obstruction for
 generally convergent rational root-finders in degree $d\ge4$. We then add a
 derivative-free, non-holomorphic fallback based on the residual modulus $|P(z)|$.
@@ -40,15 +41,25 @@ Lairez~\cite{lairez}.
 
 \paragraph{Scope clarification.} This paper addresses the \emph{per-epoch algorithmic descent} problem for univariate polynomials and formulates a multivariate extension. The results are of two kinds: (a) quantitative per-epoch descent statements (Theorems~\ref{thm:descent} and \ref{thm:gamma-descent}), proved under explicit analytic hypotheses on the Smale $\gamma$-invariant and the finite-difference error; (b) global BSS-complexity statements (Theorems~\ref{thm:smale17} and \ref{thm:smale17-d2logd}), which combine (a) with the non-degeneracy conjecture \ref{conj:nondegen} and a basin-entry argument modelled on Beltr\'an--Pardo $\mu$-theory. We do \emph{not} claim a complexity-theoretic improvement upon Lairez~\cite{lairez} or Beltr\'an--Pardo~\cite{beltranpardo}. The multivariate global bound is open.
 
+\paragraph{Reader's guide.}
+This paper resumes the algorithmic branch after the MVC detour of Parts~II--VI.
+The input is the adaptive quotient iteration of Part~I; the new issue is that a
+pure rational iterator must meet McMullen's obstruction in degree $d\ge4$.
+The paper therefore adds a non-holomorphic residual check and two fallback
+mechanisms. Part~VIII is a practical companion to this paper: it keeps the same
+fallback framework but studies start strategies and empirical amortisation.
+
 \section{Introduction: The Stagnation Traps and McMullen's Barrier}
-The adaptive Pandrosion-T3 scheme introduced in Part VI relies on the scaling principle to avoid the exponentially slow convergence of the fixed-anchor base map. The Amortised Block Descent (Conjecture 5.1) posited that for any anchor $z_0$ and any normalized polynomial $P$, the adaptive scheme would achieve a strict descent $|P(z_K)| \le \exp(-c)|P(z_0)|$ per epoch.
+The adaptive Pandrosion-$T_3$ scheme introduced in Part~I relies on the scaling principle to avoid the exponentially slow convergence of the fixed-anchor base map. The Amortised Block Descent program posited that for any anchor $z_0$ and any normalized polynomial $P$, the adaptive scheme would achieve a strict descent $|P(z_K)| \le \exp(-c)|P(z_0)|$ per epoch.
 
 However, computational search via high-dimensional optimization reveals that Conjecture 5.1 is false in the strict universal sense. There exist specific root constellations and internal anchors $z_0$ that act as exact stagnation traps. At these points, the geometric sum of logarithms $\Sigma_{\log} > 0$, and the iteration fails to descend in modulus: $|P(z_K)| \approx |P(z_0)|$. 
 
 The existence of such traps is not a defect of the Pandrosion operator, but rather a manifestation of a deep topological obstruction discovered by McMullen \cite{mcmullen}. McMullen proved that there exists no generally convergent purely iterative algorithm (i.e., a rational map over $\mathbb{C}$) for finding roots of polynomials of degree $d \ge 4$. Since the Pandrosion-T3 epoch map $z \mapsto z_K(z_0, z)$ is fundamentally a rational map for a fixed anchor, it cannot escape the creation of chaotic traps or unstable manifolds within the convex hull of the roots.
 
 \section{The Derivative-Free Non-Holomorphic Fallback}
-To obtain an unconditional per-epoch descent guarantee for the univariate adaptive Pandrosion scheme --- and, by the multivariate lifting of Part~I~\cite[\S 3.5]{besevic1}, a derivative-free algorithm of the same form for polynomial systems (for which Smale's 17th problem was resolved unconditionally by Lairez~\cite{lairez}) --- we step \emph{outside} McMullen's hypothesis of purely rational iterators. The critical insight, mirroring the target-dependent seed for $p$-th roots, is to augment the rational iteration with a continuous, non-holomorphic evaluation check. This does not contradict McMullen's impossibility theorem for rational maps; it simply leaves his class.
+To obtain an unconditional per-epoch descent guarantee for the univariate adaptive Pandrosion scheme --- and, by the multivariate lifting of Part~I~\cite[\S 3.5]{besevic1}, a derivative-free algorithm of the same form for polynomial systems (for which Smale's 17th problem was resolved unconditionally by Lairez~\cite{lairez}) --- we step \emph{outside} McMullen's hypothesis of purely rational iterators.
+
+The critical insight, mirroring the target-dependent seed for $p$-th roots, is to augment the rational iteration with a continuous, non-holomorphic evaluation check. This does not contradict McMullen's impossibility theorem for rational maps; it simply leaves his class.
 
 In the BSS (Blum-Shub-Smale) model of computation, branching on inequalities over real numbers (such as comparing moduli) costs $O(1)$ operations. We thus modify the adaptive Pandrosion-T3 scheme by introducing a \textit{Fallback Mechanism}.
 
@@ -58,7 +69,13 @@ The most natural derivative-free fallback uses Steffensen's shift $z_{shift} = z
 \begin{equation}
 z_{new} \;=\; z_0 - \alpha \, \frac{P(z_0)}{Q_{steff}^{(0)}}, \qquad Q_{steff}^{(0)} \;:=\; \frac{P(z_0 + P(z_0)) - P(z_0)}{P(z_0)}, \label{eq:naive-fallback}
 \end{equation}
-for a fixed reduction parameter $\alpha \in (0, 1)$ (typically $\alpha = 0.25$). When $|P(z_0)|$ is small, $Q_{steff}^{(0)}$ is close to $P'(z_0)$ by Taylor's theorem, and \eqref{eq:naive-fallback} recovers fractional Newton, which descends unconditionally. \emph{However}, the fallback is invoked precisely when the accelerated step has \emph{failed} to descend, so $|P(z_0)|$ may be large; in that regime $Q_{steff}^{(0)}$ can be an arbitrarily poor approximation to $P'(z_0)$ (with relative error $O(|P(z_0)| \cdot M(z_0)/|P'(z_0)|)$ where $M$ controls $|P''|$), and \eqref{eq:naive-fallback} can \emph{amplify} the residual rather than reduce it. A formally verified universal descent constant is therefore not available for the fixed-$\alpha$ scheme.
+for a fixed reduction parameter $\alpha \in (0, 1)$ (typically $\alpha = 0.25$).
+
+When $|P(z_0)|$ is small, $Q_{steff}^{(0)}$ is close to $P'(z_0)$ by Taylor's theorem, and \eqref{eq:naive-fallback} recovers fractional Newton, which descends unconditionally.
+
+\emph{However}, the fallback is invoked precisely when the accelerated step has \emph{failed} to descend, so $|P(z_0)|$ may be large; in that regime $Q_{steff}^{(0)}$ can be an arbitrarily poor approximation to $P'(z_0)$ (with relative error $O(|P(z_0)| \cdot M(z_0)/|P'(z_0)|)$ where $M$ controls $|P''|$), and \eqref{eq:naive-fallback} can \emph{amplify} the residual rather than reduce it.
+
+A formally verified universal descent constant is therefore not available for the fixed-$\alpha$ scheme.
 
 \subsection{The Armijo-Pandrosion fallback}
 
@@ -121,11 +138,17 @@ In particular, $|Q_{steff}^{(u)}| \ge 7|P'(z_0)|/8 > 0$.
 
 Let $u^\star$ maximise $\mathcal{D}_u = \mathrm{Re}[\overline{P(z_0)} Q_{steff}^{(u)}]$. We claim
 $$ \mathcal{D}_{u^\star} \;\ge\; \frac{1}{2} |P(z_0)| \cdot |P'(z_0)|. $$
-Indeed, by the four-direction max, $\mathcal{D}_{u^\star} \ge \max(|\mathrm{Re}[\overline{P} P'(1+\delta_1)]|, |\mathrm{Im}[\overline{P} P'(1+\delta_i)]|)$ where $\delta_u = Q_{steff}^{(u)}/P'(z_0) - 1$ has $|\delta_u| \le 1/8$. Writing $w = \overline{P(z_0)} P'(z_0)$, the real and imaginary parts of $w$ satisfy $|\mathrm{Re}\, w|, |\mathrm{Im}\, w| \ge |w|/\sqrt 2$ for at least one of them; combined with the perturbation bound $|\delta_u| \le 1/8$, the claim follows with constant $\ge (1 - 1/8)/\sqrt{2} \ge 1/2$.
+Indeed, by the four-direction max, $\mathcal{D}_{u^\star} \ge \max(|\mathrm{Re}[\overline{P} P'(1+\delta_1)]|, |\mathrm{Im}[\overline{P} P'(1+\delta_i)]|)$ where $\delta_u = Q_{steff}^{(u)}/P'(z_0) - 1$ has $|\delta_u| \le 1/8$.
 
-Now consider the Armijo trial $z_j = z_0 - \beta^j P(z_0)/Q_{steff}^{(u^\star)}$. By holomorphy of $P$ and Lemma~\ref{lem:moduli},
+Writing $w = \overline{P(z_0)} P'(z_0)$, the real and imaginary parts of $w$ satisfy $|\mathrm{Re}\, w|, |\mathrm{Im}\, w| \ge |w|/\sqrt 2$ for at least one of them; combined with the perturbation bound $|\delta_u| \le 1/8$, the claim follows with constant $\ge (1 - 1/8)/\sqrt{2} \ge 1/2$.
+
+Now consider the Armijo trial $z_j = z_0 - \beta^j P(z_0)/Q_{steff}^{(u^\star)}$.
+
+By holomorphy of $P$ and Lemma~\ref{lem:moduli},
 $$ |P(z_j)|^2 \;=\; |P(z_0)|^2 - 2\beta^j \mathrm{Re}[\overline{P(z_0)} \cdot P(z_0)/Q_{steff}^{(u^\star)} \cdot P'(z_0)] + R_j, $$
-where the remainder $R_j$ is bounded by $C_1 \beta^{2j} |P(z_0)|^2 / |Q_{steff}^{(u^\star)}|^2 \cdot M$ (Taylor expansion of $|P|^2$ to second order). Substituting $|Q_{steff}^{(u^\star)}| \ge 7|P'|/8$ and $M \le 2\gamma |P'|$:
+where the remainder $R_j$ is bounded by $C_1 \beta^{2j} |P(z_0)|^2 / |Q_{steff}^{(u^\star)}|^2 \cdot M$ (Taylor expansion of $|P|^2$ to second order).
+
+Substituting $|Q_{steff}^{(u^\star)}| \ge 7|P'|/8$ and $M \le 2\gamma |P'|$:
 $$ |P(z_j)|^2 \;\le\; |P(z_0)|^2 - 2\beta^j \cdot \frac{\mathcal{D}_{u^\star}}{|Q_{steff}^{(u^\star)}|^2} + C_2 \beta^{2j} \frac{|P(z_0)|^2 \gamma}{|P'(z_0)|}. $$
 The Armijo condition \eqref{eq:armijo} requires
 $$ \beta^j \cdot \frac{\mathcal{D}_{u^\star}}{|Q_{steff}^{(u^\star)}|^2} \;\ge\; \sigma \beta^j \delta + C_2 \beta^{2j} \cdot \frac{|P(z_0)|^2 \gamma}{|P'(z_0)|}. $$
@@ -260,7 +283,7 @@ giving per-orbit cost $N \cdot 4 \cdot O(d) = O(d^2 \log d)$. The multi-start fa
 \end{proof}
 
 \begin{remark}[Empirical certification]
-The script \verb|explore_gamma_damped_iterated.py| measures the iterated $\gamma$-damped algorithm on $50$ random UNI polynomials per degree $d \in \{16, 32, 64, 128\}$. Convergence rate is $\ge 96\%$ at every degree ($100\%$ at $d \in \{16, 64, 128\}$). Empirical cost regression yields
+The script \verb|latex/scripts/explore_gamma_damped_iterated.py| measures the iterated $\gamma$-damped algorithm on $50$ random UNI polynomials per degree $d \in \{16, 32, 64, 128\}$. Convergence rate is $\ge 96\%$ at every degree ($100\%$ at $d \in \{16, 64, 128\}$). Empirical cost regression yields
 $$ \mathrm{cost}(d) \;\approx\; 40 \cdot d^{1.106} \cdot (\log d)^{-0.306} \quad \text{(oracle calls/orbit)}, $$
 i.e.\ $\mathrm{cost}/(d \log d)$ \emph{decreases} from $14.6$ at $d = 16$ to $8.4$ at $d = 128$, in agreement with the asymptotic bound of Theorem~\ref{thm:smale17-d2logd}.
 \end{remark}
@@ -308,13 +331,13 @@ Drawing the starting Cauchy point uniformly at random and halting at the first b
 A regression of $\log(\text{cost})$ against $\log d$ and $\log\log d$ on six adversarial families (degrees $d \in \{4, 8, 16, 32, 64, 128\}$, with the Fallback enabled) yields slopes $\alpha \in [0.28, 2.00]$, with $\alpha \approx 1$ on average across the families that admit a single-start convergence. Crucially, on the same families with the Fallback \emph{disabled}, the convergence rate at $d = 128$ collapses (e.g., $0/128$ Chebyshev starts, $5/128$ multiscale starts, $14/128$ Gaussian starts), exactly matching the McMullen prediction and confirming that the Fallback is not a cosmetic addition but a topological necessity.
 
 \section{Conclusion}
-The existence of stagnation traps inside the adaptive Pandrosion scheme matches the topological obstruction of McMullen~\cite{mcmullen} for purely iterative rational maps of degree $d \ge 4$. We step outside that class by adjoining a non-holomorphic modulus check, in the same spirit as the target-dependent seed used for $p$-th roots in Part~II.
+The existence of stagnation traps inside the adaptive Pandrosion scheme matches the topological obstruction of McMullen~\cite{mcmullen} for purely iterative rational maps of degree $d \ge 4$. We step outside that class by adjoining a non-holomorphic modulus check, in the same spirit as the target-dependent seed used for $p$-th roots in Paper~0.
 
-We record two quantitative per-epoch descent results under explicit analytic hypotheses on Smale's $\gamma$-invariant: an Armijo-backtracking variant (Definition~\ref{def:armijo}, Theorem~\ref{thm:descent}) and an analytic $\gamma$-damped variant (Definition~\ref{def:gamma-damped}, Theorem~\ref{thm:gamma-descent}). Combined with Theorem~\ref{conj:nondegen} and a Beltr\'an--Pardo--based basin-entry argument (Lemma~\ref{lem:bp-gamma}), they yield the conditional BSS bounds $O(d^2 \log^2 d)$ and $O(d^2 \log d)$ of Theorems~\ref{thm:smale17} and \ref{thm:smale17-d2logd}. These bounds are \emph{not} improvements upon Beltr\'an--Pardo~\cite{beltranpardo} or Lairez~\cite{lairez}; they record a derivative-free algorithmic alternative with explicit per-orbit constants. The average-case bound $\mathbb{E}_{\text{KS}}[\text{cost}] = O(d \log^2 d)$ of Theorem~\ref{thm:avg} is conditional on the same ingredients and on the negative-association step invoked in its proof.
+We record two quantitative per-epoch descent results under explicit analytic hypotheses on Smale's $\gamma$-invariant: an Armijo-backtracking variant (Definition~\ref{def:armijo}, Theorem~\ref{thm:descent}) and an analytic $\gamma$-damped variant (Definition~\ref{def:gamma-damped}, Theorem~\ref{thm:gamma-descent}). Combined with Conjecture~\ref{conj:nondegen} and a Beltr\'an--Pardo--based basin-entry argument (Lemma~\ref{lem:bp-gamma}), they yield the conditional BSS bounds $O(d^2 \log^2 d)$ and $O(d^2 \log d)$ of Theorems~\ref{thm:smale17} and \ref{thm:smale17-d2logd}. These bounds are \emph{not} improvements upon Beltr\'an--Pardo~\cite{beltranpardo} or Lairez~\cite{lairez}; they record a derivative-free algorithmic alternative with explicit per-orbit constants. The average-case bound $\mathbb{E}_{\text{KS}}[\text{cost}] = O(d \log^2 d)$ of Theorem~\ref{thm:avg} is conditional on the same ingredients and on the negative-association step invoked in its proof.
 
 \begin{thebibliography}{99}
 \bibitem{besevic1} I. Besevic, \textit{Pandrosion Operator and Smale's 17th Problem}. Universitas Pandrosion, Part I (2026).
-\bibitem{besevic6} I. Besevic, \textit{Universitas Pandrosion: Part VI}. Preprint, 2026.
+\bibitem{besevic8} I. Besevic, \textit{Universitas Pandrosion: Part VIII --- The geometric-decreasing start strategy}. Preprint, 2026.
 \bibitem{mcmullen} C. McMullen, \textit{Families of rational maps and iterative root-finding algorithms}. Annals of Mathematics, 125(3), 467--493, 1987.
 \bibitem{smale1981} S. Smale, \textit{The fundamental theorem of algebra and complexity theory}. Bull. Amer. Math. Soc. \textbf{4} (1981), 1--36.
 \bibitem{smale1998} S. Smale, \textit{Mathematical Problems for the Next Century}. The Mathematical Intelligencer, 20(2), 7--15, 1998.

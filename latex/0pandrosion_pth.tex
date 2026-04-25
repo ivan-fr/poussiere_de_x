@@ -130,13 +130,17 @@ The paper makes no claim of progress on classical open problems of
 polynomial root-finding; its main value is to record a concrete
 derivative-free root-finding scheme with closed-form convergence
 analysis and complete formal verification for the monomial family
-$z^p = x$. A concluding section (\S\ref{sec:beyond-monomials})
+$z^p = x$.
+
+A concluding section (\S\ref{sec:beyond-monomials})
 shows that the Pandrosion iteration itself extends to every monic
 polynomial $P(z) = z^p + R(z)$ via
 $h_P(s) := 1 - (R(s) + 1)/S_p(s)$, whose fixed points are exactly
 the roots of $P$ and which remains derivative-free; Aitken $\Delta^2$
 and the multi-start seed apply verbatim, yielding a target-conditional
-refinement scheme that converges to every target root. Numerical
+refinement scheme that converges to every target root.
+
+Numerical
 experiments on four non-monomial polynomials show the structural
 extension works, with iteration counts varying from $4$ (monomial,
 best case) to $41$ (Bombelli's cubic, worst case) at $50$-digit
@@ -145,6 +149,18 @@ close the target root is to a singularity of $h_P$. The quantitative
 advantage of the monomial case is therefore genuinely specific to
 that case and does not transport uniformly.
 \end{abstract}
+
+\paragraph{Reader's guide to the corpus.}
+This paper is the load-bearing core of the series: it proves and formalizes the
+Pandrosion--Steffensen scheme for the monomial family $z^p=x$. The remaining
+papers split into two independent threads. Part~I extends the operator
+language to general polynomials and polynomial systems, and Parts~VII--VIII
+return to that algorithmic thread with non-holomorphic fallbacks and practical
+start strategies. Parts~II--VI form a separate Smale Mean Value Conjecture
+thread: they translate the MVC into Pandrosion quotients, record structural
+identities, and isolate the quartic/quintic algebraic programs. None of the
+later papers should be read as extending the Lean verification of this paper
+unless this is stated explicitly.
 
 \tableofcontents
 \newpage
@@ -292,11 +308,15 @@ Pandrosion's construction relies on Thales' theorem applied to a rectangle. Cons
 
 \subsection{Where does the polynomial $S_p$ come from?}
 
-The fundamental idea is as follows. We seek to insert $p-1$ proportional means between $1$ and $x$, that is, to construct the ideal geometric sequence $1, \alpha, \alpha^2, \ldots, \alpha^{p-1}, x$ where $\alpha = x^{1/p}$. If $s_n \approx \alpha^{-1}$ is the current approximation of the inverse ratio, the sum of the approximate geometric sequence is:
+The fundamental idea is as follows. We seek to insert $p-1$ proportional means between $1$ and $x$, that is, to construct the ideal geometric sequence $1, \alpha, \alpha^2, \ldots, \alpha^{p-1}, x$ where $\alpha = x^{1/p}$.
+
+If $s_n \approx \alpha^{-1}$ is the current approximation of the inverse ratio, the sum of the approximate geometric sequence is:
 \[
   S_p(s_n) = 1 + s_n + s_n^2 + \cdots + s_n^{p-1}.
 \]
-The ideal sequence satisfies $x \cdot S_p(s^*) \cdot (1-s^*) = x-1$, which rewrites as $x(1-s^{*p}) = x-1$. Pandrosion's correction adjusts $s_n$ so as to reduce the gap between $S_p(s_n)$ and its ideal value via the formula:
+The ideal sequence satisfies $x \cdot S_p(s^*) \cdot (1-s^*) = x-1$, which rewrites as $x(1-s^{*p}) = x-1$.
+
+Pandrosion's correction adjusts $s_n$ so as to reduce the gap between $S_p(s_n)$ and its ideal value via the formula:
 \[
   s_{n+1} = 1 - \frac{x-1}{x \cdot S_p(s_n)}.
 \]
@@ -909,7 +929,9 @@ That $\lambda_{p,x} < 0$ for $\alpha < 1$ is immediate from~\eqref{eq:lambda_gen
 \]
 (using $1 - \alpha^p = (1-\alpha) D_p$), a smooth strictly positive function of $\alpha \in (0, 1)$. Boundary values: as $\alpha \to 1^-$, $F \to 0$ (the factor $1-\alpha$ goes to zero while $N_p/D_p \to (p-1)/2$ is bounded); as $\alpha \to 0^+$, $F \to 1 \cdot (p-1)/1 = p - 1 \geq 1$.
 
-For uniqueness, we show that $F$ is strictly decreasing on $(0, 1)$. The log-derivative is
+For uniqueness, we show that $F$ is strictly decreasing on $(0, 1)$.
+
+The log-derivative is
 \[
   \frac{F'(\alpha)}{F(\alpha)}
   \;=\; -\frac{1}{1-\alpha} + \frac{N_p'(\alpha)}{N_p(\alpha)} - \frac{D_p'(\alpha)}{D_p(\alpha)}.
@@ -920,7 +942,9 @@ The key identity~\eqref{eq:key-identity}, $(\alpha - 1) N_p = D_p - p$, and its 
   \qquad
   (1-\alpha)\, N_p' \;=\; N_p - D_p'.
 \]
-Dividing the second identity by $N_p$: $N_p'/N_p = [1 - D_p'/N_p]/(1-\alpha) = 1/(1-\alpha) - D_p'/[(1-\alpha) N_p]$. Substituting into $F'/F$:
+Dividing the second identity by $N_p$: $N_p'/N_p = [1 - D_p'/N_p]/(1-\alpha) = 1/(1-\alpha) - D_p'/[(1-\alpha) N_p]$.
+
+Substituting into $F'/F$:
 \begin{align*}
   \frac{F'}{F}
   &= -\frac{1}{1-\alpha} + \left[\frac{1}{1-\alpha} - \frac{D_p'}{(1-\alpha) N_p}\right] - \frac{D_p'}{D_p}
@@ -1575,7 +1599,11 @@ The bound $\pi R_\sigma^2$ is a level-$0$ estimate and can be sharpened without 
 \[
   \mathrm{vol}(\Omega_k) \;\geq\; \sum_{m=0}^{M} \mathrm{vol}\!\bigl(\sigma_{p,x}^{-m}(\overline{B}(\gamma_k, R_\sigma/2))\bigr)
 \]
-for every $M$. Numerical exploration (script \texttt{latex/scripts/basin\_estimate.py}) on $(p, x) = (3, 2)$ finds $\Omega_0$ covering approximately $99.95\%$ of $[-1.5, 1.5]^2$, while the level-$0$ lower bound already gives $\mathrm{vol}(\Omega_0) \geq \pi R_\sigma^2 \approx 4\pi$ with empirical $R_\sigma \geq 2$ --- roughly $87\%$ of the test square, a substantial fraction. For $(p, x) = (7, 10)$ the empirical $R_\sigma \approx 0.37$ is tighter and the gap between level-$0$ bound and observed basin is larger, reflecting the onset of a non-trivial Julia boundary. A matching upper bound on $\mathrm{vol}(\Omega_k)$ would require Fatou--Julia machinery not used here and is left for future work.
+for every $M$.
+
+Numerical exploration (script \texttt{latex/scripts/basin\_estimate.py}) on $(p, x) = (3, 2)$ finds $\Omega_0$ covering approximately $99.95\%$ of $[-1.5, 1.5]^2$, while the level-$0$ lower bound already gives $\mathrm{vol}(\Omega_0) \geq \pi R_\sigma^2 \approx 4\pi$ with empirical $R_\sigma \geq 2$ --- roughly $87\%$ of the test square, a substantial fraction.
+
+For $(p, x) = (7, 10)$ the empirical $R_\sigma \approx 0.37$ is tighter and the gap between level-$0$ bound and observed basin is larger, reflecting the onset of a non-trivial Julia boundary. A matching upper bound on $\mathrm{vol}(\Omega_k)$ would require Fatou--Julia machinery not used here and is left for future work.
 \end{remark}
 
 \subsection{Multi-precision benchmark in the complex plane}
@@ -1588,7 +1616,9 @@ Complementing the real-line benchmark of \S\ref{sec:benchmark}, the script \text
   \item Multi-start Steffensen--Pandrosion (Theorem~\ref{thm:multistart}), seeded at the principal anchor $\alpha = X^{1/p}$;
   \item Scaled multi-start (the compatibility bundle of Theorem~\ref{thm:grand-master}), combining scaling $\beta = \lfloor |X|^{1/p} \rfloor$, Voronoï-nearest selector on the anchor family, seed, and reconstruction.
 \end{itemize}
-All methods start from the same user-supplied $z_0 \in \mathbb{C}$ and stop when $|z_n^p - X|/|X| \leq 10^{-d}$ at precision target $d$ decimal digits. The seed radius is set uniformly to a conservative $R_\sigma = 0.5$.
+All methods start from the same user-supplied $z_0 \in \mathbb{C}$ and stop when $|z_n^p - X|/|X| \leq 10^{-d}$ at precision target $d$ decimal digits.
+
+The seed radius is set uniformly to a conservative $R_\sigma = 0.5$.
 
 \begin{table}[H]
 \centering
@@ -1697,7 +1727,9 @@ Both theorems are direct consequences of Proposition~\ref{thm:borel-combined}, (
 \subsection{Corpus overview}
 
 The Lean development lives at
-\url{github.com/ivan-fr/poussiere_de_x} and targets Lean 4 with Mathlib v4.7.0. It comprises 121 modules with zero \texttt{sorry}; every load-bearing theorem referenced in this paper has an audited axiomatic closure reducing to the Lean whitelist $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$. Three layers of verifiability are offered to a third-party reviewer:
+\url{github.com/ivan-fr/poussiere_de_x} and targets Lean 4 with Mathlib v4.7.0. It comprises 121 modules with zero \texttt{sorry}; every load-bearing theorem referenced in this paper has an audited axiomatic closure reducing to the Lean whitelist $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$.
+
+Three layers of verifiability are offered to a third-party reviewer:
 \begin{itemize}
   \item \textbf{Continuous integration.} A GitHub Actions workflow (\texttt{.github/workflows/lean-build.yml}) compiles the full corpus on every push; a green CI badge in the repository \texttt{README.md} certifies that the current \texttt{main} branch compiles cleanly, with no \texttt{sorry}.
   \item \textbf{Axiom audit file.} The file \texttt{AXIOMS.md} at the repository root contains the raw \texttt{\#print axioms} output for every load-bearing theorem cited in this paper; for each, the dependency closure reduces to the Lean whitelist $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$.
@@ -1822,7 +1854,9 @@ For $s \in \mathbb{C}$ with $S_p(s) \neq 0$, $h_P(s) = s$ if and only if $P(s) =
 The key identity $(1 - s)\,S_p(s) = 1 - s^p$ (geometric sum) gives $h_P(s) = s \iff (1-s)S_p(s) = R(s)+1 \iff 1 - s^p = R(s)+1 \iff s^p = -R(s) \iff P(s) = 0$. The monomial case is the specialisation $R(s) = -1/x$.
 \end{proof}
 
-The iteration~\eqref{eq:h-P-general} is \emph{derivative-free}: it uses only $R$ (the sub-leading coefficients of $P$) and the universal polynomial $S_p$, never $P'$ or $P''$. Steffensen acceleration yields
+The iteration~\eqref{eq:h-P-general} is \emph{derivative-free}: it uses only $R$ (the sub-leading coefficients of $P$) and the universal polynomial $S_p$, never $P'$ or $P''$.
+
+Steffensen acceleration yields
 \[
   \sigma_P(s) \;:=\; s - \frac{(h_P(s) - s)^2}{h_P(h_P(s)) - 2h_P(s) + s},
 \]
@@ -1999,7 +2033,13 @@ $10\,000$   & $0.00031$    & $\mathbf{16}$ & $0.000035$    & $\mathbf{37}$ \\
   \item \textbf{$R_\sigma$ decays like $1/p$ but the iteration count does not grow}. The plateau behaviour at fixed precision is a consequence of the $\log_2\log$ asymptotic: $N_{\mathrm{eff}}(K_\sigma, R_\sigma, \delta) \sim \log_2\log(1/\delta) + O(\log(K_\sigma R_\sigma))$, and the correction $\log(K_\sigma R_\sigma)$ stays bounded even as $R_\sigma \to 0$ because $K_\sigma R_\sigma \leq 1/2$ is enforced by the cascade construction.
 \end{enumerate}
 
-For the monomial family, the plateau empirically confirms Proposition~\ref{thm:uniform-loglog}: over the compact regime $K = \{2\}$, the count is $\mathcal{O}(\log\log(1/\delta))$ uniformly in $p \in [2, \infty)$. For the trinomial, Proposition~\ref{thm:uniform-loglog} does not apply directly (the argument is not a monomial parameter), but the saturation at $37$ iterations shows that the theorem's uniform behaviour extends empirically to at least this trinomial family. A follow-up paper characterising the class of polynomials for which the plateau holds would be of independent interest. The slow cases all share the same mechanism: either $R_\sigma(P, \alpha_k)$ is small (the fixed point sits close to a singularity of $h_P$ where $S_p(s) = 0$, or to another root), or $h_P'(\alpha_k)$ approaches $1$, inflating the Aitken constant $K_S \propto 1/(1 - |h_P'(\alpha_k)|)$ and delaying entry into the quadratic regime. Compared against Newton on the same polynomials (which converges in $6$--$14$ iterations), multi-start Pandrosion is \emph{competitive} in the well-conditioned cases (monomial, quintic, sextic) but \emph{significantly slower} in the ill-conditioned cases --- a direct cost of being derivative-free in a setting that does not have the monomial's closed-form protection. The honest verdict: the scheme transports to general polynomials, but the \emph{quantitative} advantage of the monomial case does not.
+For the monomial family, the plateau empirically confirms Proposition~\ref{thm:uniform-loglog}: over the compact regime $K = \{2\}$, the count is $\mathcal{O}(\log\log(1/\delta))$ uniformly in $p \in [2, \infty)$.
+
+For the trinomial, Proposition~\ref{thm:uniform-loglog} does not apply directly (the argument is not a monomial parameter), but the saturation at $37$ iterations shows that the theorem's uniform behaviour extends empirically to at least this trinomial family. A follow-up paper characterising the class of polynomials for which the plateau holds would be of independent interest.
+
+The slow cases all share the same mechanism: either $R_\sigma(P, \alpha_k)$ is small (the fixed point sits close to a singularity of $h_P$ where $S_p(s) = 0$, or to another root), or $h_P'(\alpha_k)$ approaches $1$, inflating the Aitken constant $K_S \propto 1/(1 - |h_P'(\alpha_k)|)$ and delaying entry into the quadratic regime.
+
+Compared against Newton on the same polynomials (which converges in $6$--$14$ iterations), multi-start Pandrosion is \emph{competitive} in the well-conditioned cases (monomial, quintic, sextic) but \emph{significantly slower} in the ill-conditioned cases --- a direct cost of being derivative-free in a setting that does not have the monomial's closed-form protection. The honest verdict: the scheme transports to general polynomials, but the \emph{quantitative} advantage of the monomial case does not.
 
 \subsection{What is lost, what transports}
 
@@ -2049,7 +2089,11 @@ Theorem~\ref{thm:multistart-general} is therefore a \emph{genuine} extension of 
 \label{sec:conclusion}
 %=====================================================================
 
-The central tension of this paper is between Pandrosion's ancient geometric construction --- an order-one iteration requiring only a ruler and parallels --- and modern acceleration theory. Once the universal iteration $s_{n+1} = 1 - (x-1)/(x\,S_p(s_n))$ is written down, three ingredients suffice to make it competitive on~$\mathbb{R}$: the closed-form contraction ratio $\lambda_{p,x}$ (Theorem~\ref{thm:lambda}), the preconditionings of Propositions~\ref{prop:optimal_start} and~\ref{prop:scaling}, and the Aitken $\Delta^2$ upgrade (Theorem~\ref{thm:steffensen}). The ratio $\lambda_{p,x} = h'(s^*)$ is monotone in the root parameter $\alpha=x^{1/p}$ and in $p$ at fixed $\alpha$ (Theorem~\ref{thm:monotonicity}, via the closed-form identities $P_p = p \cdot D_p'$ and $B_p = \sum_{j=1}^{p} j\alpha^{j-1}$), has an explicit large-$p$ limit $1 - \ln(x)/(x-1)$ (Proposition~\ref{prop:limits}), and admits a clean threshold analysis for $x < 1$ (Proposition~\ref{prop:x_small}).
+The central tension of this paper is between Pandrosion's ancient geometric construction --- an order-one iteration requiring only a ruler and parallels --- and modern acceleration theory.
+
+Once the universal iteration $s_{n+1} = 1 - (x-1)/(x\,S_p(s_n))$ is written down, three ingredients suffice to make it competitive on~$\mathbb{R}$: the closed-form contraction ratio $\lambda_{p,x}$ (Theorem~\ref{thm:lambda}), the preconditionings of Propositions~\ref{prop:optimal_start} and~\ref{prop:scaling}, and the Aitken $\Delta^2$ upgrade (Theorem~\ref{thm:steffensen}).
+
+The ratio $\lambda_{p,x} = h'(s^*)$ is monotone in the root parameter $\alpha=x^{1/p}$ and in $p$ at fixed $\alpha$ (Theorem~\ref{thm:monotonicity}, via the closed-form identities $P_p = p \cdot D_p'$ and $B_p = \sum_{j=1}^{p} j\alpha^{j-1}$), has an explicit large-$p$ limit $1 - \ln(x)/(x-1)$ (Proposition~\ref{prop:limits}), and admits a clean threshold analysis for $x < 1$ (Proposition~\ref{prop:x_small}).
 
 On~$\mathbb{C}$, the extension via the target-dependent seed of Definition~\ref{def:seed} yields a universal multi-start convergence theorem (Theorem~\ref{thm:multistart}) with a closed-form $N_{\mathrm{eff}} \sim \log_2\log(1/\varepsilon)$ iteration count (Theorem~\ref{thm:eff-kt}), together with Borel-measurability and a.e.-continuity of the induced solution map (Theorems~\ref{thm:borel}--\ref{thm:ae-continuous}). All of these results are formally verified in the Lean~4 corpus described in Section~\ref{sec:lean-corpus}.
 

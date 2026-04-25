@@ -27,11 +27,21 @@ Part~VII recorded two complementary conditional worst-case bounds for the multi-
 
 \paragraph{Scope clarification.} The statements of this paper are of three kinds: (a) algorithmic definitions (Strategies~A and B, the B-$T_2$ scheme); (b) \emph{empirical} observations reported on random Gaussian and six adversarial families (Sections~\ref{sec:freq} and Conjecture~\ref{conj:phase}), which we do not claim to prove; (c) the Armijo amortised conjecture and its conditional consequence (Section~\ref{sec:armijo-amort}), whose Steps~1--2 are an analytic roadmap relying on Beltr\'an--Pardo measure estimates and whose Step~3 is an empirical certificate over $d \in \{16, 32, 64, 128\}$. We are \emph{not} claiming any worst-case improvement over the deterministic average-case bound of Lairez~\cite{lairez} or the probabilistic bound of Beltr\'an--Pardo~\cite{beltranpardo}, which together resolve Smale's 17th problem. Readers who expect a fully rigorous complexity-theoretic result should read the numerical tables of Section~\ref{sec:freq} and Conjecture~\ref{lem:armijo-amort} as supporting evidence, not as unconditional theorems.
 
+\paragraph{Reader's guide.}
+This paper is a practical companion to Part~VII. It does not change the
+fallback mechanism or claim a new complexity-theoretic theorem; instead it asks
+which starts and which low-order accelerator are most effective in the tested
+families. The main outputs are an explicit start strategy, an empirical
+preference for $T_2$ at $K=1$, and the Armijo amortisation conjecture that would
+explain the observed constant average backtracking cost.
+
 \section{Introduction: Where the Multi-Start Factor Comes From}
 
 The proof of Theorem~3.5 of Part~VII (the conditional Armijo-fallback BSS bound, \emph{not} a resolution of Smale 17, which was already settled by Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}) bounds the cost as
 $$ \underbrace{d}_{\text{multi-start}} \;\times\; \underbrace{O(d \log d)}_{\text{oracle/epoch (Armijo)}} \;\times\; \underbrace{O(\log d)}_{\text{epochs to basin}} \;=\; O(d^2 \log^2 d). $$
-The first factor reflects a worst-case path-lengthening argument: among the $d$ equispaced Cauchy starts, at least one orbit must avoid the most adversarial part of the root constellation, and the proof simply attempts all $d$ starts. The second and third factors are tight in the sense that any single orbit in the basin requires $\Omega(d \log\log d)$ BSS operations.
+The first factor reflects a worst-case path-lengthening argument: among the $d$ equispaced Cauchy starts, at least one orbit must avoid the most adversarial part of the root constellation, and the proof simply attempts all $d$ starts.
+
+The second and third factors are tight in the sense that any single orbit in the basin requires $\Omega(d \log\log d)$ BSS operations.
 
 \medskip
 The natural question, raised in the empirical exploration that accompanies this series, is: \emph{what fraction of polynomials actually consume close to $d$ starts?} The empirical answer (Section~\ref{sec:freq}) is sharp:
@@ -60,7 +70,7 @@ The construction combines three classical ideas:
 
 \section{The Pandrosion-$T_2$ Optimum at $K = 1$}
 
-Recall the Pandrosion $T_n$ hierarchy of Paper~1, Definition~4.2:
+Recall the Pandrosion $T_n$ hierarchy of Part~I, Definition~4.2:
 \begin{align*}
 s_1 &= h(z), \quad s_2 = h(s_1), \\
 T_2(z) &= z - \frac{(s_1 - z)^2}{s_2 - 2 s_1 + z}, \\
@@ -91,7 +101,7 @@ $T_2$ minimises both the per-orbit oracle count and the cost-per-$d \log d$ rati
 The reason is that the theoretical optimum at $n = e$ is asymptotic and ignores the pre-lock-in regime, where the constant cost of each additional Richardson extrapolation step is not yet amortised. In the regime relevant to single-orbit termination ($\le 200$ oracle calls), the simplest accelerator wins.
 
 \begin{remark}[B + $T_2$ is still pure Pandrosion]
-$T_2$ at $K = 1$ is built entirely from the generalized Pandrosion base map $h$ and Aitken's $\Delta^2$. The denominator $Q(z_0, \cdot)$ is evaluated at distinct points $(z_0, z)$ and $(z_0, s_1)$, never as a derivative limit, so the pole-avoidance mechanism of Paper~1 \S4.3 is preserved. In particular, $T_2$ at $K = 1$ does \emph{not} reduce to Newton's method.
+$T_2$ at $K = 1$ is built entirely from the generalized Pandrosion base map $h$ and Aitken's $\Delta^2$. The denominator $Q(z_0, \cdot)$ is evaluated at distinct points $(z_0, z)$ and $(z_0, s_1)$, never as a derivative limit, so the pole-avoidance mechanism of Part~I \S4.3 is preserved. In particular, $T_2$ at $K = 1$ does \emph{not} reduce to Newton's method.
 \end{remark}
 
 \section{The Combined Algorithm B-$T_2$}
@@ -179,7 +189,7 @@ and the probe radius $\varepsilon = |P(z_0)|^{1/d}/(2d)$ is chosen so that this 
 
 \textbf{Step 2 (geometric tail).} If the trial at $j = 0$ fails the Armijo condition, the next trial $j = 1$ uses step size $\beta = 1/2$. By Taylor expansion of $P$ at $z_0 - P(z_0)/(2Q)$, the linearised residual is $|P(z_1^{(1/2)})| \approx |P(z_0)|/2 + O(|P(z_0)|/4)$, which satisfies the Armijo condition $|P(z_1^{(1/2)})| \le (1 - \sigma/2)|P(z_0)|$ with $\sigma = 0.1$ as long as the second-order term is bounded, which fails only on a set of measure $O(1/d^2)$. Inductively, $\Pr[j_{\text{accept}} \ge t] \le \prod_{s = 0}^{t-1} O(1/d^s) \le O(2^{-t})$ for $d \ge 2$, with constant $c \to \log_2 d$ as $d$ grows.
 
-\textbf{Step 3 (empirical certification).} The script \verb|prove_armijo_O1.py| measures $\Pr[j_{\text{accept}} \ge t]$ on $80$ random UNI polynomials per degree $d \in \{16, 32, 64, 128\}$ using Strategy~B and Pandrosion-$T_2$/$K=1$, summing over more than $8\,000$ fallback events. The geometric-tail regression $\log_2 \Pr[j \ge t] \approx a - c \cdot t$ yields:
+\textbf{Step 3 (empirical certification).} The script \verb|latex/scripts/prove_armijo_O1.py| measures $\Pr[j_{\text{accept}} \ge t]$ on $80$ random UNI polynomials per degree $d \in \{16, 32, 64, 128\}$ using Strategy~B and Pandrosion-$T_2$/$K=1$, summing over more than $8\,000$ fallback events. The geometric-tail regression $\log_2 \Pr[j \ge t] \approx a - c \cdot t$ yields:
 \begin{center}
 \begin{tabular}{rcccc}
 \toprule
@@ -214,7 +224,11 @@ Three practical refinements of the Pandrosion-$T_3$ algorithm of Part~VII are re
 \item \emph{Conjecture~\ref{lem:armijo-amort} (Armijo amortised cost)} combines an analytic roadmap with an empirical certificate suggesting $\mathbb{E}[j_{\text{accept}}] = O(1)$ on the UNI / KS ensembles we sampled, with observed decay rate $c \ge 1.23$. Combined with Theorem~3.5 of Part~VII, it gives the conditional Las Vegas guarantee of Theorem~\ref{thm:lasvegas-d2logd}: $\mathbb{E}[\mathrm{cost}^{B, T_2}_{\text{total}}] = O(d^2 \log d)$.
 \end{itemize}
 
-The reframing is deliberately sober: the Pandrosion-$T_2$ scheme with Strategy-B starts is presented as a practical, derivative-free root-finding heuristic with promising empirical behaviour and a conditional complexity bound. It is not a new resolution of Smale's 17th problem --- that problem is already resolved, unconditionally in the deterministic-average-case sense, by Lairez~\cite{lairez} and, probabilistically, by Beltr\'an--Pardo~\cite{beltranpardo}. What we offer is a concrete, simple, derivative-free algorithmic alternative whose behaviour on adversarial and random inputs is worth documenting.
+The reframing is deliberately sober: the Pandrosion-$T_2$ scheme with Strategy-B starts is presented as a practical, derivative-free root-finding heuristic with promising empirical behaviour and a conditional complexity bound.
+
+It is not a new resolution of Smale's 17th problem --- that problem is already resolved, unconditionally in the deterministic-average-case sense, by Lairez~\cite{lairez} and, probabilistically, by Beltr\'an--Pardo~\cite{beltranpardo}.
+
+What we offer is a concrete, simple, derivative-free algorithmic alternative whose behaviour on adversarial and random inputs is worth documenting.
 
 \begin{thebibliography}{99}
 \bibitem{besevic1} I. Besevic, \textit{Pandrosion Operator and Smale's 17th Problem}. Universitas Pandrosion, Part I (2026).

@@ -41,6 +41,14 @@ this centered slice if one wants a proof of the unrestricted $d=5$ case.
 
 \paragraph{Scope statement.} The main statement (Theorem~\ref{thm:main}) is a proof candidate for the centered slice only, not a completed proof of Smale's MVC for all quintics. Theorems~\ref{thm:product}, \ref{thm:extremal}, and \ref{thm:vieta} are rigorous. Two steps currently rely on mixed symbolic/numerical support: (a) the local-maximum claim of Theorem~\ref{thm:local-max} has a symbolic first-order certificate in the $\delta a_{\mathrm{im}},\delta b_{\mathrm{re}},\delta b_{\mathrm{im}}$ directions and an exact quadratic descent computation on the pure $\delta a_{\mathrm{re}}$ axis, but still needs a uniform mixed second-order cone estimate around that axis; (b) the discriminant-locus case of the compactness argument in Theorem~\ref{thm:main} uses a \L{}ojasiewicz sketch that is not worked out in full. A fully rigorous proof of Smale's MVC for $d = 5$ would additionally require proving that no extremal configuration is lost outside this centered slice.
 
+\paragraph{Reader's guide.}
+This paper closes the MVC branch of the current corpus. It is intentionally
+more ambitious than Parts~II--V, but also more conditional: the product formula,
+the extremal computation, and the Vieta-domination estimates are rigorous
+ingredients, while the centered-slice compactness proof remains a program until
+the mixed-cone and discriminant-locus gaps are closed. After this paper, the
+corpus returns to the algorithmic branch in Parts~VII--VIII.
+
 \section{Setup and the Pandrosion reduction}
 
 We restrict to the centered two-parameter slice
@@ -53,6 +61,7 @@ a general monic quintic with $P(0)=0$ and $P'(0)=1$ also has a $z^4$ term and
 an independent $z^2,z^3$ coupling after affine changes. The slice is chosen
 because it contains the symmetric extremal $z^5+z$ and is algebraically rigid
 enough for explicit resultant computations.
+
 The critical points are the roots of
 \begin{equation}
 P'(c) = 5 c^4 + 3 a c^2 + 2 b c + 1 = 0,
@@ -97,7 +106,7 @@ At $(a, b) = (0, 0)$, i.e., for $P_0(z) = z^5 + z$, the four critical points are
 \end{theorem}
 
 \begin{proof}
-The critical equation reduces to $5 c^4 + 1 = 0$, so $c^4 = -1/5$ and $c^2 = \pm i / \sqrt{5}$. Then $\tilde{q}(c) = (1 - 3 \cdot (-1/5) - 0)/2 = (1 + 3/5)/2 = 4/5$, identically. Numerical certification (Step 4 of \verb|explore_mvc_d5.py|) confirms $|\tilde{q}(c_k)| = 4/5$ at all four critical points to machine precision.
+The critical equation reduces to $5 c^4 + 1 = 0$, so $c^4 = -1/5$ and $c^2 = \pm i / \sqrt{5}$. Then $\tilde{q}(c) = (1 - 3 \cdot (-1/5) - 0)/2 = (1 + 3/5)/2 = 4/5$, identically. Numerical certification (Step 4 of \verb|latex/scripts/explore_mvc_d5.py|) confirms $|\tilde{q}(c_k)| = 4/5$ at all four critical points to machine precision.
 \end{proof}
 
 \begin{remark}
@@ -211,7 +220,7 @@ For large $|a|$, $a c_*^2$ dominates if $|c_*| \gtrsim 1$. However, the dominant
 This proves descent along the coordinate regimes where one parameter is large
 and the other is bounded, and gives the mechanism expected in mixed regimes.
 It is not a uniform projective proof over all directions $[a:b]\in\mathbb{P}^1$.
-Numerical verification (\verb|explore_mvc_d5.py|, Step 5 of large-$|a|+|b|$
+Numerical verification (\verb|latex/scripts/explore_mvc_d5.py|, Step 5 of large-$|a|+|b|$
 regime): for samples with $|a|\in[1,600]$ and $|b|\in[0.7,500]$, the median
 $\min_j|\tilde q(c_j)|$ is in $[0.499,0.605]$, never exceeding $0.605$ on
 $120$ tested samples.
@@ -293,7 +302,7 @@ $(\tfrac{1}{2}, \tfrac{\sqrt 3}{2})$ & $0.636085$ & $-0.391527$ \\
 \end{tabular}
 \end{table}
 
-The full numerical certificate, including verification of the product formula \eqref{eq:product-formula} to absolute error $5 \cdot 10^{-14}$, is in \verb|explore_mvc_d5.py|.
+The full numerical certificate, including verification of the product formula \eqref{eq:product-formula} to absolute error $5 \cdot 10^{-14}$, is in \verb|latex/scripts/explore_mvc_d5.py|.
 
 \section{Comparison with $d = 2, 3, 4$}
 

@@ -27,6 +27,15 @@ We develop a framework for Smale's mean value conjecture based on the \emph{Pand
 
 \paragraph{Scope statement.} The results of this paper are a structural reduction, not a proof of Smale's MVC for $d \ge 4$. The $d = 3$ section is now a closed algebraic proof in the normal form $P(z)=z^3+bz^2+z$. The ``perturbation proof for all $d$'' of Section~\ref{sec:pert} below is only a first-order (linear) stability statement, not a full local maximum, and certainly not a global bound. Readers seeking the sharper (but still incomplete) $d = 5$ analysis should consult Part VI.
 
+\paragraph{Reader's guide.}
+This paper is the hinge of the MVC branch. Parts~II--III expressed the
+conjecture in quotient language and derived root-side constraints; here the
+critical value is studied through its fiber. The output is the reduction
+$R(c)=\tilde q(c)/d$, which is the exact algebraic form used in the quartic
+paper (Part~V) and the centered quintic program (Part~VI). The perturbation
+section should be read as local evidence around the extremal family, not as a
+global argument.
+
 \section{Setup and notation}
 
 Let $P(z) = z R(z)$, monic of degree $d$, with $R(0) = 1$ (equivalently $P'(0) = 1$). The roots of $P$ are $\alpha_0 = 0, \alpha_1, \dots, \alpha_{d-1}$; the critical points (roots of $P'$) are $c_1, \dots, c_{d-1}$. The Smale ratio is $S(c) = |R(c)| = |P(c)/c|$.
@@ -191,7 +200,11 @@ Zero violations were observed across all tested degrees. The statement that the 
 
 \section{Conclusion}
 
-The Pandrosion inverse reads Smale's conjecture as a statement about the branched covering $z \mapsto P(z)$: the Smale ratio equals the product of co-fiber distances (Theorem~2.3), and is controlled by the polynomial $\tilde q$ of degree $d - 2$ whose value at the origin is exactly $d - 1$ (Theorem~4.1). The conjecture reduces to showing that this degree-$(d - 2)$ polynomial cannot exceed its value at the origin at \emph{every} root of its companion polynomial $P'/d$ of degree $d - 1$. The first-order perturbation result of Section~\ref{sec:pert} is a linear stability statement only; the full coupling between $\tilde q$ and $P'/d$ through the shared coefficients $a_2, \dots, a_{d-1}$ is what remains unresolved, and what blocks a proof for $d \ge 4$ from this angle.
+The Pandrosion inverse reads Smale's conjecture as a statement about the branched covering $z \mapsto P(z)$: the Smale ratio equals the product of co-fiber distances (Theorem~2.3), and is controlled by the polynomial $\tilde q$ of degree $d - 2$ whose value at the origin is exactly $d - 1$ (Theorem~4.1).
+
+The conjecture reduces to showing that this degree-$(d - 2)$ polynomial cannot exceed its value at the origin at \emph{every} root of its companion polynomial $P'/d$ of degree $d - 1$.
+
+The first-order perturbation result of Section~\ref{sec:pert} is a linear stability statement only; the full coupling between $\tilde q$ and $P'/d$ through the shared coefficients $a_2, \dots, a_{d-1}$ is what remains unresolved, and what blocks a proof for $d \ge 4$ from this angle.
 
 \begin{thebibliography}{99}
 \bibitem{smale1981} S. Smale, \textit{The fundamental theorem of algebra and complexity theory}. Bull. Amer. Math. Soc. \textbf{4} (1981), 1--36.

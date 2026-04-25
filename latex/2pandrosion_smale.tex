@@ -28,6 +28,15 @@ where $Q(z, \zeta) = (P(\zeta) - P(z))/(\zeta - z)$ is the Pandrosion difference
 
 \paragraph{Scope statement.} This paper is a reformulation, not a new resolution of Smale's MVC. Sections~2 and~3 reproduce the exact values for $n = 2, 3$ in the Pandrosion language; Section~4 reports numerical optimisations for $n = 5, \dots, 10$; Section~5 records a product identity. We do \emph{not} claim progress on the conjecture for $n \ge 5$; the companion Parts IV--VI develop the framework further, and Part VI (``proof candidate'' for $d = 5$) should be read with the gaps made explicit there.
 
+\paragraph{Reader's guide.}
+This paper opens the MVC branch of the corpus. Its role is deliberately
+foundational: it gives the quotient language in which the later MVC papers are
+written. Part~III adds the Lagrange--Sylvester vanishing identity, Part~IV adds
+the inverse/fiber viewpoint, Part~V specialises the reduction to quartics, and
+Part~VI studies a centered quintic slice. The algorithmic Smale-17 papers
+(Part~I and Parts~VII--VIII) use related quotient notation but address a
+different problem.
+
 \section{Introduction}
 
 \subsection{Smale's Mean Value Conjecture}
@@ -212,9 +221,12 @@ The Smale MVC says this ratio has magnitude at least $n/(n - 1)$, i.e., the Pand
 
 In the Pandrosion root-finding algorithm, critical points act as ``waypoints'' in the iterate space. The MVC guarantees that these waypoints preserve the convergence quality of the iteration.
 
-\section{Connection to Paper 7}
+\section{Connection to the algorithmic papers}
 
-The conditional Pandrosion descent constant $\Lambda \le e^{-\pi/2} \approx 0.208$ from [4] concerns a multi-start algorithmic setting, not the pointwise inequality of Smale's MVC. It should not be read as a proof of the MVC or as a replacement for it.
+The conditional Pandrosion descent constants appearing in the algorithmic
+papers concern multi-start convergence of a specific iteration, not the
+pointwise critical-point inequality of Smale's MVC. They should not be read as
+proofs of the MVC or as replacements for it.
 
 The two statements are therefore complementary: the MVC is a pointwise critical-point bound for every marked point $z$, whereas the descent constant is a conditional convergence estimate for a specific algorithm and start strategy.
 
@@ -224,12 +236,14 @@ We have shown that Smale's Mean Value Conjecture is the statement:
 \begin{equation*}
 \min_{\zeta:\, P'(\zeta) = 0} \left|\frac{Q(z, \zeta)}{P'(z)}\right| \;\le\; \frac{n - 1}{n},
 \end{equation*}
-which is a bound on the Pandrosion difference quotient ratio at critical points. This reformulation:
+which is a bound on the Pandrosion difference quotient ratio at critical points.
+
+This reformulation:
 \begin{enumerate}
 \item Gives exact proofs for $n = 2$ (ratio $\equiv 1/2$) and $n = 3$.
 \item Connects the MVC to the Pandrosion product identity via the resultant $\mathrm{Res}(Q(z, \cdot), P'/n)$.
 \item Reveals the MVC as a quality guarantee for critical points as Pandrosion targets.
-\item Extends the Pandrosion root-finding framework (Papers 1--10) to the theory of polynomial critical points.
+\item Starts the MVC branch of the Pandrosion framework by moving from root-finding steps to critical-point quotients.
 \end{enumerate}
 
 \begin{thebibliography}{99}
