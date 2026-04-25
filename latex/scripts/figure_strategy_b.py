@@ -44,7 +44,7 @@ RHO = 2.0
 EXTENT = 2.42
 N_GRID = 960
 N_EPOCHS = 7
-ORBIT_EPOCHS = 14
+ORBIT_EPOCHS = 4
 EPS = 1e-300
 
 OUT = Path(__file__).resolve().parents[1] / "figures"
@@ -199,18 +199,21 @@ def draw_panel(ax, x_grid, y_grid, field, starts, *, label, accent, cmap, show_s
     # Continuous spiral curve underlying Strategy B (only on the right panel).
     if show_spiral_curve:
         golden = math.pi * (3.0 - math.sqrt(5.0))
-        kk = np.linspace(0, DEGREE - 1, 600)
+        kk = np.linspace(0, DEGREE - 1, 800)
         spiral = RHO * (Q**kk) * np.exp(1j * kk * golden)
+        # Soft outer halo + crisp inner stroke so the spiral reads as the figure's spine.
         ax.plot(
-            spiral.real,
-            spiral.imag,
-            color=accent,
-            linewidth=1.05,
-            alpha=0.55,
-            zorder=6,
+            spiral.real, spiral.imag,
+            color=accent, linewidth=4.5, alpha=0.18,
+            zorder=5, solid_capstyle="round",
+        )
+        ax.plot(
+            spiral.real, spiral.imag,
+            color=accent, linewidth=1.6, alpha=0.92,
+            zorder=6, solid_capstyle="round",
         )
 
-    # Orbit trajectories: faint glowing trails from each start to its limit.
+    # Orbit trajectories: faint trails fading along their length, segment by segment.
     norm = Normalize(vmin=0, vmax=max(1, len(starts) - 1))
     trail_cmap = plt.colormaps["plasma"] if show_spiral_curve else plt.colormaps["cool"]
 
@@ -218,17 +221,32 @@ def draw_panel(ax, x_grid, y_grid, field, starts, *, label, accent, cmap, show_s
         orbit = trace_orbit(z0)
         if orbit.size < 2:
             continue
-        col = trail_cmap(0.15 + 0.75 * norm(idx))
-        ax.plot(
-            orbit.real,
-            orbit.imag,
-            color=col,
-            linewidth=1.05,
-            alpha=0.85,
-            solid_capstyle="round",
+        # Clip orbit so wild excursions outside the view do not pollute the figure.
+        in_view = (np.abs(orbit.real) <= EXTENT * 1.02) & (np.abs(orbit.imag) <= EXTENT * 1.02)
+        if not in_view[0]:
+            continue
+        last = np.argmax(~in_view) if (~in_view).any() else len(orbit)
+        if last == 0:
+            last = 1
+        orbit = orbit[: max(2, last + 1)] if last < len(orbit) else orbit
+        if orbit.size < 2:
+            continue
+        col = np.array(trail_cmap(0.15 + 0.75 * norm(idx)))
+        pts = np.column_stack([orbit.real, orbit.imag])
+        segs = np.stack([pts[:-1], pts[1:]], axis=1)
+        # Fade alpha along the trail: brightest near the start, dimmer near the root.
+        n_seg = len(segs)
+        alphas = np.linspace(0.85, 0.18, n_seg)
+        seg_colors = np.tile(col, (n_seg, 1))
+        seg_colors[:, 3] = alphas
+        lc = LineCollection(
+            segs,
+            colors=seg_colors,
+            linewidths=np.linspace(1.25, 0.45, n_seg),
+            capstyle="round",
             zorder=7,
-            path_effects=[pe.Stroke(linewidth=2.6, foreground=col, alpha=0.18), pe.Normal()],
         )
+        ax.add_collection(lc)
 
     # Start markers: filled disks coloured by index.
     sc = ax.scatter(
@@ -245,18 +263,28 @@ def draw_panel(ax, x_grid, y_grid, field, starts, *, label, accent, cmap, show_s
     )
 
     # Index labels for the first few starts (so the reader sees the order).
-    for idx in (0, 1, 2, 3, len(starts) - 1):
+    label_indices = (0, 1, 2, 3, 5, len(starts) - 1)
+    for idx in label_indices:
         if 0 <= idx < len(starts):
             zk = starts[idx]
+            r = abs(zk)
+            if r < 1e-9:
+                ox, oy = 0.12, 0.12
+            else:
+                # Push the label radially outward so it never sits on top of the marker.
+                ox = (zk.real / r) * 0.16
+                oy = (zk.imag / r) * 0.16
             ax.text(
-                zk.real + 0.07,
-                zk.imag + 0.07,
+                zk.real + ox,
+                zk.imag + oy,
                 f"$k={idx}$",
                 color=INK,
-                fontsize=7.5,
-                alpha=0.9,
+                fontsize=7.8,
+                alpha=0.95,
+                ha="center",
+                va="center",
                 zorder=11,
-                path_effects=[pe.withStroke(linewidth=1.6, foreground="#000000", alpha=0.7)],
+                path_effects=[pe.withStroke(linewidth=1.8, foreground="#0a0712", alpha=0.85)],
             )
 
     # Roots of z^16 - 1 as small stars on the unit circle.
@@ -387,11 +415,8 @@ def main():
     )
 
     png = OUT / "strategy_b_geometric_spiral.png"
-    pdf = OUT / "strategy_b_geometric_spiral.pdf"
     fig.savefig(png, dpi=240, facecolor=fig.get_facecolor())
-    fig.savefig(pdf, facecolor=fig.get_facecolor())
     print(f"Wrote {png}")
-    print(f"Wrote {pdf}")
 
 
 if __name__ == "__main__":
