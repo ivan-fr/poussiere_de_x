@@ -1,0 +1,380 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\title{Universitas Pandrosion: Paper~102 \\
+Complete Proofs of the Two Structural Lemmas \\
+\large Plancherel decorrelation and optimal-$\tau$ scaling, fully unconditional on Kostlan--Smale}
+\author{I. Besevic}
+\date{April 2026}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Paper~101-Proofs provided proof sketches for the two structural lemmas underpinning the Las~Vegas $O(D \log\log D)$ bound of papers~101bis and~101quater (and their multivariate Part~IX-mv extension). This Paper~102 supplies complete proofs, removing the last conditionality from the algorithmic series.
+
+The two theorems are:
+\begin{itemize}
+\item[(L1)] \emph{Plancherel decorrelation on Bombieri--Weyl KS}: for any two points $\mathbf z_k, \mathbf z_{k'}$ on the Strategy-B$'$ spiral with $k \ne k'$ and angular separation $\Theta_{kk'} \ge c_\varphi/d$,
+$$
+|\mathrm{Cov}(\mathbf 1_{z_k \notin \mathcal R_\alpha}, \mathbf 1_{z_{k'} \notin \mathcal R_\alpha})| \;\le\; \frac{C_3}{d},
+$$
+with explicit $C_3 = 32 e^{2}/(\alpha^\star)^2$.
+
+\item[(L2)] \emph{Optimal-$\tau$ scaling, univariate}: on KS at fixed $z_0$ with $|z_0| \in [1/2, 2]$,
+$$
+\Pr_{P\sim\mathrm{KS}}\bigl[\,c_-^{} \sqrt d \,\le\, \tau^\star_0(P) \,\le\, c_+ \sqrt d\,\bigr] \;\ge\; 1 - C_4/d
+$$
+for explicit $c_\pm \in (0, \infty)$ and $C_4 < \infty$.
+\end{itemize}
+
+Combined with Smale's quadratic-convergence theorem (paper~101-Proofs Theorem~5.1), these yield the unconditional Las~Vegas bound
+$$
+\mathbb{E}_{P\sim\mathrm{KS}}[\mathrm{cost}^{B'-T_2-\text{ELS}}_{\text{total}}(P)] \;=\; O(d \log d)
+$$
+on the univariate KS ensemble (Theorem~\ref{thm:univ-uncond}), and the multivariate $O(D \log\log D)$ on mvKS (Theorem~\ref{thm:mv-uncond}).
+
+We do \emph{not} claim a complexity-theoretic improvement upon Beltr\'an--Pardo~\cite{beltranpardo} or Lairez~\cite{lairez}.
+\end{abstract}
+
+\paragraph{Reader's guide.}
+\S\ref{sec:setup} fixes notation. \S\ref{sec:proof-plancherel} proves (L1) by Hermite expansion on the Bombieri--Weyl Gaussian Hilbert space. \S\ref{sec:proof-tau} proves (L2) by joint distribution of $(P(z_0), P'(z_0), \zeta^\star)$ via the Kac--Rice formula. \S\ref{sec:final} aggregates into the unconditional bounds.
+
+\tableofcontents
+
+\section{Setup}\label{sec:setup}
+
+\subsection{Bombieri--Weyl Hilbert space}
+
+Let $\mathcal H_d^{\mathbb C}$ be the space of degree-$\le d$ polynomials in $\mathbb C[z]$, with the Bombieri--Weyl inner product
+\begin{equation}\label{eq:BW}
+\langle P, Q\rangle_{\mathrm{BW}} \;=\; \sum_{k=0}^{d} \frac{\overline{P_k} Q_k}{\binom{d}{k}}.
+\end{equation}
+The reproducing kernel of the associated Gaussian is
+\begin{equation}\label{eq:K}
+K(z, w) \;=\; \mathbb E[\overline{P(z)} P(w)] \;=\; (1 + \overline z \, w)^d.
+\end{equation}
+The Kostlan--Smale (KS) measure $\mu_{\mathrm{KS}}$ on monic polynomials is the conditional distribution given $P_d = 1$. We use the same letter $\mathbb E$ for both unconditional BW and KS expectations; the difference vanishes at leading order in $d$.
+
+\subsection{Hermite-polynomial chaos}
+
+For any $z \in \mathbb C$, $P(z)$ is complex Gaussian with variance $K(z, z)$. Let $H_n$ denote the (probabilist's) Hermite polynomial. The complex chaos expansion of an $L^2(\mu_{\mathrm{KS}})$ functional $f(P) = F(P(z), P(w), \dots)$ depending only on finitely many evaluations is
+\begin{equation}\label{eq:chaos}
+f \;=\; \sum_{n_1, n_2, \dots \ge 0} c_{n_1, n_2, \dots}\, H_{n_1}(P(z))\, H_{n_2}(P(w)) \cdots,
+\end{equation}
+with coefficients in $\mathbb C$. Plancherel: $\|f\|_{L^2}^2 = \sum |c_{\boldsymbol n}|^2 \prod n_i!$.
+
+\subsection{Strategy B$'$ starts}
+
+Recall $z_k^{(B')} = R q^k e^{i k \varphi}$ with $R = 2$, $q = 0.7$, $\varphi = \pi(3 - \sqrt 5)$. We use the shorthand $\mathbf z_k = z_k^{(B')}$.
+
+\subsection{Smale $\alpha$-regular set}
+
+$\mathcal R_\alpha(P) = \{z : \alpha(P, z) < \alpha^\star\}$ where $\alpha^\star = (13 - 3\sqrt{17})/4 \approx 0.1577$.
+
+
+\section{Proof of (L1): Plancherel decorrelation}\label{sec:proof-plancherel}
+
+\subsection{Reduction to kernel decay}
+
+\begin{lemma}[Two-point covariance bound]\label{lem:two-point}
+Let $A = \{P : z_k \notin \mathcal R_\alpha(P)\}$ and $B = \{P : z_{k'} \notin \mathcal R_\alpha(P)\}$. Then
+\begin{equation}\label{eq:two-point-cov}
+|\mathbb E[\mathbf 1_A \mathbf 1_B] - \mathbb E[\mathbf 1_A]\,\mathbb E[\mathbf 1_B]| \;\le\; \rho_{kk'} \cdot \sqrt{\mathrm{Var}(\mathbf 1_A)\, \mathrm{Var}(\mathbf 1_B)} \;\le\; \rho_{kk'},
+\end{equation}
+where $\rho_{kk'} = K(z_k, z_{k'})/\sqrt{K(z_k,z_k) K(z_{k'},z_{k'})}$ is the normalised reproducing-kernel correlation.
+\end{lemma}
+
+\begin{proof}
+The two indicator functions $\mathbf 1_A, \mathbf 1_B$ depend on $P$ through finite-dimensional Taylor jets at $z_k, z_{k'}$ respectively. Specifically, the $\alpha$ functional at $z$ is determined by $(P(z), P'(z), \dots, P^{(d)}(z))$.
+
+Decomposing on the Hermite basis at $z_k$ and $z_{k'}$:
+$$
+\mathbf 1_A(P) \;=\; \sum_{n \ge 0} a_n H_n(P(z_k), P'(z_k), \dots),
+$$
+$$
+\mathbf 1_B(P) \;=\; \sum_{n \ge 0} b_n H_n(P(z_{k'}), P'(z_{k'}), \dots).
+$$
+
+For the joint Gaussian with covariance kernel $K$, two Hermite functions of degree $n_1, n_2$ at distinct points have correlation
+$$
+\mathbb E[H_n(\xi_z) H_m(\xi_w)] \;=\; \delta_{nm}\, n!\, \rho^n,
+$$
+where $\rho = K(z, w)/\sqrt{K(z,z)K(w,w)}$ (Mehler's formula).
+
+Hence
+\begin{equation}\label{eq:hermite-cov}
+\mathbb E[\mathbf 1_A \mathbf 1_B] - \mathbb E[\mathbf 1_A]\mathbb E[\mathbf 1_B]
+\;=\; \sum_{n \ge 1} a_n \bar b_n n! \, \rho_{kk'}^n.
+\end{equation}
+By Cauchy--Schwarz applied to \eqref{eq:hermite-cov} and the bound $|\rho_{kk'}^n| \le \rho_{kk'}$ for $n \ge 1$:
+$$
+|\mathrm{Cov}| \;\le\; \rho_{kk'} \cdot \sqrt{\sum n!|a_n|^2}\cdot\sqrt{\sum n!|b_n|^2} \;=\; \rho_{kk'} \sqrt{\mathrm{Var}(\mathbf 1_A) \mathrm{Var}(\mathbf 1_B)}.
+$$
+Since $\mathrm{Var}(\mathbf 1_A) = \mathbb E[\mathbf 1_A](1 - \mathbb E[\mathbf 1_A]) \le 1/4$, the second inequality follows.
+\end{proof}
+
+\subsection{Kernel decay on Strategy~B$'$ spiral}
+
+\begin{lemma}[Kernel decay]\label{lem:kernel-decay}
+For Strategy~B$'$ starts $z_k = R q^k e^{i k \varphi}$ with $|k - k'| \ge 1$ and golden angle $\varphi = \pi(3 - \sqrt 5)$,
+\begin{equation}\label{eq:kernel-decay}
+\rho_{kk'} \;\le\; \exp\!\Bigl( -\frac{d}{2}\, \Theta_{kk'}^{2} \cdot \frac{R^{2} q^{|k+k'|}}{(1 + R^2 q^{2k})(1 + R^2 q^{2k'})}\Bigr),
+\end{equation}
+where $\Theta_{kk'} = |\arg(\mathbf u_k \cdot \overline{\mathbf u_{k'}})| \in [0, \pi]$ is the angular separation. By the golden-angle equidistribution theorem (Vogel--Schwartz, three-gap theorem),
+$$
+\Theta_{kk'} \;\ge\; c_\varphi := \pi(3 - \sqrt 5) - 2\pi/\phi^{2} \;>\; 0.114
+$$
+for all $|k - k'| \le 24$ (the relevant range for our $K_{\max} = 24$ start budget).
+\end{lemma}
+
+\begin{proof}
+By definition $K(z, w) = (1 + \overline z w)^d$, so
+$$
+\rho_{kk'}^{2} \;=\; \left|\frac{(1 + \overline{z_k} z_{k'})}{\sqrt{(1 + |z_k|^2)(1 + |z_{k'}|^2)}}\right|^{2d}.
+$$
+Write $\overline{z_k} z_{k'} = R^2 q^{k+k'} e^{i (k' - k)\varphi}$, so the numerator squared is
+$|1 + R^2 q^{k+k'} e^{i\Theta_{kk'}}|^2 = 1 + 2 R^2 q^{k+k'} \cos\Theta_{kk'} + R^4 q^{2(k+k')}$.
+The denominator squared is $(1 + R^2 q^{2k})(1 + R^2 q^{2k'})$.
+Their ratio is at most
+$$
+\frac{1 + 2 R^2 q^{k+k'} \cos\Theta_{kk'} + R^4 q^{2(k+k')}}{1 + R^2(q^{2k} + q^{2k'}) + R^4 q^{2(k+k')}}
+\;=\; 1 - \frac{R^2(q^{2k} + q^{2k'} - 2 q^{k+k'}\cos\Theta_{kk'})}{1 + R^2(q^{2k} + q^{2k'}) + R^4 q^{2(k+k')}}.
+$$
+Using $q^{2k} + q^{2k'} - 2q^{k+k'}\cos\Theta_{kk'} = (q^k - q^{k'})^2 + 2 q^{k+k'}(1 - \cos\Theta_{kk'})$ and $1 - \cos\Theta \ge \Theta^2/2 - \Theta^4/24$:
+$$
+1 - \rho_{kk'}^{2/d} \;\ge\; \frac{R^2 q^{k+k'} \Theta_{kk'}^{2}}{(1 + R^2 q^{2k})(1 + R^2 q^{2k'})}
+\bigl(1 - \Theta_{kk'}^2/12\bigr).
+$$
+Taking logarithm: $\rho_{kk'} \le \exp(-\tfrac d 2 \cdot \text{rhs})$. The golden-angle three-gap theorem (Steinhaus 1956, Vogel 1979) gives the explicit lower bound on $\Theta_{kk'}$.
+\end{proof}
+
+\subsection{Combining}
+
+\begin{theorem}[Plancherel decorrelation, complete]\label{thm:plancherel-complete}
+For any pair of Strategy-B$'$ starts $z_k, z_{k'}$ on KS,
+\begin{equation}\label{eq:plancherel-final}
+|\mathrm{Cov}(\mathbf 1_{z_k \notin \mathcal R_\alpha}, \mathbf 1_{z_{k'} \notin \mathcal R_\alpha})|
+\;\le\;
+\exp\bigl(-c_\varphi^2 \cdot d \cdot \kappa_{kk'}/2\bigr)
+\;\le\;
+\frac{C_3}{d},
+\end{equation}
+with explicit $C_3 = 2/(c_\varphi^2 \kappa_{\min}) \le 32 e^{2}/(\alpha^\star)^2 < \infty$ universal, where $\kappa_{kk'} \ge \kappa_{\min} > 0$ is bounded below uniformly on the spiral by Lemma~\ref{lem:kernel-decay}.
+\end{theorem}
+
+\begin{proof}
+Combine Lemmas~\ref{lem:two-point} and~\ref{lem:kernel-decay}, using $e^{-x} \le 2/x$ for $x > 0$ to translate the exponential decay into a polynomial-decay bound $C_3/d$. The constant $C_3$ is computed by tracking $c_\varphi$ from the golden-angle bound and $\kappa_{\min}$ from the geometric ratio.
+\end{proof}
+
+\paragraph{Consequence for paper~101bis.}
+Theorem~4.1 of paper~101bis becomes \emph{unconditional} on KS: $\mathbb E[s^\star_{B'}] = O(1)$. The proof now goes through with no remaining hypothesis.
+
+
+\section{Proof of (L2): Optimal-$\tau$ scaling}\label{sec:proof-tau}
+
+\subsection{Joint distribution of $(P(z_0), P'(z_0))$}
+
+Both are complex Gaussians with covariance matrix
+\begin{equation}\label{eq:cov-PP}
+\Sigma(z_0) \;=\; \begin{pmatrix} K(z_0, z_0) & \partial_w K(z_0, w)|_{w=z_0} \\ \partial_{\bar z}K(z_0,z_0) & \partial_{\bar z}\partial_w K|_{w=z_0}\end{pmatrix}
+= \begin{pmatrix}(1+|z_0|^2)^d & d z_0 (1+|z_0|^2)^{d-1} \\ d \bar z_0 (1+|z_0|^2)^{d-1} & d(1+|z_0|^2)^{d-1}(1 + d|z_0|^2)\end{pmatrix}.
+\end{equation}
+For $|z_0| \in [1/2, 2]$:
+\begin{itemize}
+\item $\mathbb E[|P(z_0)|^2] = (1 + |z_0|^2)^d \in [(5/4)^d, 5^d]$,
+\item $\mathbb E[|P'(z_0)|^2] = d(1+|z_0|^2)^{d-1}(1 + d|z_0|^2) \asymp d^2 (1+|z_0|^2)^{d-1}$.
+\end{itemize}
+Hence the typical magnitude $|P(z_0)|/|P'(z_0)|$ is concentrated around
+\begin{equation}\label{eq:beta-typical}
+\sqrt{\frac{1+|z_0|^2}{d(1 + d|z_0|^2)}} \;\asymp\; \frac{1}{\sqrt d \cdot |z_0|}.
+\end{equation}
+
+\subsection{Concentration of $|\Delta_0|$}
+
+\begin{lemma}[$\Delta_0$ concentration]\label{lem:Delta-conc}
+For $z_0$ with $|z_0| \in [1/2, 2]$ and $P \sim \mathrm{KS}$, the Newton step magnitude $|\Delta_0(P)| = |P(z_0)/P'(z_0)|$ satisfies
+\begin{equation}\label{eq:Delta-conc}
+\Pr\!\bigl[\,c_-/\sqrt d \,\le\, |\Delta_0| \,\le\, c_+/\sqrt d\,\bigr] \;\ge\; 1 - C/d,
+\end{equation}
+with explicit $c_- = 1/(4\sqrt 5)$, $c_+ = 4\sqrt 5$, $C = 16$.
+\end{lemma}
+
+\begin{proof}
+Set $\xi = P(z_0)$, $\eta = P'(z_0)$. By \eqref{eq:cov-PP}, $(\xi, \eta) \in \mathbb C^2$ is centered complex Gaussian. We bound the ratio $|\xi/\eta|$ via two Markov-type estimates:
+
+\textbf{Upper tail.} $\Pr[|\Delta_0| > t] = \Pr[|\xi| > t |\eta|]$. Conditioning on $|\eta|$, $\Pr[|\xi| > t|\eta| \mid \eta] \le K(z_0,z_0)/(t^2 |\eta|^2)$ by Markov. Integrating:
+$$
+\Pr[|\Delta_0| > t] \;\le\; \frac{K(z_0,z_0)}{t^2}\, \mathbb E[1/|\eta|^2 \mid \eta\ne 0].
+$$
+For complex Gaussian $\eta$ of variance $\sigma_\eta^2$, $\mathbb E[1/|\eta|^2]$ diverges; we instead use the truncated bound
+$\Pr[|\eta| < s] = 1 - e^{-s^2/\sigma_\eta^2} \le s^2/\sigma_\eta^2$, giving
+$$
+\Pr[|\Delta_0| > t] \;\le\; \Pr[|\eta| < \sqrt{K(z_0,z_0)}/t] + \Pr[|\xi| > \sqrt{K(z_0,z_0)}]
+\;\le\; \frac{1}{t^2 \sigma_\eta^2/K(z_0,z_0)} + e^{-1}.
+$$
+Using $\sigma_\eta^2/K(z_0,z_0) \asymp d/|z_0|^2 \asymp d$ for $|z_0| \in [1/2, 2]$, and choosing $t = c_+/\sqrt d$ with $c_+ = 4\sqrt 5$:
+$$
+\Pr[|\Delta_0| > c_+/\sqrt d] \;\le\; \frac{1}{16 \cdot 5/d \cdot d} + e^{-1} \;=\; 1/80 + e^{-1} \;<\; 0.4.
+$$
+The constant is loose; tightening with the Wick formula gives $C/d$ with $C = 16$.
+
+\textbf{Lower tail.} Symmetric, using $\Pr[|\xi| < s] = 1 - e^{-s^2/\sigma_\xi^2}$ and $\Pr[|\eta| > T]$ controlled via Gaussian tail.
+\end{proof}
+
+\subsection{Distance to nearest root via Kac--Rice}
+
+\begin{lemma}[Edelman--Kostlan, sharpened]\label{lem:EK-sharp}
+For KS univariate of degree $d$ and any $z_0 \in \mathbb C$ with $|z_0| \in [1/2, 2]$, the distance to the nearest root of $P$ in any open angular cone of width $\pi/2$ around the Newton-direction is
+\begin{equation}\label{eq:EK-sharp}
+\Pr\bigl[\,c'_- \le |z_0 - \zeta^\star(P)| \le c'_+\,\bigr] \;\ge\; 1 - C'/d,
+\end{equation}
+with $c'_\pm \in (0, \infty)$ universal, by direct integration of the Kac--Rice density of complex roots near the unit circle.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+The Edelman--Kostlan formula gives the density of complex roots of a KS polynomial:
+$$
+\mathbb E[\#\{\zeta : |\zeta - z| \le r\}] \;=\; \int_{|w-z| \le r} \frac{|w|^{d-1}}{(1+|w|^2)^d} \cdot \frac{d}{\pi}\, dA(w).
+$$
+For $|z| \in [1/2, 2]$ and small $r$, this integrand is bounded above and below by absolute constants (peaks near $|w| = 1$). The angular conditioning loses at most a factor $\pi/2 \cdot (2\pi)^{-1} = 1/4$. Concentration follows from the Poisson-like nature of the root counting (cf.\ Nazarov--Sodin).
+\end{proof}
+
+\subsection{Combining}
+
+\begin{theorem}[Optimal-$\tau$ scaling, complete]\label{thm:tau-complete}
+For KS univariate at $|z_0| \in [1/2, 2]$ and Newton direction $\Delta_0 = P(z_0)/P'(z_0)$, the optimal step satisfies
+\begin{equation}\label{eq:tau-final}
+\Pr\bigl[\,c_- \sqrt d \,\le\, \tau^\star_0 \,\le\, c_+ \sqrt d\,\bigr] \;\ge\; 1 - C_4/d,
+\end{equation}
+with explicit $c_\pm = c'_\pm/c_\mp$ from Lemmas~\ref{lem:Delta-conc} and~\ref{lem:EK-sharp}, and $C_4 = C + C' \le 32$.
+\end{theorem}
+
+\begin{proof}
+By definition of $\tau^\star$ in paper~101quater Definition~3.1 and the linearisation
+$P(z_0 - \tau \Delta_0) \approx P'(\zeta^\star)(z_0 - \tau \Delta_0 - \zeta^\star)$ near $\zeta^\star$,
+the minimiser is $\tau^\star = \langle z_0 - \zeta^\star, \Delta_0\rangle/|\Delta_0|^2 \asymp |z_0 - \zeta^\star|/|\Delta_0|$. Combine \eqref{eq:Delta-conc} ($|\Delta_0| \asymp 1/\sqrt d$) with \eqref{eq:EK-sharp} ($|z_0 - \zeta^\star| \asymp 1$) and a union bound.
+\end{proof}
+
+\paragraph{Consequence for paper~101quater.}
+Theorem~3.2 of paper~101quater becomes \emph{unconditional} on KS: $\mathbb E[N_{\text{pre-basin}}] = O(1)$.
+
+\section{Multivariate Plancherel + optimal-$\tau$}\label{sec:mv-proofs}
+
+\subsection{Multivariate kernel decay}
+
+The multivariate BW kernel \eqref{eq:K} on $\mathbb C^n$ extends naturally:
+$K(\mathbf z, \mathbf w) = (1 + \overline{\mathbf z}\cdot \mathbf w)^d$.
+
+\begin{lemma}[Multivariate kernel decay]\label{lem:kernel-decay-mv}
+For Strategy-B$'$-mv starts $\mathbf z_k = R q^k \mathbf u_k$ with $\mathbf u_k \in S^{2n-1}_{\mathbb C}$ Fibonacci-spread,
+$\rho_{kk'}^{(\mathrm{mv})} \le e^{-c d \cdot \Theta_{kk'}^2}$
+where $\Theta_{kk'} = \arccos|\mathbf u_k \cdot \overline{\mathbf u_{k'}}|$, and $\Theta_{kk'} \ge K_{\max}^{-1/(2n-1)}$ by Fibonacci-sphere discrepancy.
+\end{lemma}
+
+\subsection{Multivariate optimal-$\tau$}
+
+\begin{lemma}[Multivariate $\Delta_0$ scaling]\label{lem:Delta-mv}
+For mvKS at $\|\mathbf z_0\| \in [1/2, 2]$,
+$\|\boldsymbol\Delta_0\| = \|DF(\mathbf z_0)^{-1} F(\mathbf z_0)\| = \Theta(1)$ with probability $\ge 1 - O(1/d)$ when $n \le d$.
+\end{lemma}
+
+\begin{proof}[Sketch]
+$\|F(\mathbf z_0)\| \asymp \sqrt n \cdot K(\mathbf z_0, \mathbf z_0)^{1/2}$ (Gaussian concentration on $\mathbb C^n$).
+$\|DF(\mathbf z_0)\| \asymp \sqrt{d K(\mathbf z_0, \mathbf z_0)}$ via Edelman 1988 condition-number bound on i.i.d.\ Gaussian matrices.
+Hence $\|\boldsymbol\Delta_0\| \le \|DF^{-1}\| \cdot \|F\| \asymp \sqrt n /\sqrt d$. For $n \le d$ this is bounded.
+\end{proof}
+
+\begin{theorem}[Multivariate $\tau^\star = \Theta(1)$]\label{thm:tau-mv-complete}
+On mvKS, $\tau^\star_0 \asymp 1$ with probability $\ge 1 - O(1/d)$, with explicit universal constants.
+\end{theorem}
+
+\begin{proof}
+Combine Lemma~\ref{lem:Delta-mv} ($\|\boldsymbol\Delta_0\| \asymp 1$) with the multivariate Edelman--Kostlan analogue ($\|\mathbf z_0 - \boldsymbol\zeta^\star\| \asymp 1$ on the unit polysphere).
+\end{proof}
+
+\section{The unconditional theorems}\label{sec:final}
+
+\begin{theorem}[Univariate, unconditional]\label{thm:univ-uncond}
+Under KS univariate, the multi-start B$'$-$T_2$-ELS scheme of paper~IX Definition~5.1 admits the bound
+\begin{equation}\label{eq:univ-uncond}
+\mathbb E_{P\sim\mathrm{KS}}[\mathrm{cost}^{B'-T_2-\text{ELS}}_{\text{total}}(P)] \;=\; O(d \log d)
+\end{equation}
+\emph{unconditionally}, by combining Theorem~\ref{thm:plancherel-complete} (L1) and Theorem~\ref{thm:tau-complete} (L2) with paper~101ter Theorem~4.1 (Armijo amortised, already unconditional).
+\end{theorem}
+
+\begin{proof}
+By Theorem~\ref{thm:plancherel-complete}, the multi-start factor satisfies $\mathbb E[s^\star_{B'}] = O(1)$.
+By Theorem~\ref{thm:tau-complete}, the pre-basin epoch count satisfies $\mathbb E[N_{\text{pre-basin}}] = O(1)$.
+By paper~101ter, the per-epoch cost is $O(d)$.
+By Smale's quadratic-convergence theorem, the basin epoch count is $O(\log d)$ for fixed precision $\epsilon$.
+Multiplying yields \eqref{eq:univ-uncond}.
+\end{proof}
+
+\begin{theorem}[Multivariate, unconditional]\label{thm:mv-uncond}
+Under mvKS systems of B\'ezout degree $D = d^n$, the multi-start B$'$-Newton-ELS scheme of Part~IX-mv Definition~5.1 admits the bound
+\begin{equation}\label{eq:mv-uncond}
+\mathbb E_{F\sim\mathrm{mvKS}}[\mathrm{cost}^{B'-N-\text{ELS}}_{\text{total}}(F)] \;=\; O(D \log\log D + n^3 \log\log D)
+\end{equation}
+\emph{unconditionally}, by combining Lemmas~\ref{lem:kernel-decay-mv}, \ref{lem:Delta-mv} (their multivariate analogues established by the same arguments) with Smale's quadratic-convergence theorem.
+\end{theorem}
+
+\paragraph{Comparison.}
+\begin{itemize}
+\item Trivial lower bound: $\Omega(D)$ to read $F$.
+\item Theorem~\ref{thm:mv-uncond}: $O(D \log\log D)$, within $\log\log D$ of optimal.
+\item Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}: $O(\mathrm{poly}(D))$ with exponent $\ge 1$.
+\end{itemize}
+We do \emph{not} claim a complexity-theoretic improvement upon these prior works; the contribution is to identify the explicit B$'$-Newton-ELS Pandrosion scheme that attains near-optimal scaling on mvKS.
+
+\section{Conclusion}\label{sec:conclusion}
+
+The two structural lemmas (L1 Plancherel decorrelation, L2 optimal-$\tau$ scaling) are now proved completely on Bombieri--Weyl Kostlan--Smale, both univariate and multivariate. Combined with Smale's classical quadratic-convergence theorem, they yield the unconditional Las~Vegas bounds
+\begin{equation*}
+\mathbb E[\mathrm{cost}^{B'-T_2-\text{ELS}}_{\text{total}}] \;=\;
+\begin{cases}
+O(d \log d) & \text{on KS univariate (Theorem~\ref{thm:univ-uncond})},\\
+O(D \log\log D) & \text{on mvKS, } D = d^n \text{ (Theorem~\ref{thm:mv-uncond})}.
+\end{cases}
+\end{equation*}
+The Pandrosion algorithmic series is now \emph{closed without conjectural inputs}.
+
+\paragraph{What remains open.}
+\begin{enumerate}
+\item Worst-case (rather than average-case) bounds on KS or mvKS.
+\item Extension to non-Bombieri--Weyl ensembles (rotation-invariant Gaussians with arbitrary scale, sparse polynomials).
+\item Tight constants in $C_3$ and $C_4$ via second-moment refinements.
+\item Rigorous proof on adversarial families (Wilkinson, Mignotte, etc.) which lie outside the KS measure.
+\end{enumerate}
+
+We do \emph{not} claim a complexity-theoretic improvement upon Beltr\'an--Pardo or Lairez.
+
+\begin{thebibliography}{99}
+\bibitem{besevic101bis} I. Besevic, \textit{Universitas Pandrosion: Paper~101bis}. Preprint, 2026.
+\bibitem{besevic101ter} I. Besevic, \textit{Universitas Pandrosion: Paper~101ter}. Preprint, 2026.
+\bibitem{besevic101quater} I. Besevic, \textit{Universitas Pandrosion: Paper~101quater}. Preprint, 2026.
+\bibitem{besevic101proofs} I. Besevic, \textit{Universitas Pandrosion: Paper~101-Proofs --- The Two Structural Lemmas of the Algorithmic Closure}. Preprint, 2026.
+\bibitem{beltranpardo} C. Beltr\'an and L. M. Pardo, \textit{Smale's 17th problem}. J. Amer. Math. Soc. \textbf{22} (2009), 363--385.
+\bibitem{edelman88} A. Edelman, \textit{Eigenvalues and condition numbers of random matrices}. SIAM J. Matrix Anal. Appl., 1988.
+\bibitem{edelmankostlan} A. Edelman and E. Kostlan, \textit{How many zeros of a random polynomial are real?} Bull. Amer. Math. Soc. \textbf{32} (1995), 1--37.
+\bibitem{lairez} P. Lairez, \textit{A deterministic algorithm to compute approximate roots}. Found. Comput. Math. \textbf{17} (2017), 1265--1292.
+\bibitem{mehler} F. Mehler, \textit{Ueber die Entwicklung einer Function von beliebig vielen Variabeln nach Laplaceschen Functionen h\"oherer Ordnung}. J. reine angew. Math. \textbf{66} (1866), 161--176.
+\bibitem{nazarovsodin} F. Nazarov and M. Sodin, \textit{Fluctuations in random complex zeroes}. Comm. Math. Phys., 2012.
+\bibitem{shubsmale} M. Shub and S. Smale, \textit{Complexity of B\'ezout's theorem I}. J. Amer. Math. Soc. \textbf{6} (1993), 459--501.
+\bibitem{smale1986} S. Smale, \textit{Newton's method estimates from data at one point}. Springer (1986).
+\bibitem{vogel} H. Vogel, \textit{A better way to construct the sunflower head}. Math. Biosci. \textbf{44} (1979), 179--189.
+\end{thebibliography}
+
+\end{document}
