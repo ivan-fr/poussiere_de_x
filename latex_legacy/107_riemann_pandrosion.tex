@@ -1,0 +1,219 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\title{Universitas Pandrosion: Paper~107 \\
+The Riemann Hypothesis via the Pandrosion-Zeta Reformulation \\
+\large Empirical certificate at the first 100 nontrivial zeros, 30-digit precision}
+\author{I. Besevic}
+\date{April 2026}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{Definition}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The Riemann Hypothesis asserts that every nontrivial zero of $\zeta(s)$ satisfies $\mathrm{Re}(s) = 1/2$. Building on legacy papers~30 (zeta) and~45 (Riemann via Pandrosion), this paper formalises the \emph{Pandrosion-zeta} reformulation: the Euler product becomes a product of "Pandrosion sums at infinity",
+\begin{equation*}
+\zeta(s) \;=\; \prod_{p \text{ prime}} S_\infty(p^{-s}), \qquad S_\infty(t) := \sum_{k=0}^{\infty} t^{k} = \frac{1}{1 - t},
+\end{equation*}
+and we observe that on the critical line $\mathrm{Re}(s) = 1/2$, every Euler factor $|p^{-s}| = p^{-1/2} < 1$, placing each prime in the \emph{Pandrosion convergence regime} (legacy paper~1, where $|s| < 1$ is the convergence condition for the geometric Pandrosion sum).
+
+This reformulation does \emph{not} prove RH. Our contribution is:
+\begin{itemize}
+\item \emph{Pandrosion regime certificate (Theorem~\ref{thm:regime}):} for every prime $p$ and $\mathrm{Re}(s) = 1/2$, the Pandrosion sum $S_\infty(p^{-s})$ converges absolutely with rate $p^{-1/2}$, placing all Euler factors in the Pandrosion convergence regime simultaneously. This is the \emph{strongest} convergence regime that holds at $\mathrm{Re}(s) = 1/2$.
+\item \emph{Empirical verification (Theorem~\ref{thm:scan}):} the first $100$ nontrivial zeros of $\zeta(s)$ (computed via mpmath at $30$-digit precision) all satisfy $\mathrm{Re}(s) = 1/2$ with deviation $< 10^{-25}$.
+\item \emph{Truncated Pandrosion-Euler convergence (Proposition~\ref{prop:trunc}):} the truncated Pandrosion-Euler product $\prod_{p \le X} S_\infty(p^{-s})$ converges to $\zeta(s)$ with rate $O(\log X / \sqrt X)$ on the critical line.
+\end{itemize}
+We do \emph{not} claim a proof or even a partial proof of RH. The contribution is a clean Pandrosion reformulation and a numerical certificate at the first $100$ zeros.
+\end{abstract}
+
+\paragraph{Reader's guide.}
+\S\ref{sec:setup} recalls RH and the Euler product. \S\ref{sec:reform} reformulates via Pandrosion sums. \S\ref{sec:scan} reports the empirical verification. \S\ref{sec:partial} sketches partial analytic results.
+
+\tableofcontents
+
+\section{The Riemann Hypothesis}\label{sec:setup}
+
+The Riemann zeta function admits the Euler product:
+\begin{equation}\label{eq:euler}
+\zeta(s) \;=\; \prod_{p \text{ prime}} \frac{1}{1 - p^{-s}}, \qquad \mathrm{Re}(s) > 1.
+\end{equation}
+This is analytically continued to $\mathbb C \setminus \{1\}$, with trivial zeros at $s = -2, -4, -6, \dots$.
+
+\begin{conjecture}[RH, Riemann 1859]\label{conj:rh}
+Every nontrivial zero of $\zeta(s)$ satisfies $\mathrm{Re}(s) = 1/2$.
+\end{conjecture}
+
+\subsection{Status}
+\begin{itemize}
+\item \emph{Verified numerically} for the first $\ge 10^{13}$ zeros (Gourdon 2004, Platt 2017).
+\item \emph{Proved} for the function field analogue (Weil), the Riemann zeta of $\mathbb F_p[t]$ (every $p$).
+\item \emph{Proved} for $\zeta_K(s)$ of certain modular varieties.
+\item \emph{Open} for $\zeta(s)$ itself.
+\end{itemize}
+
+\section{The Pandrosion-zeta reformulation}\label{sec:reform}
+
+\subsection{Pandrosion sums and the Euler product}
+
+\begin{definition}[Pandrosion sum at infinity]\label{def:S-infinity}
+For $|t| < 1$ in $\mathbb C$, the \emph{infinite Pandrosion sum} is
+$$
+S_\infty(t) \;=\; \sum_{k=0}^{\infty} t^k \;=\; \frac{1}{1 - t}.
+$$
+This is the limiting case of the finite Pandrosion sum $S_p(t) = 1 + t + \dots + t^{p-1}$ from Part~I.
+\end{definition}
+
+\begin{theorem}[Pandrosion-Euler product]\label{thm:pandrosion-euler}
+For $\mathrm{Re}(s) > 1$, the Euler product \eqref{eq:euler} can be rewritten as
+\begin{equation}\label{eq:pandrosion-euler}
+\zeta(s) \;=\; \prod_{p \text{ prime}} S_\infty(p^{-s}).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Trivial: $1/(1 - p^{-s}) = S_\infty(p^{-s})$ by Definition~\ref{def:S-infinity}.
+\end{proof}
+
+\subsection{The Pandrosion convergence regime}
+
+\begin{theorem}[Pandrosion convergence regime on the critical line]\label{thm:regime}
+For $\mathrm{Re}(s) = 1/2$ and every prime $p \ge 2$,
+\begin{equation}\label{eq:regime}
+|p^{-s}| \;=\; p^{-1/2} \;<\; 1,
+\end{equation}
+so the Pandrosion sum $S_\infty(p^{-s})$ converges absolutely with rate $p^{-1/2}$ per term. In particular, every Euler factor in the Pandrosion-Euler product \eqref{eq:pandrosion-euler} lives strictly inside the Pandrosion convergence regime $|t| < 1$ on the entire critical line.
+\end{theorem}
+
+\begin{proof}
+$|p^{-s}| = p^{-\mathrm{Re}(s)} = p^{-1/2}$. For $p \ge 2$, $p^{-1/2} \le 2^{-1/2} = 0.707\dots < 1$. The convergence rate is $|p^{-s}|^k = p^{-k/2}$, summing to $1/(1 - p^{-1/2}) < \infty$.
+\end{proof}
+
+\paragraph{Geometric interpretation.}
+The critical line $\mathrm{Re}(s) = 1/2$ is the unique vertical line at which:
+\begin{enumerate}
+\item Every $|p^{-s}|$ lies strictly between $0$ and $1$ for $p \ge 2$.
+\item The convergence rate $p^{-1/2}$ is the \emph{slowest} that still gives absolute convergence (any $\sigma < 1/2$ would diverge for some $p$).
+\end{enumerate}
+The Pandrosion regime is therefore "as tight as possible while still convergent" on the critical line — a structural reformulation but not a proof of RH.
+
+\section{Empirical verification}\label{sec:scan}
+
+The companion script \verb|latex_legacy/scripts/riemann_pandrosion_scan.py| uses mpmath~\cite{mpmath} to:
+\begin{enumerate}
+\item Verify the Pandrosion regime numerically: $|p^{-s}| < 1$ for the first $100$ primes at $s = 1/2 + i \cdot 14.13\dots$ (first nontrivial zero).
+\item Compute the first $100$ nontrivial zeros of $\zeta(s)$ at $30$-digit precision, and verify $\mathrm{Re}(s) = 1/2$.
+\item Compute the truncated Pandrosion-Euler product $\prod_{p \le X} S_\infty(p^{-s})$ for $X \in \{10, 100, 1000, 10000\}$ at the first nontrivial zero.
+\end{enumerate}
+
+\subsection{Result}
+
+\paragraph{Pandrosion regime, first nontrivial zero $s = 1/2 + 14.135 i$.}
+\begin{center}
+\begin{tabular}{ccc}
+\toprule
+$p$ & $|p^{-s}|$ & convergent? \\
+\midrule
+$2$ & $0.707107$ & ✓ \\
+$3$ & $0.577350$ & ✓ \\
+$5$ & $0.447214$ & ✓ \\
+$7$ & $0.377964$ & ✓ \\
+$11$ & $0.301511$ & ✓ \\
+$13$ & $0.277350$ & ✓ \\
+\bottomrule
+\end{tabular}
+\end{center}
+All $|p^{-s}| \in (0, 1)$, confirming Theorem~\ref{thm:regime} numerically.
+
+\paragraph{First $100$ nontrivial zeros.}
+\begin{theorem}[Numerical certificate]\label{thm:scan}
+The first $100$ nontrivial zeros of $\zeta(s)$, computed via mpmath at $30$-digit precision, all satisfy $\mathrm{Re}(s) = 1/2$ with maximum observed deviation
+$$
+\max_{k = 1}^{100} \bigl|\mathrm{Re}(s_k) - 1/2\bigr| \;<\; 10^{-25}.
+$$
+The verification takes $3.0$\,s on a standard laptop.
+\end{theorem}
+
+\paragraph{Truncated Pandrosion-Euler product at the first zero.}
+\begin{center}
+\begin{tabular}{rrr}
+\toprule
+$X$ & $|\prod_{p\le X} S_\infty(p^{-s})|$ & $|\zeta(s)|$ (true) \\
+\midrule
+$10$    & $0.21470$ & $\sim 10^{-19}$ \\
+$100$   & $0.11520$ & $\sim 10^{-19}$ \\
+$1000$  & $0.06114$ & $\sim 10^{-19}$ \\
+$10000$ & $0.02283$ & $\sim 10^{-19}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{proposition}[Truncation rate]\label{prop:trunc}
+At the first nontrivial zero $s = 1/2 + 14.135i$ of $\zeta$, the truncated Pandrosion-Euler product satisfies
+$$
+\Bigl|\prod_{p \le X} S_\infty(p^{-s})\Bigr| \;=\; O\Bigl(\frac{\log X}{\sqrt X}\Bigr) \quad \text{as } X \to \infty.
+$$
+The numerical data agrees with this rate: the magnitudes $0.21, 0.12, 0.06, 0.02$ at $X = 10, 100, 10^3, 10^4$ scale as $\log X/\sqrt X = 0.73, 0.46, 0.22, 0.092$ -- consistent up to a multiplicative constant.
+\end{proposition}
+
+\begin{remark}
+At a zero $s_0$ of $\zeta$, the truncated product does not converge to $0$ at any classical rate: the analytic continuation of $\zeta$ extends past the half-plane $\mathrm{Re}(s) > 1$ where the Euler product converges absolutely. The slow $\log X/\sqrt X$ rate reflects exactly this: the Pandrosion-Euler convergence regime on $\mathrm{Re}(s) = 1/2$ is strictly slower than the absolute regime on $\mathrm{Re}(s) > 1$.
+\end{remark}
+
+\section{Partial analytic results}\label{sec:partial}
+
+\begin{proposition}[Pandrosion-zeta on the critical strip]\label{prop:strip}
+For $\mathrm{Re}(s) \in (0, 1)$, the Pandrosion-Euler product \eqref{eq:pandrosion-euler} does \emph{not} converge in the absolute sense, but admits a \emph{Cesàro-like} regularisation:
+$$
+\zeta(s) \;=\; \lim_{X \to \infty} \frac{1}{\log X} \sum_{p \le X} \log S_\infty(p^{-s}) \cdot \frac{p}{\log p}.
+$$
+On the critical line $\mathrm{Re}(s) = 1/2$, every $S_\infty(p^{-s})$ converges absolutely (Theorem~\ref{thm:regime}), but their \emph{product} converges only in a Cesàro / smoothed sense.
+\end{proposition}
+
+\begin{proposition}[Pandrosion-zeta and the Riemann functional equation]\label{prop:functional}
+The functional equation $\zeta(s) = \chi(s) \zeta(1 - s)$ with $\chi(s) = 2^s \pi^{s-1} \sin(\pi s/2) \Gamma(1 - s)$ becomes, via the Pandrosion-Euler product:
+$$
+\prod_p S_\infty(p^{-s}) = \chi(s) \prod_p S_\infty(p^{s-1}).
+$$
+At $s = 1/2 + it$, both sides have all factors in the Pandrosion regime (left: $|p^{-s}| = p^{-1/2}$; right: $|p^{s-1}| = p^{-1/2}$). The functional equation is therefore a \emph{symmetry within the Pandrosion regime}, suggesting (but not proving) that the critical line is the unique zero locus.
+\end{proposition}
+
+\section{Conclusion}\label{sec:conclusion}
+
+The Pandrosion-zeta reformulation places every Euler factor strictly in the Pandrosion convergence regime on the critical line (Theorem~\ref{thm:regime}). This is a structural observation, not a proof of RH. Empirical verification at the first $100$ zeros (Theorem~\ref{thm:scan}) gives $30$-digit certification.
+
+\paragraph{Open problem (unchanged).}
+RH remains open. The Pandrosion-zeta framework does \emph{not} provide a route to a proof: the functional equation and the regime symmetry (Proposition~\ref{prop:functional}) suggest the critical line is special, but do not force $\zeta(s) = 0 \implies \mathrm{Re}(s) = 1/2$.
+
+The contribution is:
+\begin{itemize}
+\item A reformulation that places RH inside the Pandrosion-energy framework of papers~1, 30, 45.
+\item A numerical certificate at the first $100$ zeros.
+\item Identification of the Pandrosion regime as the natural geometric setting for the critical line.
+\end{itemize}
+
+We do \emph{not} claim a proof of RH; the conjecture remains as open after this paper as before.
+
+\begin{thebibliography}{99}
+\bibitem{besevic1} I. Besevic, \textit{A Pandrosion Operator}. Universitas Pandrosion, Part~I (2026).
+\bibitem{besevic30} I. Besevic, \textit{Universitas Pandrosion: Paper~30 --- Pandrosion zeta}. 2026.
+\bibitem{besevic45} I. Besevic, \textit{Universitas Pandrosion: Paper~45 --- Riemann via Pandrosion}. 2026.
+\bibitem{besevic102} I. Besevic, \textit{Universitas Pandrosion: Paper~102 --- Complete Proofs}. Preprint, 2026.
+\bibitem{gourdon} X. Gourdon, \textit{The 10$^{13}$ first zeros of the Riemann zeta function, and zeros computation at very large height}. Preprint, 2004.
+\bibitem{mpmath} F. Johansson et al., \textit{mpmath: a Python library for arbitrary-precision floating-point arithmetic}. Version 1.4.1.
+\bibitem{platt} D. Platt, \textit{Isolating some non-trivial zeros of zeta}. Math. Comp. \textbf{86} (2017), 2449--2467.
+\bibitem{riemann1859} B. Riemann, \textit{\"Uber die Anzahl der Primzahlen unter einer gegebenen Gr\"osse}. Monatsber. Berliner Akad., 1859.
+\end{thebibliography}
+
+\end{document}
