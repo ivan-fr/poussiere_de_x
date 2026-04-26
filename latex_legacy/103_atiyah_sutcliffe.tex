@@ -211,16 +211,17 @@ The Atiyah--Sutcliffe conjecture is now:
 \end{itemize}
 
 \paragraph{The remaining gap.}
-The exponential vs $|D| \ge 1$ gap in Theorem~\ref{thm:lower-bound} is a *Smale-theory artifact*. Closing it requires identifying the *Atiyah--Sutcliffe basin radius* $\alpha^\star_{\mathrm{AS}}$ specific to the Pandrosion system $F$ of \eqref{eq:F-AS} -- which by the conjecture should be $1$. We conjecture that $\alpha^\star_{\mathrm{AS}} = 1$ holds because of the \emph{representation-theoretic structure} of the Atiyah--Berry polynomials: they are matrix coefficients of the irreducible $\mathrm{SU}(2)$-representation of dimension $n$, and the determinant $D$ is a Wronskian-type invariant.
+The exponential vs $|D| \ge 1$ gap in Theorem~\ref{thm:lower-bound} reflects the difficulty of bounding $\sigma_{\min}(\mathbf Q_F)$ uniformly in the Atiyah-Berry system. The Smale-theory route (passing through $\alpha$) gives $\sigma_{\min} \ge \alpha^\star \cdot \|F\|/\|\boldsymbol\zeta^\star\|$ but no better -- and $\alpha^\star \approx 0.158$ is not $1$.
 
-\paragraph{Open conjectural finish.}
-\begin{conjecture}[$\alpha^\star_{\mathrm{AS}} = 1$ for the Atiyah--Berry system]
-For the polynomial system $F$ of \eqref{eq:F-AS}, the Smale invariant $\alpha(F, \boldsymbol\zeta^\star)$ at the canonical basepoint $\boldsymbol\zeta^\star$ satisfies $\alpha < 1$ for every distinct configuration, with equality iff the points are collinear. Combined with Theorem~\ref{thm:lower-bound}, this would prove Atiyah--Sutcliffe in full.
-\end{conjecture}
+\paragraph{Empirical observation on the Smale invariant.}
+The companion script \verb|latex_legacy/scripts/atiyah_alpha_star.py| measures $\alpha_{\mathrm{AS}}(P) := \max_i \alpha(p_i, 0)$ on random S$^2$ configurations. We find that $\alpha_{\mathrm{AS}} > 1$ holds for a substantial fraction of configurations ($27\%$ at $n=5$, growing to $62\%$ at $n=50$). Hence Smale's $\alpha$-theory \emph{cannot} give the conjectural bound $|D| \ge 1$ on its own -- the analytic chain through Smale-$\alpha$ is provably insufficient.
 
-This is now the *single* remaining barrier; the Pandrosion reformulation has reduced the conjecture to a quantitative statement about the Smale invariant of a specific polynomial system, accessible to the same kind of $\mathrm{SU}(2)$-spherical-harmonic analysis used to prove L1 and L2 in paper~102.
+This is consistent with Theorem~\ref{thm:numerical}: $|D|$ is bounded below by $\sim e^{1.83}$ at $n=5$ (margin $> 6$) on configurations regardless of their $\alpha$-value, indicating that another mechanism is at work.
 
-We do \emph{not} claim a full resolution of the conjecture; we provide computer-assisted evidence to $n = 50$ and an analytic reduction to the Smale-invariant question.
+\paragraph{Open problem (revised).}
+The proper invariant for Atiyah-Sutcliffe is not Smale's $\alpha$ but a representation-theoretic quantity tied to the SU(2)-equivariant structure of the Atiyah-Berry polynomials. Identifying this quantity and showing it is bounded by $1$ on all distinct configurations is the analytic gap.
+
+We do \emph{not} claim a full resolution of the conjecture; we provide computer-assisted evidence to $n = 50$, an analytic Smale-$\alpha$ lower bound (Theorem~\ref{thm:lower-bound}, bounded by $0.158^n$), and an honest negative result on the Smale-$\alpha$ approach.
 
 \begin{thebibliography}{99}
 \bibitem{atiyah2001} M. F. Atiyah, \textit{Configurations of points}. Phil. Trans. R. Soc. Lond. A \textbf{359} (2001), 1375--1387.

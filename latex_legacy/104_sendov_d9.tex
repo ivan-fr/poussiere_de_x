@@ -162,16 +162,26 @@ Roots at $0.999 \cdot \omega^k$, $\omega = e^{2\pi i/d}$. Critical points: $z = 
 
 While we do not prove Sendov in the gap range, the Pandrosion reformulation enables three partial bounds:
 
-\begin{proposition}[Sendov on $\alpha$-regular polynomials]\label{prop:alpha-reg}
-Let $P$ be such that the Pandrosion system associated to its critical-point equation $P' = 0$ is $\alpha$-regular at the basepoint of paper~104 \S2.1. Then Sendov holds for $P$.
+\begin{proposition}[Sendov on $\alpha$-regular polynomials, corrected]\label{prop:alpha-reg}
+Let $P$ have a root $\zeta_j$ such that the Smale invariant of $P'$ at $\zeta_j$ is small,
+\begin{equation}\label{eq:alpha-sendov}
+\alpha_{\mathrm{Sendov}}(P, \zeta_j) \;:=\; \alpha(P', \zeta_j) \;=\; \frac{|P'(\zeta_j)|}{|P''(\zeta_j)|}\, \gamma(P', \zeta_j) \;<\; \alpha^\star.
+\end{equation}
+Then there is a critical point $\xi_k$ of $P$ at distance
+$$
+|\zeta_j - \xi_k| \;\le\; \frac{|P'(\zeta_j)|}{|P''(\zeta_j)|} \cdot \frac{1}{1 - 2\alpha_{\mathrm{Sendov}}(P, \zeta_j)} \;<\; 1
+$$
+provided $|P'(\zeta_j)|/|P''(\zeta_j)| \le (1 - 2\alpha^\star)$, i.e., Sendov holds at $\zeta_j$.
 \end{proposition}
 
 \begin{proof}[Sketch]
-$\alpha$-regularity gives quadratic-convergence basin entry from any start in a positive-measure neighbourhood of each $\zeta_j$, and this neighbourhood by Smale-$\beta$ is bounded above by $\alpha^\star/\gamma$. For the Pandrosion-quotient system, $\gamma$ is bounded by $\sqrt d$ on roots-in-disk polynomials, giving a basin of radius $\alpha^\star/\sqrt d \le 1$. Hence $|\zeta_j - \xi| \le \alpha^\star/\sqrt d \le 1$.
+By Smale's $\alpha$-theorem, if $\alpha_{\mathrm{Sendov}}(P, \zeta_j) < \alpha^\star$, then Newton's iteration on $P'$ from $\zeta_j$ converges to a unique zero $\xi_k$ of $P'$ (a critical point of $P$) with explicit basin radius $\beta(P', \zeta_j)/(1 - 2\alpha)$. The Sendov inequality $|\zeta_j - \xi_k| \le 1$ follows when this radius is $\le 1$.
 \end{proof}
 
-\begin{remark}
-The $\alpha$-regular subset is $1 - O(1/d)$ in the Bombieri--Weyl-uniform-on-disk measure. The remaining $O(1/d)$ singular polynomials are precisely the ones where Sendov is hardest to verify analytically, and where our numerical scan adds value.
+\begin{remark}[Honest scope of Proposition~\ref{prop:alpha-reg}]
+This corrects an earlier draft where the invariant was incorrectly evaluated at critical points $\xi$ rather than at roots $\zeta_j$. At a critical point, $P'(\xi) = 0$ by definition, hence $\alpha(P, \xi) = +\infty$ trivially: the "$\alpha$-regular at critical points" condition is empty.
+
+The corrected invariant $\alpha_{\mathrm{Sendov}}(P, \zeta_j) := \alpha(P', \zeta_j)$ evaluates Smale's invariant of the \emph{derivative} polynomial $P'$ at the \emph{root} $\zeta_j$ of $P$. This measures whether Newton's iteration on $P'$, started at the root $\zeta_j$, converges to a critical point. The fraction of polynomials satisfying this condition is non-trivial and depends on the ensemble; we do not claim a $1 - O(1/d)$ measure here, since this requires a separate Bombieri--Weyl analysis of $P'$.
 \end{remark}
 
 \begin{proposition}[Sendov on near-collinear roots]\label{prop:collinear}
