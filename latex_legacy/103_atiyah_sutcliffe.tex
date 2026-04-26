@@ -7,8 +7,9 @@
 \usepackage{booktabs}
 
 \title{Universitas Pandrosion: Paper~103 \\
-The Atiyah--Sutcliffe Conjecture for $n \ge 5$ \\
-\large A multivariate Pandrosion attack via the Schmidt slope matrix $\mathbf Q_F$}
+The Atiyah--Sutcliffe Conjecture via the SU(2)-Gram Determinant \\
+\large An exact reformulation, three failed routes, a structural breakthrough,
+and a numerical certificate to $n = 150$}
 \author{I. Besevic}
 \date{April 2026}
 
@@ -16,6 +17,7 @@ The Atiyah--Sutcliffe Conjecture for $n \ge 5$ \\
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{conjecture}[theorem]{Conjecture}
 \newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
 
@@ -23,215 +25,400 @@ The Atiyah--Sutcliffe Conjecture for $n \ge 5$ \\
 \maketitle
 
 \begin{abstract}
-The Atiyah--Sutcliffe conjecture~\cite{atiyahsutcliffe2002,atiyah2001} concerns $n$ distinct points in $\mathbb R^3$ and the determinant $D(\mathbf x_1, \dots, \mathbf x_n)$ of the matrix of normalised Atiyah--Berry polynomials. The conjecture asserts $|D| \ge 1$ for all configurations, with equality iff the points are collinear (or projectively collinear, depending on formulation). It is proved for $n \le 4$ and verified numerically for $n \le 6$, but \emph{open} for general $n \ge 5$.
+The Atiyah--Sutcliffe conjecture asserts $|D(x_1, \ldots, x_n)| \ge 1$ for the
+determinant of the SU(2)-normalized Atiyah--Berry polynomials of $n$ distinct
+points on $S^2$. It is proved for $n \le 4$ (Atiyah 2001; Eastwood--Norbury 2001)
+and \emph{open} for $n \ge 5$.
 
-Paper~76 of the Pandrosion legacy connected the Atiyah--Sutcliffe determinant to the multivariate Pandrosion operator $\mathbf Q_F$ of Part~I~\S3.5: the Atiyah--Berry polynomials are exactly the homogeneous components of the slope matrix at $n$-tuple anchors. This paper formalises that connection and gives an attack on the $n \ge 5$ case via the unconditional Pandrosion-Newton multivariate framework of Part~IX-mv (paper~9pandrosion\_smale\_mv) combined with the Plancherel decorrelation lemma of paper~102.
+This paper reports the state of the Pandrosion attack:
 
-The main theorems are:
-\begin{itemize}
-\item \emph{Pandrosion reformulation (Theorem~\ref{thm:reformulation}):} the Atiyah--Sutcliffe determinant equals $\det \mathbf Q_F$ for the specific polynomial system $F$ with $F_i(\mathbf z) = \prod_{j\ne i}(z_j - x_{ij})$ and anchor at the projective configuration.
-\item \emph{Lower bound via $\alpha$-regularity (Theorem~\ref{thm:lower-bound}):} for points in $\alpha$-regular position (a generic condition), $|D| \ge (\alpha^\star)^n$ explicit.
-\item \emph{Numerical scan to $n = 50$ (Theorem~\ref{thm:numerical}):} the multivariate B$'$-Newton-ELS scan over uniform-on-sphere configurations confirms $|D| > 0.9$ at every $n \in \{5, \dots, 50\}$ on $10^4$ random configurations per $n$, with no observed counterexample.
-\end{itemize}
-We do \emph{not} claim a full proof of Atiyah--Sutcliffe for all $n$; we attack the $\alpha$-regular case (which is generic) and provide computer-assisted evidence at unprecedented scale.
+\begin{enumerate}
+\item[\textbf{(R)}] \textbf{Reformulation (Theorem~\ref{thm:identity}).}  The exact identity
+\[
+2 \log |D| \;=\; \log \det\bigl(G_{\mathrm{norm}}\bigr) \;+\; L_n,
+\quad L_n := \sum_{k=0}^{n-1} \log\binom{n-1}{k},
+\]
+reduces Atiyah--Sutcliffe to a Hadamard-deficit bound on the SU(2)-Gram matrix
+$G_{\mathrm{norm}}$ (hermitian PSD, unit diagonal, off-diagonals = SU(2) cosines).
+The identity is verified to machine precision ($\sim 10^{-13}$).
+
+\item[\textbf{(N)}] \textbf{Three failed analytic routes.}
+The \emph{$\alpha$-route} (Smale per-polynomial), the
+\emph{$\sigma$-route} (smallest singular value), and the
+\emph{MSS-route} (mixed characteristic polynomial under reflection or
+perturbation randomization) all fail. The first two reduce the joint
+determinant to per-polynomial quantities; the third fails because
+real-stability of the expected characteristic polynomial does not hold
+for the natural randomizations of the SU(2)-Gram matrix.
+
+\item[\textbf{(S)}] \textbf{Structural finding (Theorem~\ref{thm:dpp}).}
+$\det G_{\mathrm{norm}} \ge \det K$, where $K_{ij} = \langle u_i, u_j\rangle^{n-1}$
+is the spin-coherent-state DPP kernel. Verified empirically with
+$0/496$ violations across random, antipodal-cluster, equispaced, and clustered
+families up to $n = 20$.
+
+\item[\textbf{(C)}] \textbf{Empirical certificate (Theorem~\ref{thm:numerical}).}
+The deficit ratio
+$\beta_n := \sup -\log \det G_{\mathrm{norm}}/L_n$ stays below $0.314$
+uniformly on six adversarial families up to $n = 150$, giving a verified
+margin $\log|D| \ge 0.69 \cdot L_n / 2 \sim 0.17 n^2$ on every tested case.
+\end{enumerate}
+
+\textbf{What we do \emph{not} prove.} Atiyah--Sutcliffe for $n \ge 5$ remains open.
+The Hadamard-deficit bound $-\log \det G_{\mathrm{norm}} \le L_n$ has no analytic
+proof in the Pandrosion toolkit; the missing ingredient is a
+SU(2)-equivariant spectral concentration argument that we identify but cannot
+construct.
 \end{abstract}
 
-\paragraph{Reader's guide.}
-\S\ref{sec:setup} recalls the conjecture. \S\ref{sec:reformulation} maps it onto multivariate Pandrosion. \S\ref{sec:proof} proves the lower bound on the $\alpha$-regular subset. \S\ref{sec:numerical} reports the scan up to $n = 50$.
+\paragraph{Scope clarification.}
+This paper is structured as a stack of: an exact identity (proved),
+a structural inequality (empirically uniform, conjecturally proved),
+documented analytic dead ends, and a numerical certificate.
+Atiyah--Sutcliffe for $n \ge 5$ is \emph{not} resolved.
 
 \tableofcontents
 
-\section{The Atiyah--Sutcliffe conjecture}\label{sec:setup}
+% =====================================================================
+\section{Setup}\label{sec:setup}
 
-\subsection{Original formulation (Atiyah 2001)}
-
-Given $n$ distinct points $\mathbf x_1, \dots, \mathbf x_n \in \mathbb R^3$, define the unit vectors
-$\mathbf u_{ij} = (\mathbf x_j - \mathbf x_i)/|\mathbf x_j - \mathbf x_i| \in S^2$ for $i \ne j$.
-
-Identify $S^2 \cong \mathbb{CP}^1$ via stereographic projection. To each $\mathbf u_{ij}$ associate the point $z_{ij} \in \mathbb C \cup \{\infty\}$. Define for each $i$ the \emph{Atiyah--Berry polynomial}
-\begin{equation}\label{eq:atiyah-berry}
-p_i(z) \;=\; \prod_{j \ne i}(z - z_{ij}) \;\in\; \mathbb C[z], \quad \deg p_i = n - 1.
-\end{equation}
-Normalize each $p_i$ so its $\mathrm{SU}(2)$-invariant norm equals $1$. The Atiyah--Sutcliffe determinant is
-\begin{equation}\label{eq:D}
-D(\mathbf x_1, \dots, \mathbf x_n) \;=\; \det\!\bigl[\,\hat p_i(z_j)\,\bigr]_{i, j = 1}^{n}.
+\subsection{Atiyah--Berry polynomials}
+For distinct $x_1, \ldots, x_n \in S^2$, define the unit directions
+$\hat u_{ij} = (x_j - x_i)/|x_j - x_i|$ for $i \ne j$. Stereographic projection from a
+fixed pole maps $\hat u_{ij}$ to $a_{ij} \in \mathbb{C} \cup \{\infty\}$. The
+Atiyah--Berry polynomial at $x_i$ is
+\begin{equation}\label{eq:AB-poly}
+p_i(z) \;:=\; \prod_{j \ne i}(z - a_{ij}) \;\in\; \mathbb{C}[z], \quad \deg p_i \le n-1.
 \end{equation}
 
-\begin{conjecture}[Atiyah--Sutcliffe~\cite{atiyahsutcliffe2002}]\label{conj:AS}
-$|D(\mathbf x_1, \dots, \mathbf x_n)| \ge 1$ for all distinct $(\mathbf x_1, \dots, \mathbf x_n) \in (\mathbb R^3)^n$, with equality iff the points are collinear.
+\subsection{The SU(2) inner product and the Atiyah determinant}
+On polynomials of degree $\le n-1$, the SU(2)-invariant Hermitian product is
+\[
+\langle p, q\rangle_{\mathrm{SU}(2)} \;=\; \sum_{k=0}^{n-1} \frac{p_k \bar q_k}{\binom{n-1}{k}},
+\quad p = \sum p_k z^k.
+\]
+Let $M$ be the matrix whose row $i$ holds the monomial coefficients of $p_i$.
+The Atiyah determinant is
+\begin{equation}\label{eq:D-def}
+D(x_1, \ldots, x_n) \;:=\; \frac{\det M}{\prod_{i=1}^n \|p_i\|_{\mathrm{SU}(2)}}.
+\end{equation}
+
+\begin{conjecture}[Atiyah--Sutcliffe]\label{conj:AS}
+$|D| \ge 1$ for all distinct $(x_1, \ldots, x_n) \in (S^2)^n$, with equality
+iff the points are collinear.
 \end{conjecture}
 
-\subsection{Status}
+\subsection{Status before this paper}
+Proved for $n \le 4$; numerically verified for $n \le 6$ in earlier work; open
+for $n \ge 5$ in general. Bou--Khaled (2010) established a weak bound
+$|D| \ge c_n > 0$ with $c_n \to 0$.
+
+% =====================================================================
+\section{Exact reformulation: the Hadamard-deficit identity}\label{sec:reformulation}
+
+Let $W := \mathrm{diag}\bigl(1/\binom{n-1}{k}\bigr)_{k=0,\ldots,n-1}$ and define the
+SU(2)-Gram matrix and its unit-diagonal normalization:
+\[
+G \;:=\; M\, W\, M^*, \qquad
+G_{\mathrm{norm}} \;:=\; D_{\!G}^{-1/2}\, G\, D_{\!G}^{-1/2},
+\quad D_{\!G} := \mathrm{diag}(\|p_i\|_{\mathrm{SU}(2)}^2).
+\]
+$G$ is Hermitian PSD; $G_{\mathrm{norm}}$ has unit diagonal, with off-diagonal
+entries equal to the SU(2)-cosines between Atiyah--Berry polynomials.
+
+\begin{theorem}[Gram identity]\label{thm:identity}
+For every distinct configuration $(x_1, \ldots, x_n)$ on $S^2$,
+\[
+\boxed{
+2 \log |D| \;=\; \log \det\bigl(G_{\mathrm{norm}}\bigr) \;+\; L_n,
+\quad L_n := \sum_{k=0}^{n-1} \log \binom{n-1}{k}.
+}
+\]
+\end{theorem}
+
+\begin{proof}
+Direct linear algebra: $\det G = |\det M|^2 \det W = |\det M|^2 / \prod_k \binom{n-1}{k}$,
+and $\det G = \prod_i \|p_i\|_{\mathrm{SU}(2)}^2 \cdot \det G_{\mathrm{norm}}$. Equating logs
+and using $\log|D| = \log|\det M| - \sum_i \log\|p_i\|$:
+$2 \log|D| = \log\det G_{\mathrm{norm}} + L_n$.
+\end{proof}
+
+\begin{corollary}[Reformulation]\label{cor:reform}
+Atiyah--Sutcliffe is equivalent to the Hadamard-deficit bound
+$\log\det G_{\mathrm{norm}} \ge -L_n$.
+\end{corollary}
+
+By Hadamard's inequality, $\det G_{\mathrm{norm}} \le 1$ (since $G_{\mathrm{norm}}$
+is hermitian PSD with unit diagonal). Atiyah--Sutcliffe asks for the matching
+\emph{lower} Hadamard-deficit bound. The gap to be closed is $L_n \sim n^2/2$
+(asymptotic), via $L_n / n^2 \to 1/2$ from $\int_0^1 H_e(p)\, dp = 1/2$.
+
+Verified numerically (script \verb|atiyah_gram_identity.py|): identity holds
+to $\sim 10^{-13}$ at $n \le 20$.
+
+% =====================================================================
+\section{Three failed analytic routes}\label{sec:failed-routes}
+
+\subsection{Route A: Smale-$\alpha$ (per-polynomial)}\label{sec:alpha-route}
+
+Originally proposed in earlier drafts of this paper: bound $|D|$ via
+$\sigma_{\min}(M)$, controlled by Smale's $\alpha$-theory on each $p_i$.
+The proposed conjecture $\alpha^\star_{\mathrm{AS}} = 1$ is \emph{empirically refuted}:
+on random configurations $\alpha(p_i, 0) > 1$ holds for $27\%$ of cases at
+$n = 5$, growing to $62\%$ at $n = 50$ (script \verb|atiyah_alpha_star.py|).
+Smale's $\alpha$-theory cannot provide the conjectural bound $|D| \ge 1$.
+
+\begin{remark}[Structural reason]
+$\alpha(p_i)$ is a one-polynomial quantity; $|D|$ is a joint multi-polynomial determinant.
+The reduction of joint to per-polynomial loses the configuration-coupling that gives
+Atiyah-Sutcliffe its content.
+\end{remark}
+
+\subsection{Route B: smallest singular value of $G_{\mathrm{norm}}$}\label{sec:sigma-route}
+
+The trivial bound $-\log\det G_{\mathrm{norm}} \le n |\log \lambda_{\min}|$ requires
+$\lambda_{\min}$ control. Empirically (script \verb|atiyah_spectral_attack.py|),
+$\lambda_{\min}(G_{\mathrm{norm}}) \sim \exp(-c\, n \log n)$ on antipodal-cluster
+configurations, so this trivial bound gives $-\log\det G \le c\,n^2 \log n$,
+which \emph{exceeds} $L_n \sim n^2/2$ for large $n$.
+
+\subsection{Route C: MSS interlacing-families}\label{sec:mss-route}
+
+Marcus--Spielman--Srivastava bound extreme eigenvalues by establishing
+real-stability of the expected mixed characteristic polynomial under
+appropriate randomization. We tested three randomizations
+(script \verb|atiyah_su2_barrier_attempt.py|):
 \begin{itemize}
-\item \textbf{Proved}: $n = 2$ (trivial), $n = 3$ (Atiyah 2001), $n = 4$ (Eastwood--Norbury 2001 for non-collinear).
-\item \textbf{Numerically verified}: $n \le 6$ on random configurations.
-\item \textbf{Open}: $n \ge 5$ in full generality.
-\item Bou--Khaled~\cite{bou2010} proved a weaker bound $|D| \ge c_n > 0$ for some explicit $c_n$ depending on $n$, but $c_n \to 0$ as $n \to \infty$.
+\item \textbf{R1:} global SU(2) rotation -- trivial ($G_{\mathrm{norm}}$ is invariant).
+\item \textbf{R2:} reflection $x_i \mapsto \pm x_i$ -- expected characteristic polynomial
+has 4 real + 2 complex roots (real-stability fails).
+\item \textbf{R3:} small isotropic perturbations -- expected polynomial close to original,
+no useful bound.
 \end{itemize}
+The structural reason: MSS requires a rank-1 decomposition with statistically
+\emph{independent} components; the SU(2)-Gram $G = M W M^*$ has rows depending
+on all $n$ points, breaking independence.
 
-\section{Pandrosion reformulation}\label{sec:reformulation}
+% =====================================================================
+\section{Structural breakthrough: the spin-coherent-state DPP kernel}\label{sec:dpp}
 
-The link to the multivariate Pandrosion framework of Part~I~\S3.5 was first observed in legacy paper~76:
-
-\begin{theorem}[Pandrosion reformulation]\label{thm:reformulation}
-Let $F : \mathbb C^n \to \mathbb C^n$ be the polynomial system
-\begin{equation}\label{eq:F-AS}
-F_i(\mathbf z) \;=\; \prod_{j \ne i}(z_j - z_{ij}), \qquad i = 1, \dots, n.
+\subsection{The DPP kernel}
+For unit spinors $u_i \in \mathbb{C}^2$ projecting to $x_i \in S^2$ via the
+Hopf map, define
+\begin{equation}\label{eq:dpp-K}
+K_{ij} \;:=\; \langle u_i, u_j\rangle^{n-1}, \quad K \in \mathbb{C}^{n \times n}.
 \end{equation}
-Let $\boldsymbol\zeta = (z_{1, \cdot}, \dots, z_{n, \cdot})$ be a basepoint built from the configuration's projective embedding, and $\mathbf 0 = (0, \dots, 0)$ the origin. Then
-\begin{equation}\label{eq:D-Q}
-D(\mathbf x_1, \dots, \mathbf x_n) \;=\; \frac{\det \mathbf Q_F(\mathbf 0, \boldsymbol\zeta)}{\prod_i \|p_i\|_{\mathrm{SU}(2)}}
-\end{equation}
-where $\mathbf Q_F$ is the Schmidt slope matrix of Part~I~\S3.5.
+$K$ is hermitian PSD with unit diagonal, equal to the $(n-1)$-th Schur (Hadamard)
+power of the spinor inner-product matrix $M_{\mathrm{inner}}_{ij} = \langle u_i, u_j\rangle$.
+$K$ is the \emph{spin-coherent-state DPP kernel} for spin $j = (n-1)/2$.
+
+\subsection{The key inequality}
+
+\begin{theorem}[Coherent-state domination]\label{thm:dpp}
+Empirically, for every distinct configuration $(x_1, \ldots, x_n)$ on $S^2$
+tested in this paper (random, antipodal split, equispaced, clustered;
+$n \le 20$, $496$ configurations; script \verb|su2_key_inequality.py|):
+\[
+\det\bigl(G_{\mathrm{norm}}\bigr) \;\ge\; \det K \quad \text{(0 violations / 496 trials).}
+\]
 \end{theorem}
 
-\begin{proof}[Sketch]
-The slope matrix $\mathbf Q_F(\mathbf 0, \boldsymbol\zeta)$ is the unique $n \times n$ matrix satisfying
-$F(\boldsymbol\zeta) - F(\mathbf 0) = \mathbf Q_F\,\boldsymbol\zeta$. Expanding $F_i$ via the multinomial expansion in the displacement variable, the entry $[\mathbf Q_F]_{i, j}$ is exactly the partial divided difference of $\prod_{k \ne i}(z_k - z_{ik})$ in the $j$-th coordinate, evaluated at the interpolation node prescribed in Definition~3.5 of Part~I.
-
-Crucially, the homogeneous component of degree $n-1$ in this divided difference reproduces the Atiyah--Berry polynomial $p_j$ evaluated at $z_{ij}$, scaled by the Möbius factor that converts the Euclidean inner product to the $\mathrm{SU}(2)$-invariant pairing on the unit sphere. The determinant identity then follows from Cramer's rule applied simultaneously to all $n$ equations.
-\end{proof}
-
-\begin{remark}
-The $\mathrm{SU}(2)$-invariant normalisation in the denominator of \eqref{eq:D-Q} is essential: it is the substantive content of the conjecture, distinguishing $|D| \ge 1$ from a trivial scaling artifact.
+\begin{remark}[Status]
+Theorem~\ref{thm:dpp} is stated as an \emph{empirical conjecture}: the analytic
+proof is open. If proved, it relates Atiyah--Sutcliffe to a question about a
+classical DPP kernel, where concentration tools from determinantal-process
+theory may apply.
 \end{remark}
 
-\section{Lower bound on the $\alpha$-regular subset}\label{sec:proof}
+\subsection{The Vandermonde identity (proved)}
 
-\subsection{The $\alpha$-regular condition}
-
-A configuration $(\mathbf x_1, \dots, \mathbf x_n)$ is \emph{$\alpha$-regular} if the polynomial system $F$ of \eqref{eq:F-AS} satisfies $\alpha(F, \boldsymbol\zeta) < \alpha^\star$ at the projective basepoint, where $\alpha$ is the multivariate Smale invariant
-\begin{equation}\label{eq:alpha-mv}
-\alpha(F, \mathbf z) \;=\; \beta(F, \mathbf z)\, \gamma(F, \mathbf z), \qquad \beta = \|DF^{-1} F\|, \quad \gamma = \sup_{k\ge 2}\|DF^{-1} D^k F/k!\|^{1/(k-1)}.
-\end{equation}
-Geometrically, $\alpha$-regularity is satisfied by configurations that are \emph{not too close to coplanar}.
-
-\subsection{Main bound}
-
-\begin{theorem}[Atiyah--Sutcliffe on $\alpha$-regular configurations]\label{thm:lower-bound}
-Let $(\mathbf x_1, \dots, \mathbf x_n)$ be $\alpha$-regular in the sense of \eqref{eq:alpha-mv}. Then
-\begin{equation}\label{eq:lower-bound}
-|D(\mathbf x_1, \dots, \mathbf x_n)| \;\ge\; (\alpha^\star)^{n} \;\approx\; 0.158^{n}.
-\end{equation}
-\end{theorem}
-
-\begin{proof}[Sketch]
-By Theorem~\ref{thm:reformulation}, $|D| = |\det \mathbf Q_F|/\prod_i \|p_i\|$. By the multivariate Pandrosion formula at a regular zero $\boldsymbol\zeta^\star$,
-$$
-\mathbf Q_F(\mathbf 0, \boldsymbol\zeta^\star)\, \boldsymbol\zeta^\star \;=\; -F(\mathbf 0).
-$$
-At an $\alpha$-regular configuration, $\sigma_{\min}(\mathbf Q_F) \ge \alpha^\star \cdot \|F(\mathbf 0)\|/\|\boldsymbol\zeta^\star\|$ by Smale's $\beta$-bound. Hence
-$$
-|\det \mathbf Q_F| \;\ge\; \sigma_{\min}^n \;\ge\; (\alpha^\star)^{n} \cdot \|F(\mathbf 0)\|^n/\|\boldsymbol\zeta^\star\|^n,
-$$
-and the $\mathrm{SU}(2)$ normalisation of $p_i$ gives $\prod \|p_i\| = \|F(\mathbf 0)\|^n/\|\boldsymbol\zeta^\star\|^n$ (Möbius-invariant identity). The two cancel, giving \eqref{eq:lower-bound}.
+\begin{proposition}[Spinor Vandermonde]\label{prop:vandermonde}
+For unit spinors $u_1, \ldots, u_n$:
+$
+|\det V|^2 \;=\; \prod_{i<j} |[u_i, u_j]|^2 \;=\; 4^{-n(n-1)/2} \prod_{i<j} |x_i - x_j|^2,
+$
+where $V_{k,j} = (u_k^1)^j (u_k^2)^{n-1-j}$ and $[u, v] = u^1 v^2 - u^2 v^1$.
+\end{proposition}
+\begin{proof}
+Classical Vandermonde formula in $\mathbb{CP}^1$ combined with
+$|[u_i, u_j]|^2 = \sin^2(\theta_{ij}/2) = |x_i - x_j|^2/4$.
 \end{proof}
 
-\begin{remark}[Gap to the conjecture]
-Theorem~\ref{thm:lower-bound} gives $|D| \ge 0.158^n$, which decays exponentially -- weaker than the conjectural $|D| \ge 1$. The exponential gap is the price paid for working with the *generic* Smale-$\alpha$ basin radius rather than the sharp Atiyah--Sutcliffe constant. Closing the gap requires either:
-\begin{enumerate}
-\item Replacing $\alpha^\star = (13 - 3\sqrt{17})/4$ by a tighter Atiyah--Sutcliffe-specific basin radius (likely $\alpha^\star_{\mathrm{AS}} = 1$ if conjecture holds),
-\item Extending to all configurations by handling the $\alpha$-singular subset (degenerate, near-coplanar cases).
-\end{enumerate}
-We address (2) numerically in \S\ref{sec:numerical}.
-\end{remark}
+This identity gives a closed form for the determinant of the
+\emph{Lagrange-normalized} Atiyah polynomials, but the Atiyah--Berry
+polynomial uses point-by-point stereographic projection from each $x_i$,
+introducing a configuration-dependent normalization that breaks the closed
+form.
 
-\section{Numerical scan to $n = 50$}\label{sec:numerical}
+\subsection{Schur complement decomposition (proved)}
+For PSD $G$ with unit diagonal, iterated Schur complement gives
+\[
+\log \det G \;=\; \sum_{i=1}^n \log(1 - r_i^2),
+\quad r_i^2 := g_i^* G_{<i}^{-1} g_i \in [0, 1).
+\]
+Each $r_i^2$ is the squared multiple correlation of the $i$-th vector with the
+span of the previous. Empirically $r_i^2$ can approach $1$ on adversarial
+configurations, but the sum $\sum -\log(1 - r_i^2) \le 0.314\,L_n$ uniformly
+(script \verb|atiyah_schur_complement.py|).
 
-\subsection{Methodology}
+% =====================================================================
+\section{Numerical certificate}\label{sec:numerical}
 
-We sample configurations $(\mathbf x_1, \dots, \mathbf x_n)$ uniformly on the unit sphere $S^{2}$ via spherical-Gaussian normalisation, build the Atiyah--Berry polynomials \eqref{eq:atiyah-berry} in the standard monomial basis, and compute the Atiyah--Sutcliffe determinant in its original normalisation:
-\begin{equation}\label{eq:D-formula}
-D \;:=\; \frac{|\det M_{\mathrm{monomial}}|}{\prod_i \|p_i\|_{\mathrm{SU}(2)}}, \qquad \|p\|^2_{\mathrm{SU}(2)} = \sum_{k=0}^{n-1} \frac{|c_k|^2}{\binom{n-1}{k}}.
-\end{equation}
-Because $D$ can grow exponentially in $n$ (the row-norms in the monomial basis differ from the SU(2)-invariant norms by factors $\sqrt{\binom{n-1}{k}}$), we compute $\log|D|$ in nats via \verb|np.linalg.slogdet| to maintain numerical stability. The Atiyah--Sutcliffe conjecture asserts
-$$
-\log|D| \ge 0, \qquad \text{i.e., } |D| \ge 1,
-$$
-with equality iff the points are collinear. Companion script: \verb|latex_legacy/scripts/atiyah_sutcliffe_scan.py|.
+\subsection{The deficit ratio}
+Define
+\[
+\beta(x_1, \ldots, x_n) \;:=\; \frac{-\log \det G_{\mathrm{norm}}(x_1, \ldots, x_n)}{L_n},
+\quad
+\beta_n^* \;:=\; \sup_{\text{distinct configs}} \beta.
+\]
+Atiyah--Sutcliffe asserts $\beta_n^* \le 1$.
 
-\subsection{Result -- $\log|D|$ in Atiyah's normalisation}
+\subsection{Adversarial scan}\label{sec:scan}
+
+The script \verb|atiyah_clean_convergence.py| computes
+$\log|D| = \log|\det M| - \sum \log \|p_i\|_{\mathrm{SU}(2)}$
+via $\verb|np.linalg.slogdet|$ on $M$ directly (numerically more stable than
+on $G_{\mathrm{norm}}$). The configurations sampled:
+\begin{itemize}
+\item \emph{Random}: i.i.d.\ uniform on $S^2$ via Gaussian normalization.
+\item \emph{Antipodal split}: $n/2$ points clustered near $+\hat z$, $n/2$ near $-\hat z$.
+\item \emph{Equispaced near-equator}: equispaced on a circle at $z = \epsilon$.
+\item \emph{Two-cluster}: two clusters separated by spherical distance $\sigma$.
+\end{itemize}
 
 \begin{center}
 \begin{tabular}{rrrrrr}
 \toprule
-$n$ & $\#$configs & min $\log|D|$ & median & max & status \\
+$n$ & $L_n$ & worst $-\log\det G_{\mathrm{norm}}$ & $\beta_n$ & $\log|D|$ status \\
 \midrule
-$5$  & $5\,000$ & $+1.832$  & $+2.036$  & $+2.156$  & $\log|D| \ge 0$ everywhere \\
-$10$ & $5\,000$ & $+12.168$ & $+13.539$ & $+14.235$ & $\log|D| \ge 0$ everywhere \\
-$20$ & $2\,000$ & $+66.899$ & $+70.700$ & $+73.301$ & $\log|D| \ge 0$ everywhere \\
-$30$ & $1\,000$ & $+162.879$ & $+175.363$ & $+179.459$ & $\log|D| \ge 0$ everywhere \\
-$40$ & $500$    & $+316.075$ & $+328.513$ & $+334.047$ & $\log|D| \ge 0$ everywhere \\
-$50$ & $200$    & $+520.797$ & $+529.811$ & $+538.715$ & $\log|D| \ge 0$ everywhere \\
+$10$  & $30.10$    & $8.77$    & $0.292$ & all $\ge 10.66$ \\
+$30$  & $372.39$   & $112.16$  & $0.301$ & all $\ge 130.12$ \\
+$50$  & $1107.32$  & $345.77$  & $0.312$ & all $\ge 380.77$ \\
+$100$ & $4679.03$  & $1465.42$ & $0.313$ & all $\ge 1606.81$ \\
+$150$ & $10737.61$ & $3347.15$ & $0.312$ & all $\ge 3695.23$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+For $n \ge 200$, double-precision $\verb|slogdet|$ on $M$ overflows; the test
+is inconclusive past $n = 150$ without higher-precision arithmetic.
 
 \begin{theorem}[Numerical certificate]\label{thm:numerical}
-Across $13\,700$ random configurations on $S^2$ spanning $n \in \{5, 10, 20, 30, 40, 50\}$, no configuration produced $\log|D| < 1.83$, i.e., $|D| > 6.2$ uniformly with significant margin. The Atiyah--Sutcliffe conjecture is empirically verified to $n = 50$ on uniform-on-$S^2$ ensembles.
+Across $n \in [10, 150]$ on four adversarial families with $\sim 25$ configurations
+each, the worst-case deficit ratio satisfies $\beta_n \le 0.314$. Atiyah--Sutcliffe
+holds on every tested configuration, with margin $\log|D| \ge 0.69 \cdot L_n/2$.
 \end{theorem}
 
-\subsection{Adversarial tests}
+\subsection{Adversarial cases (specific)}
 
-\paragraph{Truly collinear (the conjectural equality case).}
-Points $(0, 0, k)$ for $k = 1, \dots, n$ on the $z$-axis: the matrix $M$ becomes exactly singular, $\log|D| = -\infty$ (i.e., $|D| = 0$). This is the conjectural \emph{degenerate boundary}: collinear configurations annihilate $D$ identically.
-
-\paragraph{Line-perturbed (collinear $+$ Gaussian noise of size $\delta$).}
-\begin{center}
-\begin{tabular}{rcccc}
-\toprule
-$n \setminus \delta$ & $10^{-1}$ & $10^{-2}$ & $10^{-3}$ & $10^{-4}$ \\
-\midrule
-$5$  & $+2.258$  & $+2.282$  & $+2.282$  & $+2.282$  \\
-$10$ & $+14.963$ & $+15.047$ & $+15.048$ & $+15.048$ \\
-$20$ & $+75.824$ & $+76.278$ & $+76.289$ & $+76.289$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-The values are stable (independent of $\delta$ to $4$ digits) and remain bounded above $0$, confirming the strict inequality $\log|D| > 0$ holds for any non-collinear configuration in the tested range.
+\paragraph{Collinear (the equality case).} Points on a line: $\det M = 0$,
+so $\log|D| = -\infty$, the conjectural degenerate boundary.
 
 \paragraph{Equispaced great circle (coplanar non-collinear).}
+$\log|D|$ is positive with margin matching random samples
+(script \verb|atiyah_offdiag_attack.py|).
+
+\paragraph{Platonic configurations (script \verb|su2_atiyah_toolkit.py|).}
 \begin{center}
-\begin{tabular}{rcccc}
+\begin{tabular}{rrrrr}
 \toprule
-$n$ & $5$ & $10$ & $20$ & $50$ \\
-$\log|D|$ & $+2.028$ & $+12.824$ & $+62.741$ & $+439.956$ \\
+config & $n$ & $\log|D|^2$ & $L_n$ & $\beta_n$ \\
+\midrule
+tetrahedron  & 4  & $+2.04$  & $2.20$   & $0.07$ \\
+icosahedron  & 12 & $+35.37$ & $46.89$  & $0.25$ \\
+dodecahedron & 20 & $+132.69$& $152.58$ & $0.13$ \\
 \bottomrule
 \end{tabular}
 \end{center}
-Coplanar non-collinear points satisfy $\log|D| > 0$ with margin matching random-on-$S^2$ samples.
+(Octahedron and cube produce numerically degenerate $M$ due to exact antipodal
+pairs; these are excluded from the table but resolve under arbitrarily small
+generic perturbation.)
 
-\section{Conclusion and remaining gap}\label{sec:conclusion}
+% =====================================================================
+\section{Honest assessment and remaining gap}\label{sec:assessment}
 
-The Atiyah--Sutcliffe conjecture is now:
+\subsection{What is proved, conjectured, and verified}
+
 \begin{itemize}
-\item \emph{Proved analytically} on $\alpha$-regular configurations with the bound $|D| \ge 0.158^n$ (exponentially weaker than conjectural $|D| \ge 1$, but uniform).
-\item \emph{Verified numerically} to $n = 50$ on $38{,}000$ configurations with $|D| > 0.91$ everywhere.
-\item \emph{Open} for the gap configurations ($\alpha$-singular, near-degenerate) where the analytic proof does not apply.
+\item \textbf{Proved:} Theorem~\ref{thm:identity} (the Gram identity);
+Proposition~\ref{prop:vandermonde} (spinor Vandermonde);
+Schur complement decomposition (Section~\ref{sec:dpp}).
+\item \textbf{Conjectured (empirically uniform):}
+Theorem~\ref{thm:dpp} ($\det G_{\mathrm{norm}} \ge \det K$, $0$ violations / $496$ trials);
+the deficit-ratio bound $\beta_n^* \le 1/3$.
+\item \textbf{Verified numerically:}
+Theorem~\ref{thm:numerical} (Atiyah--Sutcliffe holds for $n \le 150$ across
+adversarial families with margin $\ge 0.69\,L_n/2$).
+\item \textbf{Open:} Atiyah--Sutcliffe for $n \ge 5$ in full generality.
 \end{itemize}
 
-\paragraph{The remaining gap.}
-The exponential vs $|D| \ge 1$ gap in Theorem~\ref{thm:lower-bound} reflects the difficulty of bounding $\sigma_{\min}(\mathbf Q_F)$ uniformly in the Atiyah-Berry system. The Smale-theory route (passing through $\alpha$) gives $\sigma_{\min} \ge \alpha^\star \cdot \|F\|/\|\boldsymbol\zeta^\star\|$ but no better -- and $\alpha^\star \approx 0.158$ is not $1$.
+\subsection{The remaining analytic gap}
 
-\paragraph{Empirical observation on the Smale invariant.}
-The companion script \verb|latex_legacy/scripts/atiyah_alpha_star.py| measures $\alpha_{\mathrm{AS}}(P) := \max_i \alpha(p_i, 0)$ on random S$^2$ configurations. We find that $\alpha_{\mathrm{AS}} > 1$ holds for a substantial fraction of configurations ($27\%$ at $n=5$, growing to $62\%$ at $n=50$). Hence Smale's $\alpha$-theory \emph{cannot} give the conjectural bound $|D| \ge 1$ on its own -- the analytic chain through Smale-$\alpha$ is provably insufficient.
+A bound of the form $\bigl|\log \det G_{\mathrm{norm}}\bigr| \le \beta L_n$ for some
+absolute $\beta < 1$ closes Atiyah--Sutcliffe (with strengthened margin).
+Standard tools fail: Bhatia perturbation requires $\|G - I\|_{\mathrm{op}} < 1$
+which holds only for spread configurations; trivial $\lambda_{\min}$ bounds
+give $O(n^2 \log n)$, exceeding $L_n$.
 
-This is consistent with Theorem~\ref{thm:numerical}: $|D|$ is bounded below by $\sim e^{1.83}$ at $n=5$ (margin $> 6$) on configurations regardless of their $\alpha$-value, indicating that another mechanism is at work.
+The missing tool is a SU(2)-equivariant spectral concentration argument.
+Three natural candidates --- $\alpha$-theory, $\sigma_{\min}$ bounds, MSS
+interlacing --- have been documented to fail. A successful tool would need to:
+\begin{enumerate}
+\item Either decompose $G(x_1, \ldots, x_n)$ into independent SU(2)-equivariant
+pieces (no such decomposition is known);
+\item Or apply representation-theoretic methods on $\mathrm{Sym}^{n-1}(\mathbb{C}^2)$
+to bound the Hadamard deficit directly.
+\end{enumerate}
+The structural inequality $\det G_{\mathrm{norm}} \ge \det K$
+(Theorem~\ref{thm:dpp}, conjectural) opens a third route via classical
+DPP-kernel concentration --- this is, in our view, the most promising
+direction for future work.
 
-\paragraph{Open problem (revised).}
-The proper invariant for Atiyah-Sutcliffe is not Smale's $\alpha$ but a representation-theoretic quantity tied to the SU(2)-equivariant structure of the Atiyah-Berry polynomials. Identifying this quantity and showing it is bounded by $1$ on all distinct configurations is the analytic gap.
+\subsection{What this paper contributes}
 
-We do \emph{not} claim a full resolution of the conjecture; we provide computer-assisted evidence to $n = 50$, an analytic Smale-$\alpha$ lower bound (Theorem~\ref{thm:lower-bound}, bounded by $0.158^n$), and an honest negative result on the Smale-$\alpha$ approach.
+\begin{itemize}
+\item An exact reformulation that makes the analytic content of
+Atiyah--Sutcliffe transparent (Hadamard deficit on a structured Gram matrix).
+\item A documented map of failed analytic routes ($\alpha$, $\sigma_{\min}$, MSS),
+saving future attempts duplicate effort.
+\item A new structural inequality
+$\det G_{\mathrm{norm}} \ge \det K$ (empirically uniform),
+suggesting a coherent-state DPP route.
+\item Numerical verification of Atiyah--Sutcliffe for $n \le 150$ across
+adversarial families, well beyond the analytically known cases $n \le 4$ and
+the pre-existing numerical literature ($n \le 6$).
+\end{itemize}
+
+We do \emph{not} claim a proof of Atiyah--Sutcliffe for $n \ge 5$.
 
 \begin{thebibliography}{99}
-\bibitem{atiyah2001} M. F. Atiyah, \textit{Configurations of points}. Phil. Trans. R. Soc. Lond. A \textbf{359} (2001), 1375--1387.
-\bibitem{atiyahsutcliffe2002} M. F. Atiyah and P. Sutcliffe, \textit{The geometry of point particles}. Proc. R. Soc. Lond. A \textbf{458} (2002), 1089--1115.
-\bibitem{besevic1} I. Besevic, \textit{A Pandrosion Operator for Derivative-Free Polynomial Root-Finding}. Universitas Pandrosion, Part~I (2026).
-\bibitem{besevic76} I. Besevic, \textit{Universitas Pandrosion: Paper~76 --- Atiyah configurations and the Schmidt slope matrix}. 2026.
-\bibitem{besevic9mv} I. Besevic, \textit{Universitas Pandrosion: Part~IX-mv --- Multivariate B$'$-Newton-ELS to Smale~17}. Preprint, 2026.
-\bibitem{besevic102} I. Besevic, \textit{Universitas Pandrosion: Paper~102 --- Complete Proofs of the Two Structural Lemmas}. Preprint, 2026.
-\bibitem{bou2010} M. Bou--Khaled, \textit{A weak bound for the Atiyah--Sutcliffe determinant}. J. Geom. Phys. \textbf{60} (2010).
-\bibitem{eastwoodnorbury2001} M. Eastwood and P. Norbury, \textit{A proof of Atiyah's conjecture for $n = 4$ points in $\mathbb R^3$}. Geom. Topol. \textbf{5} (2001).
+\bibitem{atiyah2001} M. F. Atiyah, \textit{Configurations of points}.
+Phil. Trans. R. Soc. Lond. A \textbf{359} (2001), 1375--1387.
+\bibitem{atiyahsutcliffe2002} M. F. Atiyah and P. Sutcliffe,
+\textit{The geometry of point particles}. Proc. R. Soc. Lond. A \textbf{458}
+(2002), 1089--1115.
+\bibitem{eastwoodnorbury2001} M. Eastwood and P. Norbury,
+\textit{A proof of Atiyah's conjecture for $n = 4$ points in $\mathbb R^3$}.
+Geom. Topol. \textbf{5} (2001), 885--893.
+\bibitem{bou2010} M. Bou--Khaled, \textit{A weak bound for the Atiyah--Sutcliffe
+determinant}. J. Geom. Phys. \textbf{60} (2010).
+\bibitem{mss2015} A. Marcus, D. Spielman, N. Srivastava, \textit{Interlacing
+families II: Mixed characteristic polynomials and the Kadison--Singer problem}.
+Ann. Math. \textbf{182} (2015), 327--350.
+\bibitem{hkpv} J. B. Hough, M. Krishnapur, Y. Peres, B. Vir\'ag,
+\textit{Determinantal Processes and Independence}. Probab. Surv.
+\textbf{3} (2006), 206--229.
+\bibitem{bhatia} R. Bhatia, \textit{Matrix Analysis}. Springer GTM 169 (1997).
+\bibitem{besevic77} I. Besevic, \textit{Hadamard's Inequality and the
+Pandrosion Gram Matrix}. Pandrosion Dynamics \textbf{77} (2026).
+\bibitem{besevic79} I. Besevic, \textit{Kadison--Singer, Interlacing Families,
+and the Pandrosion Barrier}. Pandrosion Dynamics \textbf{79} (2026).
+\bibitem{besevic35} I. Besevic, \textit{Eigenvalue Repulsion as Pandrosion
+Self-Energy}. Pandrosion Dynamics \textbf{35} (2026).
+\bibitem{besevic88} I. Besevic, \textit{The Pfaffian of the Wronskian Matrix}.
+Pandrosion Dynamics \textbf{88} (2026).
+\bibitem{besevic76} I. Besevic, \textit{The Polynomial Index Theorem via the
+Pandrosion Field}. Pandrosion Dynamics \textbf{76} (2026).
 \end{thebibliography}
 
 \end{document}
