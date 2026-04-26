@@ -1,0 +1,259 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\title{Universitas Pandrosion: Paper~109 \\
+The de Bruijn--Newman Constant via Pandrosion--P\'olya--Schur \\
+\large A Pandrosion reformulation of the Newman conjecture
+$\Lambda \le 0$, with honest scope limitations}
+\author{I. Besevic}
+\date{April 2026}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{Definition}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The de Bruijn--Newman constant $\Lambda$ is defined via the heat-flow deformation
+$H_t(z) := \frac{1}{8} \int_0^\infty \Phi(u) \cos(zu)\, e^{tu^2}\, du$ where
+$\Phi(u) = \sum_{n \ge 1} (2\pi^2 n^4 e^{9u} - 3\pi n^2 e^{5u}) e^{-\pi n^2 e^{4u}}$.
+$H_0$ corresponds (up to a substitution) to the Riemann $\xi$-function. The
+Riemann hypothesis is equivalent to $H_0$ having only real zeros.
+
+\textbf{Newman's conjecture} (1976): $\Lambda \le 0$, i.e., $H_t$ has only real zeros
+for all $t \le 0$. This is implied by RH but is genuinely weaker.
+
+\textbf{Tao--Rodgers theorem} (2018): $\Lambda \ge 0$.
+
+\textbf{Combined: $\Lambda = 0$ iff RH holds at the boundary.} Newman conjectured
+$\Lambda = 0$, equivalent to RH being barely true.
+
+This paper offers a Pandrosion reformulation of the Newman conjecture via the
+Pandrosion-P\'olya--Schur framework (legacy paper~98) and the Pandrosion-Hadamard
+Gram matrix (legacy paper~77). The contribution is:
+
+\begin{enumerate}
+\item A reformulation: $\Lambda \le t_0$ iff the Pandrosion field $F_{H_{t_0}}$
+satisfies a P\'olya--Schur stability condition.
+\item Numerical exploration of $H_t$ for small $|t|$, illustrating the regime
+near $\Lambda$.
+\item An honest assessment: the Pandrosion machinery cannot close
+$\Lambda \le 0$ (or the equivalent RH); we identify the missing input as a
+\emph{Laguerre--P\'olya class membership} of $\xi(s)$, which is precisely
+what is open.
+\end{enumerate}
+
+\textbf{We do not prove the Riemann hypothesis} or any new bound on $\Lambda$.
+\end{abstract}
+
+\paragraph{Scope clarification.}
+This is a reformulation paper. It does not advance the numerical bound on
+$\Lambda$ (best known: $0 \le \Lambda < 0.22$), nor does it prove RH or the
+Newman conjecture. It maps a sub-problem to the Pandrosion language.
+
+\tableofcontents
+
+\section{Background}\label{sec:background}
+
+\subsection{The Riemann $\xi$ and $H_0$}
+The Riemann $\xi$-function is
+\[
+\xi(s) = \tfrac{1}{2} s(s-1) \pi^{-s/2} \Gamma(s/2)\, \zeta(s).
+\]
+$\xi$ is entire, satisfies $\xi(s) = \xi(1-s)$, and the Riemann hypothesis is
+equivalent to all zeros of $\xi$ lying on the critical line $\Re(s) = 1/2$, i.e.,
+$\xi(\tfrac{1}{2} + iz)$ has only real zeros in $z$.
+
+\subsection{Newman's $H_t$ and the de Bruijn--Newman constant}
+Define $\Phi(u)$ as in the abstract. The function $H_t(z) := \frac{1}{8}
+\int_0^\infty \Phi(u) \cos(zu)\, e^{tu^2}\, du$ relates to $\xi$ at $t = 0$ via
+$H_0(z) \propto \xi(\tfrac{1}{2} + iz)$.
+
+The \emph{de Bruijn--Newman constant} $\Lambda$ is the unique value such that:
+\begin{itemize}
+\item For $t \ge \Lambda$, $H_t$ has only real zeros.
+\item For $t < \Lambda$, $H_t$ has at least one complex (non-real) zero.
+\end{itemize}
+
+\paragraph{Status.}
+\begin{itemize}
+\item Newman (1976): conjectured $\Lambda \le 0$.
+\item de Bruijn (1950s): $\Lambda \le 1/2$.
+\item Csordas--Smith--Varga (1994): $\Lambda > -50$.
+\item Many subsequent improvements; current best: $0 \le \Lambda < 0.22$
+(Polymath15, 2018, building on Tao--Rodgers).
+\item Tao--Rodgers (2018): $\Lambda \ge 0$.
+\item Open: prove $\Lambda \le 0$ (equivalent to RH at the boundary).
+\end{itemize}
+
+\section{P\'olya--Schur framework}\label{sec:polya}
+
+The relevant operator-theoretic concept is the \emph{Laguerre--P\'olya class}
+$\mathcal{LP}$: entire functions of the form
+\[
+f(z) = c\, z^m\, e^{-az^2 + bz}\prod_{k}\left(1 - \frac{z}{\alpha_k}\right) e^{z/\alpha_k},
+\quad a \ge 0, \; \alpha_k \in \mathbb{R}, \; \sum 1/\alpha_k^2 < \infty.
+\]
+
+\begin{theorem}[P\'olya, classical]\label{thm:polya}
+$f \in \mathcal{LP}$ iff $f$ is a uniform limit on compacta of polynomials
+with only real zeros.
+\end{theorem}
+
+\paragraph{P\'olya--Schur criterion (paper~98 of legacy corpus).}
+A linear operator $T$ on polynomials preserves real-rootedness iff its action
+on the basis $\{(z+1)^n\}_n$ is real-rooted (P\'olya--Schur 1914). The
+Pandrosion-P\'olya--Schur tools of paper~98 give algorithmic checks for
+$\mathcal{LP}$-membership of polynomial truncations.
+
+\paragraph{Connection to $\Lambda$.}
+\begin{theorem}[P\'olya equivalence]\label{thm:polya-equiv}
+$\Lambda \le t_0$ iff $H_{t_0} \in \mathcal{LP}$.
+\end{theorem}
+
+\noindent So Newman's conjecture $\Lambda \le 0$ becomes:
+$H_0 = \xi(\tfrac{1}{2} + i\cdot)$ is in $\mathcal{LP}$, equivalent to RH.
+
+\section{Pandrosion-Hadamard reformulation}\label{sec:reform}
+
+\subsection{The Pandrosion field of polynomial truncations}
+
+For each $N$, let $H_t^{(N)}(z) := \sum_{|n| \le N} c_n(t) z^n$ be the
+Maclaurin truncation of $H_t$. Each $H_t^{(N)}$ is a polynomial; if its
+roots are real, then in the limit $N \to \infty$, $H_t \in \mathcal{LP}$
+(under regularity hypotheses).
+
+The Pandrosion field of $H_t^{(N)}$ is
+\[
+F_{H_t^{(N)}}(z) \;=\; \frac{(H_t^{(N)})'(z)}{H_t^{(N)}(z)} \;=\;
+\sum_{j} \frac{1}{z - \alpha_j^{(N)}(t)},
+\]
+where $\alpha_j^{(N)}(t)$ are the (complex) roots of $H_t^{(N)}$.
+
+\begin{proposition}[Pandrosion barrier for $\Lambda$]\label{prop:barrier}
+$\Lambda \le t_0$ iff for every $N$ sufficiently large, all roots
+$\alpha_j^{(N)}(t_0)$ are real, equivalently iff
+$\sum_j \mathrm{Im}(1/(z - \alpha_j^{(N)}(t_0))) > 0$ for $z \in \mathbb{R}$.
+\end{proposition}
+
+This is the Pandrosion-Hurwitz criterion (legacy paper~67) applied to
+the polynomial sequence $\{H_t^{(N)}\}$.
+
+\subsection{Numerical exploration}
+
+The companion script \texttt{three\_conjectures\_attack.py} (Section ``de Bruijn--Newman'')
+computes $H_t(z)$ via numerical quadrature of the integral
+$\frac{1}{8} \int_0^U \Phi(u) \cos(zu)\, e^{tu^2}\, du$ for $U = 4$ and a
+midpoint rule with $100$ subintervals. For each $t$, it counts sign-changes
+of $H_t(z)$ along $z \in [-20, 20]$ as a proxy for the number of real zeros.
+
+\begin{remark}[Limitations of the truncation]
+The cutoff $U = 4$ is far too small to resolve the genuine zeros of
+$H_t$ at high frequencies (where $\xi(\tfrac{1}{2} + iz)$ has zeros
+near $z \approx 14.13, 21.02, 25.01, \ldots$). A serious numerical
+investigation requires $U \to \infty$ via Riemann--Siegel-type
+asymptotics. The script reports only that $H_t$ varies smoothly in $t$
+for small $|t|$, with no observable transition near $t = 0$ in the
+truncated regime.
+\end{remark}
+
+\section{Why Pandrosion does not close $\Lambda \le 0$}\label{sec:why-not}
+
+\subsection{The structural obstacle}
+
+Pandrosion-P\'olya--Schur (paper~98) gives algorithmic checks for
+real-rootedness of \emph{specific} polynomials. To prove $\Lambda \le 0$
+(i.e., $H_0 \in \mathcal{LP}$), one would need:
+
+\begin{enumerate}
+\item Either show $H_0^{(N)}$ has only real zeros for every $N$
+(Hurwitz-Newton stability, paper~67) --- this is essentially RH.
+\item Or apply a stability-preserving operator that takes a known
+$\mathcal{LP}$ function to $H_0$ --- no such operator is known.
+\end{enumerate}
+
+The first route is RH itself. The second is the substance of the missing
+proof.
+
+\subsection{What Pandrosion does provide}
+
+The Pandrosion framework offers:
+
+\begin{itemize}
+\item \textbf{A unified operator language} via $F_{H_t} = H_t'/H_t$
+(paper~76 index theorem, paper~89 Perron--Frobenius, paper~67 stability).
+\item \textbf{Numerical positivity tests} via $\mathrm{Im}\, F_{H_t}(z) > 0$
+on $\mathbb{R}$ (paper~67 Schur stability).
+\item \textbf{Polynomial-truncation analysis} via the Pandrosion-Hadamard
+Gram matrix (paper~77): $\det G^{(H_t^{(N)})} = |\Delta(H_t^{(N)})|^2$
+gives a discriminant-style invariant.
+\end{itemize}
+
+None of these translate the analytic difficulty of RH into a tractable
+Pandrosion question.
+
+\section{Honest conclusion}\label{sec:conclusion}
+
+\begin{itemize}
+\item \textbf{Established (this paper):} a Pandrosion-P\'olya--Schur
+reformulation of $\Lambda \le t_0$ as a stability condition on
+the Pandrosion field $F_{H_t^{(N)}}$.
+
+\item \textbf{Established (paper~98):} Pandrosion-P\'olya--Schur tools for
+polynomial real-rootedness preservers.
+
+\item \textbf{Empirically explored:} the numerical behavior of $H_t$ for
+small $|t|$ (severely truncated; no new bound on $\Lambda$).
+
+\item \textbf{Not established:} the Newman conjecture $\Lambda \le 0$,
+the Riemann hypothesis, or any improvement on the current best bound
+$0 \le \Lambda < 0.22$.
+\end{itemize}
+
+\paragraph{Open problem (unchanged).}
+The Newman conjecture $\Lambda \le 0$ remains open. The Pandrosion framework
+maps it to a P\'olya--Schur stability statement on
+$\xi(\tfrac{1}{2} + i\cdot)$, but does not provide tools to prove it. This is
+consistent with the broader picture: RH-adjacent statements resist polynomial
+methods because $\xi$ is genuinely transcendental.
+
+\paragraph{What would Pandrosion contribute, if anything?}
+A specific scenario where Pandrosion machinery could matter: if a
+stability-preserving operator $T \in \mathcal{T}_{\mathrm{Polya--Schur}}$
+applied to a known $\mathcal{LP}$ function (e.g., $\cosh$, $\sin$) produced
+$H_0$, then $H_0 \in \mathcal{LP}$ (so $\Lambda \le 0$, hence RH).
+No such $T$ has been identified, in this paper or elsewhere.
+
+\begin{thebibliography}{99}
+\bibitem{newman1976} C. M. Newman, \textit{Fourier transforms with only real zeros}.
+Proc. Amer. Math. Soc. \textbf{61} (1976), 245--251.
+\bibitem{debruijn1950} N. G. de Bruijn, \textit{The roots of trigonometric integrals}.
+Duke Math. J. \textbf{17} (1950), 197--226.
+\bibitem{taorodgers2018} B. Rodgers, T. Tao, \textit{The de Bruijn--Newman constant
+is non-negative}. Forum Math. Pi \textbf{8} (2020), e6.
+\bibitem{polymath15} D. H. J. Polymath, \textit{Effective approximation of heat
+flow evolution of the Riemann $\xi$ function}. arXiv:1809.10381 (2018).
+\bibitem{polya1914} G. P\'olya, I. Schur, \textit{\"Uber zwei Arten von
+Faktorenfolgen in der Theorie der algebraischen Gleichungen}.
+J. Reine Angew. Math. \textbf{144} (1914), 89--113.
+\bibitem{besevic77} I. Besevic, \textit{Hadamard's Inequality and the
+Pandrosion Gram Matrix}. Pandrosion Dynamics \textbf{77} (2026).
+\bibitem{besevic98} I. Besevic, \textit{P\'olya--Schur and Pandrosion
+Stability Preservers}. Pandrosion Dynamics \textbf{98} (2026).
+\bibitem{besevic67} I. Besevic, \textit{Stable and Hyperbolic Polynomials:
+A Unified Pandrosion Classification}. Pandrosion Dynamics \textbf{67} (2026).
+\bibitem{besevic76} I. Besevic, \textit{The Polynomial Index Theorem via
+the Pandrosion Field}. Pandrosion Dynamics \textbf{76} (2026).
+\end{thebibliography}
+
+\end{document}

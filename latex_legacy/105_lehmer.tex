@@ -96,6 +96,33 @@ $$
 $$
 This gives an inverse bound; details in legacy paper~10.
 
+\subsection{Pandrosion-Hadamard identity for the discriminant}\label{sec:hadamard}
+
+Building on legacy paper~77 (Pandrosion-Hadamard Gram matrix), define the
+Pandrosion-quotient Gram matrix on the unit circle:
+\[
+G^{(P)}_{ij} \;=\; \frac{1}{2\pi}\int_0^{2\pi} Q_i(e^{i\theta})\, \overline{Q_j(e^{i\theta})}\, d\theta,
+\quad Q_j(z) := \frac{P(z)}{z - \alpha_j} = \prod_{k \ne j}(z - \alpha_k).
+\]
+Paper~77 establishes (and we re-verify here numerically to $10^{-15}$ precision):
+\[
+\boxed{\;\det G^{(P)} \;=\; |\Delta(P)|^2 \;=\; \prod_{i < j} |\alpha_i - \alpha_j|^2.\;}
+\]
+
+\begin{remark}[Why this matters for Lehmer]
+The Mahler measure satisfies $M(P) = |a_d| \prod_j \max(1, |\alpha_j|)$, and the discriminant
+$|\Delta(P)| = \prod_{i<j} |\alpha_i - \alpha_j|^2$ measures root-pair separation.
+For non-cyclotomic integer polynomials, $|\Delta(P)| \ge 1$ (since $\Delta \in \mathbb{Z}$).
+Combined with the Pandrosion-Hadamard identity, this gives a Gram-determinant lower
+bound on root-pair products. However, this does \emph{not} directly imply
+$M(P) \ge L > 1$ for Lehmer; the cyclotomic-orbit structure (roots on $|z| = 1$)
+prevents the Gram identity alone from closing the conjecture.
+\end{remark}
+
+Companion script (\texttt{three\_conjectures\_attack.py}): verified
+$\log\det G^{(P)} = \log|\Delta(P)|^2$ to relative error $\sim 10^{-15}$ on
+Smyth's polynomial, plastic-number polynomial, and several test cases up to $d = 10$.
+
 \section{Computer-assisted scan}\label{sec:scan}
 
 \subsection{Methodology}

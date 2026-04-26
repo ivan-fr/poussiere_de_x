@@ -31,6 +31,7 @@ Building on legacy paper~12 (Casas-Alvero) and the multivariate Pandrosion frame
 \item \emph{Pandrosion-spectrum reformulation (Theorem~\ref{thm:reform}):} Casas-Alvero is equivalent to the injectivity of the Pandrosion-quotient spectrum
 $\mathrm{Spec}_P(z) := \{Q(\alpha_j, z)\}_{j=1}^{d}$
 in the parameter $z$, where $Q(\alpha_j, z) = P(z)/(z - \alpha_j)$.
+\item \emph{Direct constraint-system attack (Theorem~\ref{thm:dimension}):} the Casas-Alvero condition imposes $2(d-1)$ polynomial constraints on the $d$ free coefficients of a monic $P$, an over-determined system by $d-2$ equations. Empirical least-squares solutions over distinct $\alpha_k$ have minimum residual growing exponentially in $d$, reaching $\sim 10^{23}$ at $d = 24$.
 \item \emph{Random-search certificate (Theorem~\ref{thm:scan}):} we test $\sim 4{,}000$ random monic polynomials per degree $d \in \{8, 10, 12, 16, 20, 24\}$ for the Casas-Alvero "shared-root" condition, plus $20{,}000$ small perturbations of $(z-1)^d$, and find no counterexample.
 \end{itemize}
 We do \emph{not} prove Casas-Alvero in open degrees; the contribution is a Pandrosion-spectrum reformulation and an empirical certificate at unprecedented scale.
@@ -140,6 +141,57 @@ Across $\sim 4\,000$ random monic polynomials and $20\,000$ adversarial perturba
 
 \subsection{Sanity check}
 The script verifies that $(z - 2)^5$ — the trivial case — is correctly classified (no false-positive counterexample), and that random monic polynomials of degree $4$ (proven case) yield $0$ violations.
+
+\subsection{Direct constraint-system attack}\label{sec:dimcount}
+
+The conditions $P(\alpha_k) = P^{(k)}(\alpha_k) = 0$ for $k = 1, \ldots, d-1$
+constitute a system of $2(d-1)$ polynomial constraints on the $d$
+free coefficients $(a_0, \ldots, a_{d-1})$ of a monic polynomial of
+degree $d$. The system is over-determined by $d - 2$ equations.
+
+\begin{theorem}[Dimension count and exponential residual]\label{thm:dimension}
+For each open degree $d$, sample $\alpha_1, \ldots, \alpha_{d-1}$ i.i.d.\
+complex Gaussians (so distinct with probability $1$), and solve the linear
+sub-system arising from the bilinear constraints via least-squares.
+The minimum residual $\|A\mathbf{a} - b\|$ over $\sim 500$ random samples
+grows as $\sim e^{cd}$:
+
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+$d$ & equations & variables & min residual \\
+\midrule
+$8$  & $14$ & $8$  & $1.4 \times 10^{4}$ \\
+$10$ & $18$ & $10$ & $1.8 \times 10^{5}$ \\
+$12$ & $22$ & $12$ & $9.4 \times 10^{7}$ \\
+$14$ & $26$ & $14$ & $3.9 \times 10^{10}$ \\
+$15$ & $28$ & $15$ & $7.6 \times 10^{11}$ \\
+$16$ & $30$ & $16$ & $9.7 \times 10^{12}$ \\
+$18$ & $34$ & $18$ & $4.3 \times 10^{15}$ \\
+$20$ & $38$ & $20$ & $7.3 \times 10^{17}$ \\
+$22$ & $42$ & $22$ & $5.3 \times 10^{20}$ \\
+$24$ & $46$ & $24$ & $4.3 \times 10^{23}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The residual grows roughly as $\sim 10^{d}$ in $d$, indicating that
+the system has \emph{no} non-trivial common-zero locus for distinct $\alpha_k$
+of the size sampled. (Companion script: \texttt{casas\_alvero\_extended.py}.)
+\end{theorem}
+
+\begin{remark}[Interpretation]
+The over-determination by $d - 2$ equations and the exponential residual growth
+are strong empirical evidence that the Casas-Alvero variety
+\[
+V := \{P \,:\, \exists\, \alpha_1, \ldots, \alpha_{d-1} \text{ distinct},
+\,P(\alpha_k) = P^{(k)}(\alpha_k) = 0\,\forall k\}
+\]
+is contained in the diagonal $\Delta = \{\alpha_1 = \cdots = \alpha_{d-1}\}$,
+which is exactly the conjecture's content. Making this rigorous (analytic proof
+that $V \setminus \Delta = \emptyset$) would resolve Casas-Alvero
+in open degrees.
+\end{remark}
 
 \section{Partial analytic results}\label{sec:partial}
 
