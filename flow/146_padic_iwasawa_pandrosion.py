@@ -168,37 +168,44 @@ def main():
             print(f"  {p:>3}  {n:>3}  {short:>40}  {norm:>10.4f}")
 
     # ---------------------------------------------------------------------
-    # [3] Kummer congruences:
-    #     n ≡ m (mod p^k (p - 1))  =>  ζ_p(1 - n) ≡ ζ_p(1 - m) (mod p^{k+1})
+    # [3] Kummer congruences (KL theorem):
+    #     If  n ≡ m (mod (p - 1) p^a),  n, m >= 1,  AND  n, m ≢ 0 (mod p - 1),
+    #     then  (1 - p^{n-1}) B_n / n ≡ (1 - p^{m-1}) B_m / m  (mod p^{a+1}).
+    #     Equivalently:  v_p(ζ_p(1 - n) - ζ_p(1 - m))  ≥  a + 1.
     # ---------------------------------------------------------------------
     print("\n[3] Kummer congruences for ζ_p(1 - n)")
-    print("    Pick p, n, m with n ≡ m (mod p - 1); check v_p(ζ_p(1-n) - ζ_p(1-m)).")
-    print(f"  {'p':>3} {'n':>3} {'m':>3} {'(p-1) | (n-m)?':>16}"
-          f" {'v_p(diff)':>12} {'expected ≥':>12}")
+    print("    Hypothesis: n ≡ m (mod p - 1) AND n, m ≢ 0 (mod p - 1).")
+    print(f"  {'p':>3} {'n':>3} {'m':>3} {'hypothesis ok?':>16}"
+          f" {'v_p(diff)':>12} {'expected ≥':>12} {'ok?':>5}")
     pairs = [
-        (5, 4, 8),    # p - 1 = 4, so n ≡ m mod 4 ✓
-        (5, 6, 10),   # ✓
-        (7, 4, 10),   # p - 1 = 6, 4 ≡ 10 mod 6 ✓
-        (7, 4, 16),   # ≡ mod 6, AND mod 36 ✓
-        (11, 4, 14),  # p - 1 = 10, ≡ mod 10 ✓
-        (13, 4, 16),  # p - 1 = 12, ≡ mod 12 ✓
+        (5, 4, 8),    # p-1 = 4; n=4 ≡ 0 mod 4 → hypothesis FAILS
+        (5, 6, 10),   # n=6 mod 4 = 2 ≠ 0 → hypothesis OK
+        (5, 6, 26),   # n-m = 20 = 4 · 5; hypothesis OK, expected ≥ 2
+        (7, 4, 10),   # p-1 = 6; n=4 mod 6 = 4 ≠ 0 → OK
+        (7, 4, 16),   # n-m = 12 = 6 · 2; expected ≥ 1
+        (11, 4, 14),  # p-1 = 10; n=4 mod 10 = 4 ≠ 0 → OK
+        (13, 4, 16),  # p-1 = 12; n=4 mod 12 = 4 ≠ 0 → OK
+        (13, 4, 28),  # n-m = 24 = 12·2; expected ≥ 1
     ]
     for p, n, m in pairs:
         zn = zeta_p_value(n, p, B)
         zm = zeta_p_value(m, p, B)
         diff = zn - zm
         v = p_adic_valuation(diff, p) if diff != 0 else float('inf')
-        # k such that (n - m) = p^k (p - 1) * t with t coprime to p
         delta = abs(n - m)
-        k = 0
+        a_exp = 0
         if delta > 0 and delta % (p - 1) == 0:
             q = delta // (p - 1)
             while q % p == 0 and q > 0:
                 q //= p
-                k += 1
-        expected = k + 1
-        ok = (n - m) % (p - 1) == 0
-        print(f"  {p:>3} {n:>3} {m:>3} {str(ok):>16} {str(v):>12} {expected:>12}")
+                a_exp += 1
+        expected = a_exp + 1
+        cong_ok = ((n - m) % (p - 1) == 0)
+        hyp_nonzero = (n % (p - 1) != 0) and (m % (p - 1) != 0)
+        hypothesis = cong_ok and hyp_nonzero
+        check = "n/a" if not hypothesis else (str(v >= expected))
+        print(f"  {p:>3} {n:>3} {m:>3} {str(hypothesis):>16} "
+              f"{str(v):>12} {expected:>12} {check:>5}")
 
     # ---------------------------------------------------------------------
     # [4] p-adic Pandrosion field at integer points
