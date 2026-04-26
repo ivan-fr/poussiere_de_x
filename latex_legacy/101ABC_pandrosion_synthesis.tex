@@ -46,6 +46,13 @@ This is a synthesis paper. It does not introduce new techniques. Section~\ref{se
 
 \section{Setup and the Part-VIII baseline}\label{sec:setup}
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/101abc_journey.png}
+\caption{The algorithmic journey on KS over $d \in [16, 512]$: from Part~VIII's $O(d^2 \log^2 d)$ (red dashed, conditional on three conjectures) to the trilogy's $O(d^2 \log d)$ (orange, conditional on one lemma) to ELS's $O(d \log d)$ (green, conditional on two lemmas), within $\log d$ of the trivial lower bound $\Omega(d)$ (black dotted).}
+\label{fig:journey}
+\end{figure}
+
 The Pandrosion-$T_2$/$K{=}1$ scheme of Part~VIII operates on a polynomial $P \in \mathbb{C}[z]$ of degree $d$. Its total per-polynomial cost decomposes as
 \begin{equation}\label{eq:cost-decomp}
 \mathrm{cost}_{\text{total}}(P)
@@ -152,6 +159,20 @@ $256$ & $118.12$ & $2.97$ & $\mathbf{40\times}$ & $0.37$ \\
 \end{tabular}
 \end{center}
 The ratio $\mathbb{E}[N_{\text{pre}}^{\text{ELS}}]/\log_2 d$ is bounded by $1$ uniformly and decreasing -- consistent with $O(1)$.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/101abc_speedup.png}
+\caption{(a) Pre-basin epoch count on KS: original Armijo (red, $\sim d^{0.84}$ regression) vs Extended Line Search (green, effectively constant $\le 5$). (b) Speedup factor of ELS over original Armijo, growing monotonically from $3.4\times$ at $d{=}16$ to $40\times$ at $d{=}256$.}
+\label{fig:speedup}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/101abc_decomposition.png}
+\caption{(a) How the cost decomposes by factor across the three stages: Part-VIII baseline (all factors are $\Theta(d \log d)$ or $\Theta(d)$), trilogy 101bis/ter (multi-start and per-epoch reduced to $O(1)$), and ELS (epochs further reduced to $O(\log d)$). (b) Number of conjectures/lemmas required at each stage: $3 \to 1 \to 2$.}
+\label{fig:decomposition}
+\end{figure}
 
 \section{The closure theorem}\label{sec:closure}
 

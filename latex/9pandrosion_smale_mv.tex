@@ -122,6 +122,13 @@ The companion script \verb|latex_legacy/scripts/multivariate_KS.py| samples $12$
 \end{itemize}
 Configurations follow the Part~I Proposition~3.5 benchmark range, B\'ezout degree $D = d^n$ from $9$ to $1024$.
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/mv_scaling.png}
+\caption{Empirical scaling of $\mathbb{E}[N_{\mathrm{tot}}]$ on multivariate KS over nine orders of magnitude in $D$. (a) Log-scale $D$-axis; the red curve is the $\log\log D$ fit $3.67 + 2.31 \log_2 \log_2 D$. (b) Same data plotted against $\log_2 \log_2 D$ -- linear, confirming the predicted Smale quadratic-basin scaling.}
+\label{fig:mv-scaling}
+\end{figure}
+
 \subsection{Result table -- nine orders of magnitude in $D$}
 
 We extend the measurement up to $D \sim 10^6$ via the vectorised script \verb|latex_legacy/scripts/multivariate_KS_fast.py|. Number of monomials per system component is $\binom{d+n}{n}$; we cap at $50\,000$ to keep storage modest.
@@ -163,6 +170,20 @@ The log-log regression of $\mathbb{E}[N_{\text{tot}}]$ against B\'ezout degree g
 This is the $\log\log D$ scaling predicted by Smale's quadratic-convergence theorem (cf.\ paper~101-Proofs Theorem~5.1). The mean $N_{\text{tot}}$ varies between $7.07$ (at $D = 16$) and $16.00$ (at $D = 2.18 \cdot 10^9$) over a factor $10^8$ in $D$ -- a $2.3\times$ multiplicative range, exactly the $\log\log$ growth.
 
 The pre-basin epoch count is even better: $\mathbb{E}[N_{\text{pre}}^{\text{mv}}] \approx 5 \cdot D^{0.02}$ -- effectively constant.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/mv_wallclock.png}
+\caption{Wall-clock cost per system in vectorised Python, across $D \in [10^4, 4.3 \cdot 10^9]$. Even at $D = 4.3 \cdot 10^9$ ($(n,d) = (16, 4)$), the algorithm terminates in $0.22$\,s. Colour encodes $\mathbb{E}[N_{\mathrm{tot}}]$.}
+\label{fig:mv-wallclock}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/mv_convergence_heatmap.png}
+\caption{Heatmap of convergence success rate across the $(n, d)$ plane. All tested cells achieve $100\%$. Cell labels show the B\'ezout degree $D = d^n$. Red dashed contours mark $D = 10^3, 10^6, 10^9$.}
+\label{fig:mv-heatmap}
+\end{figure}
 
 \paragraph{Stress test at $D = 10^9$.} Five configurations with $D \in [10^9, 4.3 \cdot 10^9]$ all achieve $100\%$ convergence with $N_{\text{tot}} \le 19$ epochs maximum and $\mathbb{E}[N_{\text{tot}}] \in [14, 16]$. Total wall time per polynomial in vectorised Python: $0.12$--$1.53$\,s. The data confirms no breakdown of the $O(\log\log D)$ scaling at this scale.
 
@@ -223,6 +244,13 @@ $(6, 3)$ & $729$  & $27.0$ & $1.00$ & $1.0$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/mv_tau_diagnostic.png}
+\caption{Optimal-$\tau$ diagnostic: (a) univariate, where $\tau^\star \asymp \sqrt{d}$ (Lemma~3.1 of paper~101quater) closely tracks the theoretical $\sqrt{d}$; (b) multivariate, where $\tau^\star$ is sharply concentrated at $\approx 1$ regardless of $D$, far below the naive expectation $\sqrt{D}$. This is the surprise: the multivariate Newton step self-dimensions via the Jacobian inverse.}
+\label{fig:mv-tau}
+\end{figure}
 
 \paragraph{Surprise: $\tau^\star \approx 1$, not $\sqrt D$.}
 The observed $\tau^\star$ is sharply concentrated near $1$ across all $(n, d)$, independently of $D$. The mean $\tau^\star_0$ ranges from $0.70$ to $1.62$; the mode is $1.0$ in $7$ of $9$ configurations. \emph{The univariate undershooting-by-$\sqrt d$ phenomenon does not occur in the multivariate setting.}
