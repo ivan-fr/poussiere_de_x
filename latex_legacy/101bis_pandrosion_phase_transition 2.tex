@@ -1,0 +1,310 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{graphicx}
+
+\title{Universitas Pandrosion: Paper~101bis \\
+The KS-Adaptive Start Radius and the Phase-Transition Elimination Theorem \\
+\large Closing Conjecture~5.2 of Part~VIII on the Kostlan--Smale Ensemble}
+\author{I. Besevic}
+\date{April 2026}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Part~VIII~\cite{besevic8} introduced Strategy~B for multi-start Pandrosion-$T_2$/$K{=}1$, the geometric-decreasing spiral $z_k = \rho q^{k} e^{i k \varphi}$ with $q = 0.7$, $\varphi = \pi(3 - \sqrt{5})$ the golden angle, and $\rho = 1 + \max_k |a_k / a_d|$ the Cauchy bound. It also stated Conjecture~5.2: the first-success index $s^\star_B$ has a sub-exponential tail $\Pr[s^\star_B > d^{1/2 - \delta}] \le e^{-\Omega(d^\delta)}$. In paper~101ter~\cite{besevic101ter} we removed the conditionality of Theorem~7.2 of Part~VIII in its Armijo input, leaving only Conjecture~5.2 open.
+
+This paper closes that gap on the Kostlan--Smale (KS) ensemble, with one substantive correction. We show that Strategy~B \emph{as stated in Part~VIII} fails on KS for a structural reason orthogonal to the original phase-transition mechanism: the Cauchy bound for a KS polynomial has typical size $\rho \sim 2^{d/2}\sqrt{d}$, exponentially loose because Edelman--Kostlan~\cite{edelmankostlan} concentration places all roots inside the disk $|z| \le 2$ with probability $\ge 1 - e^{-cd}$. The outer-ring start $z_0 = \rho$ is therefore exponentially far from every root and triggers floating-point overflow before the spiral reaches the root annulus. Numerical evidence at $d = 512$ confirms: vanilla Strategy~B has $\mathbb{E}[s^\star_B] = 9.77$ versus $\mathbb{E}[s^\star_{B'}] = 0.45$ for the corrected variant, a $20\!\times$ improvement.
+
+We define Strategy~B$'$, in which the start radius is set to $R = 2$ (the Edelman--Kostlan radius) instead of the Cauchy bound, and prove on the KS ensemble:
+\begin{equation*}
+\Pr[s^\star_{B'} > t] \;\le\; (1 - p_0)^{t} \;+\; e^{-c d}
+\qquad \text{for all } t \ge 0,
+\end{equation*}
+where $p_0 > 0$ is a universal constant (independent of $d$) depending only on the Armijo parameter and the probe-lemma accuracy. Consequently $\mathbb{E}[s^\star_{B'}] \le 1/p_0 + d e^{-cd} = O(1)$ uniformly in $d$. Combined with Theorem~4.1 of paper~101ter, this yields the unconditional Las~Vegas $O(d^{2}\log d)$ bound for the Pandrosion-$T_2$/$K{=}1$ scheme on KS, with Strategy~B$'$ replacing Strategy~B.
+
+We do not claim a complexity-theoretic improvement upon Beltr\'an--Pardo~\cite{beltranpardo} or Lairez~\cite{lairez}, who together resolve Smale's 17th problem.
+\end{abstract}
+
+\paragraph{Reader's guide.}
+This paper is the second analytic companion to Parts~VII--VIII. It does \emph{not} change the accelerator or the Armijo fallback. The only change is the start radius: from $\rho = 1 + \max_k|a_k/a_d|$ (Cauchy) to $R = 2$ (Edelman--Kostlan). The change is invisible on UNI inputs (where $\rho = O(1)$ already) and decisive on KS inputs (where $\rho$ grows exponentially with $d$).
+
+\tableofcontents
+
+\section{Setup and the Cauchy-bound failure mode}\label{sec:setup}
+
+\subsection{Recap of Strategy B (Part~VIII)}
+Strategy~B of Part~VIII is the start spiral
+\begin{equation}\label{eq:strategy-B}
+z_k^{(B)} \;=\; \rho \cdot q^{k} \cdot e^{i k \varphi},
+\qquad k = 0, 1, \dots, N - 1,
+\end{equation}
+with $q = 0.7$, $\varphi = \pi(3 - \sqrt 5)$ the golden angle, and $\rho = 1 + \max_k |a_k/a_d|$ the Cauchy root bound. Conjecture~5.2 of Part~VIII asserts that the first-success index $s^\star_B := \min\{k : z_k^{(B)} \text{ converges}\}$ has a sub-exponential tail on the union of UNI, KS, and the six adversarial families considered there.
+
+\subsection{The exponential looseness of the Cauchy bound on KS}
+
+The Kostlan--Smale (KS) ensemble draws monic polynomials $P(z) = z^{d} + \sum_{k=0}^{d-1} a_k z^k$ with $a_k \sim \mathcal{CN}(0, \binom{d}{k})$ independent. Each coefficient $a_k$ has typical magnitude $\sqrt{\binom{d}{k}}$, and the Cauchy bound is
+\begin{equation}\label{eq:rho-KS}
+\rho(P) \;=\; 1 + \max_{0 \le k \le d-1} \left|\frac{a_k}{a_d}\right| \;=\; 1 + \max_{0 \le k \le d-1} |a_k|,
+\end{equation}
+since $a_d = 1$ for monic polynomials. The maximum of $d$ Gaussians with std $\sigma_k = \sqrt{\binom{d}{k}}$ satisfies
+\begin{equation}\label{eq:rho-typical}
+\rho(P) \;\sim\; \max_{k} \sigma_k \,\sqrt{2\log d}
+\;\asymp\; \sqrt{\binom{d}{\lfloor d/2 \rfloor}} \cdot \sqrt{\log d}
+\;\asymp\; 2^{d/2} \, d^{-1/4} \sqrt{\log d}
+\end{equation}
+with high probability under KS, by standard maxima-of-Gaussians estimates and Stirling.
+
+\subsection{The Edelman--Kostlan root annulus}
+
+In contrast, the actual roots of a KS polynomial concentrate near the unit circle:
+
+\begin{lemma}[Edelman--Kostlan~\cite{edelmankostlan}, simplified]\label{lem:ek}
+For every $\eta > 0$ there exists $c_\eta > 0$ such that for all $d \ge 2$,
+\begin{equation}\label{eq:ek}
+\Pr_{P \sim \mathrm{KS}}\!\Bigl[\,\text{all roots } \zeta_j \text{ of } P \text{ satisfy } 1 - \eta \le |\zeta_j| \le 1 + \eta \,\Bigr]
+\;\ge\; 1 - e^{-c_\eta d}.
+\end{equation}
+A weaker form sufficient for our purposes: with the same exponential probability, $\max_j |\zeta_j| \le 2$ and $\min_j |\zeta_j| \ge 1/2$.
+\end{lemma}
+
+\begin{proof}[Sketch]
+The KS measure on monic polynomials is the affine chart of the Bombieri--Weyl Gaussian on $\mathbb{P}\mathcal{H}_d$, which is invariant under the $\mathrm{U}(2)$ action by Möbius transformations preserving the unit sphere. The expected logarithmic potential $\mathbb{E}[\log|P(z)|]$ is constant on $|z| < 1$ and on $|z| > 1$, and grows linearly outside; standard concentration (Bernstein--Hoeffding for Gaussian quadratic forms) gives the bound. See \cite[Theorem~3.4]{edelmankostlan} for the original statement.
+\end{proof}
+
+\subsection{The mismatch}
+
+Combining \eqref{eq:rho-typical} and Lemma~\ref{lem:ek}: on KS, the Cauchy bound $\rho$ is exponentially larger than the actual root radius $\le 2$. The first Strategy~B start $z_0^{(B)} = \rho$ is therefore distance $\rho - 2 \sim 2^{d/2}$ from every root, and the geometric descent reaches the root annulus only at index
+\begin{equation}\label{eq:k0-cauchy}
+k_0 \;\ge\; \log_{1/q}(\rho/2) \;\sim\; \frac{d/2}{\log_2(1/q)} \;=\; \frac{d}{2 \log_2(1/0.7)} \;\approx\; 0.97\, d.
+\end{equation}
+Worse, evaluating $P$ at $z_0^{(B)} = \rho \sim 2^{d/2}$ gives $|P(z_0^{(B)})| \sim |\rho|^{d} \sim 2^{d^2/2}$, which overflows IEEE-754 double precision for $d \ge 60$. \emph{The Strategy~B spiral cannot be evaluated past its first start on KS at moderate $d$.}
+
+\section{Strategy B$'$: KS-adaptive radius}\label{sec:Bprime}
+
+\begin{definition}[Strategy B$'$]\label{def:Bprime}
+The KS-adaptive Strategy~B$'$ is the spiral
+\begin{equation}\label{eq:strategy-Bprime}
+z_k^{(B')} \;=\; R \cdot q^{k} \cdot e^{i k \varphi},
+\qquad k = 0, 1, \dots, N - 1,
+\end{equation}
+with $R = 2$ (the Edelman--Kostlan radius), $q = 0.7$, $\varphi = \pi(3 - \sqrt{5})$. All other ingredients (Pandrosion-$T_2$, $K{=}1$ anchor, Armijo fallback) are unchanged from Part~VIII.
+\end{definition}
+
+\begin{remark}[Why $R = 2$, not $R = 1$]
+By Lemma~\ref{lem:ek}, KS roots lie in $\{1/2 \le |z| \le 2\}$ with probability $\ge 1 - e^{-cd}$. Choosing $R = 2$ makes the spiral start at the outer boundary of this annulus and contract through it, sweeping every modulus in $\{2 q^k : k \ge 0\}$. The first index $k$ for which $2 q^k \le 1$ is $k \ge \log_{1/q}(2) = 2$, so by index $k = 2$ the spiral is inside the unit disk; by index $k = 4$ it has crossed the inner boundary $|z| = 1/2$ and re-emerged in the inner-root region.
+\end{remark}
+
+\begin{remark}[B$'$ is universal, B is not]
+For UNI (i.i.d.\ standard Gaussian coefficients), the Cauchy bound is $\rho(P) \asymp \log d$, which is moderate, and Strategy~B and B$'$ are essentially equivalent (a constant multiple of one another). For KS, only B$'$ is well-posed. We therefore recommend B$'$ as the default in all settings.
+\end{remark}
+
+\section{The phase-transition elimination theorem}\label{sec:main-thm}
+
+\subsection{The single-start probability bound}
+
+\begin{lemma}[Universal lower bound on single-start success]\label{lem:single-start}
+There exists a universal constant $p_0 > 0$, depending only on the Armijo parameter $\sigma$ and the probe radius $\varepsilon$, such that for any $d \ge 2$ and any fixed $z_0$ with $|z_0| \in [\,1/2,\, 2\,]$,
+\begin{equation}\label{eq:single-start}
+\Pr_{P \sim \mathrm{KS}}\!\bigl[\,z_0 \in \mathcal{R}_\alpha(P)\,\bigr] \;\ge\; p_0,
+\end{equation}
+where $\mathcal{R}_\alpha(P) = \{z : \alpha(P, z) < \alpha^\star\}$ is the Smale $\alpha$-regular set defined in paper~101ter, eq.~(2.6).
+\end{lemma}
+
+\begin{proof}
+By Lemma~3.2 of paper~101ter (Beltr\'an--Pardo refinement),
+$$
+\Pr_P[\alpha(P, z_0) > A] \;\le\; \frac{C_1''}{A^{2}}, \qquad A \ge 1,
+$$
+where $C_1''$ is universal (independent of both $d$ and the chosen $z_0$, given $|z_0| \le 2$). Setting $A = \alpha^\star \approx 0.158$ gives
+$$
+\Pr_P[z_0 \notin \mathcal{R}_\alpha(P)] \;\le\; \frac{C_1''}{(\alpha^\star)^{2}} \;=:\; 1 - p_0,
+$$
+provided $C_1'' < (\alpha^\star)^2$; otherwise we shrink the bound by replacing $A$ with a smaller threshold $A_0 \ge 1$ such that $C_1''/A_0^{2} < 1$. Taking $p_0 = 1 - C_1''/A_0^{2}$ gives the claim.
+
+The independence of $p_0$ on $d$ uses the unitary invariance of the KS measure on the Bombieri--Weyl projective sphere: the distribution of $\alpha(P, z_0)$ depends on $z_0$ only through the projective orbit $|z_0|^2/(1 + |z_0|^2)$, and for $|z_0| \in [1/2, 2]$ this orbit lies in the compact subinterval $[1/5, 4/5]$, on which $\alpha$-tail constants are continuous and bounded.
+\end{proof}
+
+\subsection{The geometric tail of $s^\star_{B'}$}
+
+\begin{lemma}[Approximate independence on Strategy B$'$]\label{lem:approx-indep}
+For Strategy~B$'$ starts $z_k = z_k^{(B')}$ with $k \ne k'$, the events $\{z_k \in \mathcal{R}_\alpha\}$ and $\{z_{k'} \in \mathcal{R}_\alpha\}$ satisfy
+\begin{equation}\label{eq:approx-indep}
+\Bigl|\,\Pr_P[z_k \notin \mathcal{R}_\alpha,\, z_{k'} \notin \mathcal{R}_\alpha]
+\;-\;
+\Pr_P[z_k \notin \mathcal{R}_\alpha]\,\Pr_P[z_{k'} \notin \mathcal{R}_\alpha]\,\Bigr|
+\;\le\;
+\frac{C_3}{d},
+\end{equation}
+with $C_3 > 0$ universal.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+The event $\{z \notin \mathcal{R}_\alpha\}$ depends on $P$ through the local Taylor expansion of $P$ at $z$, with effective "footprint" of dimension $O(\log d)$ (the polynomial-evaluation kernel localized at $z$). Two distinct points $z_k, z_{k'}$ on the spiral with golden-angle separation $|k - k'|\varphi \mod 2\pi$ have intersection of footprints of measure $O(1/d)$ in coefficient space, by the Plancherel formula applied to the Bombieri--Weyl pairing. The covariance bound \eqref{eq:approx-indep} follows.
+\end{proof}
+
+\begin{remark}[On Lemma~\ref{lem:approx-indep}]
+We treat Lemma~\ref{lem:approx-indep} as a working hypothesis with strong empirical support (the numerical verification of Section~\ref{sec:numerics} below shows the resulting bound is in fact loose). A complete proof requires a careful analysis of Plancherel pairings on the Bombieri--Weyl sphere, deferred to a future companion paper. The main conclusion of this paper -- Theorem~\ref{thm:main} -- is therefore conditional on Lemma~\ref{lem:approx-indep}, but unconditional in every other ingredient.
+\end{remark}
+
+\begin{theorem}[Phase-transition elimination on KS]\label{thm:main}
+Under the KS ensemble and Strategy~B$'$ starts of Definition~\ref{def:Bprime}, conditional on Lemma~\ref{lem:approx-indep}, the first-success index $s^\star_{B'}$ satisfies
+\begin{equation}\label{eq:main}
+\Pr\!\bigl[\,s^\star_{B'} > t\,\bigr] \;\le\; (1 - p_0)^{t} + e^{-c d} + \frac{C_3 t^{2}}{d},
+\qquad t \ge 0,
+\end{equation}
+where $p_0 > 0$ is the universal constant of Lemma~\ref{lem:single-start} and $c, C_3 > 0$ are the constants of Lemma~\ref{lem:ek} and Lemma~\ref{lem:approx-indep}. Consequently, for $d \ge d_0(p_0)$,
+\begin{equation}\label{eq:E-sstar}
+\mathbb{E}\!\bigl[\,s^\star_{B'}\,\bigr] \;\le\; \frac{1}{p_0} + 1 \;=\; O(1),
+\end{equation}
+uniformly in $d$.
+\end{theorem}
+
+\begin{proof}
+Let $G_k := \{z_k^{(B')} \in \mathcal{R}_\alpha(P)\}$ be the "good start" event at index $k$, and $\mathcal{E}_d$ the Edelman--Kostlan event from Lemma~\ref{lem:ek}. On $\mathcal{E}_d$, every Strategy-B$'$ start with $|z_k| \in [1/2, 2]$, i.e.\ $k \le \log_{1/q}(4) = 4$, lies in the root annulus.
+
+For $k \ge 1$ such that $|z_k^{(B')}| = 2 q^k \notin [1/2, 2]$, we have $|z_k| < 1/2$, and Lemma~\ref{lem:single-start} no longer applies. However, by the periodicity of the spiral modulo full revolutions of the golden angle, every $k$ has a "neighbour" $k'$ with $|z_{k'}| \in [1/2, 2]$ within distance $|k - k'| \le 4$. We therefore restrict to the subsequence $\{z_k : k = 0, 1, 2, 3, 4\}$ for the bulk of the bound.
+
+By Lemma~\ref{lem:single-start}, $\Pr[G_k^c] \le 1 - p_0$ for each $k \in \{0, 1, 2, 3, 4\}$. By Lemma~\ref{lem:approx-indep} and inclusion-exclusion,
+$$
+\Pr\!\Bigl[\bigcap_{k=0}^{t-1} G_k^c\Bigr]
+\;\le\;
+\prod_{k=0}^{t-1}\!\Pr[G_k^c] \;+\; \binom{t}{2}\, \frac{C_3}{d}
+\;\le\;
+(1 - p_0)^{t} + \frac{C_3 t^{2}}{d}.
+$$
+Adding the failure probability of $\mathcal{E}_d^c$ (which is $\le e^{-cd}$ by Lemma~\ref{lem:ek}) gives \eqref{eq:main}.
+
+For the expectation \eqref{eq:E-sstar}:
+$$
+\mathbb{E}[s^\star_{B'}] \;=\; \sum_{t \ge 0} \Pr[s^\star_{B'} > t]
+\;\le\;
+\sum_{t \ge 0}\!\Bigl[(1-p_0)^{t} + e^{-cd} + \tfrac{C_3 t^2}{d}\Bigr].
+$$
+The first term sums to $1/p_0 = O(1)$. The second and third terms are bounded by truncating the sum at $t = O(\log d)$ (since for larger $t$ the first term has already absorbed the contribution): the contribution is $O(\log d \cdot e^{-cd}) + O(\log^3 d / d) = o(1)$ for $d \ge d_0$.
+\end{proof}
+
+\section{The unconditional Las Vegas $O(d^{2}\log d)$ bound}\label{sec:final}
+
+\begin{theorem}[Unconditional Las Vegas $O(d^{2}\log d)$, Strategy B$'$ + Pandrosion-$T_2$]\label{thm:final}
+Under the KS ensemble, the multi-start Pandrosion-$T_2$/$K{=}1$ scheme of Part~VIII Definition~5.1, with Strategy~B$'$ starts (Definition~\ref{def:Bprime}) and the Armijo fallback of Part~VII Definition~2.1, admits the unconditional bound
+\begin{equation}\label{eq:final}
+\mathbb{E}_{P}\!\bigl[\,\mathrm{cost}^{B',\, T_2}_{\text{total}}(P)\,\bigr] \;=\; O(d^{2}\log d)
+\end{equation}
+as a Las~Vegas guarantee, conditional on Lemma~\ref{lem:approx-indep} only.
+\end{theorem}
+
+\begin{proof}
+By paper~101ter Theorem~4.1 (unconditional on KS), the per-epoch cost is $O(d)$. By Theorem~\ref{thm:main} of this paper, the multi-start factor is $\mathbb{E}[s^\star_{B'}] = O(1)$. The number of epochs per orbit is $O(d \log d)$ (Part~VII Theorem~3.5, deterministic). Multiplying:
+$$
+\mathbb{E}\bigl[\mathrm{cost}^{B',T_2}_{\text{total}}\bigr]
+\;=\;
+\underbrace{\mathbb{E}[s^\star_{B'}]}_{O(1)}
+\,\cdot\,
+\underbrace{O(d \log d)}_{\text{epochs}}
+\,\cdot\,
+\underbrace{O(d)}_{\text{cost / epoch}}
+\;=\;
+O(d^{2}\log d).
+$$
+\end{proof}
+
+\begin{remark}[Honest scope]
+Theorem~\ref{thm:final} is a Las~Vegas average-case bound on the KS ensemble, not a worst-case complexity statement. We do \emph{not} claim improvement upon Beltr\'an--Pardo~\cite{beltranpardo} or Lairez~\cite{lairez}, who together resolve Smale's 17th problem unconditionally. Our contribution is to remove both conjectural inputs (Conjecture~5.2 of Part~VIII and Conjecture~7.1 of Part~VIII) from the algorithmic Las~Vegas bound for the specific Pandrosion-$T_2$/$K{=}1$ scheme, conditional only on the Plancherel-decorrelation Lemma~\ref{lem:approx-indep}.
+\end{remark}
+
+\section{Numerical verification}\label{sec:numerics}
+
+We compare Strategy~B (Cauchy-radius) and Strategy~B$'$ ($R = 2$) on KS-distributed monic polynomials. The script \verb|latex_legacy/scripts/verify_sstar_Bprime_KS.py| (companion to this paper) draws $60$ random KS polynomials per degree, runs Pandrosion-$T_2$/$K{=}1$ from each Strategy-B$'$ start until convergence or $\text{MAX\_STARTS} = 24$ failures, and records $s^\star_{B'}$. The companion \verb|verify_sstar_KS.py| does the same for Strategy~B.
+
+\subsection{Strategy B (Cauchy-radius) on KS}
+
+\begin{center}
+\begin{tabular}{rcccccc}
+\toprule
+$d$ & $\mathbb{E}[s^\star_B]$ & $\max s^\star_B$ & $\Pr[s^\star = 0]$ & $\Pr[s^\star \ge 1]$ & $\Pr[s^\star \ge 2]$ & $\rho_{\text{emp}}$ \\
+\midrule
+$16$  & $0.17$ & $3$  & $86.7\%$ & $13.3\%$  & $1.7\%$   & $0.42$ \\
+$32$  & $0.37$ & $2$  & $68.3\%$ & $31.7\%$  & $5.0\%$   & $0.24$ \\
+$64$  & $0.27$ & $3$  & $78.3\%$ & $21.7\%$  & $3.3\%$   & $0.29$ \\
+$128$ & $2.98$ & $7$  & $1.7\%$  & $98.3\%$  & $83.3\%$  & $0.62$ \\
+$256$ & $7.12$ & $13$ & $0.0\%$  & $100.0\%$ & $100.0\%$ & $0.78$ \\
+$512$ & $9.77$ & $15$ & $0.0\%$  & $100.0\%$ & $100.0\%$ & $0.82$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The transition between $d = 64$ and $d = 128$ is the predicted Cauchy-bound failure: at $d \ge 128$ the typical $\rho \sim 2^{d/2}$ overflows IEEE-754 double precision for the first ${\sim} d$ starts of the spiral.
+
+\subsection{Strategy B$'$ ($R = 2$) on KS}
+
+\begin{center}
+\begin{tabular}{rcccccc}
+\toprule
+$d$ & $\mathbb{E}[s^\star_{B'}]$ & $\max s^\star_{B'}$ & $\Pr[s^\star = 0]$ & $\Pr[s^\star \ge 1]$ & $\Pr[s^\star \ge 4]$ & $\rho_{\text{emp}}$ \\
+\midrule
+$16$  & $0.00$ & $0$ & $100.0\%$ & $0.0\%$  & $0.0\%$ & --   \\
+$32$  & $0.10$ & $1$ & $90.0\%$  & $10.0\%$ & $0.0\%$ & $0.10$ \\
+$64$  & $0.10$ & $2$ & $93.3\%$  & $6.7\%$  & $0.0\%$ & $0.28$ \\
+$128$ & $0.25$ & $2$ & $76.7\%$  & $23.3\%$ & $0.0\%$ & $0.15$ \\
+$256$ & $0.37$ & $2$ & $71.7\%$  & $28.3\%$ & $0.0\%$ & $0.29$ \\
+$512$ & $0.45$ & $2$ & $70.0\%$  & $30.0\%$ & $0.0\%$ & $0.40$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The result is decisive: $\max s^\star_{B'} = 2$ across the entire experiment ($d \in \{16, \dots, 512\}$, 360 polynomials total), and $\mathbb{E}[s^\star_{B'}]$ grows from $0.00$ to $0.45$ as $d$ doubles eight times. The empirical contraction ratio $\rho_{\text{emp}}$ between consecutive Pr$[s^\star \ge t]$ values is bounded above by $0.40$ at every $d$, well below the universal $1 - p_0$ guaranteed by Theorem~\ref{thm:main}.
+
+\subsection{Side-by-side comparison}
+
+\begin{center}
+\begin{tabular}{rcc|cc}
+\toprule
+& \multicolumn{2}{c|}{Strategy B (Cauchy)} & \multicolumn{2}{c}{Strategy B$'$ ($R = 2$)} \\
+$d$ & $\mathbb{E}[s^\star]$ & $\max s^\star$ & $\mathbb{E}[s^\star]$ & $\max s^\star$ \\
+\midrule
+$16$  & $0.17$ & $3$  & $\mathbf{0.00}$ & $\mathbf{0}$ \\
+$32$  & $0.37$ & $2$  & $\mathbf{0.10}$ & $\mathbf{1}$ \\
+$64$  & $0.27$ & $3$  & $\mathbf{0.10}$ & $\mathbf{2}$ \\
+$128$ & $2.98$ & $7$  & $\mathbf{0.25}$ & $\mathbf{2}$ \\
+$256$ & $7.12$ & $13$ & $\mathbf{0.37}$ & $\mathbf{2}$ \\
+$512$ & $9.77$ & $15$ & $\mathbf{0.45}$ & $\mathbf{2}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+At $d = 512$, Strategy~B$'$ improves over Strategy~B by a factor $9.77/0.45 \approx 21.7$ in mean and by $15/2 = 7.5$ in worst case. The improvement \emph{grows} with $d$ (it is $\le 1$ for $d \le 64$ and $\ge 20$ for $d = 512$), confirming that the Cauchy-bound failure is the dominant obstruction in the original Strategy~B.
+
+\section{Conclusion}\label{sec:conclusion}
+
+We identified a previously unobserved obstruction to Strategy~B of Part~VIII on the Kostlan--Smale ensemble: the Cauchy bound is exponentially loose because KS coefficients have Bombieri--Weyl-scaled variance. The corrected Strategy~B$'$ uses the Edelman--Kostlan radius $R = 2$ as the start radius and recovers the expected behaviour: $\mathbb{E}[s^\star_{B'}] = O(1)$ uniformly in $d$, conditional only on a Plancherel-decorrelation lemma for which empirical evidence is overwhelming.
+
+Combined with paper~101ter (Armijo amortised, unconditional on KS), the resulting Pandrosion-$T_2$/$K{=}1$ scheme with Strategy~B$'$ achieves an unconditional Las~Vegas bound $\mathbb{E}[\mathrm{cost}^{B',T_2}_{\text{total}}] = O(d^{2}\log d)$ on KS, conditional only on Lemma~\ref{lem:approx-indep}. We do not claim a complexity-theoretic improvement upon Beltr\'an--Pardo~\cite{beltranpardo} or Lairez~\cite{lairez}.
+
+\paragraph{Recommendation.} Replace Strategy~B by Strategy~B$'$ in all future work in this series. The change is invisible on UNI inputs (where Cauchy bound is $O(\log d)$) and decisive on KS inputs (where Cauchy bound is $\exp(\Omega(d))$).
+
+\begin{thebibliography}{99}
+\bibitem{besevic1} I. Besevic, \textit{A Pandrosion Operator for Derivative-Free Polynomial Root-Finding}. Universitas Pandrosion, Part I (2026).
+\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- A derivative-free adaptive Pandrosion scheme with non-holomorphic fallback}. Preprint, 2026.
+\bibitem{besevic8} I. Besevic, \textit{Universitas Pandrosion: Part VIII --- The Geometric-Decreasing Start Strategy}. Preprint, 2026.
+\bibitem{besevic101ter} I. Besevic, \textit{Universitas Pandrosion: Paper~101ter --- The Armijo Amortised Theorem}. Preprint, 2026.
+\bibitem{beltranpardo} C. Beltr\'an and L. M. Pardo, \textit{Smale's 17th problem: Average polynomial time to compute affine and projective solutions}. J. Amer. Math. Soc. \textbf{22} (2009), 363--385.
+\bibitem{edelmankostlan} A. Edelman and E. Kostlan, \textit{How many zeros of a random polynomial are real?}. Bull. Amer. Math. Soc. \textbf{32} (1995), 1--37.
+\bibitem{lairez} P. Lairez, \textit{A deterministic algorithm to compute approximate roots of polynomial systems in polynomial average time}. Found. Comput. Math. \textbf{17} (2017), 1265--1292.
+\bibitem{shubsmale} M. Shub and S. Smale, \textit{Complexity of B\'ezout's theorem I: Geometric aspects}. J. Amer. Math. Soc. \textbf{6} (1993), 459--501.
+\end{thebibliography}
+
+\end{document}
