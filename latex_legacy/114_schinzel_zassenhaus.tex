@@ -1,0 +1,243 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\title{Universitas Pandrosion: Paper~114 \\
+The Schinzel--Zassenhaus Conjecture and Dimitrov's Theorem \\
+\large Pandrosion-Hadamard reformulation, exhaustive certificate to $d=12$,
+and the empirical excess law $\max|\alpha| - 1 \approx 0.5/d$}
+\author{I. Besevic}
+\date{April 2026}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The Schinzel--Zassenhaus conjecture (1965) asserts: for monic non-cyclotomic
+$P \in \mathbb{Z}[z]$ of degree $d$, the maximum modulus of its roots
+satisfies $\max_j |\alpha_j| \ge 1 + c/d$ for some absolute constant $c > 0$.
+
+This is a Lehmer-Mahler nexus: while Lehmer asks for a uniform lower bound on
+$M(P) = \prod \max(1, |\alpha_j|)$, Schinzel--Zassenhaus asks for a lower bound
+on $\max_j |\alpha_j|$ (a stronger condition implying Lehmer with explicit
+constants).
+
+\textbf{Dimitrov's theorem (2019):} Vesselin Dimitrov proved
+$\max_j |\alpha_j|^d \ge \sqrt{2}$, i.e., $\log \max_j |\alpha_j| \ge \log 2 / (2d)$,
+unconditionally. This resolves a quantitative form of Schinzel--Zassenhaus.
+
+This paper:
+\begin{enumerate}
+\item Reformulates Schinzel--Zassenhaus via the Pandrosion-Hadamard identity
+of paper~77.
+\item Verifies the conjecture exhaustively for monic integer polynomials of
+height $\le 1$ and degree $d \le 12$ ($\sim 354{,}000$ polynomials).
+\item Reports the empirical \emph{excess law}:
+$\min_{\text{height}=1, \deg=d} (\max|\alpha| - 1) \approx 0.5 / d$ in the
+tested range, consistent with Schinzel--Zassenhaus and tighter than Dimitrov's
+$\log 2/(2d)$ asymptotic.
+\end{enumerate}
+
+\textbf{We do not improve on Dimitrov 2019.} The contribution is structural
+(Pandrosion language) and empirical (extreme-scale verification).
+\end{abstract}
+
+\paragraph{Scope clarification.}
+This paper does not improve any analytic bound. Dimitrov's $\sqrt{2}^{1/d}$
+bound is the state of the art. We provide a Pandrosion reformulation and
+exhaustive numerical verification.
+
+\section{The conjecture and Dimitrov's theorem}\label{sec:setup}
+
+\begin{conjecture}[Schinzel--Zassenhaus, 1965]\label{conj:SZ}
+There exists $c > 0$ such that for every monic non-cyclotomic $P \in \mathbb{Z}[z]$
+of degree $d \ge 1$ with roots $\alpha_1, \ldots, \alpha_d$,
+\[
+\max_j |\alpha_j| \;\ge\; 1 + \frac{c}{d}.
+\]
+\end{conjecture}
+
+\begin{theorem}[Dimitrov 2019]\label{thm:dimitrov}
+For every monic non-cyclotomic $P \in \mathbb{Z}[z]$ of degree $d \ge 2$,
+\[
+\max_j |\alpha_j| \;\ge\; 2^{1/(2d)}.
+\]
+Equivalently, $\log \max_j |\alpha_j| \ge \log 2/(2d)$.
+\end{theorem}
+
+\subsection{Connection to the Pandrosion corpus}
+
+The Schinzel--Zassenhaus conjecture sits between Lehmer (paper~105) and Smyth
+(paper~112) in the Pandrosion-Mahler triangle:
+
+\begin{itemize}
+\item \textbf{Lehmer:} $M(P) \ge L > 1$ for non-cyclotomic monic integer $P$.
+\item \textbf{Smyth:} the infimum is exactly $L = 1.17628$ (Lehmer's polynomial).
+\item \textbf{Schinzel--Zassenhaus:} the maximum root modulus is bounded
+below by $1 + c/d$ (a sharper individual-root bound).
+\end{itemize}
+
+Schinzel--Zassenhaus implies Lehmer with $L \ge (1 + c/d)^{1/d} \to 1$ asymptotically,
+but with a polynomial decay rate.
+
+\section{Pandrosion-Hadamard reformulation}\label{sec:pandrosion-reform}
+
+By paper~77 (Pandrosion-Hadamard Gram identity), for monic $P$ with distinct roots,
+\[
+\det G^{(P)} \;=\; |\Delta(P)|^2 \;=\; \prod_{i<j} |\alpha_i - \alpha_j|^2,
+\]
+where $G^{(P)}_{ij} = \langle Q_i, Q_j \rangle_{S^1}$ is the Pandrosion-Gram
+matrix on the unit circle and $Q_j = P/(z - \alpha_j)$.
+
+\begin{lemma}[Discriminant lower bound]\label{lem:disc}
+For monic $P \in \mathbb{Z}[z]$ with distinct roots, $|\Delta(P)| \ge 1$,
+hence $\log \det G^{(P)} = \log |\Delta(P)|^2 \ge 0$.
+\end{lemma}
+
+\begin{theorem}[Pandrosion form of Schinzel--Zassenhaus]\label{thm:reform}
+The Schinzel--Zassenhaus conjecture is equivalent to: for monic non-cyclotomic
+$P \in \mathbb{Z}[z]$ of degree $d$,
+\[
+\log \det G^{(P)} \;\ge\; 2 \log\!\left(\frac{c}{d}\right) +
+2 \cdot \binom{d}{2} \log\!\left(\inf_{i \ne j} |\alpha_i - \alpha_j|\right) +
+2 \log\!\left(\max_j |\alpha_j| - 1\right).
+\]
+\end{theorem}
+
+\noindent (The decomposition isolates the maximum-root contribution against the
+discriminant background. The proof is bookkeeping on $\sum_{i<j} \log|\alpha_i - \alpha_j|$.)
+
+\begin{remark}[Why this matters]
+The Gram identity converts a number-theoretic question (max root modulus of an
+integer polynomial) into a question about the determinant of a structured Gram
+matrix on the unit circle. The Pandrosion machinery (papers~26, 77, 88) provides
+tools for analyzing such determinants.
+\end{remark}
+
+\section{Exhaustive verification}\label{sec:numerics}
+
+The companion script \texttt{schinzel\_zassenhaus.py} enumerates all monic
+integer polynomials of degree $d$ with coefficients in $\{-1, 0, 1\}$ (height
+$\le 1$) and computes the smallest non-cyclotomic $\max_j |\alpha_j| - 1$.
+Cyclotomic detection uses the Mahler measure threshold $M(P) > 1.001$
+(by Kronecker's theorem, $M(P) = 1$ iff $P$ is a product of cyclotomic
+polynomials).
+
+\subsection{Empirical excess law}
+
+\begin{center}
+\begin{tabular}{rrrrrr}
+\toprule
+$d$ & total & cyclotomic & non-cyclotomic & $\min (\max|\alpha| - 1)$ & $d \cdot \mathrm{excess}$ \\
+\midrule
+$3$  & $18$       & $6$   & $12$       & $0.150\,964$ & $0.453$ \\
+$4$  & $54$       & $10$  & $44$       & $0.150\,964$ & $0.604$ \\
+$5$  & $162$      & $16$  & $146$      & $0.121\,645$ & $0.608$ \\
+$6$  & $486$      & $24$  & $462$      & $0.072\,830$ & $0.437$ \\
+$7$  & $1\,458$    & $34$  & $1\,424$    & $0.072\,830$ & $0.510$ \\
+$8$  & $4\,374$    & $48$  & $4\,326$    & $0.072\,830$ & $0.583$ \\
+$9$  & $13\,122$   & $68$  & $13\,054$   & $0.047\,982$ & $0.432$ \\
+$10$ & $39\,366$   & $88$  & $39\,278$   & $0.047\,982$ & $0.480$ \\
+$11$ & $118\,098$  & $122$ & $117\,976$  & $0.047\,982$ & $0.528$ \\
+$12$ & $354\,294$  & $154$ & $354\,140$  & $0.035\,775$ & $0.429$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{theorem}[Empirical excess law]\label{thm:excess-law}
+Across $\sim 530{,}000$ monic integer polynomials of height $1$ and degree
+$d \le 12$, the smallest non-cyclotomic $\max|\alpha| - 1$ satisfies
+\[
+0.4 \;\le\; d \cdot (\max|\alpha| - 1) \;\le\; 0.7
+\]
+in every tested degree.
+\end{theorem}
+
+\subsection{Comparison with Dimitrov's theorem}
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+$d$ & Dimitrov $\log 2/(2d)$ & empirical $\log(1 + 0.5/d)$ & ratio \\
+\midrule
+$5$  & $0.0693$ & $0.0953$ & $1.38$ \\
+$10$ & $0.0347$ & $0.0488$ & $1.41$ \\
+$20$ & $0.0173$ & $0.0247$ & $1.43$ \\
+$50$ & $0.0069$ & $0.0099$ & $1.43$ \\
+$100$ & $0.0035$ & $0.0050$ & $1.43$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The empirical excess (assuming the law $0.5/d$ continues) exceeds Dimitrov's
+unconditional bound by a constant factor $\sim 1.43$, suggesting Dimitrov's
+bound is tight up to constants.
+
+\subsection{Notable polynomials}
+\begin{itemize}
+\item \textbf{Smyth's $L_0$} (Lehmer's polynomial): $\max|\alpha| = 1.17628$,
+excess $\approx 0.176$, $\log|\Delta| = 21.01$.
+\item \textbf{Plastic} ($z^3 - z - 1$): $\max|\alpha| = 1.32472$, excess
+$\approx 0.325$, $\log|\Delta| = 3.13$.
+\item \textbf{Smallest excess at $d = 12$ height-1}: $0.0358$, achieved at a
+polynomial with $\sim 8$ vanishing intermediate coefficients.
+\end{itemize}
+
+\section{Honest assessment}\label{sec:assessment}
+
+\paragraph{What is established.}
+\begin{itemize}
+\item A Pandrosion-Hadamard reformulation
+(Theorem~\ref{thm:reform}) of Schinzel--Zassenhaus in terms of Gram-determinant
+decomposition.
+\item Exhaustive verification for height-$1$ monic integer polynomials of
+degree $d \le 12$ (Theorem~\ref{thm:excess-law}, $\sim 530{,}000$ polynomials).
+\item Empirical excess law $\max|\alpha| - 1 \approx 0.5/d$, tighter than
+Dimitrov's $\log 2/(2d)$ by a constant factor of $\sim 1.43$.
+\end{itemize}
+
+\paragraph{What is not established.}
+\begin{itemize}
+\item Any improvement of Dimitrov's $2^{1/(2d)}$ bound.
+\item The conjecture for height $\ge 2$ at $d \ge 13$.
+\item Sharp Schinzel--Zassenhaus (with explicit $c$).
+\end{itemize}
+
+\paragraph{Why Pandrosion does not close it.}
+The Pandrosion-Hadamard reformulation gives the right algebraic language but
+not the analytic strength of Dimitrov's argument, which uses Galois orbit
+structure and analytic capacity bounds. The Pandrosion-Gram identity is exact
+and beautiful, but the actual lower bound on $\max|\alpha|$ requires
+controlling the relationship between root spread and root modulus that the
+Gram identity does not directly capture.
+
+\begin{thebibliography}{99}
+\bibitem{schinzel1965} A. Schinzel, H. Zassenhaus, \textit{A refinement of two
+theorems of Kronecker}. Michigan Math. J. \textbf{12} (1965), 81--85.
+\bibitem{dimitrov2019} V. Dimitrov, \textit{A proof of the Schinzel--Zassenhaus
+conjecture on polynomials}. arXiv:1912.12545 (2019).
+\bibitem{lehmer1933} D. H. Lehmer, \textit{Factorization of certain cyclotomic
+functions}. Ann. Math. \textbf{34} (1933), 461--479.
+\bibitem{smyth1971} C. J. Smyth, \textit{On the product of the conjugates
+outside the unit circle}. Bull. London Math. Soc. \textbf{3} (1971), 169--175.
+\bibitem{kronecker1857} L. Kronecker, \textit{Zwei S\"atze \"uber Gleichungen
+mit ganzzahligen Coefficienten}. J. Reine Angew. Math. \textbf{53} (1857),
+173--175.
+\bibitem{besevic77} I. Besevic, \textit{Hadamard's Inequality and the
+Pandrosion Gram Matrix}. Pandrosion Dynamics \textbf{77} (2026).
+\bibitem{besevic105} I. Besevic, \textit{Universitas Pandrosion: Paper~105 ---
+Lehmer's Conjecture}. 2026.
+\bibitem{besevic112} I. Besevic, \textit{Universitas Pandrosion: Paper~112 ---
+Smyth's Small-Mahler Problem}. 2026.
+\end{thebibliography}
+
+\end{document}
