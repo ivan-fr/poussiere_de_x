@@ -485,3 +485,151 @@ When adding a new `Pandrosion/Core/<NewModule>.lean`:
    `Pandrosion.lean`.
 4. `bash scripts/lean-incremental.sh` again.
 5. **Stop here.** Hand off to the user for `lean-check` (Step 3 above).
+
+## 📄 LaTeX-Pandrosion paper workflow (legacy corpus)
+
+The legacy corpus at `articles_pandrosion_legacy/` (151 papers as of April 2026)
+follows a parallel workflow to Lean: empirical Python first, then a focused
+LaTeX paper, then PDF compilation via `tectonic`, then promotion to the
+canonical PDF folder.
+
+### Folders
+
+- `latex_legacy/` — `.tex` source files for papers 101–113+ (the
+  algorithmic / open-conjecture series).
+- `latex_legacy/scripts/` — Python scripts that produce the empirical
+  certificates referenced from the papers.
+- `articles_pandrosion_legacy/` — canonical PDFs (the `.pdf` versions
+  shown in publication-ready form). Both legacy papers (e.g.
+  `01pandrosion_en_improved.pdf`) and new ones (e.g. `103_atiyah_sutcliffe.pdf`).
+
+### Standard iteration cycle
+
+#### Step 1 — Numerical exploration in Python
+
+Write a `scripts/<topic>_attack.py` that:
+
+- Implements the conjecture's machinery (e.g. polynomial construction,
+  Gram matrix, Pandrosion field).
+- Tests hypotheses via random scans (50–500 configurations per parameter
+  point, multiple adversarial families).
+- Searches for structural inequalities (e.g. `det G_norm >= det K`,
+  exponential residual growth) with `0/N` violation reporting.
+- Reports findings in a clean tabular format that maps directly to a
+  paper section.
+
+**Use `mpmath` for high-precision** when needed (Riemann zeros, very
+large polynomial determinants). The standard `numpy` stack underflows
+on `slogdet` for $n \gtrsim 200$ — switch to `mpmath` or compute
+$\log|D|$ via the identity-based route (`slogdet(M)` rather than
+`slogdet(G_norm)`).
+
+#### Step 2 — Write the LaTeX paper
+
+Use the standard preamble:
+
+```latex
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{Definition}  % needed if using \begin{definition}
+\newtheorem{corollary}[theorem]{Corollary}
+```
+
+**Required sections** (the corpus convention):
+- Abstract with bullet-list of contributions
+- `\paragraph{Scope clarification.}` — what is NOT proved
+- Setup / status of conjecture
+- Pandrosion reformulation
+- Numerical certificate (with reproducibility script reference)
+- Honest assessment (what's proved, what's empirical, what's open)
+- Bibliography with cross-references to corpus paper numbers
+
+**Honest framing.** Every paper must explicitly state what is **not**
+proved. The corpus is built on transparent scope: never claim a proof
+when the result is conjectural / empirical.
+
+#### Step 3 — Compile with `tectonic`
+
+`pdflatex` is not available on macOS without MacTeX. The corpus uses
+`tectonic`, an all-in-one self-contained TeX engine (installed via
+homebrew at `/opt/homebrew/bin/tectonic`).
+
+```bash
+cd /Users/ivanbesevic/Documents/poussiere/latex_legacy
+tectonic <paper>.tex
+```
+
+**Common errors:**
+- `Environment <name> undefined` — add the matching `\newtheorem` to the
+  preamble (e.g. `\newtheorem{definition}...`).
+- `Double subscript` — typo like `M_{name}_{ij}` should be `(M_{name})_{ij}`.
+- `\verb|...| inside \paragraph{...}` — `\verb` doesn't work in
+  moving arguments; use `\texttt{...}` instead.
+- `Paragraph ended before \end was complete` — typically `\end{remark>` typo
+  for `\end{remark}`.
+
+**Build time:** `<5s` per paper. If a paper takes longer, check for
+overfull hboxes (`Underfull/Overfull \hbox` warnings) and fix them by
+breaking long inline expressions into displays.
+
+#### Step 4 — Promote to legacy folder
+
+```bash
+cp <paper>.pdf /Users/ivanbesevic/Documents/poussiere/articles_pandrosion_legacy/<paper>.pdf
+```
+
+**Naming convention:** `NNN_<short_name>.pdf` for new papers (101+), or
+`NN<topic>.pdf` for original 1–100 series (e.g. `09pandrosion_sendov.pdf`).
+Keep both the source `.tex` (in `latex_legacy/`) and PDF (in
+`articles_pandrosion_legacy/`) versions in sync.
+
+### Cross-paper conventions
+
+- **Cite by paper number**: `paper~77` or `\cite{besevic77}` after defining
+  `\bibitem{besevic77} I. Besevic, \textit{...}, Pandrosion Dynamics \textbf{77} (2026).`.
+- **Reference scripts inline**: `(script \texttt{<filename>.py})` or
+  `\verb|<filename>.py|` (outside paragraphs).
+- **Identity boxes**: when stating a key identity, frame it with `\boxed{...}`
+  for visibility.
+- **Adversarial table format**: families × $n$ values, with deficit ratios
+  or violation counts.
+
+### What NOT to do
+
+- **Don't fragment**. If you've written 4 separate papers on the same conjecture,
+  consolidate into one. The user explicitly requested deletion of papers 109,
+  110, 111 about Atiyah and rewrite paper 103 as a single comprehensive document.
+- **Don't claim proofs**. Every conjectural / empirical result is labelled as
+  such. The Pandrosion corpus is honest by design; over-claiming corrupts
+  trust in the entire library.
+- **Don't skip the ``Scope clarification''**. Every paper has it. It's how
+  readers know what they're reading.
+- **Don't run `pdflatex`**. It's not installed. Use `tectonic`.
+
+### Empirical loop reminder
+
+For an open conjecture: **test numerically before writing**. The Pandrosion
+papers caught dead-ends repeatedly (paper 109's α-route failure, paper 113's
+naive Sendov refutation) because Python tests were run before the LaTeX
+write-up committed to a position.
+
+### Compile-and-verify shortcut
+
+Single-command pipeline for a new paper:
+
+```bash
+cd /Users/ivanbesevic/Documents/poussiere/latex_legacy && \
+tectonic <paper>.tex 2>&1 | tail -5 && \
+cp <paper>.pdf /Users/ivanbesevic/Documents/poussiere/articles_pandrosion_legacy/
+```

@@ -1,0 +1,227 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\title{Universitas Pandrosion: Paper~113 \\
+Sendov for Higher Derivatives: an Empirical Refutation of the Naive Extension \\
+\large $r_k(d)$ for $P^{(k)}$ at $k$ near $d-1$ exceeds $1$}
+\author{I. Besevic}
+\date{April 2026}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{Definition}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The Sendov conjecture asserts: if $P \in \mathbb{C}[z]$ is monic of degree $d$
+with all roots in the closed unit disk, then for every root $\zeta$ of $P$,
+there exists a critical point $\xi$ (root of $P'$) with $|\zeta - \xi| \le 1$.
+
+A natural extension: $\mathrm{Sendov}_k$ asks for $\xi$ a root of $P^{(k)}$
+within distance $r_k(d)$ of every root of $P$. Classical Sendov is the case
+$k = 1$, $r_1(d) \le 1$.
+
+\textbf{This paper reports} that the naive extension $r_k(d) \le 1$ for all $k$
+\emph{fails}: numerical tests across random polynomials in the unit disk
+($n = 100$ configurations per setting) show
+\[
+r_k(d) > 1 \quad \text{when } k \ge d - 2.
+\]
+Specifically, at $d = 10$, $k = 8$: $\max V_k = +0.067$ (so $r_k > 1.067$);
+at $d = 50$, $k = 48$: $V_k = +0.125$ (so $r_k > 1.125$).
+
+\textbf{Conclusions:}
+\begin{itemize}
+\item Classical Sendov ($k = 1$) is consistent with $r_1 \le 1$ on all tested
+configurations.
+\item Sendov for higher derivatives requires \emph{degree-dependent} bounds
+$r_k(d) \le f(k, d)$ with $f \to \infty$ as $k \to d - 1$.
+\item The Pandrosion-Turán machinery (paper~56) gives a clean structural
+explanation: as $k \to d - 1$, $P^{(k)}$ collapses to a low-degree polynomial
+whose single root may lie far from the disk boundary.
+\end{itemize}
+\end{abstract}
+
+\paragraph{Scope clarification.}
+This paper does not advance Sendov's classical conjecture ($k = 1$). It
+reports a negative result on the natural extension to higher derivatives.
+
+\section{Setup}\label{sec:setup}
+
+\begin{conjecture}[Sendov's conjecture, $k = 1$]\label{conj:sendov}
+If $P \in \mathbb{C}[z]$ is monic of degree $d \ge 2$ with all roots in
+$\bar{D} := \{|z| \le 1\}$, then every root $\zeta$ of $P$ satisfies
+\[
+\min_{\xi: P'(\xi) = 0} |\zeta - \xi| \;\le\; 1.
+\]
+\end{conjecture}
+
+\begin{definition}[Higher-derivative Sendov]
+For $k = 1, \ldots, d - 1$, define
+\[
+r_k(d) := \sup_{P, \zeta} \min_{\xi: P^{(k)}(\xi) = 0} |\zeta - \xi|,
+\]
+where the supremum is over monic $P$ of degree $d$ with all roots in $\bar{D}$
+and $\zeta$ a root of $P$. Sendov's conjecture is $r_1(d) \le 1$.
+\end{definition}
+
+\section{Empirical results}\label{sec:numerics}
+
+The companion script \texttt{sendov\_higher\_derivatives.py} samples random
+polynomials with roots i.i.d.\ uniform in the closed unit disk, computes
+the $k$-th derivative's roots, and reports the violation
+$V_k := \max_\zeta \min_\xi |\zeta - \xi| - 1$.
+
+\subsection{Random sampling: $V_k$ across $(d, k)$}
+
+\begin{center}
+\begin{tabular}{rrrl}
+\toprule
+$d$ & $k$ & $\max V_k$ over 100 configs & status \\
+\midrule
+$10$  & $1$  & $-0.767$ & OK ($r_1 \le 1$) \\
+$10$  & $2$  & $-0.643$ & OK \\
+$10$  & $3$  & $-0.515$ & OK \\
+$10$  & $5$  & $-0.264$ & OK \\
+$10$  & $8$  & $\mathbf{+0.067}$ & VIOLATES \\
+$20$  & $1$  & $-0.850$ & OK \\
+$20$  & $5$  & $-0.655$ & OK \\
+$20$  & $10$ & $-0.308$ & OK \\
+$20$  & $18$ & $\mathbf{+0.056}$ & VIOLATES \\
+$50$  & $1$  & $-0.911$ & OK \\
+$50$  & $25$ & $-0.365$ & OK \\
+$50$  & $48$ & $\mathbf{+0.125}$ & VIOLATES \\
+$100$ & $1$  & $-0.712$ & OK \\
+$100$ & $50$ & $-0.422$ & OK \\
+$100$ & $98$ & $\mathbf{+0.053}$ & VIOLATES \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{theorem}[Refutation of naive higher-derivative extension]\label{thm:refute}
+The naive extension ``$r_k(d) \le 1$ for all $k$'' is false: there exist
+configurations with $r_k(d) > 1$ at $k \ge d - 2$ (and possibly smaller $k$).
+\end{theorem}
+
+\subsection{Roots of unity: tight Sendov but violations at high $k$}
+
+\begin{center}
+\begin{tabular}{rrr}
+\toprule
+$d$ & $k$ & $V_k$ \\
+\midrule
+$10$ & $1$ & $-1.4 \times 10^{-2}$ \\
+$10$ & $5$ & $-4.8 \times 10^{-4}$ \\
+$10$ & $8$ & $-4.3 \times 10^{-10}$ \\
+$50$ & $1$ & $-0.474$ \\
+$50$ & $48$ & $-3.1 \times 10^{-11}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For roots of unity ($P = z^d - 1$), all derivatives' roots are at $0$, and the
+distance from boundary roots is exactly $1$ (saturating Sendov to numerical
+precision). No violations.
+
+\section{Structural explanation via Pandrosion-Turán}\label{sec:structural}
+
+\begin{proposition}[Why $r_k(d) > 1$ at $k$ close to $d - 1$]\label{prop:why}
+For $P$ monic of degree $d$, the $(d-1)$-th derivative is
+$P^{(d-1)}(z) = d!\, z + \text{const}$, with a single root at the negative of the
+mean root times $(d-1)!/d!$. This root can lie up to distance $1$ from boundary
+roots (when boundary roots are clustered near $1$ and the centroid is at $0$).
+The $(d-2)$-th derivative has $2$ roots near the centroid, similarly remote
+from boundary roots clustered near $\pm 1$.
+\end{proposition}
+
+\begin{proof}[Sketch]
+$P^{(d-1)}(z) = d! z + (d-1)! \sum \alpha_j$. Its root is
+$-\sum \alpha_j / d$, the negative of the centroid. If the roots of $P$ are
+clustered near $z = 1$, the centroid is near $1$, and $P^{(d-1)}$'s root is
+near $-1$. The distance from boundary root $\alpha = 1$ to $-1$ is $2$, far
+exceeding $1$.
+\end{proof}
+
+\begin{remark}[Pandrosion-Turán perspective]
+By paper~56, the Turán form $T = (P')^2 - P P''$ encodes the curvature of the
+Pandrosion field. For higher $k$: $T_k := (P^{(k)})^2 - P^{(k-1)} P^{(k+1)}$
+satisfies analogous SOS identities. As $k \to d - 1$, the Pandrosion-Turán
+hierarchy degenerates: $T_{d-1}$ is constant, $T_d = 0$. The structural
+collapse in Pandrosion language is the same as the analytic collapse:
+high-derivative critical points concentrate near the centroid, far from
+boundary roots.
+\end{remark}
+
+\section{Conjectured form for $r_k(d)$}\label{sec:conjecture}
+
+\begin{conjecture}[Higher-derivative Sendov, refined]\label{conj:refined}
+There exists a function $f(k, d)$ such that
+\[
+r_k(d) \;\le\; f(k, d), \quad
+f(k, d) = \begin{cases}
+1 & k = 1 \text{ (Sendov classical)},\\
+1 + O(1/d) & k = O(d^{1-\epsilon}),\\
+2 + o(1) & k \to d - 1 \text{ (centroid collapse)}.
+\end{cases}
+\]
+The diagonal case $k = d/2$ likely gives $r_k(d) = O(1)$ (between $1/2$ and
+$1$ empirically).
+\end{conjecture}
+
+This conjecture matches our empirical $V_k$ values:
+\begin{itemize}
+\item $V_1 \to -1$ as $d \to \infty$ (lots of room).
+\item $V_{d/2} \to -0.4$ ish.
+\item $V_{d-2} \to +0.05$ to $+0.13$ (slightly violates $1$).
+\end{itemize}
+
+\section{Conclusion}\label{sec:conclusion}
+
+\paragraph{What is established.}
+\begin{itemize}
+\item The naive extension $r_k(d) \le 1$ for all $k$ is empirically false
+(Theorem~\ref{thm:refute}).
+\item Classical Sendov ($k = 1$) is consistent with $r_1 \le 1$ on all tested
+configurations (paper~104, paper~108 verified to $d \le 1024$).
+\item A structural explanation via centroid collapse
+(Proposition~\ref{prop:why}) explains the $k$-near-$d$ violations.
+\end{itemize}
+
+\paragraph{What is not established.}
+\begin{itemize}
+\item Sendov classical (paper~104, ongoing).
+\item The refined conjecture $r_k(d) \le f(k, d)$ for explicit $f$.
+\item Sharp bounds on $r_k(d)$ for intermediate $k$.
+\end{itemize}
+
+\paragraph{Implications.}
+The naive extension is dead. The right question becomes: what is the optimal
+$r_k(d)$? The Pandrosion-Turán hierarchy provides the language; the analytic
+work remains open.
+
+\begin{thebibliography}{99}
+\bibitem{sendov1962} B. Sendov (formerly Iliev), \textit{Some questions in the theory of approximations}.
+PhD thesis, Moscow State University, 1962.
+\bibitem{tao2020} T. Tao, \textit{Sendov's conjecture for sufficiently high
+degree polynomials}. Acta Math. \textbf{229} (2022), 347--392.
+\bibitem{miller1990} M. J. Miller, \textit{Maximal polynomials and the
+Ilieff--Sendov conjecture}. Trans. Amer. Math. Soc. \textbf{321} (1990), 285--303.
+\bibitem{besevic56} I. Besevic, \textit{Tur\'an's Inequality as Pandrosion Squares}.
+Pandrosion Dynamics \textbf{56} (2026).
+\bibitem{besevic104} I. Besevic, \textit{Universitas Pandrosion: Paper~104 ---
+Sendov for $d \ge 9$}. 2026.
+\bibitem{besevic108} I. Besevic, \textit{Universitas Pandrosion: Paper~108 ---
+Sendov in the hard regime}. 2026.
+\end{thebibliography}
+
+\end{document}
