@@ -141,31 +141,42 @@ $10$ & $\{1, 9, 10, 16, 19, 24, 25, 26, 27, 29\}$ & $0.176\,463$ & $0.090\,909$ 
 configurations exceed $1/(n+1)$ by significant margin; equal-step
 $\{1, \ldots, n\}$ is the extremal case.
 
-\subsection{Classical adversarial families}
+\subsection{Classical adversarial families (exact rational verification)}
 \begin{center}
 \begin{tabular}{rrrr}
 \toprule
-name & speeds & gap & $1/(n+1)$ \\
+$n$ & speeds & gap (exact) & $1/(n+1)$ \\
 \midrule
-Bohr 1924 & $\{1, 2, 3\}$ & $0.250$ & $0.250$ \\
-Wills 1967 & $\{1, 2, 3, 4\}$ & $0.200$ & $0.200$ \\
-BGGST 1998 & $\{1, 2, 3, 4, 5, 6\}$ & $0.143$ & $0.143$ \\
-equal-step $n=7$ (open) & $\{1, \ldots, 7\}$ & $0.125$ & $0.125$ \\
-equal-step $n=8$ (open) & $\{1, \ldots, 8\}$ & $0.111$ & $0.111$ \\
-Fibonacci $n=7$ & $\{1, 2, 3, 5, 8, 13, 21\}$ & $0.182$ & $0.125$ \\
+$3$  & $\{1, 2, 3\}$ (Bohr 1924, proved) & $1/4$ & $1/4$ \\
+$4$  & $\{1, 2, 3, 4\}$ (Wills, proved) & $1/5$ & $1/5$ \\
+$6$  & $\{1, 2, 3, 4, 5, 6\}$ (BGGST, proved) & $1/7$ & $1/7$ \\
+$7$  & $\{1, \ldots, 7\}$ (\textbf{open}) & $1/8$ & $1/8$ \\
+$8$  & $\{1, \ldots, 8\}$ (\textbf{open}) & $1/9$ & $1/9$ \\
+$10$ & $\{1, \ldots, 10\}$ (\textbf{open}) & $1/11$ & $1/11$ \\
+$15$ & $\{1, \ldots, 15\}$ (\textbf{open}) & $1/16$ & $1/16$ \\
+$20$ & $\{1, \ldots, 20\}$ (\textbf{open}) & $1/21$ & $1/21$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\textbf{Equal-step speeds saturate the conjectural bound exactly.}
-Other families have larger gaps. This is consistent with the conjecture's
-extremality at $\{1, 2, \ldots, n\}$.
+\textbf{Equal-step speeds saturate the conjectural bound exactly,}
+verified by exact rational arithmetic.
+
+\subsection{The Pandrosion polynomial identity at extremality}
+
+At $t^* = 1/(n+1)$ for speeds $\{1, \ldots, n\}$, the Pandrosion polynomial
+$P(z) = \prod_j (z^j - 1)$ evaluates to
+\[
+\bigl| P(e^{2\pi i t^*}) \bigr| \;=\; \prod_{j=1}^n 2 \sin(\pi j / (n+1)) \;=\; n + 1,
+\]
+the classical sine product identity. This gives an exact value for the
+Pandrosion polynomial at the extremal loneliness instant.
 
 \begin{theorem}[Numerical certificate]\label{thm:numerical}
-Across $\sim 1\,100$ random integer speed sets and the classical extremal
-families up to $n = 12$, every configuration satisfies
-$\mathrm{gap}(\mathbf{v}) \ge 1/(n+1)$ within grid-discretisation error
-$\le 10^{-4}$.
+Across $50$ random integer speed sets at $n \le 10$ on a $10^7$-point fine
+grid, plus the classical extremal families $\{1, \ldots, n\}$ at $n \le 20$
+verified by exact rational arithmetic, every configuration satisfies
+$\mathrm{gap}(\mathbf{v}) \ge 1/(n+1)$. No violations.
 \end{theorem}
 
 \section{Honest assessment}\label{sec:assessment}
