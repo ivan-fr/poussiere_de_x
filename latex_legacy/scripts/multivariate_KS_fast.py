@@ -18,11 +18,19 @@ ALPHA_STAR_MV = 0.1577
 
 
 def multi_indices_array(n, d):
-    """Return (n_mons, n) array of all alpha with sum(alpha) <= d."""
+    """Return (n_mons, n) array of all alpha with sum(alpha) <= d.
+    Smart enumeration: only emits valid tuples (no naive Cartesian product
+    with O(d^n) overhead -- crucial when n is large)."""
     out = []
-    for alpha in product(range(d + 1), repeat=n):
-        if sum(alpha) <= d:
-            out.append(alpha)
+    def _rec(prefix, remaining_n, remaining_d):
+        if remaining_n == 0:
+            out.append(tuple(prefix))
+            return
+        for k in range(remaining_d + 1):
+            prefix.append(k)
+            _rec(prefix, remaining_n - 1, remaining_d - k)
+            prefix.pop()
+    _rec([], n, d)
     return np.array(out, dtype=int)
 
 
