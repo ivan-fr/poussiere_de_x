@@ -1,5 +1,153 @@
 # Pandrosion — Claude Build Workflow
 
+## 🐍 PRIMARY WORKFLOW: Python flow folder (April 2026 onwards)
+
+**As of April 2026, all new Pandrosion work happens exclusively in Python via
+the `flow/` folder.** Each Python file `flow/NNN_<topic>.py` corresponds to
+one paper of the corpus and contains:
+
+1. The paper's verifications (numerical certificates).
+2. The proofs and derivations as Python comments / docstrings.
+
+**No new LaTeX papers are written.** The previous LaTeX-based workflow
+(in `latex_legacy/`) is preserved as historical artefact, but new contributions
+go to `flow/`.
+
+### Numbering convention (matches paper PDF numbers)
+
+- `000` — `articles/0pandrosion_pth.pdf` (founding p-th roots paper)
+- `001`–`009` — Univariate Pandrosion-Smale series (`articles/[1-9]pandrosion_smale.pdf`)
+- `010` — Multivariate variant (`articles/9pandrosion_smale_mv.pdf`,
+  `articles/9pandrosion_smale2_mv.pdf`)
+- `011`–`100` — Pandrosion legacy series
+  (`articles_pandrosion_legacy/NNpandrosion_*.pdf`)
+- `101`–`115+` — Algorithmic + open-conjecture series
+  (`articles_pandrosion_legacy/NNN_*.pdf`)
+
+### Standard iteration cycle
+
+#### Step 1 — Identify the paper
+
+For each paper in `articles/` or `articles_pandrosion_legacy/`, the
+corresponding flow file is named after the paper number with a short
+descriptive suffix.
+
+#### Step 2 — Read the source PDF
+
+Use the `Read` tool with the PDF and `pages: "1-2"` to get the abstract and
+introduction.
+
+#### Step 3 — Write the flow script
+
+Each script follows this template:
+
+```python
+"""
+PAPER: NNN (canonical: <filename>.pdf)
+TITLE: <full title>
+STATUS: <proved | conjectural | empirical | reformulation>
+DEPENDS: <comma-separated list of other paper numbers>
+
+THEORY
+======
+
+<paper's main definitions, theorems, proofs as comments>
+
+VERIFICATION
+============
+
+<what this script verifies>
+"""
+from __future__ import annotations
+import math
+import numpy as np
+
+
+def main():
+    print("=" * 80)
+    print(f"PAPER N — <title>")
+    print("=" * 80)
+
+    # [1] Verification 1
+    # [2] Verification 2
+    # ...
+
+
+if __name__ == "__main__":
+    main()
+```
+
+#### Step 4 — Run and verify
+
+```bash
+cd /Users/ivanbesevic/Documents/poussiere/flow
+python3 NNN_<topic>.py
+```
+
+**Always run the script after writing it.** Empirical verification is the
+load-bearing element of the flow workflow. If a script errors out or produces
+unexpected results, fix immediately before moving to the next paper.
+
+### Run all scripts
+
+```bash
+cd /Users/ivanbesevic/Documents/poussiere/flow
+for f in *.py; do echo "=== $f ==="; python3 $f 2>&1 | tail -10; done
+```
+
+### Common errors and fixes
+
+- **`TypeError: loop of ufunc does not support argument 0 of type int`**:
+  Python `math.comb` returns arbitrary-precision int that overflows numpy.
+  Use `math.lgamma`-based logarithmic computation:
+  ```python
+  log_binom = np.array([math.lgamma(d+1) - math.lgamma(k+1) - math.lgamma(d-k+1)
+                       for k in range(d+1)])
+  sigma = np.exp(0.5 * log_binom)
+  ```
+
+- **`SyntaxError: unterminated string literal`** in f-strings: avoid escaped
+  apostrophes; assign label to a variable first.
+
+- **`AttributeError` on `np.sqrt(int_value)`**: same as above; convert to
+  float first or use `math.sqrt`.
+
+- **Underflow on `slogdet` for large d**: use the identity-based route via
+  `slogdet(M)` rather than `slogdet(G_norm)`, or switch to `mpmath`.
+
+### Conventions
+
+- **Section headers in output**: `=` line of length 80 above and below.
+- **Test sections**: numbered `[1]`, `[2]`, ..., each with a one-line description
+  and a tabular result.
+- **Random seeds**: use `rng = np.random.default_rng(SEED)` with a fixed `SEED`
+  for reproducibility; comment explains the SEED choice if non-trivial.
+- **Tolerances**: machine precision (`1e-15`), conservative (`1e-9`),
+  empirical thresholds with rationale.
+
+### Cross-script imports
+
+Avoid imports between scripts. Each script is **self-contained**.
+Re-implementing utility functions (`Q()`, `kostlan_smale()`, etc.) is the
+preferred pattern — it makes each script a complete unit.
+
+### What NOT to do
+
+- **Don't write LaTeX papers**. The Pandrosion corpus is now Python-first.
+- **Don't import between scripts**. Each script must run standalone.
+- **Don't skip running the script**. A non-running script is useless.
+- **Don't claim more than what's verified**. Status field is honest:
+  `proved` only if there's a Lean proof; `empirical` for numerical-only.
+- **Don't fragment**. One paper = one script, no exceptions.
+
+### Promotion path
+
+Once a flow script is verified working, **no further action is needed**.
+The script itself is the canonical artefact. PDF papers in
+`articles_pandrosion_legacy/` remain as historical reference.
+
+
+
 ## ⛔ NEVER run `lake build` directly from macOS
 
 macOS iCloud/Time Machine sync corrupts `.lake/build/lib/Pandrosion/Core/`
