@@ -171,6 +171,8 @@ def is_box(A, n):
     if not A:
         return False
     max_exp = [max(exp[i] for exp in A) for i in range(n)]
+    if n > 1 and any(m == 0 for m in max_exp):
+        return False
     expected = set(box_support(n, max(max_exp) + 1))
     rectangular = set()
     def rec(prefix, slots):
