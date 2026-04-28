@@ -165,17 +165,24 @@ def _adaptive_cluster_roots(rows: Sequence[dict], sep: float, B: int,
         if all(abs(cap - old) > 1e-15 for old in caps):
             caps.append(cap)
 
+    seps: list[float] = []
+    for factor in (1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0):
+        cur = float(sep) * factor
+        if all(abs(cur - old) > 1e-18 for old in seps):
+            seps.append(cur)
+
     best_under: tuple[list[list[complex]], float] | None = None
-    best_any: tuple[list[list[complex]], float] | None = None
+    best_over: tuple[list[list[complex]], float] | None = None
     for cap in caps:
-        roots = _cluster_roots(rows, sep, cap)
-        if len(roots) == B:
-            return roots, cap
-        if len(roots) < B and (best_under is None or len(roots) > len(best_under[0])):
-            best_under = (roots, cap)
-        if best_any is None or abs(len(roots) - B) < abs(len(best_any[0]) - B):
-            best_any = (roots, cap)
-    return best_under or best_any or ([], preferred_cap)
+        for sep_try in seps:
+            roots = _cluster_roots(rows, sep_try, cap)
+            if len(roots) == B:
+                return roots, cap
+            if len(roots) < B and (best_under is None or len(roots) > len(best_under[0])):
+                best_under = (roots, cap)
+            if len(roots) > B and (best_over is None or len(roots) < len(best_over[0])):
+                best_over = (roots, cap)
+    return best_under or best_over or ([], preferred_cap)
 
 
 def _read_batch_rows(batches) -> list[dict]:
