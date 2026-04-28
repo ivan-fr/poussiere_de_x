@@ -57,6 +57,10 @@ def load_adaptive():
 
 m = load_adaptive()
 
+DEFAULT_MODES = ("system", "integral_gl", "blend")
+DEFAULT_RESCUE_MODES: Tuple[str, ...] = ()
+DEFAULT_OUTDIR = "/tmp/pandrosion_076_batches"
+
 
 @dataclass
 class BatchRow:
@@ -161,6 +165,16 @@ def parse_scales(s: str | None, n: int) -> List[float]:
 
 def encode_scales(scales: Sequence[float]) -> str:
     return ','.join(f"{float(v):.12g}" for v in scales)
+
+
+def parse_modes_arg(s: str | Sequence[str] | None, default: Sequence[str]) -> Tuple[str, ...]:
+    if s is None or s == "":
+        return tuple(default)
+    if hasattr(m, "parse_modes"):
+        return tuple(m.parse_modes(s))
+    if isinstance(s, str):
+        return tuple(x.strip() for x in s.split(",") if x.strip())
+    return tuple(str(x).strip() for x in s if str(x).strip())
 
 
 def _solve_real(A: List[List[float]], b: List[float], ridge: float = 0.0) -> List[float] | None:
@@ -522,6 +536,8 @@ def worker_run(args: argparse.Namespace) -> None:
 
     scales = parse_scales(getattr(args, "scales", ""), n)
     use_scaled = any(abs(math.log(max(1e-12, s))) > 1e-12 for s in scales)
+    modes = parse_modes_arg(getattr(args, "modes", ""), DEFAULT_MODES)
+    rescue_modes = parse_modes_arg(getattr(args, "rescue_modes", ""), DEFAULT_RESCUE_MODES)
 
     # Match the 074 chunked deterministic structure, then transport the whole
     # homotopy by z=S y.  This is the dD homothety analogue of x=A x'.
@@ -555,13 +571,15 @@ def worker_run(args: argparse.Namespace) -> None:
             tr = m.track_one_070(target_track, start_track, target_gamma, roots0[idx],
                                  tol=args.tol, max_steps=args.max_steps,
                                  max_epochs=args.max_epochs, quad_cap=args.quad_cap,
+                                 modes=modes, rescue_modes=rescue_modes,
                                  **track_kwargs)
             tr_payload = {
                 "ok": bool(tr.ok), "t": float(tr.t), "residual_scaled": float(tr.residual),
                 "steps": int(tr.steps), "epochs": int(tr.epochs),
             }
             if tr.ok or tr.t > 0.90:
-                y_polished = m.polish_070(target_track, tr.z, args.tol, args.quad_cap)
+                y_polished = m.polish_070(target_track, tr.z, args.tol, args.quad_cap,
+                                          modes, rescue_modes, None)
                 if y_polished is not None:
                     z_polished = vec_from_scaled(y_polished, scales) if use_scaled else list(y_polished)
                     # Verify in the original coordinates.  A short original
@@ -569,7 +587,8 @@ def worker_run(args: argparse.Namespace) -> None:
                     # and prevents equation-normalization artifacts.
                     rz = m.residual_norm(target, z_polished)
                     if not (math.isfinite(rz) and rz < 1e-7):
-                        zp2 = m.polish_070(target, z_polished, args.tol, args.quad_cap)
+                        zp2 = m.polish_070(target, z_polished, args.tol, args.quad_cap,
+                                           modes, rescue_modes, None)
                         if zp2 is not None:
                             z_polished = zp2
                     tr_payload["residual"] = float(m.residual_norm(target, z_polished)) if z_polished is not None else float("inf")
@@ -624,6 +643,8 @@ def run_batch(args: argparse.Namespace, stage: str, retry: int, indices: Sequenc
         "--max-epochs", str(args.max_epochs), "--quad-cap", str(args.quad_cap),
         "--dt0", str(args.dt0), "--dtmax", str(args.dtmax),
         "--scales", encode_scales(scales if scales is not None else getattr(args, "active_scales", [])),
+        "--modes", str(getattr(args, "modes", ",".join(DEFAULT_MODES))),
+        "--rescue-modes", str(getattr(args, "rescue_modes", ",".join(DEFAULT_RESCUE_MODES))),
     ]
     if args.equation_normalize:
         cmd.append("--equation-normalize")
@@ -831,7 +852,7 @@ def orchestrate(args: argparse.Namespace) -> None:
     target = m.gen_system(args.family, n, d, seed)
     B = m.bezout(target)
     terms = m.term_count(target)
-    outdir = Path(args.outdir or "/mnt/data/076_batches")
+    outdir = Path(args.outdir or DEFAULT_OUTDIR)
     batch_rows: List[BatchRow] = []
     base_trace_rows: List[dict] = []
 
@@ -1014,6 +1035,10 @@ def main() -> None:
     ap.add_argument("--max-steps", type=int, default=120)
     ap.add_argument("--max-epochs", type=int, default=4)
     ap.add_argument("--quad-cap", type=int, default=12)
+    ap.add_argument("--modes", default=",".join(DEFAULT_MODES),
+                    help="070 tracker/corrector modes, comma-separated")
+    ap.add_argument("--rescue-modes", default=",".join(DEFAULT_RESCUE_MODES),
+                    help="optional 070 rescue modes, comma-separated")
     ap.add_argument("--dt0", type=float, default=0.0, help="optional initial homotopy step for track_one_070; 0 uses tracker default")
     ap.add_argument("--dtmax", type=float, default=0.0, help="optional maximum homotopy step for track_one_070; 0 uses tracker default")
     ap.add_argument("--homothety", choices=["none", "system", "roots", "hybrid"], default="hybrid",
@@ -1026,7 +1051,7 @@ def main() -> None:
     ap.add_argument("--root-scale-trigger", type=float, default=1.75,
                     help="ignore root-stat homothety unless the robust root scale is outside [1/T,T]")
     ap.add_argument("--equation-normalize", action="store_true", help="normalize equations after variable homothety")
-    ap.add_argument("--outdir", default="/mnt/data/076_batches")
+    ap.add_argument("--outdir", default=DEFAULT_OUTDIR)
     ap.add_argument("--csv", default=None)
     ap.add_argument("--batch-csv", default=None)
     ap.add_argument("--md", default=None)
