@@ -44,6 +44,13 @@ pip-log.txt
 pip-delete-this-directory.txt
 .pytest_cache/
 
+# Generated benchmark/report outputs
+/*.csv
+/*.json
+/*.md
+/*_artifacts/
+!/README.md
+
 # Lean 4
 .lake/
 build/
