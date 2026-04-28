@@ -25,6 +25,7 @@ import concurrent.futures
 import importlib.util
 import json
 import math
+import os
 import subprocess
 import sys
 import time
@@ -175,6 +176,47 @@ def parse_modes_arg(s: str | Sequence[str] | None, default: Sequence[str]) -> Tu
     if isinstance(s, str):
         return tuple(x.strip() for x in s.split(",") if x.strip())
     return tuple(str(x).strip() for x in s if str(x).strip())
+
+
+def cpu_count_default() -> int:
+    return max(1, int(os.cpu_count() or 4))
+
+
+def auto_base_chunk_size(B: int, cores: int) -> int:
+    """Choose chunks small enough to parallelize high-degree cases.
+
+    The old 32-path chunks are good for tiny systems, but for KS(2,10+) a
+    single chunk can consume most of a 20s budget.  Target roughly one chunk per
+    available worker, capped at 16 paths to keep stragglers short.
+    """
+    if B <= 0:
+        return 1
+    target_chunks = min(B, max(1, min(cores, 16)))
+    return max(4, min(16, int(math.ceil(B / target_chunks))))
+
+
+def apply_run_shape(args: argparse.Namespace, B: int) -> None:
+    cores = cpu_count_default()
+    if args.base_chunk_size <= 0:
+        args.base_chunk_size = auto_base_chunk_size(B, cores)
+    else:
+        args.base_chunk_size = max(1, int(args.base_chunk_size))
+    chunks = max(1, int(math.ceil(B / max(1, args.base_chunk_size))))
+    if args.parallel_base <= 0:
+        args.parallel_base = min(chunks, max(1, min(cores, 16)))
+    else:
+        args.parallel_base = max(1, int(args.parallel_base))
+
+
+def batch_timeout_for(args: argparse.Namespace) -> float | None:
+    timeout = float(args.batch_timeout) if args.batch_timeout and args.batch_timeout > 0 else None
+    deadline = getattr(args, "_deadline", None)
+    if deadline is not None:
+        remaining = max(0.0, float(deadline) - time.time())
+        if remaining <= 0.0:
+            return 0.001
+        timeout = min(timeout, remaining) if timeout is not None else remaining
+    return timeout
 
 
 def _solve_real(A: List[List[float]], b: List[float], ridge: float = 0.0) -> List[float] | None:
@@ -653,7 +695,7 @@ def run_batch(args: argparse.Namespace, stage: str, retry: int, indices: Sequenc
     t0 = time.time()
     status = "ok"
     try:
-        subprocess.run(cmd, timeout=args.batch_timeout if args.batch_timeout > 0 else None,
+        subprocess.run(cmd, timeout=batch_timeout_for(args),
                        check=True, stdout=(None if args.verbose else subprocess.DEVNULL),
                        stderr=(None if args.verbose else subprocess.DEVNULL))
     except subprocess.TimeoutExpired:
@@ -852,6 +894,8 @@ def orchestrate(args: argparse.Namespace) -> None:
     target = m.gen_system(args.family, n, d, seed)
     B = m.bezout(target)
     terms = m.term_count(target)
+    apply_run_shape(args, B)
+    args._deadline = time.time() + float(args.time_budget) if args.time_budget and args.time_budget > 0 else None
     outdir = Path(args.outdir or DEFAULT_OUTDIR)
     batch_rows: List[BatchRow] = []
     base_trace_rows: List[dict] = []
@@ -894,6 +938,8 @@ def orchestrate(args: argparse.Namespace) -> None:
     # Micro-recovery: tiny batches in generated order. Stop as soon as full.
     retries_used = 1
     for retry in range(1, max(1, args.retries)):
+        if getattr(args, "_deadline", None) is not None and time.time() >= args._deadline:
+            break
         if args.stop_at_bezout and len(roots) >= B:
             break
         retries_used = retry + 1
@@ -906,6 +952,8 @@ def orchestrate(args: argparse.Namespace) -> None:
         micro_order = [i for i in (order[:limit] if limit > 0 else []) if i not in tried_retry]
         if micro_order:
             for s in range(0, len(micro_order), args.micro_batch):
+                if getattr(args, "_deadline", None) is not None and time.time() >= args._deadline:
+                    break
                 if args.stop_at_bezout and len(roots) >= B:
                     break
                 inds = micro_order[s:s + args.micro_batch]
@@ -921,6 +969,8 @@ def orchestrate(args: argparse.Namespace) -> None:
         # Fallback to 074-style stratified windows if micro-order is insufficient.
         if len(roots) < B and args.window_fallback:
             for inds in stratified_window_order(B, args.recovery_block):
+                if getattr(args, "_deadline", None) is not None and time.time() >= args._deadline:
+                    break
                 # Avoid exact repeats of indices already tried in this retry.
                 tried = set()
                 for b in batch_rows:
@@ -942,7 +992,8 @@ def orchestrate(args: argparse.Namespace) -> None:
     roots = cluster_roots(all_roots, sep=args.cluster_sep)
     residuals = [m.residual_norm(target, z) for z in roots]
     max_res = max(residuals) if residuals else float("inf")
-    status = "ok" if len(roots) >= B and max_res < 1e-7 else "partial"
+    budget_hit = getattr(args, "_deadline", None) is not None and time.time() >= args._deadline and len(roots) < B
+    status = "ok" if len(roots) >= B and max_res < 1e-7 else ("budget" if budget_hit else "partial")
     sec_total = time.time() - t0
     sec_observed = sum(b.seconds for b in batch_rows)
     # observed path seconds excludes subprocess startup; wall seconds includes it.
@@ -950,7 +1001,8 @@ def orchestrate(args: argparse.Namespace) -> None:
              f"base_chunks={args.base_chunk_size}; parallel_base={args.parallel_base}; speculative_micro={args.speculative_micro}; micro_limit={args.micro_limit}; "
              f"fallback={'on' if args.window_fallback else 'off'}; homothety={args.homothety}; "
              f"base_scales={encode_scales(base_scales)}; root_scales_raw={encode_scales(root_scales_raw)}; root_scales={encode_scales(root_scales)}; retry_scales={encode_scales(retry_scales)}; "
-             f"eq_norm={args.equation_normalize}; dt0={args.dt0 or 'default'}; dtmax={args.dtmax or 'default'}; no Newton-ELS")
+             f"eq_norm={args.equation_normalize}; dt0={args.dt0 or 'default'}; dtmax={args.dtmax or 'default'}; "
+             f"time_budget={args.time_budget or 'none'}; fast={args.fast}; no Newton-ELS")
     row075 = SummaryRow(args.family, n, d, seed, terms, B, "076-homothetic-system-geometry",
                         len(roots), len(roots) / max(1, B), path_rows, candidates,
                         len(batch_rows), retries_used, max_res, sec_total, status, notes)
@@ -1020,8 +1072,10 @@ def main() -> None:
     ap.add_argument("--case", default="2,8")
     ap.add_argument("--seed-index", type=int, default=0)
     ap.add_argument("--retries", type=int, default=2)
-    ap.add_argument("--base-chunk-size", type=int, default=32)
-    ap.add_argument("--parallel-base", type=int, default=1, help="run base chunks concurrently in isolated subprocesses")
+    ap.add_argument("--base-chunk-size", type=int, default=32,
+                    help="base paths per worker batch; 0 chooses an automatic performance value")
+    ap.add_argument("--parallel-base", type=int, default=1,
+                    help="run base chunks concurrently in isolated subprocesses; 0 uses CPU-aware auto parallelism")
     ap.add_argument("--speculative-micro", action="store_true", help="run the first retry micro-batch concurrently with the base chunks")
     ap.add_argument("--micro-batch", type=int, default=2)
     ap.add_argument("--micro-limit", type=int, default=16)
@@ -1029,6 +1083,10 @@ def main() -> None:
     ap.add_argument("--no-window-fallback", dest="window_fallback", action="store_false")
     ap.add_argument("--recovery-block", type=int, default=16)
     ap.add_argument("--batch-timeout", type=float, default=120.0)
+    ap.add_argument("--time-budget", type=float, default=0.0,
+                    help="soft wall-clock budget for the orchestration; still writes partial outputs")
+    ap.add_argument("--fast", action="store_true",
+                    help="performance profile: auto parallel base pass, no window fallback, no micro retries")
     ap.add_argument("--stop-at-bezout", action="store_true")
     ap.add_argument("--cluster-sep", type=float, default=1e-6)
     ap.add_argument("--tol", type=float, default=1e-9)
@@ -1069,7 +1127,14 @@ def main() -> None:
     ap.add_argument("--scales", default="")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
-    args.base_chunk_size = max(1, int(args.base_chunk_size))
+    if args.fast:
+        args.base_chunk_size = 0
+        args.parallel_base = 0
+        args.retries = 1
+        args.micro_limit = 0
+        args.window_fallback = False
+        args.homothety = "system"
+        args.equation_normalize = True
     args.micro_batch = max(1, int(args.micro_batch))
     args.scale_min = max(1e-6, float(args.scale_min))
     args.scale_max = max(args.scale_min, float(args.scale_max))

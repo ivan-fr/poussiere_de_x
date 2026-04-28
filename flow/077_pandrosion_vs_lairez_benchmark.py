@@ -346,6 +346,8 @@ def run_076_case(
         str(args.quad_cap),
         "--batch-timeout",
         str(args.batch_timeout),
+        "--time-budget",
+        str(args.timeout_076),
         "--homothety",
         cfg.homothety,
         "--scale-min",
@@ -391,7 +393,7 @@ def run_076_case(
         proc = subprocess.run(
             cmd,
             cwd=str(ROOT),
-            timeout=args.timeout_076 if args.timeout_076 > 0 else None,
+            timeout=(args.timeout_076 + args.timeout_grace) if args.timeout_076 > 0 else None,
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -645,13 +647,14 @@ def main() -> None:
     parser.add_argument("--max-bezout", type=int, default=256, help="Skip cases with Bezout above this; 0 disables")
     parser.add_argument("--dry-run", action="store_true")
 
-    parser.add_argument("--retries", type=int, default=2)
-    parser.add_argument("--base-chunk-size", type=int, default=32)
-    parser.add_argument("--parallel-base", type=int, default=2)
+    parser.add_argument("--retries", type=int, default=1)
+    parser.add_argument("--base-chunk-size", type=int, default=0)
+    parser.add_argument("--parallel-base", type=int, default=0)
     parser.add_argument("--micro-batch", type=int, default=2)
-    parser.add_argument("--micro-limit", type=int, default=16)
-    parser.add_argument("--batch-timeout", type=float, default=120.0)
-    parser.add_argument("--timeout-076", type=float, default=0.0, help="Wall timeout per 076 case/config; 0 disables")
+    parser.add_argument("--micro-limit", type=int, default=0)
+    parser.add_argument("--batch-timeout", type=float, default=20.0)
+    parser.add_argument("--timeout-076", type=float, default=20.0, help="Wall timeout per 076 case/config; 0 disables")
+    parser.add_argument("--timeout-grace", type=float, default=5.0, help="extra seconds for 076 to write partial outputs after --timeout-076")
     parser.add_argument("--stop-at-bezout", action="store_true", default=True)
     parser.add_argument("--no-stop-at-bezout", dest="stop_at_bezout", action="store_false")
     parser.add_argument("--cluster-sep", type=float, default=1e-6)
@@ -671,7 +674,7 @@ def main() -> None:
     parser.add_argument("--lairez-max-steps", type=int, default=420)
     parser.add_argument("--lairez-newton-iters", type=int, default=12)
     parser.add_argument("--lairez-retries", type=int, default=2)
-    parser.add_argument("--timeout-lairez", type=float, default=0.0, help="Wall timeout per Lairez case; 0 disables")
+    parser.add_argument("--timeout-lairez", type=float, default=20.0, help="Wall timeout per Lairez case; 0 disables")
 
     parser.add_argument("--outdir", default="077_benchmark_artifacts")
     parser.add_argument("--csv", default="077_benchmark.csv")
