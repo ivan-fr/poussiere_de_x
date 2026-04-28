@@ -36,7 +36,7 @@ Complex = complex
 Vector = List[Complex]
 
 HERE = Path(__file__).resolve().parent
-ADAPTIVE_PATH = HERE / "070_pandrosion_system_adaptive_ks.py"
+ADAPTIVE_PATH = HERE / "070_pandrosion_system_adaptive_geometry.py"
 LAIREZ_REF_CANDIDATES = [
     HERE / "074_benchmark_consolidated.csv",
     HERE / "071_ks28.csv",
