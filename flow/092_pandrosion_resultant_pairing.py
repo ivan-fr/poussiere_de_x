@@ -88,11 +88,13 @@ def _consume_092_args(argv: list[str]) -> list[str]:
             continue
         if arg == "--no-pair-recovery":
             os.environ["PANDROSION_092_PAIR_OFF"] = "1"
+            os.environ.pop("PANDROSION_092_PAIR_ON", None)
             pair_seen = True
             i += 1
             continue
         if arg == "--pair-recovery":
             os.environ["PANDROSION_092_PAIR_ON"] = "1"
+            os.environ.pop("PANDROSION_092_PAIR_OFF", None)
             pair_seen = True
             i += 1
             continue
@@ -110,8 +112,8 @@ def _consume_092_args(argv: list[str]) -> list[str]:
             continue
         out.append(arg)
         i += 1
-    if not pair_seen and os.environ.get("PANDROSION_092_PAIR_ON") != "1":
-        os.environ["PANDROSION_092_PAIR_OFF"] = "1"
+    if not pair_seen and os.environ.get("PANDROSION_092_PAIR_OFF") != "1":
+        os.environ["PANDROSION_092_PAIR_ON"] = "1"
     return out
 
 
