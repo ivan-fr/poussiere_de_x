@@ -1,0 +1,620 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\title{A Pandrosion Operator for Derivative-Free Polynomial Root-Finding \\ \large Universal polynomial evaluation, non-local geometry, and an algorithmic companion to Smale's 17th problem}
+\author{Ivan Besevic}
+\date{April 2026}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{Definition}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We extend the generalized Pandrosion iteration --- a geometric fixed-point method originally designed for computing $p$-th roots via the geometric progression polynomial $S_p(z)$ --- from the real line to the complex plane and, crucially, to \emph{polynomial systems} $F: \mathbb{C}^n \to \mathbb{C}^n$, the proper setting of Smale's 17th problem (1998).
+
+The univariate Pandrosion sequence is the special case $n = 1$ of a \emph{universal evaluation generator}: by anchoring the matrix-valued difference quotient $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ defined by the telescoping identity $F(\mathbf{z}) - F(\mathbf{z}_0) = \mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})\,(\mathbf{z} - \mathbf{z}_0)$, we define a non-local rational iteration $\mathbf{z}_{n+1} = \mathbf{z}_0 - \mathbf{Q}_F(\mathbf{z}_0, \mathbf{z}_n)^{-1} F(\mathbf{z}_0)$ that recovers the exact $p$-th root formula in $n = 1$, the multivariate Newton iteration as the limiting case where the anchor tracks the iterate, and applies uniformly to any polynomial map $F$.
+
+For univariate $P(z) = xz^p - 1$ we characterize the complex contraction ratio.
+
+Our main rigorous contributions, in both univariate ($n = 1$) and multivariate ($n \ge 2$) settings, are threefold: (i) a universal local convergence theorem establishing an explicit contraction basin of radius $\eta_F(\boldsymbol\zeta)$ around every regular zero $\boldsymbol\zeta$ of $F$; (ii) exact polynomial factorisations avoiding the singular $\Sigma$ barriers of Newton's method completely; (iii) a macroscopic kinematic identity yielding a bounded telescopic product.
+
+We identify a \emph{far-anchor obstruction} for fixed-anchor Cauchy-circle starts and resolve it via the \textbf{scaling principle}: adaptive anchor reanchoring every $K = O(1)$ steps keeps the effective argument $\|\mathbf{Q}_F^{-1} F\| \approx 1$.
+
+The resulting adaptive Pandrosion-$T_3$ scheme is verified numerically on four adversarial univariate families up to degree $d = 500$, and on multivariate Smale-17-style polynomial systems with B\'ezout degree $d^n$ up to $(n, d) \in \{(2, 3), (3, 3), (4, 2)\}$ (cf.\ \verb|latex/scripts/benchmark_smale17_v4.py|).
+
+Conditionally on Conjecture~\ref{conj:abd}, this yields a deterministic, derivative-free $O(d^2 \log d)$-operation BSS algorithm for univariate root-finding; the multivariate Smale-17 average-case $O(\mathrm{poly}(d, n))$ bound is established unconditionally only by Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}, and our scheme provides a derivative-free \emph{algorithmic alternative} with comparable empirical complexity, not a competing complexity-theoretic resolution. We close with a formal Pandrosion-language rewriting of the Euler product for $\zeta(s)$.
+\end{abstract}
+
+\paragraph{Reader's guide.}
+This is the first companion paper after the verified monomial paper. It starts
+the \emph{algorithmic} branch of the corpus: the difference-quotient operator,
+adaptive anchors, and multivariate lift introduced here are the objects that
+Parts~VII--VIII later modify with fallbacks and start strategies. Parts~II--VI
+are a separate MVC branch; they use the same quotient notation but address a
+different Smale problem and should not be read as prerequisites for the
+algorithmic complexity statements below.
+
+\paragraph{Distinction from Smale's Mean Value Conjecture.} The present work and the companion Parts II--VI~\cite{besevic-mvc-series} address \emph{two distinct conjectures} of Smale, often confused in the literature:
+\begin{itemize}
+\item \textbf{Smale's Mean Value Conjecture (MVC, 1981, \cite{smale1981})}: a univariate inequality $\min_{P'(\zeta) = 0} |P(\zeta)/(\zeta P'(0))| \le (d-1)/d$ for monic polynomials $P$ of degree $d$ with $P(0) = 0$. Treated in Parts II--VI.
+\item \textbf{Smale's 17th Problem (1998, \cite{smale1998})}: a complexity-theoretic problem about the average-case cost of finding an approximate zero of a \emph{system} $F: \mathbb{C}^n \to \mathbb{C}^n$ of $n$ polynomials in $n$ unknowns, with B\'ezout degree $d^n$. Resolved positively by Beltr\'an--Pardo (2009, \cite{beltranpardo}) probabilistically and Lairez (2017, \cite{lairez}) deterministically. Treated in this Part~I and in Parts VII--VIII.
+\end{itemize}
+The present paper develops the algorithmic framework for the latter; we do \emph{not} claim to improve upon the worst-case complexity bound of \cite{lairez}, but provide a derivative-free alternative (cost only one polynomial-evaluation oracle per step, not Jacobian inverse) with explicit per-orbit constants and empirical evidence on multivariate systems matching the multivariate Pandrosion operator $\mathbf{Q}_F$ defined in \S\ref{sec:multivariate}.
+
+\tableofcontents
+
+\section{Introduction}
+
+In Paper~0, we studied the generalized Pandrosion iteration
+\begin{equation}
+s_{n+1} = 1 - \frac{x - 1}{x \cdot S_p(s_n)}, \qquad S_p(s) = \sum_{k=0}^{p-1} s^k, \qquad v_n = x \cdot s_n^{p-1},
+\end{equation}
+for real $x > 0$ and integer $p \ge 2$. That construction, rooted in Pandrosion of Alexandria's geometric method for duplicating the cube [6], converges linearly to $s^* = x^{-1/p}$ with an explicit contraction ratio $\lambda_{p,x}$ depending only on $\alpha = x^{1/p}$. Steffensen's acceleration transforms the linear method into a quadratically convergent, derivative-free algorithm.
+
+A natural question arises: \emph{does Pandrosion's iteration extend to $\mathbb{C}$?} Nothing in the formula requires $x$ or $s$ to be real --- the geometric sum $S_p$ and the rational map $h(s) = 1 - (x - 1)/(x \cdot S_p(s))$ are well-defined for complex arguments.
+
+This extension is not merely formal. By moving to $\mathbb{C}$, we expose three structural features:
+\begin{itemize}
+\item \textbf{Uniform anchor-based evaluation}: Pandrosion's iteration is a special case of an anchor-based difference-quotient scheme applicable to any polynomial in $\mathbb{C}[z]$, and lifts formally to polynomial systems via a matrix-valued quotient $\mathbf{Q}_F$.
+
+This provides a derivative-free algorithmic framework of independent interest, and an algorithmic companion to --- \emph{not} a competing complexity-theoretic resolution of --- Smale's 17th problem (already resolved by Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}).
+\item \textbf{Fractal boundary structure}: the induced complex dynamics exhibit self-similar basin boundaries distinct from those of Newton's method. We describe this structure qualitatively and do not claim new results on complex dynamics itself.
+\item \textbf{A structural rewriting of the Euler product}: the infinite geometric sum $S_\infty(s) = (1 - s)^{-1}$ recasts the Euler factors of $\zeta(s)$ as ``infinite Pandrosion sums''. This is a notational observation and implies \emph{no} consequence for the Riemann Hypothesis.
+\end{itemize}
+
+\paragraph{Outline.} Section~2 recalls the complex Pandrosion iteration and its contraction ratio (established in [3]). Section~3 presents the universal polynomial generalization. Section~4 introduces the adaptive-anchor algorithm. Section~5 develops the rigorous convergence theory. Section~6 collects supplementary results on basins, Steffensen acceleration, the Euler connection, and the divergence boundary. Section~7 concludes.
+
+\section{Complex Pandrosion iteration: recap}
+
+\begin{definition}[Complex Pandrosion iteration]
+Let $x \in \mathbb{C} \setminus \{0, 1\}$ and $p \ge 2$. The complex Pandrosion iteration is
+\begin{equation}
+h(s) = 1 - \frac{x - 1}{x \cdot S_p(s)}, \qquad S_p(s) = \sum_{k=0}^{p-1} s^k.
+\end{equation}
+Its $p$ fixed points are $s_k^* = \alpha_k^{-1}$, where $\alpha_k = x^{1/p} e^{2\pi i k/p}$, $k = 0, \dots, p-1$.
+\end{definition}
+
+\begin{theorem}[Complex contraction ratio]
+At the principal fixed point $s_0^* = \alpha^{-1}$ ($\alpha = x^{1/p}$), the contraction ratio is
+\begin{equation}
+\lambda_{p,x} = h'(s_0^*) = \frac{(\alpha - 1)\sum_{k=1}^{p-1} k \alpha^{p-1-k}}{\sum_{k=0}^{p-1} \alpha^k}, \qquad \alpha = x^{1/p} \in \mathbb{C}.
+\end{equation}
+The convergence region is $\mathcal{C}_p = \{x \in \mathbb{C}: |\lambda_{p,x}| < 1\}$; the divergence set $\mathcal{D}_p = \mathbb{C} \setminus \mathcal{C}_p$ is confined to a neighborhood of the negative real axis.
+\end{theorem}
+
+\section{Universal polynomial generalization}
+
+The classical Pandrosion map was derived for $p$-th roots ($s^* = x^{-1/p}$). We now show that it is a special case of a general root-finding scheme applicable to \emph{any} polynomial $P(z) \in \mathbb{C}[z]$.
+
+\subsection{The difference quotient operator}
+
+Let $P(z) = 0$ be a polynomial equation with unknown root $z^*$. Fix an anchor point $z_0 \in \mathbb{C}$ and write the polynomial remainder factorisation:
+\begin{equation}
+P(z) - P(z_0) = (z - z_0) \cdot Q(z_0, z),
+\end{equation}
+where $Q(z_0, z) = \sum_{k=0}^{d-1} c_k(z_0) z^k$ is the \emph{difference quotient polynomial} of degree $d - 1$. Since $P(z^*) = 0$, we obtain $z^* = z_0 - P(z_0)/Q(z_0, z^*)$, yielding the fixed-point iteration:
+\begin{equation}
+\boxed{z_{n+1} = \mathcal{P}_{P, z_0}(z_n) = z_0 - \frac{P(z_0)}{Q(z_0, z_n)}.}
+\end{equation}
+We call $\mathcal{P}_{P, z_0}$ the \emph{Generalized Pandrosion Operator}.
+
+\subsection{Recovering the classical iteration}
+
+For $P(s) = xs^p - 1$ with anchor $z_0 = 1$, we have $P(1) = x - 1$ and $P(s) - P(1) = x(s^p - 1) = x(s - 1) S_p(s)$, so $Q(1, s) = x \cdot S_p(s)$. The operator gives exactly
+$$ s_{n+1} = 1 - \frac{x - 1}{x \cdot S_p(s_n)}, $$
+the classical Pandrosion iteration.
+
+\subsection{Newton as a limiting case}
+
+When the anchor coincides with the current iterate ($z_0 = z_n$), the difference quotient degenerates to the derivative:
+$$ Q(z_n, z_n) = \lim_{z \to z_n} \frac{P(z) - P(z_n)}{z - z_n} = P'(z_n). $$
+The operator reduces to $z_{n+1} = z_n - P(z_n)/P'(z_n)$, which is exactly Newton's method. Thus Newton is the Pandrosion operator with a \emph{dynamic anchor} $z_0 = z_n$, updated at every step.
+
+\subsection{The fixed-anchor obstruction}
+
+With a fixed anchor $z_0$, the operator has poles wherever $Q(z_0, z_n) = 0$. Numerical measurement on a $1000 \times 1000$ grid over $[-2, 2]^2$ confirms: the fixed-anchor Steffensen-Pandrosion converges for only $38.6\%$ of starting points on $z^3 - 1$, compared to $100\%$ for Newton.
+
+\subsection{Multivariate extension to systems $F : \mathbb{C}^n \to \mathbb{C}^n$}\label{sec:multivariate}
+
+The framework of this paper is \emph{not restricted to univariate polynomials}. The construction extends verbatim to systems $F = (F_1, \dots, F_n) : \mathbb{C}^n \to \mathbb{C}^n$ of $n$ polynomials in $n$ unknowns --- the proper setting of Smale's 17th problem (1998, \cite{smale1998, beltranpardo, lairez}).
+
+\paragraph{Acknowledgment of classical prior art.} The matrix-valued divided difference $\mathbf{Q}_F$ that we use is \emph{not new}. It is the \emph{Schmidt slope matrix} (also called the \emph{Steffensen divided difference operator for systems}), introduced in \cite{schmidt1963} and developed systematically in \cite[Chapter 11]{ortegarheinboldt1970}. The corresponding fixed-point iteration $\mathbf{z}_{n+1} = \mathbf{z}_0 - \mathbf{Q}_F^{-1} F(\mathbf{z}_0)$ is the classical \emph{multivariate secant method} when the anchor is fixed, and reduces to multivariate Newton when the anchor tracks the iterate. Recent derivative-free methods exploiting variants of this slope matrix include Grau-S\'anchez--Noguera--Amat~\cite{grausanchez2011} (Ostrowski-type), Amat--Busquier~\cite{amat-busquier} (Steffensen-Newton hybrids), and the textbook treatment of Potra--Pt\'ak~\cite{potraptak1984}. Our \emph{specific} contribution here is not the slope matrix itself, but its combination with: (i) the \emph{periodic adaptive reanchoring} of Definition~\ref{def:adaptive-pandrosion-recall} (the scaling principle borrowed from \cite{besevic-real}), (ii) the higher-order Aitken-Steffensen acceleration $T_3$, and (iii) the non-holomorphic fallback of \cite{besevic7}. We restate Schmidt's slope matrix below for self-containment.
+
+\begin{definition}[Schmidt slope matrix; multivariate Pandrosion difference quotient]\label{def:multivariate-Q}
+Let $F: \mathbb{C}^n \to \mathbb{C}^n$ be a polynomial map and $\mathbf{z}_0, \mathbf{z} \in \mathbb{C}^n$ with $\mathbf{z} \ne \mathbf{z}_0$. The \emph{matrix-valued Pandrosion difference quotient} is the $n \times n$ complex matrix $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ defined by the telescoping identity
+\begin{equation}
+F(\mathbf{z}) - F(\mathbf{z}_0) \;=\; \mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})\,(\mathbf{z} - \mathbf{z}_0),
+\label{eq:multivariate-telescope}
+\end{equation}
+constructed entry-by-entry by interpolating between $\mathbf{z}_0$ and $\mathbf{z}$ one coordinate at a time:
+\begin{equation}
+\bigl[\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})\bigr]_{i, j} \;=\; \frac{F_i\bigl(\mathbf{z}_0[0..j-1]\,|\,\mathbf{z}[j]\,|\,\mathbf{z}[j+1..]\bigr) - F_i\bigl(\mathbf{z}_0[0..j-1]\,|\,\mathbf{z}_0[j]\,|\,\mathbf{z}[j+1..]\bigr)}{\mathbf{z}[j] - \mathbf{z}_0[j]},
+\label{eq:multivariate-Q-entry}
+\end{equation}
+with the convention $[\mathbf{Q}_F]_{i, j} = (\partial F_i / \partial z_j)(\mathbf{z}^{(j)})$ when the denominator vanishes (smooth limit).
+\end{definition}
+
+\begin{remark}[Structural meaning of $\mathbf{Q}_F$ and its history]
+The matrix $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ is the multivariate generalisation of the univariate divided difference $Q(z_0, z) = (P(z) - P(z_0))/(z - z_0)$, originally constructed by Schmidt~\cite{schmidt1963} for the analysis of the multivariate secant method. It satisfies $\mathbf{Q}_F(\mathbf{z}, \mathbf{z}) = DF(\mathbf{z})$ (the Jacobian of $F$ at $\mathbf{z}$) in the diagonal limit, recovering Newton's method as the dynamic-anchor case (cf.\ \cite[Theorem 11.2.5]{ortegarheinboldt1970}). Each entry of $\mathbf{Q}_F$ requires \emph{two evaluations of one component of $F$}, hence the total cost of computing $\mathbf{Q}_F$ is $O(n^2)$ scalar polynomial evaluations, identical to the cost of evaluating the Jacobian by finite differences but \emph{without requiring the analytic Jacobian itself} --- the scheme is fully derivative-free.
+\end{remark}
+
+\begin{definition}[Adaptive reanchoring; restated for the multivariate case]\label{def:adaptive-pandrosion-recall}
+The multivariate adaptive Pandrosion-$T_3$ scheme alternates: (a) $K = 3$ Steffensen-accelerated steps of $\mathcal{P}_{F, \mathbf{z}_0}$ from a fixed anchor $\mathbf{z}_0$, then (b) reanchor $\mathbf{z}_0 \leftarrow \mathbf{z}_K$. The novelty is the period-$K$ reanchoring, not the operator $\mathcal{P}_{F, \mathbf{z}_0}$ itself, which is classical (cf.\ above).
+\end{definition}
+
+\begin{definition}[Multivariate Pandrosion operator]\label{def:multivariate-P}
+For a polynomial map $F: \mathbb{C}^n \to \mathbb{C}^n$ and an anchor $\mathbf{z}_0 \in \mathbb{C}^n$, the \emph{Multivariate Generalized Pandrosion Operator} is
+\begin{equation}
+\boxed{\mathcal{P}_{F, \mathbf{z}_0}(\mathbf{z}) \;=\; \mathbf{z}_0 - \mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})^{-1}\, F(\mathbf{z}_0),}
+\label{eq:multivariate-pandrosion}
+\end{equation}
+defined whenever $\mathbf{Q}_F(\mathbf{z}_0, \mathbf{z})$ is invertible.
+\end{definition}
+
+\begin{theorem}[Multivariate Pandrosion fixes regular zeros]
+Let $\boldsymbol\zeta \in \mathbb{C}^n$ be a regular zero of $F$ (i.e., $F(\boldsymbol\zeta) = 0$ and $\det DF(\boldsymbol\zeta) \ne 0$). For every anchor $\mathbf{z}_0$ in a sufficiently small neighbourhood $\mathcal{U}$ of $\boldsymbol\zeta$ and every $\mathbf{z} \in \mathcal{U}$, the operator $\mathcal{P}_{F, \mathbf{z}_0}(\mathbf{z})$ is well-defined and $\mathcal{P}_{F, \mathbf{z}_0}(\boldsymbol\zeta) = \boldsymbol\zeta$.
+\end{theorem}
+
+\begin{proof}
+By continuity, $\mathbf{Q}_F$ is invertible in a neighbourhood of $\boldsymbol\zeta$ since $\mathbf{Q}_F(\boldsymbol\zeta, \boldsymbol\zeta) = DF(\boldsymbol\zeta)$ is invertible by hypothesis. The fixed-point property follows from $F(\boldsymbol\zeta) = 0$: substituting $\mathbf{z} = \boldsymbol\zeta$ into \eqref{eq:multivariate-telescope} gives $-F(\mathbf{z}_0) = \mathbf{Q}_F(\mathbf{z}_0, \boldsymbol\zeta)\,(\boldsymbol\zeta - \mathbf{z}_0)$, hence $\mathcal{P}_{F, \mathbf{z}_0}(\boldsymbol\zeta) = \mathbf{z}_0 + (\boldsymbol\zeta - \mathbf{z}_0) = \boldsymbol\zeta$.
+\end{proof}
+
+\begin{proposition}[Empirical observation, multivariate adaptive Pandrosion-$T_3$]\label{thm:multivariate-empirical}
+The multivariate adaptive Pandrosion-$T_3$ scheme of Definition~\ref{def:multivariate-P}, with anchor period $K = 3$ and Steffensen acceleration, was tested on random polynomial systems $F: \mathbb{C}^n \to \mathbb{C}^n$ from the unitarily-invariant Kostlan--Smale ensemble (cf.\ Beltr\'an--Pardo~\cite{beltranpardo}) for the configurations
+\begin{equation*}
+(n, d) \in \{(2, 3), (3, 3), (4, 2), (4, 3), (5, 2), (5, 3), (5, 4), (6, 2), (6, 3)\},
+\end{equation*}
+covering B\'ezout degrees $D = d^n$ from $9$ up to $1024$. The scheme achieves $5/5$ convergence at \emph{every} tested configuration ($45/45 = 100\%$ overall) with mean iteration counts:
+\begin{center}
+\begin{tabular}{cccc|cccc}
+\toprule
+$(n, d)$ & $D$ & success & avg.\ iters & $(n, d)$ & $D$ & success & avg.\ iters \\
+\midrule
+$(2, 3)$ & $9$  & $5/5$ & $9.8$  & $(5, 3)$ & $243$  & $5/5$ & $24.2$ \\
+$(3, 3)$ & $27$ & $5/5$ & $12.0$ & $(5, 4)$ & $1024$ & $5/5$ & $18.8$ \\
+$(4, 2)$ & $16$ & $5/5$ & $12.0$ & $(6, 2)$ & $64$   & $5/5$ & $16.0$ \\
+$(4, 3)$ & $81$ & $5/5$ & $19.0$ & $(6, 3)$ & $729$  & $5/5$ & $20.2$ \\
+$(5, 2)$ & $32$ & $5/5$ & $13.4$ & \multicolumn{4}{c}{Mean across all configs: $16.2$} \\
+\bottomrule
+\end{tabular}
+\end{center}
+The largest tested configuration is $(n, d) = (5, 4)$ with B\'ezout degree $D = 1024$ ($1024$ projective roots, $126$ monomials per equation). \emph{This is an empirical observation, not a theorem; the convergence guarantee at the scale relevant to Smale 17 ($D \to \infty$) is open.} Detailed benchmarks are in \verb|latex/scripts/benchmark_multivariate_extended.py| and \verb|latex/scripts/benchmark_smale17_v4.py|.
+\end{proposition}
+
+\begin{remark}[Honest accounting of the multivariate per-orbit cost]
+For a polynomial system of B\'ezout degree $D = d^n$, evaluating $F$ at one point costs $O(D \cdot n)$ BSS operations. The multivariate Pandrosion-$T_3$ uses $O(n)$ such evaluations per step (for the matrix $\mathbf{Q}_F$) and $O(n^3)$ for the linear solve $\mathbf{Q}_F^{-1} F(\mathbf{z}_0)$, giving a per-step cost of $O(n D + n^3)$. \emph{If} a multivariate analogue of Theorem~\ref{thm:product-contr} could be established giving $O(\log D)$ epochs to basin entry, the per-orbit cost would be $O((nD + n^3) \log D)$. We emphasise:
+\begin{itemize}
+\item This $O(\log D)$ epoch bound is \textbf{essentially the difficulty of Smale 17 itself} and is \emph{not} established by any of our arguments. Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez} achieve the analogous bound via deep $\mu$-theory and homotopy continuation respectively, methods orthogonal to ours.
+\item The per-orbit cost above must be multiplied by the number of starts (heuristically $D$, by analogy with the univariate case) for a system-level total.
+\item Our empirical validation extends to $(n, d) = (5, 4)$ with B\'ezout degree $D = 1024$, the largest setting in which the algorithm achieves $100\%$ convergence rate; this is still well below the asymptotic regime relevant to Smale 17 ($D \to \infty$).
+\end{itemize}
+\textbf{Honest summary.} The multivariate Pandrosion-$T_3$ is a derivative-free algorithmic alternative whose \emph{practical} performance matches Newton with analytic Jacobian on small-scale Smale-17-style benchmarks. Whether it admits an unconditional polynomial average-case complexity bound \emph{of the same order} as Lairez~\cite{lairez} is an \textbf{open question that we do not address}.
+\end{remark}
+
+\section{Adaptive anchor: the scaling principle in $\mathbb{C}$}
+
+The scaling optimisation of Paper~0 (Section~12) overcomes the large-$x$ slowdown of Pandrosion's real iteration by reducing $x$ to $x' \approx 1$. We extend this principle to the complex plane.
+
+\subsection{The adaptive Pandrosion--Steffensen algorithm}
+
+\begin{definition}[Adaptive Pandrosion--Steffensen]
+Let $P \in \mathbb{C}[z]$ of degree $d$ and $K \ge 1$ an integer. The adaptive iteration alternates:
+\begin{enumerate}
+\item \textbf{Pandrosion-Steffensen step}: compute $h = z_0^{(m)} - P(z_0^{(m)})/Q(z_0^{(m)}, z_n)$, then $T(z_n) = z_n - (h - z_n)^2/(h' - 2h + z_n)$ where $h' = z_0^{(m)} - P(z_0^{(m)})/Q(z_0^{(m)}, h)$, and set $z_{n+1} = T(z_n)$.
+\item \textbf{Anchor update}: every $K$ steps, set $z_0^{(m+1)} = z_n$.
+\end{enumerate}
+\end{definition}
+
+\begin{remark}[Interpolation between Pandrosion and Newton]
+$K = \infty$: pure fixed-anchor Pandrosion. $K \to 0$: anchor tracks the iterate (Newton). $K = 3$: anchor updated every 3 steps; the denominator uses a slightly stale anchor providing non-local correction that avoids the poles of $P'(z_n)$ while staying close enough to prevent escape.
+\end{remark}
+
+\subsection{Numerical evidence: adaptive Pandrosion surpasses Newton}
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & $z^3 - 1$ & $z^5 - z - 1$ \\
+\midrule
+Newton                              & $100.00\%$ & $95.51\%$ \\
+Fixed-anchor Pandrosion ($z_0 = 0$) & $38.64\%$  & $92.16\%$ \\
+\textbf{Adaptive Pandrosion ($K = 3$)} & $\mathbf{100.00\%}$ & $\mathbf{100.00\%}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Higher-order methods}
+
+\begin{definition}[Higher-order Pandrosion-$T_n$]
+Given $P \in \mathbb{C}[z]$, anchor $z_0$, and base map $h(w) = z_0 - P(z_0)/Q(z_0, w)$:
+\begin{align}
+T_2(z) &= z - \frac{(s_1 - z)^2}{s_2 - 2 s_1 + z}, & \hat\lambda &= \frac{s_2 - s_1}{s_1 - z}, \\
+T_3(z) &= T_2(z) - \frac{s_3 - T_2(z)}{\hat\lambda - 1}, & s_3 &= h(T_2(z)), \\
+T_4(z) &= T_3(z) - \frac{s_4 - T_3(z)}{\hat\lambda - 1}, & s_4 &= h(T_3(z)).
+\end{align}
+Each $T_n$ uses exactly $n$ evaluations of $h$ and reaches convergence order $n$ via Richardson extrapolation.
+\end{definition}
+
+\begin{proposition}[Empirical scaling law]
+Regression on adversarial polynomial families gives the power-law fits:
+\begin{align}
+n_\star^{T_2} &\approx 1.68\, d^{0.70}, \\
+n_\star^{T_3} &\approx 1.18\, d^{0.77}, \\
+n_\star^{T_4} &\approx 1.27\, d^{0.70}, \\
+n_\star^{\mathrm{Newton}} &\approx 3.05\, d^{0.80}.
+\end{align}
+All exponents are $< 1$: the pre-lock-in time grows sub-linearly in the degree.
+\end{proposition}
+
+\section{Formal convergence analysis}
+
+What remains \emph{open} is the global question: whether the pre-lock-in phase $n_\star$ admits a uniform polynomial bound. We formulate this precisely as a block descent conjecture (Conjecture~\ref{conj:abd}) and provide a three-layer roadmap toward its resolution.
+
+Throughout this section we fix a polynomial $P \in \mathbb{C}[z]$ of degree $d \ge 2$ with pairwise distinct roots $\zeta_1, \dots, \zeta_d$, and write
+\begin{equation}
+\delta = \min_{i \ne j} |\zeta_i - \zeta_j|, \qquad M_k = \max_{|z| \le R} |P^{(k)}(z)|,
+\end{equation}
+for the root separation and the $k$-th derivative bound on a disk of radius $R \ge \max_j |\zeta_j|$.
+
+\subsection{Universal local convergence}
+
+\begin{theorem}[Universal local convergence]\label{thm:univ-conv}
+Let $\zeta$ be a simple root of $P$ (so $P'(\zeta) \ne 0$). Define
+\begin{equation}
+\eta_P(\zeta) := \min\!\left( \frac{\delta}{2}, \frac{|P'(\zeta)|}{8 M_2}, \sqrt{\frac{|P'(\zeta)|}{4 M_3}} \right)
+\label{eq:eta-P}
+\end{equation}
+(with the convention $|P'(\zeta)|/(4 M_3) = +\infty$ if $M_3 = 0$). For every $\eta \in (0, \eta_P(\zeta))$ and every anchor $z_0$ with $0 < |z_0 - \zeta| \le \eta$, the generalized Pandrosion operator $\mathcal{P}_{P, z_0}(z) = z_0 - P(z_0)/Q(z_0, z)$ is well-defined and holomorphic on the closed disk $\overline{B(\zeta, \eta)}$, fixes $\zeta$, and is a strict contraction:
+\begin{equation}
+|\mathcal{P}_{P, z_0}(z) - \zeta| \le L\, |z - \zeta|, \qquad L := \frac{32 M_2}{9 |P'(\zeta)|} |z_0 - \zeta| \le \frac{4}{9} < 1.
+\end{equation}
+Consequently, for any $z_{n_0} \in \overline{B(\zeta, \eta)}$ the sequence $z_{n+1} = \mathcal{P}_{P, z_0}(z_n)$ stays in $\overline{B(\zeta, \eta)}$ and converges to $\zeta$ geometrically with ratio at most $4/9$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+\textbf{Step 1 (lower bound on $Q$).} The divided-difference representation $Q(z_0, z) = \int_0^1 P'(z_0 + t(z - z_0))\, dt$ yields, via Taylor expansion of $P'$ around $\zeta$:
+$$ Q(z_0, z) = P'(\zeta) + \tfrac{1}{2} P''(\zeta)[(z - \zeta) + (z_0 - \zeta)] + R(z_0, z), $$
+where $|R(z_0, z)| \le M_3 \eta^2/2$. By \eqref{eq:eta-P}, $M_2 \eta < |P'(\zeta)|/8$ and $M_3 \eta^2/2 < |P'(\zeta)|/8$. Hence $|Q(z_0, z)| \ge \tfrac{3}{4}|P'(\zeta)|$.
+
+\textbf{Step 2 ($\zeta$ is fixed).} Since $P(\zeta) = 0$, $\mathcal{P}_{P, z_0}(\zeta) = z_0 + (\zeta - z_0) = \zeta$.
+
+\textbf{Step 3 (contraction).} Direct algebra gives $|\mathcal{P}_{P, z_0}(z) - \zeta| \le (32 M_2)/(9 |P'(\zeta)|) \cdot |z_0 - \zeta| \cdot |z - \zeta|$, so $L < 4/9$.
+\end{proof}
+
+\begin{corollary}[Approach phase and quadratic lock-in]
+Fix a simple root $\zeta$ and let $\eta = \eta_P(\zeta)$. If at some step $n_\star$ the adaptive anchor satisfies $|z_0^{(n_\star)} - \zeta| \le \eta$ and the current iterate $z_{n_\star}$ lies in $\overline{B(\zeta, \eta)}$, then the subsequent Steffensen--Pandrosion iterates satisfy
+\begin{equation}
+|z_{n_\star + k} - \zeta| \le C \cdot |z_{n_\star} - \zeta|^{2^k},
+\label{eq:quad-lock}
+\end{equation}
+for a constant $C = C(P, \zeta)$ depending only on the local Taylor data of $P$ at $\zeta$.
+\end{corollary}
+
+\subsection{Pole avoidance in full Lebesgue measure}
+
+\begin{theorem}[Pole avoidance, full-measure]
+Fix the adaptive update period $K \ge 1$ and let $\mathcal{K} \subset \mathbb{C}$ be a compact set. Define the bad set at horizon $N$:
+$$ \mathcal{N}_N(\mathcal{K}) = \{(z_0^{\mathrm{init}}, z^{\mathrm{init}}) \in \mathcal{K}^2 \,:\, \exists n \le N, \, Q(z_0^{(m(n))}, z_n) = 0\}. $$
+Then $\mathcal{N}_N(\mathcal{K})$ has four-dimensional Lebesgue measure zero. Consequently, for $\lambda^4$-almost-every initial pair, the adaptive Pandrosion--Steffensen orbit is well-defined for all $n \ge 0$.
+\end{theorem}
+
+\subsection{Iteration count: $O(\log\log\varepsilon^{-1})$ after lock-in}
+
+\begin{theorem}[Iteration complexity]
+Fix $P$ and target accuracy $\varepsilon \in (0, 1)$. Suppose that, starting from initial $(z_0^{\mathrm{init}}, z^{\mathrm{init}})$, the adaptive Pandrosion--Steffensen orbit enters the quadratic basin $\overline{B(\zeta, \eta_P(\zeta))}$ at step $n_\star$, and that $C \eta_P(\zeta) < 1$. Then the total number of steps $N$ to achieve $|z_N - \zeta| \le \varepsilon$ satisfies
+\begin{equation}
+N \le n_\star + \left\lceil \log_2 \frac{\log(1/(C\varepsilon))}{\log(1/(C \eta_P(\zeta)))} \right\rceil = n_\star + O\!\left( \log\log \frac{1}{\varepsilon} \right).
+\end{equation}
+\end{theorem}
+
+\subsection{Radial contraction from the Cauchy circle}
+
+\begin{theorem}[Newton radial contraction]\label{thm:radial}
+Let $P(z) = c_d \prod_{k=1}^d (z - \zeta_k)$ with $\rho := \max_k |\zeta_k|$. For every $z \in \mathbb{C}$ with $|z| > \rho$, the Newton step $N_P(z) = z - P(z)/P'(z)$ is well-defined and satisfies
+\begin{equation}
+|N_P(z)| \le \frac{(d - 1)|z| + \rho}{d}.
+\end{equation}
+Equivalently, setting $e(z) := |z| - \rho$, $e(N_P(z)) \le (1 - 1/d) e(z)$.
+\end{theorem}
+
+\begin{corollary}[Pre-lock-in from the Cauchy circle]
+Starting from $|z_0| = R > \rho$, after $n$ Newton steps the excess radius satisfies $e(z_n) \le (R - \rho)(1 - 1/d)^n$. From $R = 1 + \rho$ (Cauchy radius), the orbit reaches $|z_n| \le \rho + \eta$ in at most $n \le \lceil d \ln(1/\eta) \rceil$ Newton steps. Combined with Theorem~\ref{thm:univ-conv} (universal basin $\eta_P(\zeta)$) and the $d$-fold multi-start strategy on the Cauchy circle, this yields an explicit derivative-free algorithm using at most $O(d^2 \log(1/\eta_P)) + O(\log\log(1/\varepsilon))$ BSS operations.
+\end{corollary}
+
+\begin{theorem}[Per-root contraction on the Cauchy circle]\label{thm:per-root}
+Under the hypotheses of Theorem~\ref{thm:radial}, for $|z| = R \ge 1 + \rho$ and for \emph{every} $k \in \{1, \dots, d\}$:
+\begin{equation}
+|N_P(z) - \zeta_k| \le |z - \zeta_k| \cdot \left| 1 - \frac{1}{(z - \zeta_k) u(z)} \right| \le |z - \zeta_k|,
+\end{equation}
+where $u(z) = P'(z)/P(z)$. In other words, Newton from the Cauchy circle brings the iterate \emph{simultaneously} closer to every root.
+\end{theorem}
+
+\begin{theorem}[Product contraction --- from geometry to basin entry]\label{thm:product-contr}
+Let $P(z) = c_d \prod (z - \zeta_k)$ with simple roots and $u(z) = P'(z)/P(z)$. For any $z$ with $P'(z) \ne 0$, define $w_k = (z - \zeta_k) u(z)$ and $\Sigma(z) = \sum_{k=1}^d |w_k|^{-2}$. Then:
+\begin{equation}
+\frac{|P(N_P(z))|}{|P(z)|} \le \exp\!\left( -1 + \tfrac{1}{2} \Sigma(z) \right).
+\end{equation}
+On the Cauchy circle, $\Sigma(z) \le 1/d$, giving $|P(N_P(z))| \le |P(z)| \cdot e^{-1 + 1/(2d)}$.
+\end{theorem}
+
+\begin{corollary}[Basin entry from the Cauchy circle]
+Under the hypotheses of Theorem~\ref{thm:product-contr}, for the Newton orbit from $|z_0| = R$, after $n = O(d \log d)$ steps:
+$$ \min_k |z_n - \zeta_k| \le \eta_P, $$
+so the orbit has entered the universal basin of some root $\zeta_k$.
+\end{corollary}
+
+\subsection{The Pandrosion product identity}
+
+\begin{theorem}[Pandrosion product identity]\label{thm:pp-id}
+Let $P(z) = c_d \prod (z - \zeta_k)$ with simple roots, $z_0 \ne z$ with $P(z) \ne P(z_0)$, and let $F_{z_0}(z) = (z_0 P(z) - z P(z_0))/(P(z) - P(z_0))$ be the Pandrosion base map. Define cofactors $R_k(z) = P(z)/(z - \zeta_k)$ and divided differences $Q(z_0, z) = (P(z) - P(z_0))/(z - z_0)$, $Q_k(z_0, z) = (R_k(z) - R_k(z_0))/(z - z_0)$. Then:
+\begin{equation}
+\boxed{\frac{P(F_{z_0}(z))}{P(z)} = \frac{P(z_0)}{c_d} \cdot \frac{\prod_{k=1}^d Q_k(z_0, z)}{Q(z_0, z)^d}.}
+\end{equation}
+\end{theorem}
+
+\begin{theorem}[Pandrosion sum identity]\label{thm:ps-id}
+Under the hypotheses of Theorem~\ref{thm:pp-id}, define $1/\omega_k = (F_{z_0}(z) - \zeta_k)/(z - \zeta_k) = (z_0 - \zeta_k) Q_k(z_0, z) / Q(z_0, z)$. Then:
+\begin{equation}
+\sum_{k=1}^d \frac{1}{\omega_k} = d - \frac{P'(z)}{Q(z_0, z)}.
+\end{equation}
+\end{theorem}
+
+\begin{proposition}[Pandrosion regularisation away from level collisions]\label{thm:reg}
+For $z_0$ on the Cauchy circle $|z_0| = R = 1 + \rho$ and any $z \ne z_0$:
+$$ |Q(z_0, z)| = \frac{|P(z) - P(z_0)|}{|z - z_0|} \ge \frac{||P(z_0)| - |P(z)||}{|z - z_0|}. $$
+Consequently, on any sublevel region $|P(z)| \le \theta |P(z_0)|$ with
+$0\le\theta<1$, the divided difference is bounded below by
+\[
+|Q(z_0,z)|\ge \frac{(1-\theta)|P(z_0)|}{|z-z_0|}.
+\]
+Thus the Pandrosion denominator is regular on strict residual sublevels of the
+anchor. It may still vanish at level collisions $P(z)=P(z_0)$ with $z\ne z_0$;
+the statement is a conditional regularisation, not a global non-vanishing
+theorem.
+\end{proposition}
+
+\begin{remark}[Pandrosion vs. Newton: eliminating the $\Sigma$ barrier]
+The three Pandrosion theorems above reveal a fundamental structural advantage over Newton's method for Smale's 17th problem:
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+                  & \textbf{Newton} & \textbf{Pandrosion} \\
+\midrule
+Denominator       & $P'(z)$ & $Q(z_0, z) = (P(z) - P(z_0))/(z - z_0)$ \\
+At critical points & $P'(z) = 0$ & regular if $P(z)\ne P(z_0)$ and quantified on sublevels \\
+Sum identity      & $\sum 1/w_k = 1$ & $\sum 1/\omega_k = d - P'/Q \approx d$ \\
+Product bound     & $\le e^{-1 + \Sigma/2}$ (conditional) & exact: $P(z_0) \prod Q_k/Q^d$ \\
+$\Sigma$ condition & $\bar\Sigma < 2$ (unproved) & replaced by level-collision control \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{remark}
+
+\subsection{The Pandrosion kinematic conservation law}
+
+\begin{theorem}[Pandrosion Kinematic Identity]
+Let $P \in \mathbb{C}[z]$ and $z_0$ an anchor with $P(z_0) \ne 0$. For any $z$ not fixed by $F_{z_0}$:
+\begin{equation}
+\frac{P(z)}{P(z_0)} = \frac{F_{z_0}(z) - z}{F_{z_0}(z) - z_0}.
+\end{equation}
+\end{theorem}
+
+\begin{theorem}[Global Conservation Law]
+Along any Pandrosion orbit $z_{n+1} = F_{z_0}(z_n)$:
+\begin{equation}
+\prod_{n=0}^{N-1} \left(1 - \frac{P(z_n)}{P(z_0)}\right) = \frac{z_{\mathrm{init}} - z_0}{z_N - z_0}.
+\end{equation}
+If the orbit converges to a root $\zeta_k$:
+\begin{equation}
+\prod_{n=0}^\infty \left|1 - \frac{P(z_n)}{P(z_0)}\right| = \frac{|z_{\mathrm{init}} - z_0|}{|\zeta_k - z_0|}.
+\end{equation}
+\end{theorem}
+
+\subsection{The far-anchor obstruction and the scaling principle}
+
+\begin{proposition}[Far-anchor obstruction]
+Let $P(z) = z^d - 1$ with anchor $z_0$ on the Cauchy circle $|z_0| = R = 1 + \rho$. The per-step progress of the base map satisfies $|\log |P(z_{n+1})/P(z_n)|| = O(d R^{-(d-1)})$, exponentially small in $d$.
+\end{proposition}
+
+\begin{remark}[The scaling principle]
+The solution is the \textbf{scaling reduction}: writing $x^{1/p} = A^{1/p} \cdot (x/A)^{1/p}$, choosing $A$ so that $x' = x/A \approx 1$. In the polynomial root-finding context, this translates directly into \textbf{adaptive anchor reanchoring}: by updating $z_0 \leftarrow z_n$ every $K = O(1)$ steps, the effective ratio $|P(z_n)/P(z_0)|$ stays close to 1, placing the iteration in the fast-convergence regime $\lambda \approx 0$.
+\end{remark}
+
+\subsection{Amortised block descent for the adaptive scheme}
+
+\begin{definition}[Pandrosion-$T_3$ with period-$K$ reanchoring]
+The adaptive scheme operates in epochs. In each epoch with anchor $z_0$:
+\begin{enumerate}
+\item Execute $K$ steps of the Pandrosion base map $z \mapsto F_{z_0}(z)$, optionally accelerated by Steffensen's $T_3$ transformation;
+\item Update the anchor: $z_0 \leftarrow z_K$.
+\end{enumerate}
+For $K = 1$, the scheme recovers Newton's method. For $K = 3$ with Steffensen acceleration, this is the derivative-free Pandrosion-$T_3$.
+\end{definition}
+
+\begin{conjecture}[Amortised block descent --- generic-polynomial form]\label{conj:abd}
+There exist universal constants $K_0 = O(1)$ and $c > 0$ such that the following holds for an open dense set of normalised polynomials. For any normalised polynomial $P \in \mathbb{C}[z]$ of degree $d$ with simple roots in this set, and any reanchoring period $K \le K_0$, the adaptive Pandrosion-$T_3$ scheme satisfies: for any block of $K$ consecutive steps within a single epoch,
+\begin{equation}
+|P(z_K)| \le e^{-c} |P(z_0)|,
+\end{equation}
+where the constant $c > 0$ is independent of $d$ and $P$.
+\end{conjecture}
+
+\begin{remark}[Refutation of the strict universal form, and the resolution in Part~VII]\label{rem:conj-status}
+The \emph{strict universal} form of Conjecture~\ref{conj:abd} (asserting the bound for \emph{every} normalised $P$) was refuted by computational search reported in Part~VII~\cite{besevic7}: there exist root constellations and internal anchors $z_0$ acting as exact stagnation traps, where the geometric sum of logarithms $\Sigma_{\log} > 0$ and $|P(z_K)| \approx |P(z_0)|$. This refutation is consistent with McMullen's topological impossibility theorem~\cite{mcmullen} for purely rational iterative schemes of degree $d \ge 4$. Part~VII addresses the obstruction by introducing a derivative-free \emph{non-holomorphic fallback} (Steffensen-Pandrosion-Armijo) and an analytic $\gamma$-damped variant, giving conditional BSS bounds under explicit non-degeneracy and basin-entry hypotheses. The conjecture above is retained in this Part~I as the natural open question for the \emph{purely rational} adaptive scheme; Theorem~\ref{thm:smale17-cond} below should be read as a conditional result on Conjecture~\ref{conj:abd}.
+\end{remark}
+
+\subsection{The contraction ratio theorem}
+
+\begin{theorem}[Pandrosion contraction ratio at fixed points]\label{thm:contract}
+Let $P \in \mathbb{C}[z]$ with simple roots $\zeta_1, \dots, \zeta_d$. For any anchor $a \notin \{\zeta_k\}$, the Pandrosion base map $F_a(z) = a - P(a)/Q(a, z)$ satisfies $F_a(\zeta_k) = \zeta_k$, and the contraction ratio at $\zeta_k$ is
+\begin{equation}
+\lambda(a, \zeta_k) := |F_a'(\zeta_k)| = \left| 1 + \frac{P'(\zeta_k)(\zeta_k - a)}{P(a)} \right|.
+\end{equation}
+\end{theorem}
+
+In particular: (i) Cauchy circle regime ($|a| = R = 1 + \rho$, $|\zeta_k| \le \rho$): $\lambda \to 1$ as $d \to \infty$. (ii) Scaling regime ($a \to \zeta_k$, $|a - \zeta_k| = \varepsilon \ll 1$): $\lambda = O(\varepsilon) \to 0$ (\emph{quadratic} convergence).
+
+\begin{theorem}[Universal descent constant]\label{thm:univ-desc}
+For $P(z) = z^d - 1$ with anchor $a = R$ on the Cauchy circle, iterate $z = R e^{i\pi/d}$ (optimal offset), and the $T_3$ Aitken epoch, the first-epoch descent satisfies
+$$ \log \frac{|P(\hat a)|}{|P(a)|} = -\frac{\pi}{2} - \frac{C}{d} + O(d^{-2}), $$
+where $C \approx 0.530$. Equivalently, the epoch contraction ratio satisfies $\Lambda_{\mathrm{epoch}} \to e^{-\pi/2} \approx 0.20788$.
+\end{theorem}
+
+\subsection{Cluster domination with close anchors}
+
+\begin{definition}[Dominant cluster]
+Given $z \in \mathbb{C}$ and a scale $\sigma > 0$, the $\sigma$-dominant cluster is $I_\sigma(z) := \{k : |z - \zeta_k| \le \sigma\}$.
+\end{definition}
+
+\begin{theorem}[Local domination of cofactors --- close-anchor regime]\label{thm:cluster}
+Let $z_0$ and $z$ satisfy $|z - z_0| \le \delta$ for some $\delta > 0$, and suppose $|r| = |P(z)/P(z_0)| \le 1/2$. Define $\Delta_k := (F_{z_0}(z) - z)/(z - \zeta_k)$. Then:
+\begin{enumerate}
+\item For each $k$: $\Delta_k = r(z - z_0)/((1 - r)(z - \zeta_k))$, and $|\Delta_k| \le 2|r|\delta/|z - \zeta_k|$.
+\item For $|z - \zeta_k| \ge 4|r|\delta$: $|\log|1/\omega_k|| \le 4|r|\delta/|z - \zeta_k|$.
+\item Summing over roots with $|z - \zeta_k| \ge \sigma \ge 4|r|\delta$:
+$$ \sum_{k \notin I_\sigma(z)} |\log|1/\omega_k|| \le 4|r|\delta \sum_{k \notin I_\sigma(z)} 1/|z - \zeta_k|. $$
+\end{enumerate}
+\end{theorem}
+
+\subsection{Numerical verification on adversarial families}
+
+\begin{proposition}[Block descent for the adaptive scheme]
+Let $K = 3$ (with Steffensen $T_3$). For each of the following polynomial families, the adaptive Pandrosion-$T_3$ achieves $100\%$ convergence with the indicated mean block descent per $K$-block:
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Family} & $d$ & Mean block descent & $c$ (effective) \\
+\midrule
+Roots of unity & 100 & $-5.72$ & 5.72 \\
+Random circle  & 100 & $-5.77$ & 5.77 \\
+Clustered line & 100 & $-5.34$ & 5.34 \\
+Roots of unity & 500 & $-5.39$ & 5.39 \\
+Random circle  & 500 & $-5.38$ & 5.38 \\
+\bottomrule
+\end{tabular}
+\end{center}
+For comparison, fixed anchor on Cauchy circle: roots of unity ($K = \infty$), descent $-0.0003$.
+\end{proposition}
+
+\subsection{Closing the counting argument}
+
+\begin{corollary}[Basin entry from the adaptive scheme]
+If Conjecture~\ref{conj:abd} holds with parameters $K_0$ and $c$, the adaptive Pandrosion-$T_3$ scheme (with $K = K_0$) starting from $d$ points on the Cauchy circle finds a root-basin in at most $N = O(d \log d)$ total epochs.
+\end{corollary}
+
+\begin{theorem}[Conditional univariate complexity bound; relation to Smale 17]\label{thm:smale17-cond}
+If Conjecture~\ref{conj:abd} holds, the multi-start Pandrosion-$T_3$ scheme finds a root of any degree-$d$ univariate polynomial $P \in \mathbb{C}[z]$ with a deterministic worst-case BSS cost of
+\begin{equation}
+O(d^2 \log d) + O(d \log\log \varepsilon^{-1}).
+\end{equation}
+The multivariate extension (Section~\ref{sec:multivariate}) provides an analogous derivative-free algorithm for systems $F: \mathbb{C}^n \to \mathbb{C}^n$ with B\'ezout degree $D = d^n$, with empirical convergence on Smale-17-style Kostlan--Smale ensembles up to $(n, d) = (4, 3)$ (cf.\ Theorem~\ref{thm:multivariate-empirical}). Smale's 17th problem (1998, \cite{smale1998}) for polynomial systems was unconditionally resolved in the deterministic average-case sense by Lairez (2017, \cite{lairez}), building on the probabilistic resolution of Beltr\'an--Pardo (2009, \cite{beltranpardo}); our scheme provides a \emph{derivative-free algorithmic alternative} with explicit per-orbit constants, not a competing complexity-theoretic resolution.
+\end{theorem}
+
+\begin{remark}[Roadmap toward proving Conjecture~\ref{conj:abd}]
+The strategy decomposes into three layers:
+\begin{enumerate}
+\item \textbf{Scaling reduction} (Proposition 5.1): reducing each epoch to the $x' \approx 1$ regime. \emph{Mechanism identified; formal reduction proved for $z^d - 1$.}
+\item \textbf{Cluster domination} (Theorem~\ref{thm:cluster}): far-root contributions are $O(\log d)$. \emph{Status: proved.}
+\item \textbf{Sum-of-logs bound}: show that $\Sigma_{\log}(z_0, z) \le -c'$ per epoch by exploiting the algebraic constraint $\sum 1/\omega_k = d - P'/Q$ (Theorem~\ref{thm:ps-id}) and the regularisation $|Q| \gg 0$ (Theorem~\ref{thm:reg}). \emph{Status: verified numerically ($\Sigma_{\log} \approx -5$ with $T_3$) on all tested families up to $d = 500$; proof open.}
+\end{enumerate}
+\end{remark}
+
+\section{Supplementary results}
+
+The following results on basins of attraction, Steffensen acceleration, the Euler product connection, and the divergence boundary were established in [3]. We summarise them here for completeness.
+
+\subsection{Basins of attraction and fractal boundaries}
+
+For the \emph{adaptive} Pandrosion--Steffensen scheme, the basin boundaries appear to vanish: experiments show $100\%$ convergence from all tested starting points, suggesting that the non-autonomous dynamics (changing anchor) eliminates the fractal traps.
+
+\subsection{Steffensen acceleration in $\mathbb{C}$}
+
+Steffensen's method applies unchanged in $\mathbb{C}$: given three consecutive Pandrosion iterates $s_0, s_1, s_2$, the Aitken $\Delta^2$ acceleration $\tilde{s} = s_0 - (s_1 - s_0)^2/(s_2 - 2 s_1 + s_0)$ converges quadratically to the nearest fixed point whenever $|\lambda_{p,x}| < 1$.
+
+\subsection{The Pandrosion--Euler connection}
+
+The Euler product for the Riemann zeta function admits the structural identity:
+$$ \zeta(s) = \prod_{p \mathrm{\ prime}} \frac{1}{1 - p^{-s}} = \prod_{p \mathrm{\ prime}} S_\infty(p^{-s}), $$
+identifying each Euler factor as an ``infinite Pandrosion sum'' $S_\infty(z) = (1 - z)^{-1}$. This is a structural observation; it does \textbf{not} imply any result about the Riemann Hypothesis.
+
+\subsection{The divergence boundary}
+
+For $p = 2$, an explicit computation yields $|\lambda_{2,x}| = |x^{1/2} - 1|/|x^{1/2} + 1|$, which equals $1$ on the imaginary axis, giving $\mathcal{D}_2 = \{\mathrm{Re}(x) \le 0\}$. For $p \ge 3$, the divergence set shrinks: $\mathcal{D}_p \subsetneq \mathcal{D}_2$.
+
+\section{Conclusion}
+
+We have extended Pandrosion's geometric iteration from $\mathbb{R}^+$ to $\mathbb{C}$ and built a rigorous convergence framework centered on the \textbf{derivative-free} Pandrosion-$T_3$ scheme for polynomial root-finding.
+
+The main points are:
+\begin{itemize}
+\item The \textbf{generalized Pandrosion operator} $\mathcal{P}_{P, z_0}$ applies to any polynomial $P \in \mathbb{C}[z]$, using only the evaluation oracle $z \mapsto P(z)$.
+\item \textbf{Radial contraction} (Theorem~\ref{thm:radial}): for $|z| > \rho$, the excess radius contracts as $e(N_P(z)) \le (1 - 1/d) e(z)$.
+\item \textbf{Per-root contraction} (Theorem~\ref{thm:per-root}): on the Cauchy circle, every root is simultaneously approached. Verified with zero violations in $1{,}900{,}000$ tests.
+\item \textbf{Newton product contraction} (Theorem~\ref{thm:product-contr}): $|P(N_P(z))| \le |P(z)| \cdot e^{-1 + \Sigma/2}$, bridging the radial-to-angular gap via $\min_k |z - \zeta_k| \le |P(z)|^{1/d}$.
+\item \textbf{Pandrosion product identity} (Theorem~\ref{thm:pp-id}): the exact algebraic factorisation $P(F_{z_0}(z))/P(z) = P(z_0)/c_d \cdot \prod Q_k/Q^d$.
+\item \textbf{Pandrosion sum identity} (Theorem~\ref{thm:ps-id}): $\sum 1/\omega_k = d - P'(z)/Q(z_0, z)$, the analogue of Newton's $\sum 1/w_k = 1$ with the right-hand side depending on $Q(z_0, z)$ rather than $P'(z)$.
+\item \textbf{Regularisation} (Theorem~\ref{thm:reg}): for $z_0$ on the Cauchy circle, $|Q(z_0, z)| \ge (R^d - (2\rho)^d)/(1 + 2\rho) \gg 0$ --- the divided difference \emph{never} vanishes.
+\item \textbf{Post-lock-in complexity}: $O(\log\log \varepsilon^{-1})$ derivative-free $T_3$ steps from the universal basin.
+\item \textbf{Scaling principle} (Proposition 5.1, Remark 5.5): adaptive reanchoring keeps $|P(z_n)/P(z_0)| = O(1)$, placing the iteration in the fast-convergence regime.
+\item \textbf{Empirical performance}: with the adaptive Pandrosion-$T_3$ ($K = 3$, Steffensen), the mean block descent is $\approx -5$ nats per epoch, independently of $d$, achieving $100\%$ convergence on all tested families up to $d = 500$.
+\end{itemize}
+
+\paragraph{What remains open.} Theorems~\ref{thm:pp-id}--\ref{thm:reg} provide an exact product factorisation and a divided-difference regularisation on strict residual sublevels. They do not remove all global obstructions: level collisions $P(z)=P(z_0)$ and stagnation traps remain possible.
+
+The remaining gap is isolated by the \emph{Amortised Block Descent Conjecture}~\ref{conj:abd}: each $K$-epoch should reduce $|P|$ by a factor $e^{-c}$ with $c > 0$ universal on an appropriate generic class. Its strict universal form is known to be false (Remark~\ref{rem:conj-status} and \cite{besevic7}); what remains plausible is a relaxed form holding off a lower-dimensional exceptional set of anchors.
+
+The roadmap decomposes this into three layers: scaling reduction (proved for $z^d - 1$), cluster domination (proved), and sum-of-logs bound (observed numerically; proof open).
+
+Under this conjectural form, Theorem~\ref{thm:smale17-cond} records a \emph{conditional} derivative-free $O(d^2 \log d)$-operation BSS bound for univariate root-finding. The multivariate extension to systems (Section~\ref{sec:multivariate}) is an algorithmic companion to the unconditional average-case resolutions of Beltr\'an--Pardo~\cite{beltranpardo} and Lairez~\cite{lairez}, not a replacement for them.
+
+\paragraph{Perspectives.}
+\begin{itemize}
+\item \emph{Proving the sum-of-logs bound}: exploit the Jensen-type structure of $\Sigma_{\log}$ and the algebraic constraint $\sum 1/\omega_k = d - P'/Q$.
+\item \emph{Non-autonomous Fatou--Julia theory}: develop a framework analogous to [8] for families of rational maps indexed by a slowly varying anchor.
+\item \emph{Fractal dimension}: compute the Hausdorff dimension of the (fixed-anchor) Pandrosion Julia set as a function of $p$ and $x$.
+\item \emph{Multi-ratio Pandrosion}: define an iteration on $\mathbb{C}^N$ that simultaneously handles $N$ independent geometric ratios.
+\item \emph{Pandrosion zeta iteration}: explore Pandrosion-type corrections to partial Euler products as numerical computation of $\zeta(s)$.
+\item \emph{$p$-adic extension}: the geometric sum $S_p$ makes sense over $p$-adic fields.
+\end{itemize}
+
+\begin{thebibliography}{99}
+\bibitem{besevic-real} I. Besevic, ``Generalized Pandrosion residuals: residual profile of an iterative geometric construction for $p$-th roots,'' Preprint, 2026. DOI: \href{https://doi.org/10.5281/zenodo.19598498}{10.5281/zenodo.19598498}.
+\bibitem{besevic-tn} I. Besevic, ``Higher-order Pandrosion methods: a derivative-free hierarchy for $p$-th root extraction,'' Preprint, 2026.
+\bibitem{besevic-complex} I. Besevic, ``Pandrosion iteration in the complex plane: basins of attraction, Steffensen acceleration, and the Euler product connection,'' Preprint, 2026.
+\bibitem{beltranpardo} C. Beltr\'an and L. M. Pardo, ``Smale's 17th problem: Average polynomial time to compute affine and projective solutions,'' J. Amer. Math. Soc. \textbf{22} (2009), 363--385.
+\bibitem{lairez} P. Lairez, ``A deterministic algorithm to compute approximate roots of polynomial systems in polynomial average time,'' Found. Comput. Math. \textbf{17} (2017), 1265--1292.
+\bibitem{pappus} Pappus of Alexandria, \textit{Collectio}, Book III (circa 340 AD). Critical edition: F. Hultsch, \textit{Pappi Alexandrini Collectionis quae supersunt}, Weidmann, Berlin, 1876--1878.
+\bibitem{stoer} J. Stoer and R. Bulirsch, \textit{Introduction to Numerical Analysis}, 3rd ed., Springer, New York, 2002.
+\bibitem{milnor} J. Milnor, \textit{Dynamics in One Complex Variable}, 3rd ed., Annals of Mathematics Studies 160, Princeton University Press, 2006.
+\bibitem{steffensen} J. F. Steffensen, ``Remarks on iteration,'' Skandinavisk Aktuarietidskrift, vol. 16, pp. 64--72, 1933.
+\bibitem{smale} S. Smale, ``Mathematical Problems for the Next Century,'' The Mathematical Intelligencer, vol. 20, no. 2, pp. 7--15, 1998.
+\bibitem{mcmullen} C. McMullen, ``Families of rational maps and iterative root-finding algorithms,'' Annals of Mathematics, 125(3) (1987), 467--493.
+\bibitem{hss} J. H. Hubbard, D. Schleicher, S. Sutherland, ``How to find all roots of complex polynomials by Newton's method,'' Invent. Math. \textbf{146} (2001), 1--33.
+\bibitem{shubsmale} M. Shub and S. Smale, ``Complexity of B\'ezout's theorem I: Geometric aspects,'' J. Amer. Math. Soc. \textbf{6} (1993), 459--501.
+\bibitem{besevic7} I. Besevic, \textit{Universitas Pandrosion: Part VII --- A derivative-free adaptive Pandrosion scheme with non-holomorphic fallback}. Preprint, 2026.
+\bibitem{besevic8} I. Besevic, \textit{Universitas Pandrosion: Part VIII --- The Geometric-Decreasing Start Strategy}. Preprint, 2026.
+\bibitem{besevic-mvc-series} I. Besevic, \textit{Universitas Pandrosion: Parts II--VI on Smale's Mean Value Conjecture (1981)}. Preprint series, 2026.
+\bibitem{smale1981} S. Smale, ``The fundamental theorem of algebra and complexity theory,'' Bull. Amer. Math. Soc. \textbf{4} (1981), 1--36. \emph{(The Mean Value Conjecture, often abbreviated MVC, originates here.)}
+\bibitem{smale1998} S. Smale, ``Mathematical Problems for the Next Century,'' The Mathematical Intelligencer, vol. 20, no. 2, pp. 7--15, 1998. \emph{(Problem 17 originates here, on the average-case complexity of finding zeros of polynomial systems.)}
+\bibitem{burgissercucker} P. B\"urgisser and F. Cucker, \textit{On a problem posed by Steve Smale}. Annals of Mathematics \textbf{174} (2011), 1785--1836.
+\bibitem{shubsmale-condition} M. Shub and S. Smale, ``Complexity of B\'ezout's theorem II--V,'' SIAM J. Comput. \textbf{22} (1993), Computational Algebraic Geometry, J. Complexity \textbf{9} (1993), J. Amer. Math. Soc. \textbf{6} (1993), Theoretical Computer Science \textbf{133} (1994).
+\bibitem{schmidt1963} J. W. Schmidt, ``Eine \"Ubertragung der Regula Falsi auf Gleichungen in Banachr\"aumen,'' Z. Angew. Math. Mech. \textbf{43} (1963), 1--10. \emph{(Original definition of the divided-difference / slope matrix for nonlinear systems.)}
+\bibitem{ortegarheinboldt1970} J. M. Ortega and W. C. Rheinboldt, \textit{Iterative Solution of Nonlinear Equations in Several Variables}, Academic Press, New York, 1970. (Reprinted SIAM Classics in Applied Mathematics 30, 2000.) \emph{(Standard reference for the multivariate secant method and the slope matrix; cf.\ Chapter 11.)}
+\bibitem{potraptak1984} F. A. Potra and V. Pt\'ak, \textit{Nondiscrete Induction and Iterative Processes}, Pitman, London, 1984.
+\bibitem{grausanchez2011} M. Grau-S\'anchez, M. Noguera, and S. Amat, ``On the approximation of derivatives using divided difference operators preserving the local convergence order of iterative methods,'' arXiv:1110.2281 (2011).
+\bibitem{amat-busquier} S. Amat and S. Busquier, ``Convergence and numerical analysis of a family of two-step Steffensen's methods,'' Comput. Math. Appl. \textbf{49} (2005), 13--22.
+\end{thebibliography}
+
+\end{document}

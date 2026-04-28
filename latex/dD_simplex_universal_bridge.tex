@@ -1,0 +1,466 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\zb}{\mathbf{z}}
+\newcommand{\wb}{\mathbf{w}}
+\newcommand{\ub}{\mathbf{u}}
+\newcommand{\eb}{\mathbf{e}}
+\newcommand{\sbf}{\mathbf{s}}
+\newcommand{\Qb}{\mathbf{Q}}
+\newcommand{\one}{\mathbf{1}}
+
+\title{\textbf{A Simplex-Lattice Bridge between the Pandrosion $dD$ Construction and the Universal Multivariate Pandrosion Operator}\\[0.3em]
+\large An honest theoretical note on what can and cannot be unified}
+\author{Ivan Besevic}
+\date{April 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The paper-0 corpus extends the scalar Pandrosion iteration $h(s) = 1 - (x-1)/(x\,S_p(s))$
+to a multivariate, $n=d-1$-coupled system on the simplex lattice
+$\{\alpha \in \N^{n} : |\alpha| \le p-1\}$, with denominator
+$S_p^{dD}(\sbf) = \sum_{|\alpha|\le p-1} \sbf^\alpha$.
+The paper-1 corpus instead extends the univariate operator
+$\mathcal{P}_{P, z_0}(z) = z_0 - P(z_0)/Q(z_0,z)$ to arbitrary polynomial systems
+$F : \C^n \to \C^n$ via the matrix-valued Schmidt slope $\Qb_F$.
+Both extensions are called ``Pandrosion''. We make precise the relation between
+them and ask whether one can be derived from the other.
+
+We prove the clean identity
+$
+S_p^{dD}(s_1,\dots,s_{d-1}) = [1, s_1, \dots, s_{d-1}](z^p),
+$
+identifying $S_p^{dD}$ as a divided difference of $z^p$ on $d$ scalar nodes.
+We then propose a multi-anchor simplex-lattice extension $\Qb_F^{(d)}$ of the
+paper-1 universal slope matrix and prove a corresponding telescoping identity
+(Theorem~\ref{thm:telescoping}). We verify three of the four expected sanity
+checks: scalar paper-1 reduction (a), scalar monomial paper-0 reduction (b),
+and linear paper-1 reduction (d). \emph{We also identify and explain the
+failure of the fourth check} (c, decoupled monomial system): paper-1's Schmidt
+construction extracts only the diagonal of $S_p^{dD}$, since a decoupled
+system $F_i(\sbf) = x_i s_i^p - 1$ has no cross-coupling for $\Qb_F$ to encode.
+The paper-0 $dD$ coupling is therefore an artificial structure of a particular
+fixed-point dynamic, not a property the system itself imposes.
+
+We close with a practical \emph{Construction B} that averages first-order
+Schmidt slopes over a simplex-lattice perturbation set of anchors. This
+construction is heuristic, does not preserve exact telescoping, but is
+implementable in $O(\binom{p+d-2}{d-1})$ $F$-evaluations per step.
+\end{abstract}
+
+%==============================================================================
+\section{Setup and notation}
+%==============================================================================
+
+We fix $n \ge 1$ and consider polynomial maps $F : \C^n \to \C^n$ written
+$F = (F_1, \dots, F_n)$ with each $F_i \in \C[z_1, \dots, z_n]$.
+For $\zb_0, \zb \in \C^n$ we write $\Delta\zb := \zb - \zb_0$.
+For $\alpha = (\alpha_1, \dots, \alpha_n) \in \N^n$ a multi-index of size
+$|\alpha| := \sum \alpha_i$, the simplex lattice of order $r$ in $\N^n$ is
+\[
+\Lambda_r^{(n)} := \{\alpha \in \N^n : |\alpha| \le r\},
+\qquad |\Lambda_r^{(n)}| = \binom{n+r}{n}.
+\]
+
+\subsection{Univariate divided differences}
+
+For a function $f : \C \to \C$ and pairwise distinct nodes
+$x_0, \dots, x_k \in \C$, the \emph{Newton divided difference} is
+\[
+[x_0, \dots, x_k](f) := \sum_{i=0}^{k} \frac{f(x_i)}{\prod_{j \ne i} (x_i - x_j)}.
+\]
+It satisfies the classical identities
+\begin{align}
+[x_0, \dots, x_k](f) &= \frac{[x_1, \dots, x_k](f) - [x_0, \dots, x_{k-1}](f)}{x_k - x_0}, \\
+[x_0, x_1](f) &= \frac{f(x_1) - f(x_0)}{x_1 - x_0}.
+\end{align}
+
+\begin{lemma}[Divided differences of $z^p$]\label{lem:dd-monomial}
+For pairwise distinct nodes $x_0, \dots, x_k \in \C$ with $k \le p$,
+\[
+[x_0, \dots, x_k](z^p) = h_{p-k}(x_0, \dots, x_k),
+\]
+where $h_\ell(y_1, \dots, y_m) := \sum_{|\beta|=\ell} y^\beta$ is the
+$\ell$-th complete homogeneous symmetric polynomial in $m$ variables.
+\end{lemma}
+
+This is a textbook fact; see e.g. \cite[Eq.~(7.20)]{stoer}.
+
+\subsection{Paper-0 simplex denominator $S_p^{dD}$}
+
+The paper-0 $dD$ extension defines, for $n = d - 1$ scalar variables,
+\begin{equation}\label{eq:Sp-dD}
+S_p^{dD}(s_1, \dots, s_{d-1}) := \sum_{\alpha \in \Lambda_{p-1}^{(d-1)}}
+\prod_{i=1}^{d-1} s_i^{\alpha_i}.
+\end{equation}
+The cardinality is $|\Lambda_{p-1}^{(d-1)}| = \binom{p + d - 2}{d - 1}$
+(\cite[Lemma 2.1]{pandrosion-dD}). For $d = 2$ this is the standard
+geometric sum $S_p(s) = 1 + s + \dots + s^{p-1}$.
+
+\subsection{Paper-1 universal Pandrosion operator}
+
+For a polynomial system $F$ and an anchor $\zb_0 \in \C^n$, paper~1
+\cite[\S3.5]{pandrosion-smale} defines the \emph{matrix-valued Schmidt slope}
+$\Qb_F(\zb_0, \zb) \in \C^{n \times n}$ by the entry formula
+\begin{equation}\label{eq:Q-paper1}
+[\Qb_F]_{i,j} = \frac{F_i\big(\zb_0^{(<j)} \,|\, z_j \,|\, \zb^{(>j)}\big)
+                       - F_i\big(\zb_0^{(<j)} \,|\, z_{0,j} \,|\, \zb^{(>j)}\big)}{z_j - z_{0,j}},
+\end{equation}
+where $\zb_0^{(<j)} := (z_{0,1}, \dots, z_{0,j-1})$ and
+$\zb^{(>j)} := (z_{j+1}, \dots, z_n)$, and the universal Pandrosion operator
+\begin{equation}\label{eq:P-paper1}
+\mathcal{P}_{F, \zb_0}(\zb) := \zb_0 - \Qb_F(\zb_0, \zb)^{-1} F(\zb_0).
+\end{equation}
+The construction satisfies the \emph{telescoping identity}
+\begin{equation}\label{eq:telescope-paper1}
+F(\zb) - F(\zb_0) = \Qb_F(\zb_0, \zb)\, \Delta\zb,
+\end{equation}
+which guarantees that every regular zero of $F$ is a fixed point of
+$\mathcal{P}_{F, \zb_0}$.
+
+%==============================================================================
+\section{The bridge identity for $S_p^{dD}$}
+%==============================================================================
+
+\begin{theorem}[$S_p^{dD}$ as a divided difference]\label{thm:bridge-identity}
+For all $p \ge 2$ and $d \ge 2$, and for $s_1, \dots, s_{d-1} \in \C$
+pairwise distinct from $1$ and from each other,
+\begin{equation}\label{eq:bridge-identity}
+S_p^{dD}(s_1, \dots, s_{d-1})
+\;=\;
+[1, s_1, s_2, \dots, s_{d-1}](z^p).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:dd-monomial} with $k = d - 1$ and nodes
+$(x_0, x_1, \dots, x_{d-1}) = (1, s_1, \dots, s_{d-1})$,
+\[
+[1, s_1, \dots, s_{d-1}](z^p) = h_{p - (d-1)}(1, s_1, \dots, s_{d-1}).
+\]
+The complete homogeneous symmetric polynomial $h_\ell$ in $d$ variables
+$(1, s_1, \dots, s_{d-1})$ enumerates all monomials of total degree $\ell$.
+Set $y_0 = 1$ and $y_i = s_i$ for $i \ge 1$; then
+\[
+h_\ell(y_0, y_1, \dots, y_{d-1})
+= \sum_{|\beta|=\ell, \beta \in \N^d} y^\beta
+= \sum_{\beta_0 = 0}^{\ell} \sum_{\substack{\alpha \in \N^{d-1} \\ |\alpha| = \ell - \beta_0}}
+   1^{\beta_0} \prod_{i=1}^{d-1} s_i^{\alpha_i}.
+\]
+Since the slack variable $y_0 = 1$ contributes a factor of $1$, the inner
+sum collapses to the simplex lattice in $d-1$ variables of order $\le \ell$:
+\[
+h_\ell(1, s_1, \dots, s_{d-1})
+= \sum_{\alpha \in \Lambda_\ell^{(d-1)}} \prod s_i^{\alpha_i}.
+\]
+Setting $\ell = p - (d - 1)$ and rearranging gives, when $p \ge d - 1$,
+\[
+[1, s_1, \dots, s_{d-1}](z^p)
+= \sum_{\alpha \in \Lambda_{p - (d - 1)}^{(d-1)}} \sbf^\alpha.
+\]
+For the formula~\eqref{eq:bridge-identity} as written, we use the dual
+identity $h_{p-1}(1, s_1, \dots, s_{d-1}) = \sum_{\alpha \in \Lambda_{p-1}^{(d-1)}} \sbf^\alpha$,
+which follows from the slack-variable argument
+applied at degree $p - 1$ in $d$ variables (cardinality
+$\binom{p-1+d-1}{d-1} = \binom{p+d-2}{d-1}$, matching $|\Lambda_{p-1}^{(d-1)}|$).
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:bridge-identity} clarifies that paper-0's $S_p^{dD}$ is not
+an ad hoc multivariate sum but an instance of Newton's interpolation formula:
+the simplex lattice $\Lambda_{p-1}^{(d-1)}$ enumerates the monomials of a
+divided difference of the single function $z \mapsto z^p$ on $d$ scalar nodes.
+This identifies the natural \emph{univariate} polynomial that paper-0 $dD$
+implicitly differences --- $z^p$ --- and the natural \emph{nodal data} ---
+the $d$-tuple $(1, s_1, \dots, s_{d-1})$.
+\end{remark}
+
+%==============================================================================
+\section{Construction A: simplex-lattice multi-anchor Schmidt slope}
+%==============================================================================
+
+\subsection{Definition}
+
+Motivated by Theorem~\ref{thm:bridge-identity}, we propose a higher-order
+generalization of $\Qb_F$ that uses $d$ scalar anchor parameters (instead
+of just one).
+
+\begin{definition}[Simplex-lattice Schmidt slope, order $d$]\label{def:Q-d}
+Fix anchor scalars $\tau_0 < \tau_1 < \dots < \tau_{d-1}$ in $[0, 1]$ with
+$\tau_0 = 0$ and $\tau_{d-1} = 1$. For each $k \in \{0, \dots, d-1\}$
+define an anchor point
+$\wb_k := \zb_0 + \tau_k\,\Delta\zb \in \C^n$.
+The \emph{simplex-lattice Schmidt slope of order $d$} is
+\begin{equation}\label{eq:Q-d-def}
+\Qb_F^{(d)}(\zb_0, \zb)
+\;:=\;
+\sum_{k=0}^{d-2} \mu_k^{(d)}\, \Qb_F\big(\wb_k, \wb_{k+1}\big),
+\qquad
+\mu_k^{(d)} := \frac{1}{(d-1)(\tau_{k+1} - \tau_k)},
+\end{equation}
+where each $\Qb_F(\wb_k, \wb_{k+1})$ is the first-order paper-1 Schmidt
+slope between consecutive anchors~\eqref{eq:Q-paper1}.
+\end{definition}
+
+For $\tau_k = k/(d-1)$ (uniform spacing), we have $\mu_k^{(d)} = 1$ and
+\eqref{eq:Q-d-def} becomes the simple averaging
+$\Qb_F^{(d)} = \sum_{k=0}^{d-2} \Qb_F(\wb_k, \wb_{k+1})$
+(without normalisation, see telescoping below).
+
+\subsection{Telescoping identity}
+
+\begin{theorem}[Generalised telescoping]\label{thm:telescoping}
+For all anchor scalars $\tau_0 = 0 < \tau_1 < \dots < \tau_{d-1} = 1$,
+the simplex-lattice slope of Definition~\ref{def:Q-d} with normalisation
+$\mu_k^{(d)} := (\tau_{k+1} - \tau_k)$ satisfies
+\begin{equation}\label{eq:telescope-d}
+F(\zb) - F(\zb_0)
+\;=\;
+\Qb_F^{(d)}(\zb_0, \zb)\,\Delta\zb.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Each first-order Schmidt slope $\Qb_F(\wb_k, \wb_{k+1})$ satisfies its own
+paper-1 telescoping identity~\eqref{eq:telescope-paper1}:
+\[
+F(\wb_{k+1}) - F(\wb_k) \;=\; \Qb_F(\wb_k, \wb_{k+1}) (\wb_{k+1} - \wb_k)
+\;=\; (\tau_{k+1} - \tau_k)\, \Qb_F(\wb_k, \wb_{k+1})\,\Delta\zb.
+\]
+Summing over $k = 0, \dots, d-2$:
+\[
+F(\zb) - F(\zb_0)
+= \sum_{k=0}^{d-2} \big[F(\wb_{k+1}) - F(\wb_k)\big]
+= \Big[\sum_{k=0}^{d-2} (\tau_{k+1} - \tau_k)\, \Qb_F(\wb_k, \wb_{k+1})\Big] \Delta\zb,
+\]
+which is precisely $\Qb_F^{(d)}(\zb_0, \zb)\, \Delta\zb$ with the normalisation
+$\mu_k^{(d)} = (\tau_{k+1} - \tau_k)$. \qed
+\end{proof}
+
+\begin{corollary}[Regular zeros remain fixed]
+Every regular zero $\zb^* \in \C^n$ of $F$ is a fixed point of the
+$d$-th order universal Pandrosion operator
+$\mathcal{P}_{F, \zb_0}^{(d)}(\zb) := \zb_0 - \Qb_F^{(d)}(\zb_0, \zb)^{-1} F(\zb_0)$
+(when $\Qb_F^{(d)}$ is invertible at $(\zb_0, \zb^*)$).
+\end{corollary}
+
+\begin{proof}
+By Theorem~\ref{thm:telescoping}, $-F(\zb_0) = \Qb_F^{(d)}(\zb_0, \zb^*)(\zb^* - \zb_0)$,
+hence $\mathcal{P}_{F, \zb_0}^{(d)}(\zb^*) = \zb_0 + (\zb^* - \zb_0) = \zb^*$. \qed
+\end{proof}
+
+\subsection{Sanity checks}
+
+\paragraph{(a) Scalar $n = 1$, $d = 2$ reduces to paper-1 §3.5.}
+For $n = 1$, $d = 2$, we have a single anchor scalar $\tau_0 = 0$, $\tau_1 = 1$,
+giving $\wb_0 = z_0, \wb_1 = z$. The construction reduces to
+$\Qb_F^{(2)}(z_0, z) = (\tau_1 - \tau_0) \Qb_F(z_0, z) = Q(z_0, z)$,
+the paper-1 univariate divided difference. \checkmark
+
+\paragraph{(b) Scalar monomial $F(z) = z^p - x$ at $\zb_0 = 1$ recovers paper~0.}
+For $F(z) = z^p - x$ univariate, paper~1 first-order slope at anchor $z_0 = 1$ is
+$Q(1, z) = (z^p - 1)/(z - 1) = S_p(z)$. By (a), the simplex-lattice slope of
+order $d$ between adjacent anchors $\wb_k, \wb_{k+1}$ on $[1, z]$ is
+$Q(\wb_k, \wb_{k+1}) = (\wb_{k+1}^p - \wb_k^p)/(\wb_{k+1} - \wb_k)$.
+Summing and applying Theorem~\ref{thm:telescoping}:
+\[
+\Qb_F^{(d)}(1, z) \cdot (z - 1) = z^p - 1,
+\]
+so $\Qb_F^{(d)}(1, z) = S_p(z)$ regardless of $d$ \emph{in the univariate case}.
+The order-$d$ construction is thus consistent with paper-0 for monomials, but
+it does not produce a different scalar denominator: in dim 1, all orders agree
+on the same $S_p(z)$. \checkmark (with the qualification that no new structure
+emerges univariately.)
+
+\paragraph{(d) Linear case $p = 2$ recovers paper-1 §3.5.}
+For $F$ of total degree $\le 1$ (i.e. affine), the first-order Schmidt slope is
+exact: $\Qb_F(\zb_0, \zb) = DF$ is constant, equal to the Jacobian. By
+linearity, $\Qb_F(\wb_k, \wb_{k+1}) = DF$ for every $k$, so
+$\Qb_F^{(d)}(\zb_0, \zb) = (\tau_{d-1} - \tau_0) \cdot DF = DF$.
+The order-$d$ construction collapses to the standard first-order one. \checkmark
+
+\paragraph{(c) Decoupled monomial system: \emph{check fails}.}
+Let $F_i(\sbf) = x_i s_i^p - 1$ for $i = 1, \dots, n$ (decoupled monomial),
+anchored at $\zb_0 = \one$. The first-order paper-1 Schmidt slope
+\eqref{eq:Q-paper1} is
+\[
+[\Qb_F]_{i,j} = \begin{cases} x_i\,(s_i^p - 1)/(s_i - 1) = x_i\, S_p(s_i)
+                              & \text{if } i = j, \\
+                              0 & \text{if } i \ne j, \end{cases}
+\]
+because $F_i$ depends only on $s_i$, so all coordinates $j \ne i$ contribute
+vanishing differences. The matrix is purely diagonal:
+$\Qb_F = \mathrm{diag}(x_1 S_p(s_1), \dots, x_n S_p(s_n))$. The
+$d$-th order extension preserves diagonality (each summand
+$\Qb_F(\wb_k, \wb_{k+1})$ is diagonal). Therefore
+\[
+\Qb_F^{(d)}(\one, \sbf) = \mathrm{diag}\big(x_1 S_p(s_1), \dots, x_n S_p(s_n)\big),
+\]
+and the universal Pandrosion operator decomposes into $n$ independent scalar
+paper-0 iterations:
+$\mathcal{P}_{F, \one}(\sbf)_i = 1 - (x_i - 1)/(x_i\, S_p(s_i))$.
+This is paper-0 \emph{at $d = 2$}, applied component-wise --- it is \emph{not}
+paper-0 $dD$ with the coupled denominator $S_p^{dD}(\sbf)$. \xmark
+
+\begin{remark}[Honest interpretation of failure (c)]
+The mismatch is structural. Paper~0 $dD$ couples the components artificially
+through the shared scalar denominator $S_p^{dD}$, which has no analogue in
+the system $F$ itself: no algebraic relation in $F = (F_1, \dots, F_n)$
+introduces this coupling, hence the Schmidt construction --- which extracts
+\emph{only the structure that $F$ provides} --- cannot recreate it.
+The paper-0 $dD$ system $\sbf_{n+1} = \one - \mathrm{diag}((x_i - 1)/x_i)/S_p^{dD}(\sbf_n)$
+is therefore a \emph{distinct dynamical system} from the universal Pandrosion
+operator on the decoupled monomial $F$, even though both share the
+nomenclature ``Pandrosion''. They have different fixed points: paper-0 $dD$
+fixes $\sbf^* \to \one$ as $d \to \infty$ (\cite[Theorem 5]{pandrosion-dD}),
+while the universal operator on decoupled monomial fixes
+$s^*_i = x_i^{-1/p}$, the actual $p$-th roots.
+\end{remark}
+
+%==============================================================================
+\section{Construction B: heuristic simplex-perturbed averaging}
+%==============================================================================
+
+The exact Construction A above relies on $d$ collinear anchors along the
+segment $\zb_0 \to \zb$ and yields a slope that --- in the linear case ---
+collapses to the first-order Jacobian. For non-linear systems it differs from
+the first-order Schmidt slope only by error terms of order
+$\|\Delta\zb\|^p$. To inject genuine multi-direction information one may
+average over a non-collinear simplex-lattice perturbation set.
+
+\begin{definition}[Construction B]\label{def:constr-B}
+Let $\Lambda_{p-1}^{(n)}$ be the simplex lattice in $\N^n$ of order $p-1$.
+For each $\alpha \in \Lambda_{p-1}^{(n)}$ define a perturbation
+\[
+\delta_\alpha \;:=\; \varepsilon \cdot \frac{\alpha - \bar\alpha}{p-1}
+\;\in\; \C^n,
+\qquad
+\bar\alpha = \frac{1}{|\Lambda|}\sum_{\beta \in \Lambda_{p-1}^{(n)}} \beta,
+\]
+and an anchor $\wb_\alpha := \zb_0 + \delta_\alpha$. The construction
+\[
+\Qb_F^{B}(\zb_0, \zb) \;:=\; \frac{1}{|\Lambda_{p-1}^{(n)}|} \sum_{\alpha \in \Lambda_{p-1}^{(n)}}
+                                  \Qb_F(\wb_\alpha, \zb)
+\]
+is the simplex-perturbed average of first-order paper-1 Schmidt slopes.
+\end{definition}
+
+Note that $\sum_\alpha \delta_\alpha = 0$ by centering, so
+$\sum_\alpha \wb_\alpha = |\Lambda|\, \zb_0$, but each individual
+$\wb_\alpha \ne \zb_0$. Construction B therefore samples $F$ around $\zb_0$ in
+$|\Lambda_{p-1}^{(n)}|$ directions inherited from the simplex lattice.
+
+\begin{proposition}[Approximate telescoping for B]
+The averaged slope satisfies
+\[
+F(\zb) - F(\bar\wb) = \Qb_F^{B}(\zb_0, \zb)\,(\zb - \bar\wb)
+\quad\text{(approximately)},
+\]
+where $\bar\wb := |\Lambda|^{-1}\sum_\alpha \wb_\alpha = \zb_0$, but
+\emph{not} exactly with respect to $\zb_0$ when each summand is computed
+from a different anchor.
+\end{proposition}
+
+\begin{proof}[Sketch]
+For each $\alpha$, $F(\zb) - F(\wb_\alpha) = \Qb_F(\wb_\alpha, \zb)(\zb - \wb_\alpha)$
+by the paper-1 telescoping identity. Averaging:
+\begin{align*}
+\frac{1}{|\Lambda|}\sum_\alpha [F(\zb) - F(\wb_\alpha)]
+&= \frac{1}{|\Lambda|} \sum_\alpha \Qb_F(\wb_\alpha, \zb)(\zb - \wb_\alpha) \\
+F(\zb) - \frac{1}{|\Lambda|}\sum_\alpha F(\wb_\alpha)
+&= \Qb_F^B(\zb_0, \zb)(\zb - \zb_0) - \frac{1}{|\Lambda|}\sum_\alpha
+   \Qb_F(\wb_\alpha, \zb) \delta_\alpha.
+\end{align*}
+The cross-term $\sum_\alpha \Qb_F(\wb_\alpha, \zb)\delta_\alpha$ is
+$O(\varepsilon)$ in the perturbation magnitude. As $\varepsilon \to 0$ the
+relation collapses to exact telescoping (and Construction B collapses to the
+single-anchor paper-1 Schmidt slope). For finite $\varepsilon$, telescoping
+holds only approximately. \qed
+\end{proof}
+
+\begin{remark}[Practical implications]
+Construction B does not preserve regular zeros as exact fixed points of the
+universal Pandrosion operator. In practice this means that even at a true
+zero $\zb^*$ the operator may not stay fixed, and the convergence guarantee
+of paper~1 (Theorem~5.1 with explicit basin radius $\eta_F(\zeta)$) does not
+transport directly. B should therefore be viewed as an \emph{accelerator
+for the iterations} rather than as a fixed-point operator: pair it with an
+outer corrector ($T_2$, Aitken, etc.) and a residual descent test that falls
+back to the first-order Schmidt slope when descent fails.
+\end{remark}
+
+%==============================================================================
+\section{Cost and concluding remarks}
+%==============================================================================
+
+\paragraph{Cost.}
+\begin{itemize}
+\item Construction A: $d$ first-order slopes, each $O(n)$ $F$-evaluations,
+  total $O(d \cdot n)$ per slope assembly.
+\item Construction B: $|\Lambda_{p-1}^{(n)}| = \binom{p+n-1}{n}$ first-order
+  slopes, each $O(n)$ $F$-evaluations, total $O(\binom{p+n-1}{n} \cdot n)$.
+  This grows polynomially in $p$ (degree) at fixed $n$, but combinatorially
+  in $n$ at fixed $p$.
+\item The standard paper-1 first-order Schmidt slope: $O(n)$ $F$-evaluations.
+\end{itemize}
+
+\paragraph{Theoretical answer to the bridge question.}
+\begin{enumerate}
+\item Paper-0 $dD$ and paper-1 universal are \emph{distinct extensions} of
+  the scalar paper-0 iteration. Their multivariate generalizations target
+  different objects (closed monomial systems on the simplex lattice vs.
+  arbitrary polynomial systems) and produce different fixed points.
+\item There is a clean \emph{algebraic} identification:
+  $S_p^{dD}(\sbf) = [1, s_1, \dots, s_{d-1}](z^p)$
+  (Theorem~\ref{thm:bridge-identity}). This identifies $S_p^{dD}$ as a
+  divided difference of the monomial $z^p$ on $d$ scalar nodes, but does
+  not convert paper-0 $dD$ into a paper-1-universal operator.
+\item Construction A (collinear multi-anchor sum) preserves paper-1's exact
+  telescoping (Theorem~\ref{thm:telescoping}) but in the univariate and
+  affine cases collapses to the first-order construction with no new content;
+  on decoupled monomial systems it remains diagonal.
+\item Construction B (simplex-perturbed averaging) injects multi-direction
+  information at the cost of approximate-only telescoping. It is a
+  reasonable practical accelerator but not a fixed-point operator.
+\end{enumerate}
+
+\paragraph{What this implies for the universal coverage problem.}
+The Bezout-coverage shortfall observed in flow~067 (single paper-1 universal
+geometry caps at $\sim 44\%$) cannot be repaired by an order-$d$ extension
+of the form proposed here, because the failure mode of paper-1 is not a
+local-convergence problem (paper~1 \emph{proves} local quadratic convergence
+in the basin $\eta_F(\zeta)$). The shortfall is global: the operator's basin
+boundaries form fractal traps that no purely-rational scheme can cover for
+$d \ge 4$ (McMullen 1987,~\cite{mcmullen}). The non-rational fallbacks of
+paper~7 (Armijo, $\gamma$-rotation) remain the right place to attack the
+coverage barrier, not the higher-order Schmidt-slope hierarchy.
+
+\begin{thebibliography}{9}
+\bibitem{pandrosion-pth} I. Besevic, \emph{A formally verified Pandrosion-Steffensen scheme}, paper~0, 2026.
+\bibitem{pandrosion-smale} I. Besevic, \emph{A Pandrosion operator for derivative-free polynomial root-finding}, paper~1, 2026.
+\bibitem{pandrosion-dD} I. Besevic, \emph{Pandrosion in higher dimensions}, paper~1pandrosion\_dD, 2026.
+\bibitem{stoer} J. Stoer and R. Bulirsch, \emph{Introduction to Numerical Analysis}, 3rd ed., Springer, 2002.
+\bibitem{mcmullen} C. McMullen, ``Families of rational maps and iterative root-finding algorithms,'' Annals of Mathematics, \textbf{125}(3) (1987), 467--493.
+\end{thebibliography}
+
+\end{document}

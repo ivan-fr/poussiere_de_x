@@ -1,0 +1,313 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue, citecolor=blue}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\one}{\mathbf{1}}
+
+\title{\textbf{Pandrosion in Higher Dimensions, Part II}\\[0.3em]
+\large Complex Targets, Multi-Branch Convergence,\\
+and Steffensen Acceleration via Rank-One Reduction}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note extends the real Pandrosion $dD$ iteration of the previous note
+\cite{1pandrosion_dD} to targets $x \in \C$ and treats the acceleration
+problem.  We prove three results.  (i) The complex iteration retains
+exactly the same polynomial structure $S_p^{dD}$ and admits the same
+algebraic fixed-point equations over $\C$, with multi-branch
+selection of the limiting root determined by the basin of attraction of
+the initial point.  (ii) The rank-one Jacobian theorem of
+\cite{1pandrosion_dD} survives unchanged in $\C$: any orbit lands on the
+diagonal $\{s_1 = \cdots = s_n\}$ after exactly one iteration.  (iii) As a
+consequence of (ii), the multivariate iteration reduces to a SCALAR
+fixed-point map after one step, so the classical Aitken $\Delta^2$
+(Steffensen) accelerator from paper~0 \cite{0pandrosion_pth} applies
+directly to lift convergence from linear (rate $\lambda_{dD}$) to
+QUADRATIC.  We do \emph{not} need vector Brezinski-type accelerators:
+the rank-one collapse at $n = 1$ reduces the entire problem to one
+dimension in a single step.  Numerical verification is at machine
+precision.
+\end{abstract}
+
+%=====================================================================
+\section{Setup}
+%=====================================================================
+
+We follow the notation of \cite{1pandrosion_dD}.  Fix $p \geq 2$ and
+$d \geq 2$, set $n = d - 1$ and consider the multivariate geometric sum
+\begin{equation}
+  S_p^{dD}(s_1, \ldots, s_n) = \sum_{|\alpha| \leq p-1} s_1^{\alpha_1} \cdots s_n^{\alpha_n}.
+\end{equation}
+The $dD$ Pandrosion iteration with target ratios $x_1, \ldots, x_n \in
+\C \setminus \{0\}$ is
+\begin{equation}
+  \label{eq:H_dD_complex}
+  H_i(s) = 1 - \frac{x_i - 1}{x_i \cdot S_p^{dD}(s)}, \qquad i = 1, \ldots, n,
+\end{equation}
+viewed as a holomorphic map $\C^n \to \C^n$.  In the symmetric case
+$x_1 = \cdots = x_n = x \in \C$, we write $\Delta_d(s) = S_p^{dD}(s, \ldots, s) =
+\sum_{m=0}^{p-1} \binom{m+d-2}{d-2} s^m$.
+
+%=====================================================================
+\section{Complex Pandrosion $dD$}
+%=====================================================================
+
+\subsection{Symmetric fixed points over $\C$}
+
+The polynomial fixed-point equation $x \Delta_d(s)(1-s) = x-1$ defined
+in \cite{1pandrosion_dD} continues to make sense for $x \in \C$ and
+specifies a polynomial of degree $p$ in $s$.  Hence the symmetric
+fixed-point set has at most $p$ points in $\C$.
+
+\begin{theorem}[Complex fixed points]
+\label{thm:complex_fp}
+For $p = 2$ and any $x \in \C \setminus \{0\}$, the equation
+$(d-1) x s^2 - (d-2) x s - 1 = 0$ has exactly two complex roots
+\begin{equation}
+  s_*^{\pm} = \frac{(d-2) x \pm \sqrt{(d-2)^2 x^2 + 4(d-1) x}}{2(d-1) x},
+\end{equation}
+with $\sqrt{\cdot}$ the principal branch.  For $p = 3$, the cubic
+$\binom{d}{2} x s^3 - \binom{d-1}{2} x s^2 - (d-2) x s - 1 = 0$ has
+exactly three complex roots.
+\end{theorem}
+
+\begin{proof}
+Direct from the fundamental theorem of algebra applied to the same
+polynomial as in \cite{1pandrosion_dD}, but viewed over $\C$.  The
+coefficients are rational in $x$, hence the roots are algebraic
+functions of $x$. \qed
+\end{proof}
+
+\subsection{Multi-branch convergence}
+
+For $x \in \C$ and $p \geq 2$, the iteration
+\eqref{eq:H_dD_complex} has $p$ symmetric fixed points (from
+Theorem~\ref{thm:complex_fp}).  The orbit of $H$ from a starting point
+$s_0$ converges to one of these fixed points (when convergence holds),
+and the choice depends on the basin of attraction.
+
+\begin{remark}
+For $x = 1 + i$ at $(d, p) = (3, 2)$, numerical experiments show
+convergence to $s_* \approx 0.847 - 0.209\, i$.  Different starting
+points may land on the alternate root $s_*^{-}$; the boundary between
+the two basins is the algebraic curve
+$\{s \in \C : \text{Im}\, s = \text{Im}\, H(s)\}$.  We do not analyse
+this boundary here; the qualitative picture is that of paper~0
+\cite{0pandrosion_pth} extended to the complex plane.
+\end{remark}
+
+\subsection{Rank-one collapse persists in $\C$}
+
+\begin{theorem}[Rank-one collapse, complex case]
+\label{thm:rank1_complex}
+In the symmetric case $x_1 = \cdots = x_n = x \in \C \setminus \{0\}$, the
+map $H : \C^n \to \C^n$ from \eqref{eq:H_dD_complex} sends every point
+$s \in \C^n$ in one iteration to the diagonal $\{s_1 = \cdots = s_n\}$.
+That is, for any $s \in \C^n$, the components $H_1(s), \ldots, H_n(s)$ are
+identically equal.
+\end{theorem}
+
+\begin{proof}
+By construction $H_i(s) = 1 - (x-1)/(x \, S_p^{dD}(s))$ does not depend on
+$i$ when all ratios $x_i$ coincide.  Hence all components of $H(s)$ are
+equal, lying on the diagonal of $\C^n$. \qed
+\end{proof}
+
+This is a strictly algebraic statement, independent of the field;
+it holds verbatim for $\R$, $\C$, or any commutative ring containing the
+needed inverses.  In particular, the spectral analysis of
+\cite{1pandrosion_dD} (rank-1 Jacobian, eigenvalues
+$\{\lambda_{dD}, 0, \ldots, 0\}$) carries over to $\C$.
+
+%=====================================================================
+\section{Steffensen acceleration via rank-one reduction}
+%=====================================================================
+
+The combination of Theorem~\ref{thm:rank1_complex} and the linear
+convergence rate $\lambda_{dD}$ proved in \cite{1pandrosion_dD}
+\emph{automatically} reduces the multivariate accelerator design to the
+scalar one of paper~0.
+
+\subsection{The reduced scalar map}
+
+Define the scalar diagonal restriction of $H$:
+\begin{equation}
+  \label{eq:g_scalar}
+  g(s) := 1 - \frac{x - 1}{x \cdot \Delta_d(s)}, \qquad s \in \C.
+\end{equation}
+
+\begin{lemma}[Reduction]
+\label{lem:reduction}
+For any starting point $s_0 \in \C^n$, the orbit
+$s_0, H(s_0), H^2(s_0), \ldots$ of \eqref{eq:H_dD_complex}
+satisfies, for every $n \geq 1$, $s_n = (s_n^*, \ldots, s_n^*)$ where
+$s_n^*$ obeys the scalar iteration
+\[
+  s_{n+1}^* = g(s_n^*).
+\]
+\end{lemma}
+
+\begin{proof}
+By Theorem~\ref{thm:rank1_complex}, after one iteration all components
+are equal: $s_1 = c \one$ for some $c \in \C$.  On the diagonal
+$\{s_1 = \cdots = s_n = s\}$, $S_p^{dD}(s, \ldots, s) = \Delta_d(s)$ by
+definition, so $H_i(s\one) = 1 - (x-1)/(x \Delta_d(s)) = g(s)$.  Hence
+$H(s\one) = g(s) \one$, and the diagonal is invariant.  Iterating, $s_n
+= s_n^* \one$ with $s_{n+1}^* = g(s_n^*)$. \qed
+\end{proof}
+
+This reduction is the key.  It says that for the symmetric problem,
+\emph{only the scalar map $g$ matters}, regardless of the dimension $d$:
+the multivariate aspect is entirely absorbed by the polynomial
+$\Delta_d(s)$.  Acceleration techniques developed for scalar
+fixed-point iterations apply unchanged.
+
+\subsection{Aitken $\Delta^2$ on the reduced map}
+
+The classical Aitken $\Delta^2$ transformation
+\cite[Section~12]{0pandrosion_pth} applied to the scalar map $g$ produces
+the Steffensen iterate
+\begin{equation}
+  \label{eq:steffensen}
+  s^{\mathrm{St}}_{n+1} = s_n - \frac{(g(s_n) - s_n)^2}{g(g(s_n)) - 2 g(s_n) + s_n}.
+\end{equation}
+This is a function of $s_n$ requiring two evaluations of $g$ (and hence
+two evaluations of $\Delta_d$, i.e. four evaluations of $S_p^{dD}$).
+
+\begin{theorem}[Quadratic convergence of $dD$ Steffensen]
+\label{thm:steffensen_dD}
+Let $s_*$ be a symmetric fixed point of $g$ with $|g'(s_*)| =
+\lambda_{dD} < 1$ and $g'(s_*) \neq 1$.  Then the Steffensen iterate
+\eqref{eq:steffensen}, applied after the one-step diagonal projection of
+$H$, converges quadratically to $s_*$:
+\[
+  |s_{n+1}^{\mathrm{St}} - s_*| \leq K_S \cdot |s_n^{\mathrm{St}} - s_*|^2 + O(|s_n^{\mathrm{St}} - s_*|^3),
+\]
+with $K_S = \frac{1}{2}\, |g''(s_*)| / |1 - g'(s_*)|$.
+\end{theorem}
+
+\begin{proof}
+This is a direct application of the classical Steffensen theorem (see
+e.g.~\cite{0pandrosion_pth}, Theorem~12.1) to the scalar map $g$ at the
+fixed point $s_*$.  All hypotheses are satisfied: $g$ is holomorphic in a
+neighbourhood of $s_*$ (rational with no pole there since $\Delta_d(s_*)
+\neq 0$); $g'(s_*) = \lambda_{dD}$ has modulus $< 1$ by
+\cite{1pandrosion_dD}; $g'(s_*) \neq 1$ since $\lambda_{dD} < 1$.  The
+constant $K_S$ comes from the Taylor expansion of $g$ at $s_*$. \qed
+\end{proof}
+
+\begin{remark}[Why no Brezinski-vector is needed]
+A naive multivariate generalisation would replace Aitken $\Delta^2$ by
+Brezinski's vector $\Delta^2$ (Wynn $\eps$-algorithm at level 2), which
+uses the Samelson inverse of vectors.  Such an extension is unnecessary
+here: the rank-one collapse of Theorem~\ref{thm:rank1_complex} reduces
+the orbit to a one-dimensional sequence in $\C$ after a single
+iteration, on which the scalar Aitken $\Delta^2$ already provides
+quadratic order.  This is a remarkable feature of Pandrosion's
+geometric symmetry: the multivariate ``coupling'' through
+$S_p^{dD}$ is so strong that all orbits collapse to one dimension.
+\end{remark}
+
+%=====================================================================
+\section{Numerical verification}
+%=====================================================================
+
+The companion script
+\texttt{flow/005\_pandrosion\_dD\_complex\_steffensen.py} verifies each
+theorem to machine precision.  Highlights:
+
+\begin{itemize}
+\item \textbf{Theorem~\ref{thm:complex_fp}}: orbits with various $x \in \C$
+  (e.g.~$x = 1 + i$, $2 + 0.5\, i$, $1.5 + 2\, i$) at $d \in \{3, 4, 5\}$
+  and $p \in \{2, 3\}$ converge to the corresponding algebraic fixed
+  points with residual $|x \Delta_d(s_*)(1-s_*) - (x-1)| < 10^{-13}$.
+\item \textbf{Theorem~\ref{thm:rank1_complex}}: starting from
+  $s_0 = (0.1{+}0.2i, 0.4{-}0.1i, 0.6{+}0.3i, 0.9{-}0.5i)$ at $(d, p) =
+  (5, 2)$, $x = 1 + i$, the orbit lands on the diagonal at step $n = 1$
+  with component-spread exactly $0$.
+\item \textbf{Theorem~\ref{thm:steffensen_dD}}: at $(x, d, p) =
+  (1.5 + 0.5\, i, 4, 2)$, the orbit error sequences are
+  \[
+    \text{Linear:    } 6.2{\cdot}10^{-2}, 6.4{\cdot}10^{-3}, 6.3{\cdot}10^{-4}, 6.3{\cdot}10^{-5}, \ldots
+  \]
+  \[
+    \text{Steffensen:} \;\; 6.2{\cdot}10^{-2}, 3.6{\cdot}10^{-5}, 1.2{\cdot}10^{-11}, 5{\cdot}10^{-15}.
+  \]
+  Empirical convergence orders measured by the formula
+  $\log(\eps_{n+1}/\eps_n) / \log(\eps_n/\eps_{n-1})$ are $1.02$
+  (linear) and $2.02$ (Steffensen), matching the theoretical $1$ and $2$.
+  Steffensen converges to machine precision in $4$ iterations, vs. $14$--$17$
+  for the raw $dD$ iteration.
+\item \textbf{Multi-branch}: at $x = 2$, $d = 3$, $p = 3$, the cubic
+  fixed-point equation has one real root and two complex conjugate
+  roots; varying $s_0$ produces convergence to the real root in this
+  test, but starting points further into the complex plane reach the
+  conjugate roots.
+\end{itemize}
+
+%=====================================================================
+\section{Conclusion}
+%=====================================================================
+
+The complex extension of Pandrosion $dD$ is straightforward: the entire
+algebraic and dynamical structure of \cite{1pandrosion_dD} carries over
+to $\C$.  The unexpected payoff is the acceleration analysis.  Because
+the rank-one Jacobian projects every orbit onto the diagonal in a
+single step, the multivariate iteration is \emph{indistinguishable from
+a scalar one after one iteration}.  Steffensen's classical accelerator
+from paper~0 thus applies directly and produces quadratic convergence in
+arbitrary dimension $d \geq 3$, without invoking vector
+Padé-Brezinski-Wynn machinery.
+
+This decoupling between the multivariate algebraic structure (encoded
+by $S_p^{dD}$) and the temporal acceleration structure (Aitken
+$\Delta^2$ on the reduced scalar map) is the central simplifying
+phenomenon of Pandrosion in arbitrary dimensions.  In particular, the
+quadratic-convergent algorithm
+\begin{enumerate}
+\item Run one iteration of $H$ to project to the diagonal.
+\item Apply scalar Steffensen $\Delta^2$ on the reduced map $g$ until
+  desired accuracy.
+\end{enumerate}
+yields a $d$-dimensional Pandrosion solver of the same asymptotic cost
+as the 2D one of paper~0, while inheriting the stronger contraction rate
+$\lambda_{dD} \sim 1/(2d)$ before acceleration.
+
+\begin{thebibliography}{99}
+
+\bibitem{0pandrosion_pth}
+A formally verified Pandrosion--Steffensen scheme,
+$\texttt{0pandrosion\_pth.tex}$.
+
+\bibitem{1pandrosion_dD}
+Pandrosion in higher dimensions: simplex-lattice generalisation,
+closed-form contraction, and a rank-one spectral theorem,
+$\texttt{1pandrosion\_dD.tex}$.
+
+\end{thebibliography}
+
+\end{document}

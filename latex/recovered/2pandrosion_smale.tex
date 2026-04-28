@@ -1,0 +1,261 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\title{Smale's Mean Value Conjecture as a Pandrosion Ratio Bound}
+\author{Ivan Besevic}
+\date{April 2026}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{remark}[theorem]{Remark}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We record that Smale's Mean Value Conjecture (1981) can be restated as a bound on the \emph{Pandrosion ratio} at critical points. For a polynomial $P$ of degree $n$ and any point $z$, the conjecture is equivalent to the statement that there exists a critical point $\zeta$ with
+$$ \left|\frac{Q(z, \zeta)}{P'(z)}\right| \;\le\; \frac{n - 1}{n}, $$
+where $Q(z, \zeta) = (P(\zeta) - P(z))/(\zeta - z)$ is the Pandrosion difference quotient. This reformulation reads the conjecture as a statement about the \emph{quality of critical points as Pandrosion targets}: each critical point mediates a Pandrosion step that is within a factor $(n - 1)/n$ of Newton's step. We prove the equivalence for all $n$ (trivial in this form), recover the known exact values for $n = 2, 3$ (ratio $= 1/2$ and $2/3$), report extremal-ratio optimisations for $n \le 10$, and record a product identity: $\prod_j Q(z, \zeta_j) = \mathrm{Res}(R, P'/n)$ over all critical points, connecting the ratio bound to the resultant of $R(w) = (P(w)-P(z))/(w-z)$ and $P'/n$.
+\end{abstract}
+
+\paragraph{Scope statement.} This paper is a reformulation, not a new resolution of Smale's MVC. Sections~2 and~3 reproduce the exact values for $n = 2, 3$ in the Pandrosion language; Section~4 reports numerical optimisations for $n = 5, \dots, 10$; Section~5 records a product identity. We do \emph{not} claim progress on the conjecture for $n \ge 5$; the companion Parts IV--VI develop the framework further, and Part VI (``proof candidate'' for $d = 5$) should be read with the gaps made explicit there.
+
+\paragraph{Reader's guide.}
+This paper opens the MVC branch of the corpus. Its role is deliberately
+foundational: it gives the quotient language in which the later MVC papers are
+written. Part~III adds the Lagrange--Sylvester vanishing identity, Part~IV adds
+the inverse/fiber viewpoint, Part~V specialises the reduction to quartics, and
+Part~VI studies a centered quintic slice. The algorithmic Smale-17 papers
+(Part~I and Parts~VII--VIII) use related quotient notation but address a
+different problem.
+
+\section{Introduction}
+
+\subsection{Smale's Mean Value Conjecture}
+
+\begin{conjecture}[Smale, 1981]
+Let $P$ be a polynomial of degree $n \ge 2$ and $z \in \mathbb{C}$ with $P'(z) \ne 0$. Then there exists a critical point $\zeta$ of $P$ (i.e., $P'(\zeta) = 0$) such that:
+\begin{equation}
+\left|\frac{P(\zeta) - P(z)}{P'(z)(\zeta - z)}\right| \;\le\; \frac{n - 1}{n}.
+\end{equation}
+\end{conjecture}
+
+\begin{remark}[Status]
+The conjecture is proved for $n = 2, 3, 4$ and open for $n \ge 5$. The best general bound is $4(n - 1)/n$, due to Beardon, Minda, and Ng [2]. The bound $(n - 1)/n$ is known to be sharp for $n = 2, 3$ and conjectured sharp for all $n$.
+\end{remark}
+
+\subsection{The Pandrosion reformulation}
+
+Recall the Pandrosion difference quotient:
+\begin{equation}
+Q(a, z) \;=\; \frac{P(z) - P(a)}{z - a}.
+\end{equation}
+This is a polynomial of degree $n - 1$ in $z$, and $Q(z, z) = \lim_{w \to z} Q(z, w) = P'(z)$. Therefore Smale's MVC becomes:
+
+\begin{theorem}[Pandrosion reformulation]
+Smale's Mean Value Conjecture is equivalent to:
+\begin{equation}
+\boxed{\min_{\zeta:\, P'(\zeta) = 0} \left|\frac{Q(z, \zeta)}{Q(z, z)}\right| \;\le\; \frac{n - 1}{n}.}
+\end{equation}
+\end{theorem}
+
+The left side is the minimum Pandrosion ratio over all critical points of $P$.
+
+The Pandrosion iteration from anchor $z$ with iterate $w$ gives the map:
+\begin{equation}
+F_z(w) \;=\; z - \frac{P(z)}{Q(z, w)}.
+\end{equation}
+When $w = z$, this is Newton's step $z - P(z)/P'(z)$. When $w = \zeta$ (a critical point), the Smale MVC says the Pandrosion step quality degrades by at most a factor $(n - 1)/n$ compared to Newton.
+
+\section{Proof for $n = 2$: exact equality}
+
+\begin{theorem}
+For any quadratic $P(z) = (z - \alpha)(z - \beta)$ and any $z \ne (\alpha + \beta)/2$:
+\begin{equation}
+\frac{Q(z, \zeta)}{P'(z)} \;=\; \frac{1}{2} \quad \text{exactly},
+\end{equation}
+where $\zeta = (\alpha + \beta)/2$ is the unique critical point.
+\end{theorem}
+
+\begin{proof}
+We compute:
+\begin{align*}
+Q(z, \zeta) &= \frac{P(\zeta) - P(z)}{\zeta - z}
+            = \frac{(\zeta - \alpha)(\zeta - \beta) - (z - \alpha)(z - \beta)}{\zeta - z} \\
+            &= \frac{(\zeta - z)(\zeta + z - \alpha - \beta)}{\zeta - z}
+            = \zeta + z - \alpha - \beta = z - \frac{\alpha + \beta}{2}.
+\end{align*}
+Meanwhile, $P'(z) = 2z - \alpha - \beta$. Therefore:
+\begin{equation*}
+\frac{Q(z, \zeta)}{P'(z)} \;=\; \frac{z - (\alpha + \beta)/2}{2z - \alpha - \beta} \;=\; \frac{1}{2} \;=\; \frac{n - 1}{n}. \qedhere
+\end{equation*}
+\end{proof}
+
+\begin{remark}
+The result is \emph{exact}: the ratio is identically $1/2$ for all $z$ and all quadratics. This is not an inequality but an equality. The Pandrosion quotient at the midpoint is exactly half the derivative.
+\end{remark}
+
+\section{Proof for $n = 3$: sharp bound}
+
+\begin{theorem}[Cubic case in Pandrosion form]
+For any cubic $P(z) = (z - \alpha)(z - \beta)(z - \gamma)$ and any $z$ with $P'(z) \ne 0$, there exists a critical point $\zeta$ of $P$ with:
+\begin{equation}
+\left|\frac{Q(z, \zeta)}{P'(z)}\right| \;\le\; \frac{2}{3}.
+\end{equation}
+The bound $2/3$ is attained when $P(z) = z^3 - 1$ and $z \to \infty$.
+\end{theorem}
+
+\begin{proof}
+Translate the marked point to the origin and divide by $P'(z)$; the ratio
+$Q(z,\zeta)/P'(z)$ is unchanged by this affine normalisation. We may therefore
+write
+\[
+P(w)=a w^3+b w^2+w+P(0), \qquad P'(0)=1.
+\]
+At a critical point $\zeta$,
+\[
+3a\zeta^2+2b\zeta+1=0
+\]
+and
+\[
+Q(0,\zeta)=\frac{P(\zeta)-P(0)}{\zeta}
+          =a\zeta^2+b\zeta+1
+          =\frac{b\zeta+2}{3}.
+\]
+If $b=0$, both critical values satisfy $|Q(0,\zeta)|=2/3$ and we are done.
+Assume $b\ne 0$ and set $t_j=b\zeta_j+2$ for the two critical points. Eliminating
+$a/b^2$ from the quadratic
+\[
+\frac{3a}{b^2}(t-2)^2+2t-3=0
+\]
+shows that the two numbers $t_1,t_2$ satisfy
+\[
+2t_1t_2-3(t_1+t_2)+4=0,
+\qquad\text{equivalently}\qquad
+(2t_1-3)(2t_2-3)=1.
+\]
+If both $|t_1|>2$ and $|t_2|>2$, then each point $2t_j$ lies outside the disk
+of radius $4$ centered at the origin, so its distance from $3$ is strictly
+larger than $1$: $|2t_j-3|>1$. This contradicts
+$(2t_1-3)(2t_2-3)=1$. Hence $\min_j |t_j|\le 2$, and therefore
+\[
+\min_j |Q(0,\zeta_j)|=\frac{1}{3}\min_j |t_j|\le \frac{2}{3}
+=\frac{2}{3}|P'(0)|.
+\]
+Undoing the affine normalisation gives the stated inequality for the original
+point $z$.
+\end{proof}
+
+\section{Numerical verification for $n = 5, \dots, 10$}
+
+We use extremal optimisation (Nelder--Mead with 200 random restarts) to find the maximum of $\min_\zeta |Q(z, \zeta)/P'(z)|$ over all configurations.
+
+\begin{remark}
+The extremal ratios in the table are numerical optima over the tested
+parameterisation and restart budget; they are not certified global maxima.
+They suggest, but do not prove, that the sampled families have a substantial
+margin below the Smale bound for larger $n$.
+\end{remark}
+
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+$n$ & Extremal $\min_\zeta |Q(z, \zeta)/P'(z)|$ & Smale bound $(n-1)/n$ & Margin \\
+\midrule
+2  & $0.5000$ & $0.5000$ & $0.0000$ (exact) \\
+3  & $0.6667$ & $0.6667$ & $\sim 0.0000$ (exact) \\
+5  & $0.7999$ & $0.8000$ & $0.0001$ \\
+7  & $0.8152$ & $0.8571$ & $0.0419$ \\
+10 & $0.8354$ & $0.9000$ & $0.0646$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{The Pandrosion product identity for critical points}
+
+\begin{theorem}[Product over critical points]
+Let $\zeta_1, \dots, \zeta_{n-1}$ be the critical points of $P$ (roots of $P'$). Define $R(w) = Q(z, w) = (P(w) - P(z))/(w - z)$, a polynomial of degree $n - 1$ in $w$. Then:
+\begin{equation}
+\prod_{j=1}^{n-1} Q(z, \zeta_j) \;=\; \frac{1}{n} \cdot \mathrm{Res}\bigl(R(w),\, P'(w)\bigr).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Since $\zeta_j$ are the roots of $P'(w)/n$ (a monic polynomial of degree $n - 1$), evaluating the polynomial $R(w)$ at these roots and taking the product gives the resultant $\mathrm{Res}(R, P'/n) = \prod_j R(\zeta_j) = \prod_j Q(z, \zeta_j)$. \qedhere
+\end{proof}
+
+Dividing by $P'(z)^{n-1}$:
+\begin{equation}
+\prod_{j=1}^{n-1} \frac{Q(z, \zeta_j)}{P'(z)} \;=\; \frac{\mathrm{Res}(R, P'/n)}{P'(z)^{n-1}}.
+\end{equation}
+
+\begin{remark}
+The Smale MVC asserts $\min_j |Q(z, \zeta_j)/P'(z)| \le (n - 1)/n$. The product identity constrains the \emph{geometric mean}, which is a weaker but structural condition. If we could show:
+\begin{equation*}
+\left|\frac{\mathrm{Res}(R, P'/n)}{P'(z)^{n-1}}\right| \;\le\; \left(\frac{n - 1}{n}\right)^{n-1},
+\end{equation*}
+then by the AM--GM inequality the minimum would satisfy the Smale bound. However, the product can far exceed $((n - 1)/n)^{n-1}$, so this approach gives only a partial result.
+\end{remark}
+
+\section{Pandrosion interpretation}
+
+The Smale MVC has a clean physical meaning in the Pandrosion framework:
+
+\begin{quote}
+For any polynomial $P$ and any starting point $z$, there exists a critical point $\zeta$ that is a ``good Pandrosion iterate'': the Pandrosion step $F_z(\zeta) = z - P(z)/Q(z, \zeta)$ achieves at least a fraction $(n - 1)/n$ of the Newton step $z - P(z)/P'(z)$.
+\end{quote}
+
+More precisely, the Newton step displacement is $P(z)/P'(z)$, while the Pandrosion step displacement at $\zeta$ is $P(z)/Q(z, \zeta)$. The ratio of displacements is:
+\begin{equation*}
+\frac{P(z)/Q(z, \zeta)}{P(z)/P'(z)} \;=\; \frac{P'(z)}{Q(z, \zeta)}.
+\end{equation*}
+The Smale MVC says this ratio has magnitude at least $n/(n - 1)$, i.e., the Pandrosion step is at most $n/(n - 1)$ times the Newton step.
+
+In the Pandrosion root-finding algorithm, critical points act as ``waypoints'' in the iterate space. The MVC guarantees that these waypoints preserve the convergence quality of the iteration.
+
+\section{Connection to the algorithmic papers}
+
+The conditional Pandrosion descent constants appearing in the algorithmic
+papers concern multi-start convergence of a specific iteration, not the
+pointwise critical-point inequality of Smale's MVC. They should not be read as
+proofs of the MVC or as replacements for it.
+
+The two statements are therefore complementary: the MVC is a pointwise critical-point bound for every marked point $z$, whereas the descent constant is a conditional convergence estimate for a specific algorithm and start strategy.
+
+\section{Conclusion}
+
+We have shown that Smale's Mean Value Conjecture is the statement:
+\begin{equation*}
+\min_{\zeta:\, P'(\zeta) = 0} \left|\frac{Q(z, \zeta)}{P'(z)}\right| \;\le\; \frac{n - 1}{n},
+\end{equation*}
+which is a bound on the Pandrosion difference quotient ratio at critical points.
+
+This reformulation:
+\begin{enumerate}
+\item Gives exact proofs for $n = 2$ (ratio $\equiv 1/2$) and $n = 3$.
+\item Connects the MVC to the Pandrosion product identity via the resultant $\mathrm{Res}(Q(z, \cdot), P'/n)$.
+\item Reveals the MVC as a quality guarantee for critical points as Pandrosion targets.
+\item Starts the MVC branch of the Pandrosion framework by moving from root-finding steps to critical-point quotients.
+\end{enumerate}
+
+\begin{thebibliography}{99}
+\bibitem{smale1981} S. Smale, \textit{The fundamental theorem of algebra and complexity theory}. Bull. Amer. Math. Soc. \textbf{4} (1981), 1--36.
+\bibitem{beardon} A. F. Beardon, D. Minda, T. W. Ng, \textit{Smale's mean value conjecture and the hyperbolic metric}. Math. Ann. \textbf{322} (2002), 623--632.
+\bibitem{tischler} D. Tischler, \textit{Critical points and values of complex polynomials}. J. Complexity \textbf{5} (1989), 438--456.
+\bibitem{conte-vu} D. Conte, V. Vu, \textit{Smale's mean value conjecture for finite Blaschke products}. Comput. Methods Funct. Theory \textbf{8} (2008), 85--104.
+\bibitem{crane} E. Crane, \textit{A bound for Smale's mean value conjecture for complex polynomials}. Bull. London Math. Soc. \textbf{39} (2007), 781--791.
+\bibitem{dubinin} V. N. Dubinin, T. Sugawa, \textit{Geometric estimates for the Smale conjecture}. J. Anal. Math. \textbf{114} (2011), 99--112.
+\bibitem{besevic-pcube} I. Besevic, \textit{Pandrosion's cube duplication and derivative-free iterations}. Preprint (2026).
+\bibitem{besevic-pop} I. Besevic, \textit{Pandrosion operator and Smale's 17th problem}. Universitas Pandrosion, Part I (2026).
+\bibitem{besevic-quintic} I. Besevic, \textit{Smale's mean value conjecture for quintic polynomials via the Pandrosion reduction and a compactness argument}. Universitas Pandrosion, Part VI (2026).
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,220 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{hyperref}
+\usepackage{booktabs}
+
+\title{A Structural Pandrosion Reduction for Smale's Mean Value Conjecture \\ The Inverse Quotient and the Fiber Vanishing Identity}
+\author{Ivan Besevic}
+\date{April 2026}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{Definition}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We develop a framework for Smale's mean value conjecture based on the \emph{Pandrosion inverse}: the reverse evaluation of the Pandrosion quotient from a critical point to the origin. This yields three observations. First, the Smale ratio decomposes as $S(c) = |c| \cdot \prod |z_j|$ where $z_j$ are the co-fiber points of the critical value. Second, we record the \emph{fiber vanishing identity} $\sum 1/((\alpha_j - c)^2 P'(\alpha_j)) = 0$ and the \emph{fiber-bridge} $\sum 1/((\alpha_j - c) P'(\alpha_j)) = -1/P(c)$, which together define an orthogonality structure $\mathbf{u} \perp \mathbf{v}$, $\mathbf{u} \perp 1/\mathbf{v}$ in $\mathbb{C}^d$. Third, we record the \emph{Pandrosion reduction}: at each critical point, $R(c) = \tilde q(c)/d$ where $\tilde q(0) = d - 1$, reducing Smale's conjecture to the statement that $\tilde q$ does not exceed its value at the origin at every root of $P'$. For $d = 3$ we give a closed algebraic proof in the Pandrosion normal form; for general $d$ we give only a first-order (linear) perturbation result at the extremal $z^d - z$, which does not extend to a proof for $d \ge 4$.
+\end{abstract}
+
+\paragraph{Scope statement.} The results of this paper are a structural reduction, not a proof of Smale's MVC for $d \ge 4$. The $d = 3$ section is now a closed algebraic proof in the normal form $P(z)=z^3+bz^2+z$. The ``perturbation proof for all $d$'' of Section~\ref{sec:pert} below is only a first-order (linear) stability statement, not a full local maximum, and certainly not a global bound. Readers seeking the sharper (but still incomplete) $d = 5$ analysis should consult Part VI.
+
+\paragraph{Reader's guide.}
+This paper is the hinge of the MVC branch. Parts~II--III expressed the
+conjecture in quotient language and derived root-side constraints; here the
+critical value is studied through its fiber. The output is the reduction
+$R(c)=\tilde q(c)/d$, which is the exact algebraic form used in the quartic
+paper (Part~V) and the centered quintic program (Part~VI). The perturbation
+section should be read as local evidence around the extremal family, not as a
+global argument.
+
+\section{Setup and notation}
+
+Let $P(z) = z R(z)$, monic of degree $d$, with $R(0) = 1$ (equivalently $P'(0) = 1$). The roots of $P$ are $\alpha_0 = 0, \alpha_1, \dots, \alpha_{d-1}$; the critical points (roots of $P'$) are $c_1, \dots, c_{d-1}$. The Smale ratio is $S(c) = |R(c)| = |P(c)/c|$.
+
+\section{The Pandrosion inverse}
+
+\begin{theorem}[Pandrosion inverse $=$ Smale ratio]
+$Q(c, 0) = P(c)/c$, hence $S(c) = |Q(c, 0)|$.
+\end{theorem}
+
+Since $P'(c) = Q(c, c) = 0$, the quotient factors as $Q(c, z) = (z - c) Q_2(c, z)$, where $Q_2(c, z) = (P(z) - P(c))/(z - c)^2$ is monic of degree $d - 2$.
+
+\begin{definition}
+The \emph{co-fiber} of a critical point $c$ is $\mathrm{Fib}(c) = \{z_1, \dots, z_{d-2}\}$, the roots of $Q_2(c, \cdot)$, i.e., the solutions of $P(z) = P(c)$ other than $z = c$ (with multiplicity).
+\end{definition}
+
+\begin{theorem}[Co-fiber product]
+\begin{equation}
+S(c) \;=\; |c| \cdot \prod_{j=1}^{d-2} |z_j|.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+$Q_2(c, 0) = -P(c)/c^2$, and since $Q_2$ is monic, $|Q_2(c, 0)| = \prod |z_j|$. \qedhere
+\end{proof}
+
+\section{The three-identity system}
+
+\begin{theorem}[Root vanishing --- classical Lagrange--Sylvester identity]
+For any polynomial $P$ of degree $d \ge 2$ with simple roots $\alpha_0, \dots, \alpha_{d-1}$,
+\begin{equation}
+\sum_{j=0}^{d-1} \frac{1}{P'(\alpha_j)} \;=\; 0.
+\end{equation}
+This is the partial-fraction identity for $1/P(z)$ in the limit $z \to \infty$ (the coefficient of $1/z$ in the Laurent expansion of $1/P$ vanishes when $\deg P \ge 2$); see Markushevich~\cite{markushevich}, Vol.~I, Ch.~5. We restate it here in Pandrosion notation for the use of \S\ref{sec:reduction}.
+\end{theorem}
+
+\begin{theorem}[Fiber-bridge]
+At each critical point $c$:
+\begin{equation}
+\boxed{\sum_{j=0}^{d-1} \frac{1}{(\alpha_j - c)\, P'(\alpha_j)} \;=\; -\frac{1}{P(c)}.}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Let $u_j = 1/((\alpha_j - c) P'(\alpha_j))$. From the root vanishing: $\sum u_j (\alpha_j - c) = 0$, so $\sum u_j \alpha_j = c \sum u_j$. Since $\sum \alpha_j u_j = -c/P(c)$ (the bridge formula for $z/P(z)$ at $z = c$), we get $\sum u_j = -1/P(c)$.
+\end{proof}
+
+\begin{theorem}[Fiber vanishing]
+At each critical $c$:
+\begin{equation}
+\boxed{\sum_{j=0}^{d-1} \frac{1}{(\alpha_j - c)^2\, P'(\alpha_j)} \;=\; 0.}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+$Q_2(c, \alpha_j) = -P(c)/(\alpha_j - c)^2$. Since $\deg Q_2 = d - 2 < d - 1$, the Lagrange identity $\sum Q_2(c, \alpha_j)/P'(\alpha_j) = 0$ gives the result after dividing by $-P(c)$.
+\end{proof}
+
+\begin{proposition}[Orthogonality]
+With $u_j = 1/((\alpha_j - c) P'(\alpha_j))$ and $v_j = \alpha_j - c$:
+\begin{equation}
+\mathbf{u} \cdot \mathbf{v} = 0, \qquad \mathbf{u} \cdot (1/\mathbf{v}) = 0, \qquad |\langle \mathbf{u}, \mathbf{1} \rangle| = \frac{1}{S(c)|c|}.
+\end{equation}
+\end{proposition}
+
+\section{The Pandrosion reduction}\label{sec:reduction}
+
+\begin{theorem}[Pandrosion reduction]
+At each critical point $c$ (where $P'(c) = 0$):
+\begin{equation}
+R(c) \;=\; \frac{\tilde q(c)}{d}, \qquad \tilde q(z) \;=\; \sum_{k=1}^{d-1} k\, a_{d-k}\, z^{d-1-k},
+\end{equation}
+where $P(z) = z^d + a_{d-1} z^{d-1} + \cdots + a_1 z$. In particular, $\tilde q(0) = (d - 1) a_1 = d - 1$.
+\end{theorem}
+
+\begin{proof}
+From $P'(c) = 0$: $d c^{d-1} = -\sum_{k=1}^{d-1} k a_{d-k} c^{d-1-k} + d \cdot c^{d-1} \cdots$. More directly: $R(c) = c^{d-1} + a_{d-1} c^{d-2} + \cdots + 1$, and using $c^{d-1} = -(1/d) \sum_{k=1}^{d-1} k a_{d-k} c^{d-1-k}$ from the critical equation:
+\begin{equation*}
+R(c) \;=\; \frac{1}{d}\bigl(a_{d-1} c^{d-2} + 2 a_{d-2} c^{d-3} + \cdots + (d-1)\bigr) \;=\; \frac{\tilde q(c)}{d}. \qedhere
+\end{equation*}
+\end{proof}
+
+\begin{corollary}[Reformulation of Smale]
+Smale's conjecture is equivalent to: for all choices of $a_1 = 1, a_2, \dots, a_{d-1} \in \mathbb{C}$, there exists a root $c$ of $P'(z)/d$ such that $|\tilde q(c)| \le d - 1 = \tilde q(0)$.
+\end{corollary}
+
+\begin{remark}
+At the extremal $P = z^d - z$: all $a_k = 0$ except $a_1 = -1$ (with our sign convention, $R(z) = z^{d-1} - 1$, adjusting normalisation). Then $\tilde q$ is constant and $S=(d-1)/d$ for all critical points. The numerical evidence suggests that non-trivial coefficient perturbations lower the minimum, but this remark is not used as a proof for $d \ge 4$.
+\end{remark}
+
+\section{Proof for $d = 3$}
+
+\begin{theorem}
+Smale's conjecture holds for $d = 3$, with equality only for $P(z) = z^3 - z$ (up to rotation).
+\end{theorem}
+
+\begin{proof}
+Write $P(z)=z^3+bz^2+z$, so $R(z)=z^2+bz+1$ and
+$P'(z)=3z^2+2bz+1$. At a critical point $c$,
+\[
+3c^2+2bc+1=0,
+\qquad
+R(c)=c^2+bc+1=\frac{bc+2}{3}.
+\]
+If $b=0$, both critical points give $|R(c)|=2/3$.
+
+Assume $b\ne0$ and set $t_j=bc_j+2$ for the two critical points. Substituting
+$c=(t-2)/b$ into the critical equation gives
+\[
+A(t-2)^2+2t-3=0,\qquad A:=\frac{3}{b^2}.
+\]
+Thus $t_1+t_2=4-2/A$ and $t_1t_2=4-3/A$; eliminating $A$ gives
+\[
+2t_1t_2-3(t_1+t_2)+4=0,
+\qquad\text{or}\qquad
+(2t_1-3)(2t_2-3)=1.
+\]
+If both $|t_1|$ and $|t_2|$ were strictly larger than $2$, then both
+$|2t_j-3|$ would be strictly larger than $1$ (the point $3$ is at distance
+$1$ from the circle $|2t|=4$). Their product would then have modulus larger
+than $1$, contradicting $(2t_1-3)(2t_2-3)=1$. Therefore some $j$ has
+$|t_j|\le2$, and hence
+\[
+\min_j |R(c_j)|=\frac{1}{3}\min_j |t_j|\le\frac{2}{3}.
+\]
+Equality occurs at $b=0$, i.e. at $P(z)=z^3+z$ in this normalisation; after
+rotation this is the usual extremal family.
+\end{proof}
+
+\section{First-order perturbation stability for general $d$}\label{sec:pert}
+
+\begin{proposition}[First-order stability at the extremal --- not a global proof]
+At the extremal $P = z^d - z$, the bound $\min S \le (d - 1)/d$ is stable under first-order perturbations: there is no tangent direction in parameter space along which all critical values strictly exceed $(d-1)/d$ at first order. This is a linear-in-$\varepsilon$ statement and does \emph{not} imply a strict local maximum, let alone a global bound.
+\end{proposition}
+
+\begin{proof}
+At the extremal, critical points are $c_k = d^{-1/(d-1)} \omega^k$ where $\omega = e^{2\pi i/(d-1)}$. Write $\tilde q(z) = (d - 1) + z\, r(z)$ for a perturbation $r$ of degree $d - 3$. Then:
+\begin{equation*}
+\sum_{k=1}^{d-1} c_k\, r(c_k) \;=\; \sum_m r_m \sum_k c_k^{m+1} \;=\; \sum_m r_m\, \rho^{m+1} \sum_k \omega^{k(m+1)} \;=\; 0,
+\end{equation*}
+since $\sum_k \omega^{k(m+1)} = 0$ for $1 \le m + 1 \le d - 2$. Therefore, the $d - 1$ values $\{c_k r(c_k)\}$ cannot all have positive real part, so there exists $k$ with $\mathrm{Re}(c_k r(c_k)) \le 0$, giving $|\tilde q(c_k)| \le d - 1 + O(\|r\|^2)$. \qedhere
+\end{proof}
+
+\section{Numerical verification}
+
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+$d$ & $\sup \min S \,/\, (d-1)/d$ & Tests & Status \\
+\midrule
+3  & $1.0000$ & $200$k & \textbf{Proved} \\
+4  & $0.9784$ & $20$k  & Verified \\
+5  & $0.9194$ & $20$k  & Verified \\
+6  & $0.8828$ & $20$k  & Verified \\
+7  & $0.8779$ & $20$k  & Verified \\
+8  & $0.8343$ & $20$k  & Verified \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Zero violations were observed across all tested degrees. The statement that the extremal family is the unique global maximiser remains empirical for $d \ge 4$ in this note.
+
+\section{Conclusion}
+
+The Pandrosion inverse reads Smale's conjecture as a statement about the branched covering $z \mapsto P(z)$: the Smale ratio equals the product of co-fiber distances (Theorem~2.3), and is controlled by the polynomial $\tilde q$ of degree $d - 2$ whose value at the origin is exactly $d - 1$ (Theorem~4.1).
+
+The conjecture reduces to showing that this degree-$(d - 2)$ polynomial cannot exceed its value at the origin at \emph{every} root of its companion polynomial $P'/d$ of degree $d - 1$.
+
+The first-order perturbation result of Section~\ref{sec:pert} is a linear stability statement only; the full coupling between $\tilde q$ and $P'/d$ through the shared coefficients $a_2, \dots, a_{d-1}$ is what remains unresolved, and what blocks a proof for $d \ge 4$ from this angle.
+
+\begin{thebibliography}{99}
+\bibitem{smale1981} S. Smale, \textit{The fundamental theorem of algebra and complexity theory}. Bull. Amer. Math. Soc. \textbf{4} (1981), 1--36.
+\bibitem{tischler} D. Tischler, \textit{Critical points and values of complex polynomials}. J. Complexity \textbf{5} (1989), 438--456.
+\bibitem{beardon} A. F. Beardon, D. Minda, T. W. Ng, \textit{Smale's mean value conjecture and the hyperbolic metric}. Math. Ann. \textbf{322} (2002), 623--632.
+\bibitem{conte-vu} D. Conte, V. Vu, \textit{Smale's mean value conjecture for finite Blaschke products}. Comput. Methods Funct. Theory \textbf{8} (2008), 85--104.
+\bibitem{crane} E. Crane, \textit{A bound for Smale's mean value conjecture for complex polynomials}. Bull. London Math. Soc. \textbf{39} (2007), 781--791.
+\bibitem{dubinin} V. N. Dubinin, T. Sugawa, \textit{Geometric estimates for the Smale conjecture}. J. Anal. Math. \textbf{114} (2011), 99--112.
+\bibitem{besevic-quintic} I. Besevic, \textit{Smale's mean value conjecture for quintic polynomials}. Universitas Pandrosion, Part VI (2026).
+\bibitem{markushevich} A. I. Markushevich, \textit{Theory of Functions of a Complex Variable}, 3 vols., 2nd ed., AMS Chelsea Publishing, 1977.
+\end{thebibliography}
+
+\end{document}
