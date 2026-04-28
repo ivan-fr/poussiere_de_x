@@ -1,2 +1,0 @@
-family,n,d,seed,terms,bezout,alg,roots,coverage,path_rows,candidates,batches,retries_used,max_residual,seconds_observed,status,notes
-ks,2,8,69208,90,64,076-homothetic-system-geometry,64,1.0,64,64,2,1,2.516052965083942e-09,3.749951124191284,ok,"golden micro-order first; observed_path_seconds=7.02; base_chunks=32; parallel_base=2; speculative_micro=False; micro_limit=16; fallback=on; homothety=system; base_scales=1,1.08677659444; root_scales_raw=1.47573743098,1.32387238109; root_scales=1,1; retry_scales=1,1.08677659444; eq_norm=True; dt0=default; dtmax=default; no Newton-ELS"

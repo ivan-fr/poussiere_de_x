@@ -39,6 +39,14 @@ Vector = list[Complex]
 HERE = Path(__file__).resolve().parent
 FLOW091_PATH = HERE / "091_pandrosion_projective_riemann.py"
 
+BEST_DEFAULT_VALUE_ARGS = {
+    "--batch-timeout": "20",
+    "--parallel-batches": "4",
+    "--batch-size": "16",
+    "--micro-batch": "4",
+}
+BEST_DEFAULT_FLAGS = ("--equation-normalize", "--stop-at-bezout")
+
 
 def _load_091():
     spec = importlib.util.spec_from_file_location("flow091_for_092", str(FLOW091_PATH))
@@ -88,10 +96,41 @@ def _consume_092_args(argv: list[str]) -> list[str]:
             pair_seen = True
             i += 1
             continue
+        if arg in {"--legacy-defaults", "--no-best-defaults"}:
+            os.environ["PANDROSION_092_BEST_DEFAULTS_OFF"] = "1"
+            i += 1
+            continue
+        if arg == "--no-equation-normalize":
+            os.environ["PANDROSION_092_NO_EQUATION_NORMALIZE"] = "1"
+            i += 1
+            continue
+        if arg == "--no-stop-at-bezout":
+            os.environ["PANDROSION_092_NO_STOP_AT_BEZOUT"] = "1"
+            i += 1
+            continue
         out.append(arg)
         i += 1
     if not pair_seen and os.environ.get("PANDROSION_092_PAIR_ON") != "1":
         os.environ["PANDROSION_092_PAIR_OFF"] = "1"
+    return out
+
+
+def _has_option(argv: Sequence[str], opt: str) -> bool:
+    prefix = opt + "="
+    return any(arg == opt or arg.startswith(prefix) for arg in argv[1:])
+
+
+def _apply_best_defaults(argv: list[str]) -> list[str]:
+    if os.environ.get("PANDROSION_092_BEST_DEFAULTS_OFF") == "1":
+        return argv
+    out = list(argv)
+    for opt, value in BEST_DEFAULT_VALUE_ARGS.items():
+        if not _has_option(out, opt):
+            out.extend([opt, value])
+    if os.environ.get("PANDROSION_092_NO_EQUATION_NORMALIZE") != "1" and not _has_option(out, "--equation-normalize"):
+        out.append("--equation-normalize")
+    if os.environ.get("PANDROSION_092_NO_STOP_AT_BEZOUT") != "1" and not _has_option(out, "--stop-at-bezout"):
+        out.append("--stop-at-bezout")
     return out
 
 
@@ -427,6 +466,7 @@ def install_pair_recovery(mod) -> None:
 
 def main() -> None:
     sys.argv = _consume_092_args(sys.argv)
+    sys.argv = _apply_best_defaults(sys.argv)
     f091 = _load_091()
     sys.argv = f091._consume_091_args(sys.argv)
     f090 = f091._load_090()
