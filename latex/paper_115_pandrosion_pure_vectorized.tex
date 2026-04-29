@@ -1,0 +1,258 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\geometry{margin=2.6cm}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black}
+
+\newtheorem{definition}{Définition}
+\newtheorem{lemma}{Lemme}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remarque}
+
+\title{Pandrosion pur vectorisé par pentes télescopiques exactes\\\large Étude mathématique et expérimentale du script 115}
+\author{Ivan Besevic}
+\date{29 avril 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Nous étudions le moteur \texttt{115\_pandrosion\_vectorized\_pure\_thales\_engine.py}. Contrairement au moteur 113, qui utilise un correcteur local de type Jacobien, 115 construit une matrice de pente exacte \(Q(a,b)\) satisfaisant
+\[
+  F(b)-F(a)=Q(a,b)(b-a)
+\]
+par identité télescopique monomiale. Cette construction est derivative-free au niveau du correcteur: aucun Jacobien n'est construit pour la correction locale. Le coût de \(Q(a,b)\) est réduit par vectorisation: puissances tabulées, facteurs préfixe/suffixe et produit matriciel NumPy/BLAS. Le moteur conserve le même flot géométrique unique que 113: Riemann-Möbius, homothétie de type Thalès, optimisation du point initial, puis correction. Sur les tests disponibles, 115 retrouve \(144/144\) racines pour \(ks(2,12)\), \(196/196\) pour \(ks(2,14)\), \(64/64\) pour \(ks(3,4)\), \(81/81\) pour \(ks(4,3)\), et une racine stricte pour \(ks(6,16)\). Par rapport à 114, la vectorisation accélère la construction de \(Q\) d'environ \(6\times\) à \(7\times\) sur les cas \(2,12\) et \(2,14\).
+\end{abstract}
+
+\section{Motivation}
+La version 113 a montré qu'un flot géométrique puissant peut extraire toutes les racines de certains systèmes de Kostlan sans suivre explicitement tous les chemins homotopiques. Mais son correcteur local résout
+\[
+  J_G(y)\Delta=-G(y).
+\]
+La version 115 remplace cette étape par une pente exacte de Pandrosion. Le but est de conserver l'efficacité globale du flot Thalès-Riemann tout en rendant la correction locale fidèle à l'identité géométrique
+\[
+  G(b)-G(a)=Q_G(a,b)(b-a).
+\]
+
+\section{Systèmes polynomiaux et changement de coordonnées}
+Soit
+\[
+  F=(F_1,\ldots,F_n):\mathbb C^n\to\mathbb C^n
+\]
+un système polynomial dense. Le moteur utilise une carte linéaire
+\[
+  z=Ay
+\]
+et résout
+\[
+  G(y)=F(Ay)=0.
+\]
+Comme dans 113, le point initial est généré par un flot unique:
+\begin{equation}
+  y_j
+  = \Lambda\,p_j\,
+    \frac{\cos(\theta_j)(u_j/p_j)+\sin(\theta_j)}
+         {-\sin(\theta_j)(u_j/p_j)+\cos(\theta_j)}.
+  \label{eq:mobius115}
+\end{equation}
+Cette carte mélange homothétie, inversion projective et rotation de Riemann dans une seule formule.
+
+\section{Matrice de pente Pandrosion}
+\begin{definition}
+Soient \(a,b\in\mathbb C^n\). Une matrice \(Q_F(a,b)\in\mathbb C^{n\times n}\) est une pente de Pandrosion pour \(F\) entre \(a\) et \(b\) si
+\begin{equation}
+  F(b)-F(a)=Q_F(a,b)(b-a).
+  \label{eq:slope-identity}
+\end{equation}
+\end{definition}
+
+Pour le système transformé \(G(y)=F(Ay)\), on pose
+\begin{equation}
+  Q_G(a_y,b_y)=Q_F(Aa_y,Ab_y)A.
+  \label{eq:chain-slope}
+\end{equation}
+Alors
+\[
+  G(b_y)-G(a_y)=Q_G(a_y,b_y)(b_y-a_y).
+\]
+
+\section{Identité télescopique monomiale}
+Considérons un monôme
+\[
+  m(z)=z^\alpha=\prod_{k=1}^n z_k^{\alpha_k}.
+\]
+Pour chaque coordonnée \(j\), définissons
+\begin{equation}
+  S_{j,\alpha_j}(a_j,b_j)=
+  \begin{cases}
+  \displaystyle \sum_{r=0}^{\alpha_j-1} b_j^{\alpha_j-1-r}a_j^r,& \alpha_j>0,\\
+  0,& \alpha_j=0.
+  \end{cases}
+  \label{eq:power-slope}
+\end{equation}
+
+\begin{lemma}[pente télescopique d'un monôme]
+On a
+\begin{equation}
+  m(b)-m(a)=\sum_{j=1}^n
+  \left(\prod_{k<j} b_k^{\alpha_k}\right)
+  S_{j,\alpha_j}(a_j,b_j)
+  \left(\prod_{k>j} a_k^{\alpha_k}\right)
+  (b_j-a_j).
+  \label{eq:monomial-telescope}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+On écrit la différence totale en remplaçant successivement les coordonnées de \(a\) par celles de \(b\):
+\[
+  \prod_k b_k^{\alpha_k}-\prod_k a_k^{\alpha_k}
+  =\sum_j
+  \left(\prod_{k<j} b_k^{\alpha_k}\right)
+  (b_j^{\alpha_j}-a_j^{\alpha_j})
+  \left(\prod_{k>j} a_k^{\alpha_k}\right).
+\]
+Or
+\[
+  b_j^q-a_j^q=(b_j-a_j)\sum_{r=0}^{q-1}b_j^{q-1-r}a_j^r.
+\]
+En substituant cette égalité, on obtient \eqref{eq:monomial-telescope}.
+\end{proof}
+
+Pour un polynôme
+\[
+  F_i(z)=\sum_\alpha c_{i,\alpha}z^\alpha,
+\]
+la colonne \(j\) de \(Q_F(a,b)\) est obtenue en sommant les contributions \eqref{eq:monomial-telescope} pondérées par \(c_{i,\alpha}\). Cette construction est exacte, à l'erreur flottante près, et ne requiert aucune dérivée.
+
+\section{Correcteur Pandrosion pur}
+À l'itération courante \(a\), le moteur construit un second point \(b\) par une formule géométrique non infinitésimale. Il calcule ensuite \(Q_G(a,b)\) et résout
+\begin{equation}
+  Q_G(a,b)\Delta=-G(a),
+  \qquad a_{+}=a+\lambda\Delta.
+  \label{eq:pure-corrector}
+\end{equation}
+Le paramètre \(\lambda\) est choisi par une recherche proportionnelle qui exige une diminution du résidu. Il n'y a pas de fallback Newton, pas de moindres carrés, pas de spécialisation bivariée et pas d'homotopie de secours.
+
+\begin{remark}
+Le moteur utilise encore \(\texttt{np.linalg.solve}\), mais seulement pour résoudre le système linéaire \eqref{eq:pure-corrector}. Il ne s'agit pas d'un solveur de racines caché.
+\end{remark}
+
+\section{Vectorisation de \(Q(a,b)\)}
+La version 114 construisait \(Q(a,b)\) par boucles Python. Le moteur 115 vectorise le calcul.
+
+Soit \(E\in\mathbb N^{M\times n}\) la matrice des exposants des \(M\) monômes, et soit \(C\in\mathbb C^{n\times M}\) la matrice des coefficients. Pour des points \(a,b\), on tabule
+\[
+  a_j^m,\\quad b_j^m,\qquad m=0,\ldots,d.
+\]
+Puis on construit pour tous les monômes:
+\begin{align}
+  P_j^{<}(b) &= \prod_{k<j} b_k^{E_{\cdot k}},\\
+  P_j^{>}(a) &= \prod_{k>j} a_k^{E_{\cdot k}},\\
+  T_{\cdot j} &= P_j^{<}(b)\,P_j^{>}(a)\,S_{j,E_{\cdot j}}(a_j,b_j).
+\end{align}
+La matrice de pente est alors obtenue en un produit dense:
+\begin{equation}
+  Q_F(a,b)=C T.
+  \label{eq:gemm-slope}
+\end{equation}
+La table \(S_{j,m}\) est calculée par la récurrence
+\begin{equation}
+  S_{j,0}=0,\qquad S_{j,m}=b_j^{m-1}+a_jS_{j,m-1}.
+  \label{eq:slope-recursion}
+\end{equation}
+Cette récurrence est équivalente à \eqref{eq:power-slope}.
+
+\section{Algorithme}
+\noindent\textbf{Entrée:} \(F\), un budget d'essais \(P\), un nombre cible \(N\).\\
+\textbf{Sortie:} racines numériques distinctes.
+\begin{enumerate}
+  \item Générer le système dense et les matrices \(E,C\).
+  \item Pour chaque essai, produire \(u\), \(\Lambda\), \(\theta\), \(p\), puis \(y\) par \eqref{eq:mobius115}.
+  \item Améliorer le point de départ par startopt.
+  \item Répéter:
+  \begin{enumerate}
+    \item choisir un point géométrique \(b\) associé à \(a\);
+    \item construire \(Q_G(a,b)\) par \eqref{eq:chain-slope} et \eqref{eq:gemm-slope};
+    \item résoudre \(Q_G(a,b)\Delta=-G(a)\);
+    \item appliquer une recherche proportionnelle sur \(a+\lambda\Delta\).
+  \end{enumerate}
+  \item Convertir \(z=Ay\), valider \(\|F(z)\|\), puis dédupliquer.
+\end{enumerate}
+
+\section{Résultats expérimentaux}
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Cas & Bézout & Racines demandées & Racines uniques & Essais & Échecs & Temps (s)\\
+\midrule
+\(ks(2,12)\) & 144 & 144 & 144 & 272 & 124 & 5.345\\
+\(ks(2,14)\) & 196 & 196 & 196 & 390 & 192 & 5.967\\
+\(ks(3,4)\) & 64 & 64 & 64 & 125 & 20 & 1.586\\
+\(ks(4,3)\) & 81 & 81 & 81 & 220 & 57 & 3.464\\
+\(ks(6,16)\) & 16,777,216 & 1 & 1 & 1 & 0 & 2.639\\
+\bottomrule
+\end{tabular}
+\caption{Résultats principaux du moteur 115.}
+\label{tab:115-main}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Cas & Appels \(Q\) & Temps \(Q\) (s) & Résidu max. & Résidu moyen\\
+\midrule
+\(ks(2,12)\) & 6,287 & 1.024 & \(9.77\cdot 10^{-9}\) & \(3.79\cdot 10^{-9}\)\\
+\(ks(2,14)\) & 8,624 & 1.154 & \(9.96\cdot 10^{-9}\) & \(3.99\cdot 10^{-9}\)\\
+\(ks(3,4)\) & 2,046 & 0.263 & \(9.91\cdot 10^{-9}\) & \(4.21\cdot 10^{-9}\)\\
+\(ks(4,3)\) & 3,950 & 0.655 & \(9.86\cdot 10^{-9}\) & \(4.17\cdot 10^{-9}\)\\
+\(ks(6,16)\) & 16 & 1.670 & \(6.15\cdot 10^{-13}\) & \(6.15\cdot 10^{-13}\)\\
+\bottomrule
+\end{tabular}
+\caption{Statistiques de pente et résidus pour 115.}
+\label{tab:115-q}
+\end{table}
+
+\section{Comparaison avec 114}
+La version 114 utilisait la même idée de pente télescopique, mais avec construction moins vectorisée. Les mesures disponibles donnent:
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Cas & Temps 114 (s) & Temps 115 (s) & Accélération totale & Accélération de \(Q\)\\
+\midrule
+\(ks(2,12)\) & 11.468 & 5.230 & \(2.19\times\) & \(6.02\times\)\\
+\(ks(2,14)\) & 17.457 & 6.735 & \(2.59\times\) & \(7.43\times\)\\
+\bottomrule
+\end{tabular}
+\caption{Effet de la vectorisation par rapport à 114.}
+\label{tab:115-vs114}
+\end{table}
+
+\section{Discussion}
+La vectorisation ne change pas le contenu mathématique de la pente. Elle déplace simplement la somme monomiale vers des opérations de type produit matrice-matrice. Ainsi, 115 conserve le caractère Pandrosion pur de 114 tout en réduisant nettement le coût du calcul de \(Q\). Le coût reste néanmoins plus élevé qu'un correcteur Jacobien classique sur petits degrés, car \(Q(a,b)\) encode une pente globale entre deux points et non seulement une linéarisation infinitésimale.
+
+\section{Reproductibilité}
+Commandes principales:
+\begin{verbatim}
+python -S 115_pandrosion_vectorized_pure_thales_engine.py \
+  --cases 2,12 --equation-normalize --count 144 --pool 5000 \
+  --epochs 30 --accept 1e-8 --cluster-sep 1e-8 \
+  --startopt-candidates 12 --probe-scale 0.03 --line-search 14
+
+python -S 115_pandrosion_vectorized_pure_thales_engine.py \
+  --cases 2,14 --equation-normalize --count 196 --pool 7000 \
+  --epochs 30 --accept 1e-8 --cluster-sep 1e-8 \
+  --startopt-candidates 12 --probe-scale 0.03 --line-search 14
+\end{verbatim}
+
+\section{Conclusion}
+Le moteur 115 fournit une version autonome, multivariée et derivative-free au niveau du correcteur local de Pandrosion. Sa contribution mathématique est la mise en oeuvre vectorisée de la pente exacte \(Q(a,b)\) issue de l'identité télescopique des monômes. Les résultats montrent que l'on conserve la couverture de racines obtenue par le moteur pur 114 tout en accélérant substantiellement le calcul. Le moteur 115 constitue donc une base plus fidèle à la géométrie Pandrosion qu'un correcteur Newton, tout en restant suffisamment rapide pour des tests denses multivariés.
+
+\end{document}

@@ -1,0 +1,197 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\geometry{margin=2.6cm}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black}
+
+\newtheorem{definition}{Définition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remarque}
+
+\title{Un moteur autonome de type Thalès-Pandrosion pour l'extraction géométrique de racines polynomiales\\\large Étude mathématique et expérimentale du script 113}
+\author{Ivan Besevic}
+\date{29 avril 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Nous décrivons le moteur \texttt{113\_pandrosion\_autonomous\_heuristic\_thales\_engine.py}, un extracteur autonome de racines complexes de systèmes polynomiaux denses. Le moteur ne suit pas tous les chemins de Bézout. Il construit plutôt un flot géométrique unique combinant homothétie de type Thalès, carte de Riemann-Möbius, optimisation du point de départ, puis correction locale dans les coordonnées transformées. Le point central est de déplacer l'effort numérique de l'énumération homotopique vers la géométrie d'initialisation. Sur les systèmes de Kostlan testés, le moteur retrouve toutes les racines demandées pour \(ks(2,12)\) et \(ks(2,14)\), c'est-à-dire respectivement \(144/144\) et \(196/196\) racines numériques distinctes sous le seuil de résidu utilisé. Le document formalise le flot, précise la nature non derivative-free du correcteur local de 113, et donne les résultats reproductibles observés.
+\end{abstract}
+
+\section{Problème}
+Soit
+\[
+  F=(F_1,\ldots,F_n):\mathbb C^n\to\mathbb C^n
+\]
+un système polynomial. Pour un système dense générique où chaque équation a degré total \(d\), le nombre de Bézout est \(d^n\). Une stratégie homotopique complète associe typiquement un chemin à chaque solution attendue. Pour des cas comme \(ks(6,16)\), cela donne
+\[
+  16^6 = 16\,777\,216
+\]
+chemins théoriques. Le moteur 113 adopte un autre point de vue: extraire des racines utiles et distinctes par exploration géométrique directe, sans énumération exhaustive des chemins.
+
+\section{Systèmes de Kostlan utilisés}
+Les tests emploient une famille dense de type Kostlan. Pour \(n\) variables et degré \(d\), on considère des monômes
+\[
+  z^\alpha = z_1^{\alpha_1}\cdots z_n^{\alpha_n},\qquad |\alpha|\le d,
+\]
+et des coefficients complexes aléatoires pondérés par des facteurs multinomiaux. Dans les sorties du script, le nombre de termes par polynôme est
+\[
+  \binom{n+d}{n}.
+\]
+Par exemple, \(ks(2,14)\) contient \(120\) termes par polynôme, donc \(240\) termes au total pour deux équations.
+
+\section{Flot géométrique unique}
+Le moteur 113 génère un point initial non pas directement dans l'espace original \(z\), mais dans une coordonnée auxiliaire \(u\). Pour chaque coordonnée, il applique une transformation de Möbius couplée à une homothétie:
+\begin{equation}
+  y_j
+  = \Lambda\, p_j\,
+    \frac{\cos(\theta_j)(u_j/p_j)+\sin(\theta_j)}
+         {-\sin(\theta_j)(u_j/p_j)+\cos(\theta_j)}.
+  \label{eq:mobius113}
+\end{equation}
+Ensuite,
+\begin{equation}
+  z = A y,
+  \label{eq:linear113}
+\end{equation}
+où \(A\) est une transformation linéaire diagonale ou quasi diagonale construite dans le moteur autonome.
+
+Cette formule contient plusieurs régimes sans créer de branche algorithmique séparée:
+\[
+\begin{array}{lll}
+\theta_j=0 & \Rightarrow & \text{carte affine homothétique},\\
+\theta_j\approx \pi/2 & \Rightarrow & \text{régime d'inversion / carte vers l'infini},\\
+\Lambda\gg 1 & \Rightarrow & \text{homothétie forte de type Thalès}.
+\end{array}
+\]
+Le but n'est pas seulement de normaliser les variables, mais de produire des points situés dans des bassins numériques variés.
+
+\section{Optimisation du point de départ}
+Le moteur applique une étape \emph{startopt}. On pose
+\[
+  G(y)=F(Ay).
+\]
+À partir du point brut \(y_0\) fourni par \eqref{eq:mobius113}, on teste un petit ensemble de perturbations radiales et directionnelles, puis on garde le candidat qui minimise une énergie de démarrage de la forme
+\begin{equation}
+  E(y)=\log(1+\|G(y)\|)+\varepsilon\log(1+\|y\|),
+  \label{eq:startopt113}
+\end{equation}
+avec \(\varepsilon\) très petit. Géométriquement, cette étape correspond à choisir un meilleur point de départ afin de réduire le nombre de constructions proportionnelles successives nécessaires à la correction.
+
+\section{Correcteur local de 113}
+Il est important de caractériser correctement la nature du moteur 113. Après le flot géométrique, le correcteur local résout
+\begin{equation}
+  J_G(y)\Delta=-G(y),
+  \qquad y\leftarrow y+\lambda\Delta,
+  \label{eq:newton113}
+\end{equation}
+où
+\begin{equation}
+  J_G(y)=J_F(Ay)A.
+\end{equation}
+Le scalaire \(\lambda\) est choisi par une recherche proportionnelle amortie.
+
+\begin{remark}
+Le moteur 113 n'est donc pas derivative-free. Sa géométrie globale est Pandrosion/Thalès, mais son correcteur local utilise un Jacobien. Le moteur ne fait toutefois pas appel à un solveur de racines caché: il n'utilise ni \texttt{numpy.roots}, ni \texttt{scipy}, ni \texttt{sympy}, ni homotopie externe. Le solveur linéaire \(\texttt{np.linalg.solve}\) sert uniquement à résoudre \eqref{eq:newton113}.
+\end{remark}
+
+\section{Mécanisme heuristique}
+Le moteur 113 reste volontairement simple. À chaque essai, il choisit des paramètres
+\[
+  (\Lambda,\theta,p,r)
+\]
+à partir d'une grille déterministe et d'une pression heuristique liée aux duplications et aux échecs. Lorsque des duplications apparaissent, la puissance homothétique est poussée vers d'autres échelles. Cette règle peut être vue comme une version discrète d'une exploration de bassins d'attraction:
+\[
+  \text{doublons fréquents} \quad\Rightarrow\quad \text{changer d'échelle ou de carte}.
+\]
+La stratégie est unique: il ne s'agit pas d'une collection de politiques concurrentes.
+
+\section{Algorithme}
+\noindent\textbf{Entrée:} un système \(F:\mathbb C^n\to\mathbb C^n\), un nombre cible \(N\), un nombre maximal d'essais \(P\).\\
+\textbf{Sortie:} un ensemble \(R\) de racines numériques distinctes.
+\begin{enumerate}
+  \item Construire le système dense et l'évaluateur \(F,J_F\).
+  \item Initialiser \(R=\varnothing\).
+  \item Pour \(t=0,\ldots,P-1\):
+  \begin{enumerate}
+    \item générer une direction \(u_t\), une homothétie \(\Lambda_t\), un angle \(\theta_t\) et un pôle \(p_t\);
+    \item appliquer le flot \eqref{eq:mobius113}-\eqref{eq:linear113};
+    \item optimiser le point de départ par \eqref{eq:startopt113};
+    \item corriger par \eqref{eq:newton113};
+    \item valider le résidu \(\|F(z)\|\) et ajouter la racine si elle est distincte.
+  \end{enumerate}
+  \item Arrêter lorsque \(|R|=N\) ou lorsque le budget d'essais est épuisé.
+\end{enumerate}
+
+\section{Résultats expérimentaux}
+Les tableaux suivants reprennent les sorties JSON générées par le moteur 113. Les temps sont ceux de l'environnement interactif local et ne constituent pas un benchmark matériel normalisé.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Cas & Bézout & Racines demandées & Racines uniques & Essais & Doublons & Temps (s)\\
+\midrule
+\(ks(2,12)\) & 144 & 144 & 144 & 393 & 132 & 2.422\\
+\(ks(2,14)\) & 196 & 196 & 196 & 455 & 107 & 2.988\\
+\(ks(6,16)\) & 16,777,216 & 1 & 1 & 1 & 0 & 0.797\\
+\bottomrule
+\end{tabular}
+\caption{Résultats principaux du moteur 113.}
+\label{tab:113-main}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrr}
+\toprule
+Cas & Termes par polynôme & Termes totaux & Résidu max. & Résidu moyen\\
+\midrule
+\(ks(2,12)\) & 91 & 182 & \(9.91\cdot 10^{-9}\) & \(1.81\cdot 10^{-9}\)\\
+\(ks(2,14)\) & 120 & 240 & \(9.96\cdot 10^{-9}\) & \(1.79\cdot 10^{-9}\)\\
+\(ks(6,16)\) & 74,613 & 447,678 & \(1.40\cdot 10^{-11}\) & \(1.40\cdot 10^{-11}\)\\
+\bottomrule
+\end{tabular}
+\caption{Résidus numériques des racines acceptées dans les tests 113.}
+\label{tab:113-res}
+\end{table}
+
+Le moteur a également été essayé sur des cas multivariés complets ou partiels. Les observations rapportées sont:
+\[
+\begin{array}{ll}
+ks(3,4): & 64/64\ \text{racines},\\
+ks(4,3): & 81/81\ \text{racines},\\
+ks(3,6): & 80/80\ \text{racines demandées},\\
+ks(4,4): & 80/80\ \text{racines demandées},\\
+ks(5,3): & 50/50\ \text{racines demandées},\\
+ks(6,4): & 10/10\ \text{racines demandées}.
+\end{array}
+\]
+Ces tests confirment que le code n'est pas spécialisé au cas bivarié.
+
+\section{Discussion}
+L'intérêt principal de 113 est de montrer qu'une forte géométrisation de l'initialisation peut remplacer, pour l'extraction de nombreuses racines, le suivi systématique des chemins de Bézout. La réussite sur \(ks(2,12)\) et \(ks(2,14)\) est particulièrement notable car l'algorithme ne construit pas explicitement les \(d^n\) chemins de départ. En revanche, 113 reste localement un moteur avec dérivées. Pour obtenir une version plus fidèle à l'idée de Pandrosion pur, il faut remplacer \(J_G\) par une matrice de pente exacte \(Q(a,b)\). C'est précisément l'objet du moteur 115.
+
+\section{Reproductibilité}
+Commandes utilisées pour les cas principaux:
+\begin{verbatim}
+python -S 113_pandrosion_autonomous_heuristic_thales_engine.py \
+  --cases 2,12 --equation-normalize --count 144 --pool 5000 \
+  --epochs 24 --accept 1e-8 --cluster-sep 1e-8 \
+  --startopt-candidates 12
+
+python -S 113_pandrosion_autonomous_heuristic_thales_engine.py \
+  --cases 2,14 --equation-normalize --count 196 --pool 7000 \
+  --epochs 24 --accept 1e-8 --cluster-sep 1e-8 \
+  --startopt-candidates 12
+\end{verbatim}
+
+\section{Conclusion}
+Le moteur 113 propose un schéma autonome, multivarié et sans dépendance à d'anciens scripts. Sa contribution est le flot géométrique unique combinant homothétie forte, cartes de Riemann-Möbius et optimisation du point de départ. Cette couche globale rend la correction locale très efficace sur les benchmarks de Kostlan testés. Sa limite mathématique est claire: le correcteur local est de type Jacobien. Cette limite motive naturellement une version Pandrosion pure fondée sur une matrice de pente exacte.
+
+\end{document}
