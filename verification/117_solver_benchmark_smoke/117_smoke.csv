@@ -1,0 +1,13 @@
+case,family,solver,status,success,requested_roots,unique_roots,trials_used,duplicates,failures,seconds,residual_min,residual_mean,residual_max,skip_reason
+"3,4",ks,pandrosion116,ok,True,2,2,10,1,7,0.0188636661041528,4.0776108029656053e-10,1.6724634002510734e-09,2.9371657202055863e-09,
+"3,4",ks,scipy_multistart,ok,True,2,2,16,1,1,0.4472662091720849,8.065919498384758e-11,4.920527568170825e-10,9.034463186503175e-10,
+"3,4",ks,bertini,skipped,False,,,,,,0.0,,,,command not found: bertini
+"3,4",ks,phcpack,skipped,False,,,,,,0.0,,,,command not found: phc
+"3,4",ks,julia_hc,skipped,False,,,,,,0.0,,,,command not found: julia
+"3,4",ks,lairez_custom,skipped,False,,,,,,0.0,,,,no standard Lairez CLI is configured; pass --lairez-command with placeholders such as {system_json}
+"3,4",diagonal,pandrosion116,ok,True,2,2,10,0,8,0.01203279197216034,1.828148775607767e-09,2.1255455087658374e-09,2.422942241923908e-09,
+"3,4",diagonal,scipy_multistart,ok,True,2,2,16,0,1,0.00211087497882545,8.876081407587413e-11,1.1576834172297254e-09,2.2266060203835766e-09,
+"3,4",diagonal,bertini,skipped,False,,,,,,0.0,,,,command not found: bertini
+"3,4",diagonal,phcpack,skipped,False,,,,,,0.0,,,,command not found: phc
+"3,4",diagonal,julia_hc,skipped,False,,,,,,0.0,,,,command not found: julia
+"3,4",diagonal,lairez_custom,skipped,False,,,,,,0.0,,,,no standard Lairez CLI is configured; pass --lairez-command with placeholders such as {system_json}
