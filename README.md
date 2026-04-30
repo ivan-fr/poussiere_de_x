@@ -95,16 +95,16 @@ homotopy algorithms.  Script 117 exists to make those comparisons explicit.
 
 ```text
 .
-├── articles/       # distributable PDFs
-├── figures/        # generated figures for papers and engine summaries
-├── flow/           # current Python experiment and benchmark scripts
-├── latex/          # LaTeX sources and compiled local PDFs
-├── lean/           # Lean 4 formalization
-├── scripts/        # utility scripts for figures and Lean iteration
-├── Dockerfile
-├── docker-compose.yml
-├── README.md
-└── tectonic        # local Tectonic binary for LaTeX builds
+|-- articles/       # distributable PDFs
+|-- figures/        # generated figures for papers and engine summaries
+|-- flow/           # current Python experiment and benchmark scripts
+|-- latex/          # LaTeX sources and compiled local PDFs
+|-- lean/           # Lean 4 formalization
+|-- scripts/        # utility scripts for figures and Lean iteration
+|-- Dockerfile
+|-- docker-compose.yml
+|-- README.md
+`-- tectonic        # local Tectonic binary for LaTeX builds
 ```
 
 ## Build The Papers
@@ -194,7 +194,7 @@ Run the local comparison between `pandrosion116` and budgeted SciPy:
 ```
 
 The SciPy baseline is budgeted.  By default, `--scipy-eval-budget 0` means
-“use `--pool` as the global number of residual evaluations per case/family.”
+"use `--pool` as the global number of residual evaluations per case/family."
 Use `--scipy-eval-budget -1` only when you intentionally want an unbounded
 baseline.
 
