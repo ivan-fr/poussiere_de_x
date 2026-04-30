@@ -1,0 +1,883 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1.02in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=black}
+
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.18em,topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.4em,itemsep=0.18em,topsep=0.25em}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Id}{\mathrm{Id}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\spol}{S_p}
+\newcommand{\zetaRoot}{\zeta}
+\newcommand{\Q}{Q}
+\newcommand{\B}{\mathbb{B}}
+\newcommand{\polydisc}{\mathcal{P}}
+
+\title{A Finite-Slope Theorem for Pandrosion\\
+\large Global Monomial Convergence, Polynomial Lifts, Local Complexity, Basin-Mass Bounds, Conditioned Global Complexity, and a Kostlan Transfer Principle}
+\author{Ivan Besevic\\
+\small Independent Mathematical Research}
+\date{Revised version, April 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note isolates a theorem-level core of the Pandrosion construction.  First, the one-dimensional Thales-Pandrosion map for $z^p=x$ is shown to converge globally from every positive start, with an explicit contraction budget.  Second, the same finite quotient is lifted to polynomial systems through a coordinate telescoping identity
+\[
+        F(b)-F(a)=Q_F(a,b)(b-a),
+\]
+which gives an exact finite-slope substitute for a Jacobian.  Third, near a simple zero, a pure Pandrosion step contracts whenever its auxiliary geometric probe is close enough to that zero.  The bound is explicit and becomes quadratic in the auto-probe regime.  The paper also gives a concrete polynomial Lipschitz estimate for the finite-slope matrix, deterministic local iteration counts, a conditional basin-mass complexity statement, a uniform global complexity bound for separated and conditioned polynomial systems, and a Kostlan transfer theorem: any probabilistic regularity estimate for a random Kostlan ensemble immediately becomes a global Pandrosion success bound. It also records the sharp obstruction to an unconditional basin-mass bound.  The point is modest but rigorous: slope matrices are classical; Pandrosion contributes a geometric organization of them through Thales scaling, probe selection, and derivative-free correction.
+\end{abstract}
+
+\paragraph{One-sentence summary.}
+Pandrosion turns a finite difference into a geometric slope: in one dimension it gives a globally convergent Thales map, and in several variables it gives an exact derivative-free slope matrix whose contraction is controlled by the quality of the finite probe.
+
+\section{Why this theorem is the right target}
+
+For a monomial, the factorization
+\[
+        b^p-a^p=(b-a)(b^{p-1}+b^{p-2}a+\cdots+a^{p-1})
+\]
+looks like a derivative, but it is not infinitesimal.  It is a finite slope between two visible endpoints.  Pandrosion starts from this finite object and treats the choice of the two endpoints as geometry.
+
+The identity
+\[
+        F(b)-F(a)=Q_F(a,b)(b-a)
+\]
+for nonlinear systems belongs to the classical theory of divided differences and slope matrices; see Ortega--Rheinboldt \cite{OrtegaRheinboldt}, and the related interval and secant-method literature \cite{Krawczyk,Neumaier,PotraPtak}.  The Pandrosion point of view is not the claim that such matrices are new.  It is the claim that a particular finite-slope geometry is useful: the one-dimensional Thales map, the homothetic scaling principle, the coordinate telescoping path, and the use of $Q_F(a,b)$ as a derivative-free correction operator.
+
+The results below separate the algebra from the geometry.  The algebra is classical in spirit; the geometric organization is the contribution.
+
+\section{The monomial Thales map}
+
+Fix an integer $p\geq 2$ and $x>1$.  Put
+\[
+        S_p(s)=1+s+\cdots+s^{p-1}
+\]
+and define the Pandrosion map
+\begin{equation}\label{eq:hp}
+        h_{p,x}(s)=1-\frac{x-1}{xS_p(s)},\qquad s>0.
+\end{equation}
+The fixed point is not the desired root itself.  The desired root is read from the internal variable by
+\[
+        v=x s^{p-1}.
+\]
+
+\begin{theorem}[Global positive convergence of the Thales map]\label{thm:global-monomial}
+Let $p\geq 2$ and $x>1$.  The map $h_{p,x}$ has the unique positive fixed point
+\[
+        s_* = x^{-1/p}.
+\]
+For every $s_0>0$, the sequence $s_{n+1}=h_{p,x}(s_n)$ converges monotonically to $s_*$.  More precisely:
+\begin{itemize}
+\item if $s_0>s_*$, then $s_n\downarrow s_*$;
+\item if $0<s_0<s_*$, then $s_n\uparrow s_*$;
+\item if $s_0=s_*$, then the sequence is constant.
+\end{itemize}
+Consequently $x s_n^{p-1}\to x^{1/p}$.
+\end{theorem}
+
+\begin{proof}
+The identity
+\[
+        1-s^p=(1-s)S_p(s)
+\]
+gives
+\begin{equation}\label{eq:hminus}
+        h_{p,x}(s)-s=\frac{1-xs^p}{xS_p(s)}.
+\end{equation}
+Hence $h_{p,x}(s)=s$ if and only if $xs^p=1$, so the unique positive fixed point is $s_*=x^{-1/p}$.
+
+Since $S_p(s)>0$ for $s>0$, equation \eqref{eq:hminus} shows that $h_{p,x}(s)>s$ for $s<s_*$ and $h_{p,x}(s)<s$ for $s>s_*$.  Moreover $h_{p,x}$ is increasing on $(0,\infty)$, because
+\[
+        h'_{p,x}(s)=\frac{x-1}{x}\frac{S_p'(s)}{S_p(s)^2}>0.
+\]
+Therefore $s>s_*$ implies $h_{p,x}(s)>h_{p,x}(s_*)=s_*$, and $s<s_*$ implies $h_{p,x}(s)<s_*$.  The iterates are monotone and bounded, hence converge.  Their limit must be a fixed point, so it is $s_*$.  The readout identity is immediate.
+\end{proof}
+
+This is the first rigorous version of the informal phrase ``fewer Thales parallels'': the geometry is not merely symbolic; it defines a globally convergent positive iteration.
+
+\subsection{A quantitative contraction budget}
+
+The global theorem gives convergence.  A numerical budget requires a rate.  The canonical real start is $s_0=1$, for which all iterates lie in $[s_*,1]$.
+
+For $s\in(s_*,1]$, define the secant contraction ratio
+\begin{equation}\label{eq:Rpx}
+        R_{p,x}(s)
+        =\frac{h_{p,x}(s)-s_*}{s-s_*}
+        =\frac{(1-s_*)\bigl(S_p(s)-S_p(s_*)\bigr)}{(s-s_*)S_p(s)}.
+\end{equation}
+The displayed identity is obtained by writing
+\[
+        h_{p,x}(s)-s_*
+        =(1-s_*)\left(1-\frac{S_p(s_*)}{S_p(s)}\right),
+\]
+which is just the fixed point equation subtracted from \eqref{eq:hp}.  Extend $R_{p,x}$ continuously at $s=s_*$ by $R_{p,x}(s_*)=h'_{p,x}(s_*)$.
+
+\begin{proposition}[Explicit interval contraction]\label{prop:budget}
+Let
+\[
+        \Lambda_{p,x}=\max_{s\in[s_*,1]} R_{p,x}(s).
+\]
+Then $0\leq \Lambda_{p,x}<1$ and the orbit starting from $s_0=1$ satisfies
+\begin{equation}\label{eq:budget}
+        |s_n-s_*|\leq \Lambda_{p,x}^{\,n}(1-s_*).
+\end{equation}
+Thus it is enough to take
+\begin{equation}\label{eq:n-budget}
+        n\geq
+        \frac{\log(\tau/(1-s_*))}{\log \Lambda_{p,x}}
+\end{equation}
+to guarantee $|s_n-s_*|\leq \tau$.
+\end{proposition}
+
+\begin{proof}
+For $s\in(s_*,1]$, the inequality $R_{p,x}(s)<1$ is equivalent to
+\[
+        (1-s)S_p(s)<(1-s_*)S_p(s_*).
+\]
+But $(1-t)S_p(t)=1-t^p$, and $s>s_*$ gives $1-s^p<1-s_*^p$.  At $s=s_*$ the strict inequality follows from
+\[
+        p s_*^{p-1}(1-s_*)<1-s_*^p
+        =\int_{s_*}^{1}p t^{p-1}\,dt,
+\]
+since $t^{p-1}$ is strictly larger than $s_*^{p-1}$ on a set of positive measure.  Hence the continuous function $R_{p,x}$ has a maximum strictly below $1$ on the compact interval.  Since
+\[
+        s_{n+1}-s_* = R_{p,x}(s_n)(s_n-s_*),
+\]
+iteration gives \eqref{eq:budget}.
+\end{proof}
+
+At the fixed point the local contraction factor is
+\begin{equation}\label{eq:lambda}
+        \lambda_{p,x}=h'_{p,x}(s_*)
+        =\frac{(\alpha-1)\sum_{k=1}^{p-1}k\alpha^{p-1-k}}
+        {\sum_{k=0}^{p-1}\alpha^k},
+        \qquad \alpha=x^{1/p}.
+\end{equation}
+If $x=1+\varepsilon$ with $\varepsilon\downarrow 0$, then
+\begin{equation}\label{eq:lambda-small}
+        \lambda_{p,1+\varepsilon}
+        =\frac{p-1}{2p}\varepsilon+O_p(\varepsilon^2).
+\end{equation}
+This is the quantitative content of Thales scaling: replacing $x$ by a homothetically reduced target $x'=1+\varepsilon$ makes the raw contraction factor small.
+
+\section{The finite-slope lift to polynomial systems}
+
+Let $F=(F_1,\dots,F_d):\C^d\to\C^d$ be polynomial.  For a multi-index $\alpha=(\alpha_1,\dots,\alpha_d)$, write
+\[
+        z^\alpha=z_1^{\alpha_1}\cdots z_d^{\alpha_d}.
+\]
+
+For $m\geq 0$, define the finite one-variable slope
+\[
+        \tau_m(u,v)=
+        \begin{cases}
+        \displaystyle\sum_{r=0}^{m-1} v^{m-1-r}u^r,&m\geq 1,\\[0.7em]
+        0,&m=0.
+        \end{cases}
+\]
+Thus $v^m-u^m=(v-u)\tau_m(u,v)$.
+
+\begin{definition}[Coordinate Pandrosion slope]\label{def:Q}
+For a monomial $z^\alpha$ and two points $a,b\in\C^d$, define
+\begin{equation}\label{eq:q-alpha-j}
+        q_{\alpha,j}(a,b)
+        =\left(\prod_{k<j} b_k^{\alpha_k}\right)
+         \tau_{\alpha_j}(a_j,b_j)
+         \left(\prod_{k>j} a_k^{\alpha_k}\right).
+\end{equation}
+If
+\[
+        F_i(z)=\sum_\alpha c_{i,\alpha}z^\alpha,
+\]
+then the Pandrosion finite-slope matrix is
+\begin{equation}\label{eq:Q-def}
+        (Q_F(a,b))_{ij}=
+        \sum_\alpha c_{i,\alpha}q_{\alpha,j}(a,b).
+\end{equation}
+\end{definition}
+
+Geometrically, one moves from $a$ to $b$ by replacing coordinates one at a time:
+\[
+        (a_1,\dots,a_d)\to(b_1,a_2,\dots,a_d)\to\cdots\to(b_1,\dots,b_d).
+\]
+This is the simplex spine inside the $d$-dimensional Thales orthotope with opposite vertices $a$ and $b$.
+
+\begin{theorem}[Exact polynomial Pandrosion identity]\label{thm:exact-Q}
+For every polynomial map $F:\C^d\to\C^d$ and every $a,b\in\C^d$,
+\begin{equation}\label{eq:exact-Q}
+        F(b)-F(a)=Q_F(a,b)(b-a).
+\end{equation}
+In dimension $d=1$ and for $F(z)=z^p-x$, this gives
+\[
+        Q_F(a,b)=b^{p-1}+b^{p-2}a+\cdots+a^{p-1},
+\]
+which is exactly the finite quotient underlying the one-dimensional Pandrosion map.
+\end{theorem}
+
+\begin{proof}
+It is enough to prove the identity for one monomial $m(z)=z^\alpha$.  Define the intermediate points
+\[
+        z^{(j)}=(b_1,\dots,b_j,a_{j+1},\dots,a_d),
+        \qquad z^{(0)}=a,
+        \quad z^{(d)}=b.
+\]
+Then
+\[
+        m(b)-m(a)=\sum_{j=1}^d \bigl(m(z^{(j)})-m(z^{(j-1)})\bigr).
+\]
+Only the $j$-th coordinate changes in the $j$-th summand, so
+\[
+        m(z^{(j)})-m(z^{(j-1)})
+        =q_{\alpha,j}(a,b)(b_j-a_j).
+\]
+Summing over $j$ proves the monomial identity.  Linearity gives the result for every component of $F$.  The one-dimensional formula is the special case $d=1$.
+\end{proof}
+
+\begin{remark}[What is classical, and what is Pandrosion]
+The existence of matrices satisfying \eqref{eq:exact-Q} is part of the classical theory of divided differences and slope matrices.  The Pandrosion point of view is not the claim that \eqref{eq:exact-Q} is new.  It is the choice of a geometric coordinate path, the interpretation as a Thales orthotope, and the use of the resulting exact slope as a derivative-free correction operator.
+\end{remark}
+
+\section{Affine geometry and quantitative constants}
+
+The solver geometry need not be the original coordinate system.  Let $A\in\C^{d\times d}$ be invertible and set
+\[
+        G(y)=F(Ay).
+\]
+If $Q_F$ is any finite-slope selection satisfying \eqref{eq:exact-Q}, define the transported slope
+\begin{equation}\label{eq:transport}
+        Q_G^A(u,v)=Q_F(Au,Av)A.
+\end{equation}
+
+\begin{proposition}[Affine naturality]\label{prop:affine}
+For every $u,v\in\C^d$,
+\[
+        G(v)-G(u)=Q_G^A(u,v)(v-u).
+\]
+\end{proposition}
+
+\begin{proof}
+By \eqref{eq:exact-Q},
+\[
+        G(v)-G(u)=F(Av)-F(Au)=Q_F(Au,Av)(Av-Au),
+\]
+which is exactly \eqref{eq:transport}.
+\end{proof}
+
+This proposition is the algebra behind homothetic scaling and linear geometry generation.  The solver may choose an adapted chart $z=Ay$ and then perform pure Pandrosion in the $y$-variables.  The slope remains exact.
+
+For the local theorem below it is useful to know that its constants can be made explicit from the coefficients of a polynomial system.  The following bound is intentionally crude; its role is to make the theorem quantitative, not sharp.
+
+\begin{proposition}[A coefficient bound for finite-slope Lipschitz constants]\label{prop:L-bound}
+Let
+\[
+        F_i(z)=\sum_\alpha c_{i,\alpha}z^\alpha
+\]
+have total degree at most $D$.  Work with the vector norm $\norm{z}_\infty$ and the induced matrix norm.  Let
+\[
+        \polydisc_M=\{z\in\C^d:\norm{z}_\infty\leq M\},
+        \qquad M_0=\max(1,M).
+\]
+On $\polydisc_M$, the finite-slope matrix from Definition \ref{def:Q} satisfies
+\begin{equation}\label{eq:explicit-C}
+        \norm{Q_F(a,b)-Q_F(c,d)}_\infty
+        \leq C_F(M)\bigl(\norm{a-c}_\infty+\norm{b-d}_\infty\bigr),
+\end{equation}
+where one may take
+\begin{equation}\label{eq:CFM}
+        C_F(M)
+        =d\max_i\sum_{\alpha:|\alpha|\geq 1}
+        |c_{i,\alpha}|\,|\alpha|^2\,M_0^{|\alpha|-1}.
+\end{equation}
+Consequently, if $\zetaRoot\in\polydisc_M$ and $J_*=DF(\zetaRoot)$, then for $a,b$ in the same polydisc,
+\begin{equation}\label{eq:eta-explicit}
+        \norm{Q_F(a,b)-J_*}_\infty
+        \leq C_F(M)\bigl(\norm{a-\zetaRoot}_\infty+\norm{b-\zetaRoot}_\infty\bigr),
+\end{equation}
+because $Q_F(\zetaRoot,\zetaRoot)=DF(\zetaRoot)$.
+\end{proposition}
+
+\begin{proof}
+For a monomial $z^\alpha$ with $m=|\alpha|\geq 1$, each $q_{\alpha,j}(a,b)$ is a finite sum of at most $m$ monomials of total degree at most $m-1$ in the coordinates of $a$ and $b$.  On $\polydisc_M$, a monomial of degree at most $m-1$ is Lipschitz with constant at most $mM_0^{m-1}$ in the sup norm.  Hence a safe bound for each $q_{\alpha,j}$ is $m^2M_0^{m-1}$.  Summing over $j$ and over the coefficients in each row gives \eqref{eq:explicit-C}.  The last assertion follows by taking $(c,d)=(\zetaRoot,\zetaRoot)$.
+\end{proof}
+
+\section{A local contraction theorem for pure Pandrosion}
+
+Let $F:\C^d\to\C^d$ be polynomial and let $\zetaRoot$ be a simple zero:
+\[
+        F(\zetaRoot)=0,
+        \qquad J_*:=DF(\zetaRoot)\text{ is invertible}.
+\]
+Let $Q_F(a,b)$ be the finite-slope matrix from Definition \ref{def:Q}, or any continuous finite-slope selection satisfying \eqref{eq:exact-Q}.  The pure Pandrosion step with probe $b$ is
+\begin{equation}\label{eq:pand-step}
+        P_b(a)=a-Q_F(a,b)^{-1}F(a).
+\end{equation}
+
+\begin{theorem}[Finite-slope contraction near a simple root]\label{thm:local-contraction}
+Let $\norm{\cdot}$ be any vector norm and its induced matrix norm.  Assume that on the closed ball
+\[
+        B_R=\{z:\norm{z-\zetaRoot}\leq R\}
+\]
+there are constants $\eta,L\geq 0$ such that, for all $a,b,c\in B_R$,
+\begin{equation}\label{eq:eta}
+        \norm{Q_F(a,b)-J_*} \leq \eta
+\end{equation}
+and
+\begin{equation}\label{eq:L}
+        \norm{Q_F(a,b)-Q_F(a,c)} \leq L\norm{b-c}.
+\end{equation}
+Put $\mu=\norm{J_*^{-1}}$ and assume $\mu\eta<1$.  If $a,b\in B_R$, then $Q_F(a,b)$ is invertible and
+\begin{equation}\label{eq:contraction-bound}
+        \norm{P_b(a)-\zetaRoot}
+        \leq
+        \frac{\mu L\norm{b-\zetaRoot}}{1-\mu\eta}
+        \norm{a-\zetaRoot}.
+\end{equation}
+Consequently, if the probes satisfy
+\[
+        \norm{b_n-\zetaRoot}\leq \rho,
+        \qquad
+        \gamma:=\frac{\mu L\rho}{1-\mu\eta}<1,
+\]
+and all points remain in $B_R$, then the pure Pandrosion iteration
+\[
+        a_{n+1}=P_{b_n}(a_n)
+\]
+converges geometrically:
+\[
+        \norm{a_n-\zetaRoot}\leq \gamma^n\norm{a_0-\zetaRoot}.
+\]
+In the ideal case $b=\zetaRoot$, one Pandrosion step is exact: $P_{\zetaRoot}(a)=\zetaRoot$.
+\end{theorem}
+
+\begin{proof}
+The perturbation assumption \eqref{eq:eta} and the Neumann lemma give
+\[
+        \norm{Q_F(a,b)^{-1}}\leq \frac{\mu}{1-\mu\eta}.
+\]
+Since $F(\zetaRoot)=0$, the finite-slope identity gives
+\[
+        -F(a)=F(\zetaRoot)-F(a)=Q_F(a,\zetaRoot)(\zetaRoot-a).
+\]
+Therefore
+\begin{align*}
+        P_b(a)-\zetaRoot
+        &=a-\zetaRoot-Q_F(a,b)^{-1}F(a)\\
+        &=a-\zetaRoot+Q_F(a,b)^{-1}Q_F(a,\zetaRoot)(\zetaRoot-a)\\
+        &=Q_F(a,b)^{-1}\bigl(Q_F(a,b)-Q_F(a,\zetaRoot)\bigr)(a-\zetaRoot).
+\end{align*}
+Taking norms and using \eqref{eq:L} gives \eqref{eq:contraction-bound}.  If $b=\zetaRoot$, then the middle expression gives $P_{\zetaRoot}(a)=\zetaRoot$ exactly.
+\end{proof}
+
+\begin{proposition}[Auto-probe quadratic bound]\label{prop:auto-probe}
+Under the assumptions of Theorem \ref{thm:local-contraction}, choose the probe equal to the current point, $b=a$.  Then
+\begin{equation}\label{eq:quadratic}
+        \norm{P_a(a)-\zetaRoot}
+        \leq
+        \frac{\mu L}{1-\mu\eta}
+        \norm{a-\zetaRoot}^2.
+\end{equation}
+Consequently, if the orbit remains in $B_R$ and starts sufficiently close to $\zetaRoot$, the auto-probe Pandrosion iteration has Newton-type quadratic convergence.
+\end{proposition}
+
+\begin{proof}
+Substitute $b=a$ into \eqref{eq:contraction-bound}.  The probe distance becomes $\norm{b-\zetaRoot}=\norm{a-\zetaRoot}$, giving \eqref{eq:quadratic}.  The standard quadratic convergence conclusion follows by choosing the initial error small enough that the iterates remain in the ball and the right-hand side is smaller than the current error.
+\end{proof}
+
+\begin{remark}[Why this theorem matters]
+The local corrector is not driven by an infinitesimal derivative.  It is driven by the quality of the finite geometric probe $b$.  Start optimization, Riemann charts, and homothetic scaling are therefore not cosmetic: they are mechanisms for making $\norm{b-\zetaRoot}$ smaller, which directly improves the contraction factor in \eqref{eq:contraction-bound}.  The auto-probe case shows that the finite-slope framework also contains the familiar quadratic local behavior, but without requiring the finite-slope operator to be introduced as a Jacobian.
+\end{remark}
+
+
+\section{Complexity consequences}
+
+The local theorem becomes more useful once its constants are translated into iteration counts.  The point is not to claim a universal global bound.  The point is to separate two costs: the deterministic cost once a trial enters a certified local basin, and the probabilistic cost of finding such a basin.
+
+\subsection{Deterministic local iteration counts}
+
+Let $e_n=\norm{a_n-\zetaRoot}$.  In the fixed-probe regime of Theorem \ref{thm:local-contraction}, if all probes satisfy $\norm{b_n-\zetaRoot}\leq \rho$ and
+\[
+        \gamma=\frac{\mu L\rho}{1-\mu\eta}<1,
+\]
+then
+\[
+        e_n\leq \gamma^n e_0.
+\]
+Therefore an accuracy target $e_n\leq \varepsilon$ is reached after at most
+\begin{equation}\label{eq:linear-count}
+        N_{\rm lin}(\varepsilon)
+        =\left\lceil
+        \max\left(0,\frac{\log(\varepsilon/e_0)}{\log \gamma}\right)
+        \right\rceil
+\end{equation}
+finite-slope corrections.
+
+The auto-probe regime has the usual double-exponential error decay.
+
+\begin{proposition}[Local complexity of auto-probe Pandrosion]\label{prop:local-complexity}
+Assume the hypotheses of Proposition \ref{prop:auto-probe} and put
+\[
+        C=\frac{\mu L}{1-\mu\eta}.
+\]
+Suppose $C>0$, $Ce_0<1$, and the auto-probe orbit remains in $B_R$.  Then
+\begin{equation}\label{eq:doubexp}
+        e_n\leq C^{-1}(Ce_0)^{2^n}.
+\end{equation}
+Consequently, for $0<\varepsilon<C^{-1}$, it is enough to take
+\begin{equation}\label{eq:quad-count}
+        N_{\rm quad}(\varepsilon)
+        =\left\lceil
+        \log_2\left(
+        \frac{\log(1/(C\varepsilon))}{\log(1/(Ce_0))}
+        \right)
+        \right\rceil
+\end{equation}
+iterations to ensure $e_n\leq \varepsilon$.
+\end{proposition}
+
+\begin{proof}
+From Proposition \ref{prop:auto-probe}, $e_{n+1}\leq C e_n^2$.  Let $r_n=Ce_n$.  Then $r_{n+1}\leq r_n^2$, hence $r_n\leq r_0^{2^n}$ by induction.  Dividing by $C$ gives \eqref{eq:doubexp}.  Solving $C^{-1}(Ce_0)^{2^n}\leq \varepsilon$ gives \eqref{eq:quad-count}.
+\end{proof}
+
+Thus the local iteration complexity is of Newton type: once a good local basin is reached, the number of finite-slope corrections is $O(\log\log(1/\varepsilon))$ in the auto-probe regime.
+
+\subsection{Arithmetic cost of one vectorized slope step}
+
+Let $T$ be the total number of nonzero monomial--equation pairs in $F$, and let $D$ be the maximum total degree.  A direct coordinate-telescopic construction of $Q_F(a,b)$ can be implemented with arithmetic work
+\begin{equation}\label{eq:step-cost}
+        W_{\rm step}=O(dT+dD+d^3).
+\end{equation}
+The first term builds the monomial contributions to the $d$ slope columns, the second precomputes one-variable powers and finite slopes up to degree $D$, and the final term solves the dense $d\times d$ linear system in $Q_F(a,b)$.  The bound is a model of arithmetic work, not a bit-complexity statement.  It is precisely the computation vectorized in the pure Pandrosion engine.
+
+Combining \eqref{eq:quad-count} and \eqref{eq:step-cost}, a certified local auto-probe solve has arithmetic cost
+\begin{equation}\label{eq:local-work}
+        O\left((dT+dD+d^3)\log\log(1/\varepsilon)\right),
+\end{equation}
+up to constants depending on the local conditioning through $C$ and $e_0$.
+
+\subsection{A conditional basin-mass theorem}
+
+The remaining question is global: how many geometric trials are needed before one lands in a basin where the local theorem applies?  This cannot be answered for all polynomial systems without additional assumptions.  A clean way to state the missing hypothesis is through basin mass.
+
+Fix a randomized geometric trial rule $\mathcal{G}$: it chooses a chart, a Thales/Riemann point, and an initial probe, then runs the deterministic pure Pandrosion corrector.  Let $\mathcal{B}_{\varepsilon}(\zetaRoot)$ be the event that a trial enters a certified local basin of a simple zero $\zetaRoot$ and reaches $\varepsilon$-accuracy within $K(\varepsilon)$ finite-slope corrections.
+
+\begin{theorem}[Conditional basin-mass complexity]\label{thm:basin-mass}
+Assume independent trials from $\mathcal{G}$.  Suppose that for a simple zero $\zetaRoot$,
+\[
+        \mathbb{P}_{\mathcal{G}}\bigl(\mathcal{B}_{\varepsilon}(\zetaRoot)\bigr)\geq \beta>0.
+\]
+Then after $N$ trials, the probability of having found an $\varepsilon$-approximation of $\zetaRoot$ is at least
+\begin{equation}\label{eq:success-prob}
+        1-(1-\beta)^N.
+\end{equation}
+In particular, $N\geq \lceil \beta^{-1}\log(1/\delta)\rceil$ trials suffice with probability at least $1-\delta$.  The expected number of trials before success is at most $1/\beta$, and the expected arithmetic work is bounded by
+\begin{equation}\label{eq:expected-work}
+        O\left(
+        \frac{dT+dD+d^3}{\beta}\,K(\varepsilon)
+        \right).
+\end{equation}
+In the auto-probe local regime, one may take $K(\varepsilon)=O(\log\log(1/\varepsilon))$.
+\end{theorem}
+
+\begin{proof}
+The probability that $N$ independent trials all fail is at most $(1-\beta)^N$, which gives \eqref{eq:success-prob}.  The bound with confidence $1-\delta$ follows from $(1-\beta)^N\leq e^{-\beta N}$.  The expected number of independent Bernoulli trials with success probability at least $\beta$ is at most $1/\beta$.  Multiplying by the cost per trial and by the local iteration count gives \eqref{eq:expected-work}.
+\end{proof}
+
+\begin{proposition}[A certified lower bound for basin mass]\label{prop:certified-beta}
+Let $\Omega\subset\C^d$ be a sampling region, and suppose the geometric trial rule has a density $q$ on $\Omega$ with
+\[
+        q(y)\geq q_{\min}>0\qquad (y\in\Omega).
+\]
+Assume that, for a simple zero $\zetaRoot$, the certified basin in the chosen chart contains the Euclidean ball
+\[
+        B(\zetaRoot,r)=\{y\in\C^d:\norm{y-\zetaRoot}<r\}
+        \subset \Omega .
+\]
+Then the basin mass in Theorem \ref{thm:basin-mass} satisfies
+\begin{equation}\label{eq:beta-lower}
+        \beta\geq q_{\min}\,\operatorname{vol}_{2d}(B(0,r))
+        = q_{\min}\frac{\pi^d}{d!}r^{2d}.
+\end{equation}
+In particular, for uniform sampling on a region $\Omega$ of finite volume,
+\[
+        \beta\geq \frac{\pi^d r^{2d}}{d!\,\operatorname{vol}_{2d}(\Omega)}.
+\]
+\end{proposition}
+
+\begin{proof}
+The event of landing in the certified basin contains the event of drawing a point in $B(\zetaRoot,r)$.  Therefore
+\[
+        \beta\geq \int_{B(\zetaRoot,r)}q(y)\,dy
+        \geq q_{\min}\operatorname{vol}_{2d}(B(\zetaRoot,r)).
+\]
+The volume of a ball of radius $r$ in real dimension $2d$ is $\pi^d r^{2d}/d!$.
+
+\end{proof}
+
+\begin{theorem}[Uniform basin mass for separated conditioned systems]\label{thm:conditioned-beta}
+Fix a sampling chart $\Omega\subset\C^d$ and a probability density $q$ on $\Omega$ satisfying
+\[
+        q(y)\geq q_{\min}>0\qquad (y\in\Omega).
+\]
+Let $F:\C^d\to\C^d$ be polynomial, and suppose that its target roots in $\Omega$ are
+\[
+        Z=\{\zeta_1,\dots,\zeta_m\}.
+\]
+Assume the following regularity bounds hold in the chosen chart:
+\begin{enumerate}
+\item the roots are separated: $\norm{\zeta_i-\zeta_j}\geq \sigma>0$ for $i\neq j$;
+\item the chart has margin: $B(\zeta_i,\tau)\subset\Omega$ for every $i$;
+\item the roots are uniformly conditioned: $\norm{DF(\zeta_i)^{-1}}\leq \mu$ for every $i$;
+\item the finite-slope selection satisfies the Lipschitz bound
+\[
+        \norm{Q_F(a,b)-Q_F(c,d)}
+        \leq C_Q\bigl(\norm{a-c}+\norm{b-d}\bigr)
+\]
+whenever all four points lie in the union of the balls $B(\zeta_i,\tau)$.
+\end{enumerate}
+Assume $C_Q>0$ and define the certified radius
+\begin{equation}\label{eq:rreg}
+        r_{\rm reg}
+        =\min\left\{\frac{\sigma}{3},\,\tau,\,\frac{1}{8\mu C_Q}\right\}.
+\end{equation}
+Then each ball $B(\zeta_i,r_{\rm reg})$ is contained in an auto-probe Pandrosion basin for the root $\zeta_i$.  In particular each root has basin mass at least
+\begin{equation}\label{eq:beta0}
+        \beta_0
+        =q_{\min}\frac{\pi^d}{d!}r_{\rm reg}^{2d}.
+\end{equation}
+Consequently, after $N$ independent geometric trials, each followed by the deterministic auto-probe correction, the probability of having hit the certified basin of every root in $Z$ is at least
+\begin{equation}\label{eq:allroots-prob}
+        1-m(1-\beta_0)^N
+        \geq 1-m e^{-\beta_0 N}.
+\end{equation}
+Thus
+\begin{equation}\label{eq:N-allroots}
+        N\geq \left\lceil \beta_0^{-1}\log(m/\delta)\right\rceil
+\end{equation}
+trials suffice to hit all certified basins with probability at least $1-\delta$.
+\end{theorem}
+
+\begin{proof}
+Fix a root $\zeta=\zeta_i$ and let $r=r_{\rm reg}$.  If $a,b\in B(\zeta,r)$, then by the Lipschitz assumption and $Q_F(\zeta,\zeta)=DF(\zeta)$,
+\[
+        \norm{Q_F(a,b)-DF(\zeta)}
+        \leq C_Q(\norm{a-\zeta}+\norm{b-\zeta})
+        \leq 2C_Q r.
+\]
+Since $r\leq (8\mu C_Q)^{-1}$, we have $\mu\eta\leq 2\mu C_Q r\leq 1/4$.  The auto-probe estimate of Proposition \ref{prop:auto-probe} therefore gives, for $a\in B(\zeta,r)$,
+\[
+        \norm{P_a(a)-\zeta}
+        \leq \frac{\mu C_Q}{1-2\mu C_Q r}\norm{a-\zeta}^2
+        \leq \frac{4}{3}\mu C_Q r\,\norm{a-\zeta}
+        \leq \frac{1}{6}\norm{a-\zeta}.
+\]
+Thus the ball $B(\zeta,r)$ is invariant and contracts toward $\zeta$ under the auto-probe Pandrosion correction.  The choices $r\leq\tau$ and $r\leq\sigma/3$ ensure respectively that the ball is inside the sampling chart and that the certified balls around distinct roots are disjoint.
+
+The lower bound \eqref{eq:beta0} follows from Proposition \ref{prop:certified-beta}.  For a fixed root, the probability of missing its certified basin in $N$ independent trials is at most $(1-\beta_0)^N$.  A union bound over the $m$ roots gives \eqref{eq:allroots-prob}, and \eqref{eq:N-allroots} follows from $(1-\beta_0)^N\leq e^{-\beta_0 N}$.
+\end{proof}
+
+\begin{corollary}[Conditioned global arithmetic complexity]\label{cor:conditioned-global-complexity}
+Under the assumptions of Theorem \ref{thm:conditioned-beta}, suppose each successful trial is iterated to accuracy $\varepsilon$ in the auto-probe regime.  Let
+\[
+        C_{\rm reg}=\frac{\mu C_Q}{1-2\mu C_Q r_{\rm reg}}.
+\]
+For $C_{\rm reg}r_{\rm reg}<1$ and $0<\varepsilon<C_{\rm reg}^{-1}$, a sufficient local iteration count is
+\[
+        K_{\rm reg}(\varepsilon)
+        =\left\lceil
+        \log_2\left(
+        \frac{\log(1/(C_{\rm reg}\varepsilon))}
+             {\log(1/(C_{\rm reg}r_{\rm reg}))}
+        \right)
+        \right\rceil.
+\]
+With probability at least $1-\delta$, all $m$ certified roots are found with arithmetic work
+\begin{equation}\label{eq:conditioned-work}
+        O\left(
+        (dT+dD+d^3)\,
+        \beta_0^{-1}\log(m/\delta)\,
+        K_{\rm reg}(\varepsilon)
+        \right).
+\end{equation}
+In particular, the dependence on accuracy is $O(\log\log(1/\varepsilon))$.
+\end{corollary}
+
+
+\subsection{A Kostlan transfer principle}
+
+The preceding theorem is deterministic: it applies to every system satisfying explicit separation and conditioning bounds.  Random polynomial models enter only through the probability that these bounds hold.  This is the right way to state a global result for Kostlan systems without hiding a conditioning assumption.
+
+Let $\mathcal K$ be a Kostlan--Smale probability distribution on square polynomial systems $F:\C^d\to\C^d$ of degrees at most $D$.  Let $m(F)$ be the number of target roots in the chosen affine chart $\Omega$.  For parameters $\sigma,\tau,\mu,C_Q>0$, define the regularity event
+\[
+        \mathcal E_{\rm reg}(\sigma,\tau,\mu,C_Q)
+\]
+to be the event that the roots in $\Omega$ are simple, mutually $\sigma$-separated, have chart margin $\tau$, satisfy $\norm{DF(\zeta)^{-1}}\leq\mu$, and that the finite-slope Lipschitz bound of Theorem \ref{thm:conditioned-beta} holds with constant $C_Q$ on the corresponding neighborhoods.
+
+\begin{theorem}[Kostlan transfer theorem]\label{thm:kostlan-transfer}
+Fix a geometric sampling density $q$ on $\Omega$ with $q\geq q_{\min}>0$.  Suppose that for systems drawn from the Kostlan model $\mathcal K$,
+\[
+        \mathbb P_{F\sim\mathcal K}\bigl(\mathcal E_{\rm reg}(\sigma,\tau,\mu,C_Q)\bigr)
+        \geq 1-\delta_{\rm K}.
+\]
+Set
+\[
+        r_{\rm K}=\min\left\{\frac{\sigma}{3},\,\tau,\,\frac{1}{8\mu C_Q}\right\},
+        \qquad
+        \beta_{\rm K}=q_{\min}\frac{\pi^d}{d!}r_{\rm K}^{2d}.
+\]
+Then, after $N$ independent Pandrosion geometric trials followed by the auto-probe finite-slope corrector, the joint probability over the random system and the random trials of hitting the certified basin of every root in $\Omega$ is at least
+\begin{equation}\label{eq:kostlan-success}
+        1-\delta_{\rm K}-m\exp(-\beta_{\rm K}N),
+\end{equation}
+where $m$ is any deterministic upper bound for $m(F)$ on the regularity event, for instance the Bezout number.  Hence
+\begin{equation}\label{eq:kostlan-N}
+        N\geq \left\lceil\beta_{\rm K}^{-1}\log(m/\delta)\right\rceil
+\end{equation}
+trials give success probability at least $1-\delta_{\rm K}-\delta$.
+
+Moreover, if each successful trial is iterated to accuracy $\varepsilon$ in the local auto-probe regime, the corresponding arithmetic work is bounded by
+\begin{equation}\label{eq:kostlan-work}
+        O\left(
+        (dT+dD+d^3)\,
+        \beta_{\rm K}^{-1}\log(m/\delta)\,
+        \log\log(1/\varepsilon)
+        \right)
+\end{equation}
+up to constants depending only on the regularity parameters.
+\end{theorem}
+
+\begin{proof}
+Condition on the event $\mathcal E_{\rm reg}(\sigma,\tau,\mu,C_Q)$.  On this event, Theorem \ref{thm:conditioned-beta} applies with radius $r_{\rm K}$ and basin mass at least $\beta_{\rm K}$ for each root.  Therefore, conditional on the system being regular, the probability of missing at least one of the $m$ certified basins after $N$ trials is at most $m\exp(-\beta_{\rm K}N)$.  Removing the conditioning loses at most the probability $\delta_{\rm K}$ of the irregular event.  This gives \eqref{eq:kostlan-success}.  The trial count \eqref{eq:kostlan-N} follows immediately, and the work bound is Corollary \ref{cor:conditioned-global-complexity} with $\beta_0$ replaced by $\beta_{\rm K}$.
+\end{proof}
+
+\begin{corollary}[Polynomial average complexity from polynomial Kostlan regularity]\label{cor:poly-average}
+Consider a sequence of Kostlan input models indexed by a size parameter $n$.  Suppose that $d,T,D,m$ are bounded by a polynomial in $n$, and that for every confidence parameter $\delta$ one can choose regularity parameters with
+\[
+        \delta_{\rm K}\leq \delta/2,
+        \qquad
+        \beta_{\rm K}^{-1}\leq {\rm poly}(n,\log(1/\delta)).
+\]
+Then the Pandrosion finite-slope procedure has polynomial average arithmetic complexity, up to the local factor $\log\log(1/\varepsilon)$:
+\[
+        {\rm poly}(n,\log(1/\delta))\,\log\log(1/\varepsilon).
+\]
+\end{corollary}
+
+\begin{proof}
+Substitute the assumed polynomial bounds into \eqref{eq:kostlan-work}.  Since $d,T,D,m$ and $\beta_{\rm K}^{-1}$ are polynomially bounded, the claimed estimate follows.
+\end{proof}
+
+\begin{remark}[What remains to prove for a full Kostlan theorem]
+Theorem \ref{thm:kostlan-transfer} is a transfer principle, not a hidden proof of Smale-type average complexity.  It says exactly what a probabilistic analysis of the geometry must deliver: tail bounds for separation, inverse Jacobian norms, chart margins, and the finite-slope Lipschitz constant under the Kostlan distribution.  Such bounds would turn the conditional complexity above into a genuine average-complexity theorem.  Without them, the theorem is still useful because it isolates the only probabilistic obstruction: the size of $\beta_{\rm K}$.
+\end{remark}
+
+\begin{remark}[What is universal here]
+The constants in Theorem \ref{thm:conditioned-beta} are uniform over a class of systems satisfying the same separation, chart margin, conditioning, and finite-slope Lipschitz bounds.  This is the strongest kind of universal statement one can expect without excluding root collisions and near singularities.  The Kostlan transfer theorem shows how such deterministic regularity estimates become probabilistic complexity bounds.  The next theorem shows that the hypotheses are not cosmetic; some condition of this kind is mathematically unavoidable.
+\end{remark}
+
+\begin{theorem}[No unconditional positive basin-mass bound]\label{thm:no-universal-beta}
+There is no positive lower bound for $\beta$ which is uniform over all polynomial systems and depends only on coarse parameters such as the number of variables, total degree, and number of monomial terms.  Any non-trivial lower bound must depend on the local conditioning, or equivalently on a certified basin radius.
+\end{theorem}
+
+\begin{proof}
+It is enough to look at one variable and degree two.  For $\varepsilon>0$, consider
+\[
+        f_\varepsilon(z)=z(z-\varepsilon).
+\]
+Both zeros are simple, but their separation is $\varepsilon$.  Any certified ball around the zero $0$ that is guaranteed to isolate this zero from the other must have radius at most $\varepsilon/2$.  If the sampling density is bounded above by $q_{\max}$ on the relevant compact chart, then the mass of such a ball is at most
+\[
+        q_{\max}\,\pi(\varepsilon/2)^2,
+\]
+which tends to zero with $\varepsilon$.  Thus no positive lower bound can be uniform over this family.
+
+The obstruction is not an artefact of this particular sampling density.  The local finite-slope theorem itself depends on the invertibility and stability of the local slope, and these constants necessarily deteriorate as two simple roots coalesce.  Hence the certified basin radius can be made arbitrarily small while the degree, dimension, and number of monomials remain fixed.  A system-independent positive lower bound for $\beta$ is therefore impossible.
+\end{proof}
+
+\begin{remark}[What would make this global]
+Theorems \ref{thm:conditioned-beta} and \ref{thm:kostlan-transfer} show how basin mass becomes complexity.  They become a genuine average-complexity theorem for a concrete random input model once one proves quantitative regularity tails for that model.  For example, if $\beta_{\rm K}$ were bounded below by an inverse polynomial with high probability and $T,d,D$ were polynomially bounded in the input size, then the expected arithmetic cost would be polynomial up to the local $\log\log(1/\varepsilon)$ factor.  The remaining open global ingredient is therefore not the local Pandrosion analysis; it is the probabilistic regularity estimate for the chosen ensemble and sampling geometry.
+\end{remark}
+
+\section{A two-dimensional check}
+
+Consider the polynomial system
+\begin{equation}\label{eq:example}
+        F(x,y)=
+        \begin{pmatrix}
+        x^2+y-2\\
+        x+y^2-2
+        \end{pmatrix},
+        \qquad \zetaRoot=(1,1).
+\end{equation}
+With the coordinate path used in Definition \ref{def:Q},
+\[
+        Q_F(a,b)=
+        \begin{pmatrix}
+        a_1+b_1 & 1\\
+        1 & a_2+b_2
+        \end{pmatrix}.
+\]
+Here
+\[
+        J_*=DF(\zetaRoot)=
+        \begin{pmatrix}2&1\\1&2\end{pmatrix},
+        \qquad \norm{J_*^{-1}}_\infty=1.
+\]
+On the sup-norm ball $\norm{z-\zetaRoot}_\infty\leq r$, one has
+\[
+        \eta\leq 2r,
+        \qquad L=1.
+\]
+Thus, for $r<1/2$, Theorem \ref{thm:local-contraction} gives
+\[
+        \norm{P_b(a)-\zetaRoot}_\infty
+        \leq
+        \frac{\norm{b-\zetaRoot}_\infty}{1-2r}
+        \norm{a-\zetaRoot}_\infty.
+\]
+In the auto-probe case $b=a$,
+\[
+        \norm{P_a(a)-\zetaRoot}_\infty
+        \leq
+        \frac{1}{1-2r}
+        \norm{a-\zetaRoot}_\infty^2.
+\]
+Starting from $a_0=(1.1,0.9)$, the auto-probe iteration gives the following errors.
+
+\begin{center}
+\begin{tabular}{@{}ccc@{}}
+\toprule
+$n$ & $\norm{a_n-\zetaRoot}_\infty$ & $\norm{F(a_n)}_\infty$\\
+\midrule
+0 & $1.00\cdot 10^{-1}$ & $1.10\cdot 10^{-1}$\\
+1 & $4.05\cdot 10^{-3}$ & $1.08\cdot 10^{-2}$\\
+2 & $8.48\cdot 10^{-6}$ & $1.64\cdot 10^{-5}$\\
+3 & $4.78\cdot 10^{-11}$ & $7.18\cdot 10^{-11}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The example is deliberately elementary.  Its purpose is not to showcase a difficult system, but to show how the abstract constants $\mu,\eta,L$ can be read directly from a concrete polynomial.
+
+\section{Consequences for the vectorized pure Pandrosion engine}
+
+The vectorized pure Pandrosion engine follows the structure proved above:
+\begin{enumerate}
+\item generate a geometry, usually an affine or homothetic chart $z=Ay$;
+\item choose starts and probes by a Thales/Riemann sampling rule;
+\item optionally improve the probe by start optimization;
+\item build the exact finite-slope matrix $Q_F(a,b)$ by the telescopic formula;
+\item solve the linear system $Q_F(a,b)\Delta=-F(a)$;
+\item accept a point only when the original residual $\norm{F(z)}$ is small.
+\end{enumerate}
+The vectorization does not change the theorem.  It only computes the sums in \eqref{eq:q-alpha-j} in blocks.  In particular, the method is derivative-free in the strict operational sense that no Jacobian entries $\partial F_i/\partial z_j$ are formed.  The linear solve is a solve in the finite-slope matrix, not in a separately constructed Jacobian.  A reference implementation of this construction is the script \texttt{115\_pandrosion\_vectorized\_pure\_thales\_engine.py}; a public repository link can be inserted in the archival version.
+
+\paragraph{What this proves.}
+The note proves four things that can be checked independently:
+\begin{itemize}
+\item the one-dimensional Pandrosion map has global positive convergence;
+\item the polynomial operator $Q_F(a,b)$ is an exact finite-slope lift of the one-dimensional quotient;
+\item the constants in the local theorem can be bounded from polynomial coefficients;
+\item near a simple zero, pure Pandrosion contracts whenever its geometric probe is close enough, and the auto-probe version is locally quadratic;
+\item under an explicit basin-mass hypothesis, the expected number of geometric trials is at most the reciprocal basin mass, with local cost $O(\log\log(1/\varepsilon))$.
+\end{itemize}
+
+\paragraph{What it does not prove.}
+It does not prove a universal lower bound on the basin mass $\beta$.  Therefore it does not prove that a universal sampling rule will find every root of every polynomial system in polynomial time.  Multiple roots, nearly singular roots, and extreme clusters require additional certification.  This distinction is important: the theorem explains why the geometry can work, not that every heuristic geometry must work.
+
+\section{Conclusion}
+
+Pandrosion can be stated as a finite geometric calculus.  In one variable, the Thales construction produces a globally convergent map for $z^p=x$ with an explicit contraction budget.  In several variables, the same finite quotient becomes an exact polynomial slope matrix, constructed by a coordinate telescoping path.  Near a simple zero, this slope matrix gives a derivative-free correction whose contraction factor is controlled by the distance between the geometric probe and the root; in the auto-probe regime, the bound becomes quadratic.
+
+The resulting message is clean:
+\[
+        \text{better geometry}\quad\Longrightarrow\quad
+        \text{better finite probe}\quad\Longrightarrow\quad
+        \text{stronger Pandrosion contraction.}
+\]
+This is a modest theorem, but a useful one.  It turns the informal geometry of Pandrosion into precise statements: a global monomial theorem, a canonical polynomial lift, quantitative constants, explicit local iteration counts, a conditional basin-mass complexity statement, a uniform global complexity theorem for separated conditioned systems, and a Kostlan transfer principle reducing average complexity to probabilistic regularity bounds.
+
+\begin{thebibliography}{14}
+
+\bibitem{OrtegaRheinboldt}
+J. M. Ortega and W. C. Rheinboldt,
+\emph{Iterative Solution of Nonlinear Equations in Several Variables}.
+Academic Press, 1970; reprinted by SIAM, 2000.
+
+\bibitem{Krawczyk}
+R. Krawczyk,
+``Newton-Algorithmen zur Bestimmung von Nullstellen mit Fehlerschranken,''
+\emph{Computing}, 4, 1969, pp. 187--201.
+
+\bibitem{Neumaier}
+A. Neumaier,
+\emph{Interval Methods for Systems of Equations}.
+Cambridge University Press, 1990.
+
+\bibitem{PotraPtak}
+F. A. Potra and V. Ptak,
+\emph{Nondiscrete Induction and Iterative Processes}.
+Pitman, 1984.
+
+\bibitem{Deuflhard}
+P. Deuflhard,
+\emph{Newton Methods for Nonlinear Problems: Affine Invariance and Adaptive Algorithms}.
+Springer, 2011.
+
+\bibitem{Ciarlet}
+P. G. Ciarlet and C. Mardare,
+``On the Newton-Kantorovich theorem,''
+\emph{Analysis and Applications}, 10(3), 2012.
+
+\bibitem{Bertini}
+D. J. Bates, J. D. Hauenstein, A. J. Sommese, and C. W. Wampler,
+\emph{Numerically Solving Polynomial Systems with Bertini}.
+SIAM, 2013.
+
+\bibitem{HomotopyContinuation}
+P. Breiding and S. Timme,
+``HomotopyContinuation.jl: A Package for Homotopy Continuation in Julia,''
+in \emph{Mathematical Software -- ICMS 2018}, Springer, 2018.
+
+\bibitem{EdelmanKostlan}
+A. Edelman and E. Kostlan,
+``How many zeros of a random polynomial are real?,''
+\emph{Bulletin of the American Mathematical Society}, 32(1), 1995, pp. 1--37.
+
+\bibitem{ShubSmale}
+M. Shub and S. Smale,
+``Complexity of Bezout's theorem. I. Geometric aspects,''
+\emph{Journal of the American Mathematical Society}, 6(2), 1993, pp. 459--501.
+
+\bibitem{Steffensen}
+J. F. Steffensen,
+``Remarks on iteration,''
+\emph{Skandinavisk Aktuarietidskrift}, 16, 1933.
+
+\bibitem{Aitken}
+A. C. Aitken,
+``On Bernoulli's numerical solution of algebraic equations,''
+\emph{Proceedings of the Royal Society of Edinburgh}, 46, 1926.
+
+\end{thebibliography}
+
+\end{document}
