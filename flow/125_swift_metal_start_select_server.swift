@@ -18,6 +18,28 @@ struct StartSelectJob: Decodable {
     let radii: [Float]
 }
 
+struct LoadSystemJob: Decodable {
+    let op: String
+    let n: Int
+    let equations: Int
+    let terms: Int
+    let exps: [Int32]
+    let coeffRe: [Float]
+    let coeffIm: [Float]
+}
+
+struct StoredStartSelectJob: Decodable {
+    let op: String
+    let candidates: Int
+    let targetCount: Int
+    let topK: Int
+    let seed: UInt64
+    let powerCap: Float
+    let powers: [Float]
+    let angles: [Float]
+    let radii: [Float]
+}
+
 struct Params {
     var n: UInt32
     var equations: UInt32
@@ -41,6 +63,22 @@ struct Candidate {
     let index: Int
     let trial: Int
     let residual: Double
+}
+
+final class LoadedSystem {
+    let n: Int
+    let equations: Int
+    let terms: Int
+    let expsBuffer: MTLBuffer
+    let coeffBuffer: MTLBuffer
+
+    init(n: Int, equations: Int, terms: Int, expsBuffer: MTLBuffer, coeffBuffer: MTLBuffer) {
+        self.n = n
+        self.equations = equations
+        self.terms = terms
+        self.expsBuffer = expsBuffer
+        self.coeffBuffer = coeffBuffer
+    }
 }
 
 func fail(_ message: String) -> Never {
@@ -360,15 +398,177 @@ func runJob(_ job: StartSelectJob) throws -> [String: Any] {
     ]
 }
 
+func loadSystem(_ job: LoadSystemJob) throws -> LoadedSystem {
+    if job.n > 8 {
+        throw NSError(domain: "StartSelect", code: 20, userInfo: [NSLocalizedDescriptionKey: "n > 8 is not supported"])
+    }
+    if job.exps.count != job.terms * job.n {
+        throw NSError(domain: "StartSelect", code: 21, userInfo: [NSLocalizedDescriptionKey: "bad exps length"])
+    }
+    if job.coeffRe.count != job.equations * job.terms || job.coeffIm.count != job.equations * job.terms {
+        throw NSError(domain: "StartSelect", code: 22, userInfo: [NSLocalizedDescriptionKey: "bad coeff length"])
+    }
+    let coeff = zip(job.coeffRe, job.coeffIm).map { Complex2(re: $0.0, im: $0.1) }
+    guard let expsBuffer = device.makeBuffer(bytes: job.exps, length: job.exps.count * MemoryLayout<Int32>.stride, options: .storageModeShared),
+          let coeffBuffer = device.makeBuffer(bytes: coeff, length: coeff.count * MemoryLayout<Complex2>.stride, options: .storageModeShared) else {
+        throw NSError(domain: "StartSelect", code: 23, userInfo: [NSLocalizedDescriptionKey: "cannot create loaded buffers"])
+    }
+    return LoadedSystem(n: job.n, equations: job.equations, terms: job.terms, expsBuffer: expsBuffer, coeffBuffer: coeffBuffer)
+}
+
+func runStoredJob(_ job: StoredStartSelectJob, system: LoadedSystem) throws -> [String: Any] {
+    if job.powers.isEmpty || job.angles.isEmpty || job.radii.isEmpty {
+        throw NSError(domain: "StartSelect", code: 30, userInfo: [NSLocalizedDescriptionKey: "empty powers/angles/radii"])
+    }
+
+    let totalStart = CFAbsoluteTimeGetCurrent()
+    let outCount = job.candidates * system.equations
+    let pointsCount = job.candidates * system.n
+
+    guard let powersBuffer = device.makeBuffer(bytes: job.powers, length: job.powers.count * MemoryLayout<Float>.stride, options: .storageModeShared),
+          let anglesBuffer = device.makeBuffer(bytes: job.angles, length: job.angles.count * MemoryLayout<Float>.stride, options: .storageModeShared),
+          let radiiBuffer = device.makeBuffer(bytes: job.radii, length: job.radii.count * MemoryLayout<Float>.stride, options: .storageModeShared),
+          let outBuffer = device.makeBuffer(length: outCount * MemoryLayout<Complex2>.stride, options: .storageModeShared),
+          let pointsBuffer = device.makeBuffer(length: pointsCount * MemoryLayout<Complex2>.stride, options: .storageModeShared) else {
+        throw NSError(domain: "StartSelect", code: 31, userInfo: [NSLocalizedDescriptionKey: "cannot create Metal buffers"])
+    }
+
+    var params = Params(
+        n: UInt32(system.n),
+        equations: UInt32(system.equations),
+        terms: UInt32(system.terms),
+        candidates: UInt32(job.candidates),
+        targetCount: UInt32(job.targetCount),
+        powersCount: UInt32(job.powers.count),
+        anglesCount: UInt32(job.angles.count),
+        radiiCount: UInt32(job.radii.count),
+        seedLo: UInt32(job.seed & 0xFFFFFFFF),
+        seedHi: UInt32((job.seed >> 32) & 0xFFFFFFFF),
+        powerCap: job.powerCap
+    )
+    guard let paramsBuffer = device.makeBuffer(bytes: &params, length: MemoryLayout<Params>.stride, options: .storageModeShared) else {
+        throw NSError(domain: "StartSelect", code: 32, userInfo: [NSLocalizedDescriptionKey: "cannot create params buffer"])
+    }
+
+    let kernelStart = CFAbsoluteTimeGetCurrent()
+    guard let commandBuffer = queue.makeCommandBuffer(),
+          let encoder = commandBuffer.makeComputeCommandEncoder() else {
+        throw NSError(domain: "StartSelect", code: 33, userInfo: [NSLocalizedDescriptionKey: "cannot create command buffer"])
+    }
+    encoder.setComputePipelineState(pipeline)
+    encoder.setBuffer(system.expsBuffer, offset: 0, index: 0)
+    encoder.setBuffer(system.coeffBuffer, offset: 0, index: 1)
+    encoder.setBuffer(powersBuffer, offset: 0, index: 2)
+    encoder.setBuffer(anglesBuffer, offset: 0, index: 3)
+    encoder.setBuffer(radiiBuffer, offset: 0, index: 4)
+    encoder.setBuffer(outBuffer, offset: 0, index: 5)
+    encoder.setBuffer(pointsBuffer, offset: 0, index: 6)
+    encoder.setBuffer(paramsBuffer, offset: 0, index: 7)
+
+    let threadsPerGroup = min(pipeline.maxTotalThreadsPerThreadgroup, 256)
+    let grid = MTLSize(width: outCount, height: 1, depth: 1)
+    let group = MTLSize(width: threadsPerGroup, height: 1, depth: 1)
+    encoder.dispatchThreads(grid, threadsPerThreadgroup: group)
+    encoder.endEncoding()
+    commandBuffer.commit()
+    commandBuffer.waitUntilCompleted()
+    let kernelSeconds = CFAbsoluteTimeGetCurrent() - kernelStart
+
+    let selectStart = CFAbsoluteTimeGetCurrent()
+    let output = outBuffer.contents().bindMemory(to: Complex2.self, capacity: outCount)
+    let points = pointsBuffer.contents().bindMemory(to: Complex2.self, capacity: pointsCount)
+    var candidates: [Candidate] = []
+    candidates.reserveCapacity(job.candidates)
+    for point in 0..<job.candidates {
+        var norm = 0.0
+        for eq in 0..<system.equations {
+            let v = output[point * system.equations + eq]
+            let re = Double(v.re)
+            let im = Double(v.im)
+            norm += re * re + im * im
+        }
+        let residual = sqrt(norm)
+        if residual.isFinite {
+            candidates.append(Candidate(index: point, trial: point, residual: residual))
+        }
+    }
+    candidates.sort {
+        if $0.residual == $1.residual {
+            return $0.index < $1.index
+        }
+        return $0.residual < $1.residual
+    }
+    let selected = Array(candidates.prefix(min(max(1, job.topK), candidates.count)))
+    let selectSeconds = CFAbsoluteTimeGetCurrent() - selectStart
+
+    var rows: [[String: Any]] = []
+    rows.reserveCapacity(selected.count)
+    for cand in selected {
+        var zr: [Double] = []
+        var zi: [Double] = []
+        zr.reserveCapacity(system.n)
+        zi.reserveCapacity(system.n)
+        for j in 0..<system.n {
+            let p = points[cand.index * system.n + j]
+            zr.append(Double(p.re))
+            zi.append(Double(p.im))
+        }
+        rows.append([
+            "rank": rows.count,
+            "index": cand.index,
+            "trial": cand.trial,
+            "residual": cand.residual,
+            "re": zr,
+            "im": zi
+        ])
+    }
+
+    return [
+        "device": device.name,
+        "candidates": job.candidates,
+        "terms": system.terms,
+        "equations": system.equations,
+        "top_k": job.topK,
+        "selected": rows,
+        "kernel_seconds": kernelSeconds,
+        "select_seconds": selectSeconds,
+        "total_seconds": CFAbsoluteTimeGetCurrent() - totalStart,
+        "stateful": true
+    ]
+}
+
 let decoder = JSONDecoder()
+var loadedSystem: LoadedSystem? = nil
 while let line = readLine() {
     if line == "__quit__" {
         break
     }
     do {
         let data = Data(line.utf8)
-        let job = try decoder.decode(StartSelectJob.self, from: data)
-        let payload = try runJob(job)
+        let raw = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+        let op = raw?["op"] as? String
+        let payload: [String: Any]
+        if op == "load" {
+            let job = try decoder.decode(LoadSystemJob.self, from: data)
+            loadedSystem = try loadSystem(job)
+            payload = [
+                "ok": true,
+                "op": "load",
+                "device": device.name,
+                "n": job.n,
+                "equations": job.equations,
+                "terms": job.terms
+            ]
+        } else if op == "start_select" {
+            guard let system = loadedSystem else {
+                throw NSError(domain: "StartSelect", code: 40, userInfo: [NSLocalizedDescriptionKey: "no loaded system"])
+            }
+            let job = try decoder.decode(StoredStartSelectJob.self, from: data)
+            payload = try runStoredJob(job, system: system)
+        } else {
+            let job = try decoder.decode(StartSelectJob.self, from: data)
+            payload = try runJob(job)
+        }
         let json = try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
         FileHandle.standardOutput.write(json)
         FileHandle.standardOutput.write("\n".data(using: .utf8)!)

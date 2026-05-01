@@ -2,8 +2,8 @@
   "candidates": 2048,
   "device": "Apple M5",
   "equations": 2,
-  "kernel_seconds": 0.0021479129791259766,
-  "select_seconds": 6.99758529663086e-05,
+  "kernel_seconds": 0.002386927604675293,
+  "select_seconds": 8.404254913330078e-05,
   "selected": [
     {
       "im": [
@@ -12158,7 +12158,8 @@
       "trial": 207
     }
   ],
+  "stateful": true,
   "terms": 630,
   "top_k": 2048,
-  "total_seconds": 0.002722024917602539
+  "total_seconds": 0.0029020309448242188
 }

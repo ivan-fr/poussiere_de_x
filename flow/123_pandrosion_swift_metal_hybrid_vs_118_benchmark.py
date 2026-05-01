@@ -186,6 +186,48 @@ def write_start_selector_input(path: Path, args: argparse.Namespace, system: Any
     path.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
 
 
+def start_selector_params(args: argparse.Namespace, system: Any) -> dict[str, Any]:
+    powers = sorted(set(round(float(x), 16) for x in ENGINE118.parse_float_list(args.powers, ENGINE118.DEFAULT_POWERS, positive=True)))
+    powers = [min(max(x, 1e-300), float(args.power_cap)) for x in powers]
+    angles = [math.radians(x) for x in ENGINE118.parse_float_list(args.angles, ENGINE118.DEFAULT_ANGLES_DEG)]
+    radii = ENGINE118.parse_float_list(args.rays, ENGINE118.DEFAULT_RADII, positive=True)
+    return {
+        "op": "start_select",
+        "candidates": int(args.metal_candidates),
+        "targetCount": int(args.count),
+        "topK": int(args.selector_top) if int(args.selector_top) > 0 else int(args.refine_top) * 8,
+        "seed": int(system.seed) + 0x113000,
+        "powerCap": float(args.power_cap),
+        "powers": [float(x) for x in powers],
+        "angles": [float(x) for x in angles],
+        "radii": [float(x) for x in radii],
+    }
+
+
+def load_selector_system(proc: Any, system: Any) -> None:
+    if proc.stdin is None or proc.stdout is None:
+        raise RuntimeError("selector server has no stdin/stdout pipe")
+    coeff = np.asarray(system.coeff, dtype=np.complex64)
+    payload = {
+        "op": "load",
+        "n": int(system.n),
+        "equations": int(system.n),
+        "terms": int(system.terms_per_poly),
+        "exps": [int(x) for x in np.asarray(system.exps, dtype=np.int32).reshape(-1).tolist()],
+        "coeffRe": [float(x) for x in coeff.real.reshape(-1).tolist()],
+        "coeffIm": [float(x) for x in coeff.imag.reshape(-1).tolist()],
+    }
+    proc.stdin.write(json.dumps(payload, separators=(",", ":")) + "\n")
+    proc.stdin.flush()
+    response = proc.stdout.readline()
+    if not response:
+        stderr = proc.stderr.read() if proc.stderr is not None else ""
+        raise RuntimeError(f"selector server load failed: {stderr}")
+    result = json.loads(response)
+    if result.get("error") or not result.get("ok"):
+        raise RuntimeError(f"selector server load error: {result}")
+
+
 def generate_batch_starts(args: argparse.Namespace, system: Any, case_raw: str) -> tuple[Any, list[int], list[dict[str, Any]], float]:
     n = int(system.n)
     powers = sorted(set(round(float(x), 16) for x in ENGINE118.parse_float_list(args.powers, ENGINE118.DEFAULT_POWERS, positive=True)))
@@ -293,6 +335,27 @@ def run_selector_server(proc: Any, input_path: Path, output_path: Path, top_k: i
     line = json.dumps(payload, separators=(",", ":"))
     t0 = now()
     proc.stdin.write(line + "\n")
+    proc.stdin.flush()
+    response = proc.stdout.readline()
+    wall = now() - t0
+    if not response:
+        stderr = proc.stderr.read() if proc.stderr is not None else ""
+        raise RuntimeError(f"selector server stopped without response: {stderr}")
+    result = json.loads(response)
+    if result.get("error"):
+        raise RuntimeError(f"selector server error: {result['error']}")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    result["process_wall_seconds"] = float(wall)
+    result["stderr"] = ""
+    return result
+
+
+def run_stateful_selector_server(proc: Any, payload: dict[str, Any], output_path: Path) -> dict[str, Any]:
+    if proc.stdin is None or proc.stdout is None:
+        raise RuntimeError("selector server has no stdin/stdout pipe")
+    t0 = now()
+    proc.stdin.write(json.dumps(payload, separators=(",", ":")) + "\n")
     proc.stdin.flush()
     response = proc.stdout.readline()
     wall = now() - t0
@@ -488,14 +551,24 @@ def run_123_case(args: argparse.Namespace, case_raw: str, helper_build: dict[str
     if bool(args.metal_generate_starts):
         t_gen = now()
         geom_meta = [{} for _ in range(int(args.metal_candidates))]
-        write_start_selector_input(input_path, args, system)
+        if bool(getattr(args, "stateful_selector_server", False)):
+            input_path.parent.mkdir(parents=True, exist_ok=True)
+            stateful_payload = start_selector_params(args, system)
+            input_path.write_text(json.dumps(stateful_payload, indent=2), encoding="utf-8")
+        else:
+            stateful_payload = None
+            write_start_selector_input(input_path, args, system)
         generate_seconds = now() - t_gen
     else:
+        stateful_payload = None
         points, trial_ids, geom_meta, generate_seconds = generate_batch_starts(args, system, case_raw)
         write_selector_input(input_path, system, points, trial_ids)
     selector_top = int(args.selector_top) if int(args.selector_top) > 0 else max(int(args.refine_top), int(args.refine_top) * 8)
     server_proc = getattr(args, "_selector_server_proc", None)
-    if server_proc is not None:
+    if server_proc is not None and bool(getattr(args, "stateful_selector_server", False)):
+        load_selector_system(server_proc, system)
+        selector = run_stateful_selector_server(server_proc, stateful_payload, output_path)
+    elif server_proc is not None:
         selector = run_selector_server(server_proc, input_path, output_path, selector_top)
     else:
         selector = run_selector(binary, input_path, output_path, selector_top)
@@ -775,6 +848,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--synthetic-pressure", action=argparse.BooleanOptionalAction, default=True)
     p.add_argument("--metal-generate-starts", action=argparse.BooleanOptionalAction, default=False)
     p.add_argument("--selector-server", action=argparse.BooleanOptionalAction, default=False)
+    p.add_argument("--stateful-selector-server", action=argparse.BooleanOptionalAction, default=False)
     p.add_argument("--swift-source", default=str(FLOW / "123_swift_metal_select.swift"))
     p.add_argument("--swift-bin", default=None)
     p.add_argument("--rebuild-swift", action="store_true")
@@ -789,6 +863,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     cases = parse_cases(args.cases)
     out_json = Path(args.out) if args.out else Path(args.outdir) / "123_swift_metal_hybrid_vs_118_benchmark.json"
     swift_source = Path(args.swift_source)
+    if bool(args.stateful_selector_server):
+        args.selector_server = True
+        args.metal_generate_starts = True
     if bool(args.selector_server):
         if not bool(args.metal_generate_starts):
             raise ValueError("--selector-server currently requires --metal-generate-starts")
@@ -915,6 +992,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "synthetic_pressure": bool(args.synthetic_pressure),
             "metal_generate_starts": bool(args.metal_generate_starts),
             "selector_server": bool(args.selector_server),
+            "stateful_selector_server": bool(args.stateful_selector_server),
             "run_order": str(args.run_order),
         },
         "summary": summary,
