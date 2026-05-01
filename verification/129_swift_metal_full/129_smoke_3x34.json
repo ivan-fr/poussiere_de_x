@@ -1,0 +1,115 @@
+{
+  "autonomous" : true,
+  "bezout" : 39304,
+  "case" : "3,34",
+  "degree" : 34,
+  "family" : "ks",
+  "mode" : "swift-metal-full-general-kostlan\/metal-start-selector\/swift-double-pandrosion",
+  "n" : 3,
+  "roots" : [
+    {
+      "epochs" : 7,
+      "id" : 0,
+      "residual" : 2.5517907246546137e-15,
+      "seconds" : 0.006296992301940918,
+      "selector_rank" : 230,
+      "selector_residual" : 5.6220892269460601,
+      "source" : "129-swift-metal-full",
+      "trial" : 230,
+      "y" : [
+        [
+          0.037750260423362221,
+          -0.13902929162893504
+        ],
+        [
+          -0.028793738788132125,
+          0.15068280867952549
+        ],
+        [
+          0.063768151660735392,
+          0.053888960013532043
+        ]
+      ],
+      "z" : [
+        [
+          0.037750260423362221,
+          -0.13902929162893504
+        ],
+        [
+          -0.028793738788132125,
+          0.15068280867952549
+        ],
+        [
+          0.063768151660735392,
+          0.053888960013532043
+        ]
+      ]
+    }
+  ],
+  "script" : "129_pandrosion_swift_metal_full.swift",
+  "seed" : 1988693519,
+  "seed_index" : 0,
+  "selector" : {
+    "candidates" : 512,
+    "device" : "Apple M5",
+    "kernel_seconds" : 0.015865087509155273,
+    "mode" : "metal-start-selector",
+    "top_k" : 512
+  },
+  "summary" : {
+    "duplicates" : 0,
+    "eval_stats" : {
+      "eval_count" : 138,
+      "seconds_eval" : 0.0084490776062011719,
+      "seconds_slope" : 0.0018743276596069336,
+      "slope_count" : 9,
+      "terms_per_poly" : 7770,
+      "total_terms" : 23310
+    },
+    "extract_seconds" : 0.010519027709960938,
+    "failures" : 1,
+    "generation_seconds" : 0.00046908855438232422,
+    "requested_roots" : 1,
+    "success" : true,
+    "total_seconds" : 0.027246952056884766,
+    "trials_used" : 2,
+    "unique_roots" : 1
+  },
+  "terms" : 23310,
+  "terms_per_poly" : 7770,
+  "trials" : [
+    {
+      "accepted" : false,
+      "epochs" : 2,
+      "r1" : 1.2251185072917155,
+      "seconds" : 0.0024960041046142578,
+      "selector_rank" : 114,
+      "selector_residual" : 1.5703350081699687,
+      "startopt_evals" : 13,
+      "startopt_gain" : 1.28,
+      "startopt_micro_epochs" : 0,
+      "startopt_r0" : 1.570335903745036,
+      "startopt_r1" : 1.4085312824908365,
+      "startopt_ratio" : 0.89696177686040446,
+      "status" : "no-decrease",
+      "trial" : 114
+    },
+    {
+      "accepted" : true,
+      "epochs" : 7,
+      "r1" : 2.5517907246546137e-15,
+      "root_id" : 0,
+      "seconds" : 0.006296992301940918,
+      "selector_rank" : 230,
+      "selector_residual" : 5.6220892269460601,
+      "startopt_evals" : 13,
+      "startopt_gain" : 0.055,
+      "startopt_micro_epochs" : 0,
+      "startopt_r0" : 5.6220969654018154,
+      "startopt_r1" : 2.0814070162768643,
+      "startopt_ratio" : 0.37021898218507598,
+      "status" : "new-root",
+      "trial" : 230
+    }
+  ]
+}

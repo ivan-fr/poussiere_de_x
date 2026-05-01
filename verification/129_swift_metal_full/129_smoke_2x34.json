@@ -1,0 +1,91 @@
+{
+  "autonomous" : true,
+  "bezout" : 1156,
+  "case" : "2,34",
+  "degree" : 34,
+  "family" : "ks",
+  "mode" : "swift-metal-full-general-kostlan\/metal-start-selector\/swift-double-pandrosion",
+  "n" : 2,
+  "roots" : [
+    {
+      "epochs" : 4,
+      "id" : 0,
+      "residual" : 6.9904279050266235e-11,
+      "seconds" : 0.00019299983978271484,
+      "selector_rank" : 134,
+      "selector_residual" : 0.92018159345916073,
+      "source" : "129-swift-metal-full",
+      "trial" : 134,
+      "y" : [
+        [
+          -0.05034378428224634,
+          -0.19136223330992852
+        ],
+        [
+          0.084294725555414021,
+          0.034413671943402856
+        ]
+      ],
+      "z" : [
+        [
+          -0.05034378428224634,
+          -0.19136223330992852
+        ],
+        [
+          0.084294725555414021,
+          0.034413671943402856
+        ]
+      ]
+    }
+  ],
+  "script" : "129_pandrosion_swift_metal_full.swift",
+  "seed" : 276469564,
+  "seed_index" : 0,
+  "selector" : {
+    "candidates" : 256,
+    "kernel_seconds" : 0,
+    "mode" : "cpu-start-selector",
+    "top_k" : 256,
+    "total_seconds" : 0.0015479326248168945
+  },
+  "summary" : {
+    "duplicates" : 0,
+    "eval_stats" : {
+      "eval_count" : 314,
+      "seconds_eval" : 0.00087833404541015625,
+      "seconds_slope" : 2.9087066650390625e-05,
+      "slope_count" : 4,
+      "terms_per_poly" : 630,
+      "total_terms" : 1260
+    },
+    "extract_seconds" : 0.00025391578674316406,
+    "failures" : 0,
+    "generation_seconds" : 3.5047531127929688e-05,
+    "requested_roots" : 1,
+    "success" : true,
+    "total_seconds" : 0.001873016357421875,
+    "trials_used" : 1,
+    "unique_roots" : 1
+  },
+  "terms" : 1260,
+  "terms_per_poly" : 630,
+  "trials" : [
+    {
+      "accepted" : true,
+      "epochs" : 4,
+      "r1" : 6.9904279050266235e-11,
+      "root_id" : 0,
+      "seconds" : 0.00019299983978271484,
+      "selector_rank" : 134,
+      "selector_residual" : 0.92018159345916073,
+      "startopt_evals" : 13,
+      "startopt_gain" : 2.2000000000000002,
+      "startopt_micro_epochs" : 0,
+      "startopt_r0" : 0.92018159345916073,
+      "startopt_r1" : 0.5441725962937326,
+      "startopt_ratio" : 0.59137522437073609,
+      "status" : "new-root",
+      "trial" : 134
+    }
+  ]
+}
