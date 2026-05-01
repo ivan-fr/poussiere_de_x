@@ -372,6 +372,120 @@ def run_stateful_selector_server(proc: Any, payload: dict[str, Any], output_path
     return result
 
 
+def metal_eval_residuals(args: argparse.Namespace, chart: Any, points_y: Sequence[Any]) -> list[float]:
+    proc = getattr(args, "_selector_server_proc", None)
+    if proc is None or proc.stdin is None or proc.stdout is None:
+        raise RuntimeError("metal eval requires a stateful selector server")
+    pts = []
+    for y in points_y:
+        pts.append(np.asarray(chart.z_from_y(y), dtype=np.complex64))
+    arr = np.asarray(pts, dtype=np.complex64)
+    payload = {
+        "op": "eval_points",
+        "points": int(arr.shape[0]),
+        "pointsRe": [float(x) for x in arr.real.reshape(-1).tolist()],
+        "pointsIm": [float(x) for x in arr.imag.reshape(-1).tolist()],
+    }
+    t0 = now()
+    proc.stdin.write(json.dumps(payload, separators=(",", ":")) + "\n")
+    proc.stdin.flush()
+    response = proc.stdout.readline()
+    wall = now() - t0
+    if not response:
+        stderr = proc.stderr.read() if proc.stderr is not None else ""
+        raise RuntimeError(f"metal eval server stopped without response: {stderr}")
+    result = json.loads(response)
+    if result.get("error"):
+        raise RuntimeError(f"metal eval server error: {result['error']}")
+    stats = getattr(args, "_metal_probe_stats", None)
+    if stats is not None:
+        stats["calls"] = int(stats.get("calls", 0)) + 1
+        stats["points"] = int(stats.get("points", 0)) + int(arr.shape[0])
+        stats["seconds"] = float(stats.get("seconds", 0.0)) + float(wall)
+        stats["kernel_seconds"] = float(stats.get("kernel_seconds", 0.0)) + float(result.get("kernel_seconds", 0.0))
+    return [float(x) for x in result.get("residuals", [])]
+
+
+def metal_polish2_selected(
+    args: argparse.Namespace,
+    selected: Sequence[dict[str, Any]],
+    output_path: Path,
+    system: Any,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    proc = getattr(args, "_selector_server_proc", None)
+    if proc is None or proc.stdin is None or proc.stdout is None:
+        raise RuntimeError("metal polish2 requires a stateful selector server")
+    if int(system.n) != 2:
+        raise RuntimeError("metal polish2 currently requires n=2")
+    if not selected:
+        result: dict[str, Any] = {
+            "op": "polish2",
+            "points": 0,
+            "selected": [],
+            "kernel_seconds": 0.0,
+            "total_seconds": 0.0,
+            "process_wall_seconds": 0.0,
+        }
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        return [], result
+
+    arr = np.asarray([candidate_point(c) for c in selected], dtype=np.complex64)
+    payload = {
+        "op": "polish2",
+        "points": int(arr.shape[0]),
+        "epochs": int(args.metal_polish_epochs),
+        "probeCandidates": int(args.metal_polish_probes),
+        "lineSearch": int(args.metal_polish_line_search),
+        "seed": int(system.seed) + 0x125000,
+        "probeScale": float(args.metal_polish_probe_scale),
+        "pointsRe": [float(x) for x in arr.real.reshape(-1).tolist()],
+        "pointsIm": [float(x) for x in arr.imag.reshape(-1).tolist()],
+    }
+    t0 = now()
+    proc.stdin.write(json.dumps(payload, separators=(",", ":")) + "\n")
+    proc.stdin.flush()
+    response = proc.stdout.readline()
+    wall = now() - t0
+    if not response:
+        stderr = proc.stderr.read() if proc.stderr is not None else ""
+        raise RuntimeError(f"metal polish2 server stopped without response: {stderr}")
+    result = json.loads(response)
+    if result.get("error"):
+        raise RuntimeError(f"metal polish2 server error: {result['error']}")
+
+    merged: list[dict[str, Any]] = []
+    for row in result.get("selected", []):
+        local_index = int(row.get("index", -1))
+        if local_index < 0 or local_index >= len(selected):
+            continue
+        original = dict(selected[local_index])
+        out = dict(original)
+        out["pre_polish_rank"] = int(original.get("rank", -1))
+        out["pre_polish_residual"] = float(original.get("residual", float("inf")))
+        out["polish2_rank"] = int(row.get("rank", -1))
+        out["polish2_input_index"] = int(local_index)
+        out["polish2_residual"] = float(row.get("residual", float("inf")))
+        out["residual"] = float(row.get("residual", float("inf")))
+        out["re"] = [float(x) for x in row.get("re", [])]
+        out["im"] = [float(x) for x in row.get("im", [])]
+        out["metal_polish2"] = True
+        merged.append(out)
+
+    result["selected_merged"] = merged
+    result["process_wall_seconds"] = float(wall)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
+
+    stats = getattr(args, "_metal_polish2_stats", None)
+    if stats is not None:
+        stats["calls"] = int(stats.get("calls", 0)) + 1
+        stats["points"] = int(stats.get("points", 0)) + int(arr.shape[0])
+        stats["seconds"] = float(stats.get("seconds", 0.0)) + float(wall)
+        stats["kernel_seconds"] = float(stats.get("kernel_seconds", 0.0)) + float(result.get("kernel_seconds", 0.0))
+    return merged, result
+
+
 def warm_selector_server(proc: Any) -> None:
     if proc.stdin is None or proc.stdout is None:
         raise RuntimeError("selector server has no stdin/stdout pipe")
@@ -413,6 +527,202 @@ def residual_stats(values: Sequence[float]) -> dict[str, Optional[float]]:
     }
 
 
+def probe_endpoint_candidates_metal(
+    args: argparse.Namespace,
+    target: Any,
+    y: Any,
+    residual: float,
+    prev_delta: Optional[Any],
+    ep: int,
+    direction_seed: int,
+    probe_scale: float,
+    probe_candidates: int,
+    probe_radii: Sequence[float],
+    include_self_probe: bool,
+) -> tuple[Any, dict[str, Any]]:
+    n = len(y)
+    ynorm = max(1.0, float(np.linalg.norm(y)))
+    radii = [float(r) for r in probe_radii if float(r) >= 0]
+    if not radii:
+        radii = [1.0]
+    candidates: list[tuple[str, Any]] = []
+    if include_self_probe:
+        candidates.append(("self", np.asarray(y, dtype=np.complex128).copy()))
+    if prev_delta is not None and np.all(np.isfinite(prev_delta)):
+        pdn = max(1e-300, float(np.linalg.norm(prev_delta)))
+        base = prev_delta / pdn * min(max(pdn, float(probe_scale) * ynorm), 2.5 * ynorm)
+        candidates.append(("inertial", y + base))
+    budget = max(1, int(probe_candidates))
+    k = 0
+    while len(candidates) < budget:
+        rad = float(probe_scale) * ynorm * radii[k % len(radii)]
+        qdir = ENGINE118.raw_direction(n, direction_seed + 104729 * (ep + 1) + 7919 * (k + 1), direction_seed ^ (0x116116 + 17 * k), True)
+        qnorm = max(1e-300, float(np.linalg.norm(qdir)))
+        qdir = qdir / qnorm * math.sqrt(max(1, n))
+        ph = ENGINE118.phase(0.6180339887498948 * (ep + 1) + 2.399963229728653 * (k + 1))
+        step = rad * ph * qdir
+        if float(np.linalg.norm(y)) > 0:
+            step = step + (0.12 * rad) * y / ynorm * ENGINE118.phase(0.38196601125 * (k + 1))
+        tiny = 1e-12 * ynorm
+        for j in range(n):
+            if abs(step[j]) < tiny:
+                step[j] += tiny * ENGINE118.phase(0.17 + j + ep + k)
+        candidates.append((f"geom-{k}", y + step))
+        k += 1
+
+    chosen = candidates[:budget]
+    min_batch = max(1, int(getattr(args, "metal_probe_min_batch", 1)))
+    try:
+        if len(chosen) < min_batch:
+            raise RuntimeError("metal-probe-batch-too-small")
+        residuals = metal_eval_residuals(args, target.chart, [b for _, b in chosen])
+    except Exception:
+        residuals = [ENGINE118.finite_residual(target, b) for _, b in chosen]
+
+    best_name = ""
+    best_b = None
+    best_res = float("inf")
+    best_distance = 0.0
+    for (name, b), rb in zip(chosen, residuals):
+        rb = float(rb)
+        dist = float(np.linalg.norm(np.asarray(b, dtype=np.complex128) - y))
+        score = math.log1p(max(0.0, rb)) + 1e-14 * math.log1p(dist)
+        old = math.log1p(max(0.0, best_res)) + 1e-14 * math.log1p(best_distance)
+        if math.isfinite(score) and score < old:
+            best_name = name
+            best_b = np.asarray(b, dtype=np.complex128).copy()
+            best_res = float(rb)
+            best_distance = float(dist)
+    if best_b is None:
+        raise RuntimeError("no-finite-probe")
+    return best_b, {
+        "probe_mode": "metal-batch-residual-min",
+        "probe_name": best_name,
+        "probe_candidates": int(len(chosen)),
+        "probe_evals": int(len(chosen)),
+        "probe_residual": float(best_res),
+        "probe_distance": float(best_distance),
+        "probe_improvement_proxy": (float(residual / best_res) if math.isfinite(best_res) and best_res > 0 and math.isfinite(residual) else None),
+        "probe_self_enabled": bool(include_self_probe),
+    }
+
+
+def pandrosion_corrector_metal_probes(
+    args: argparse.Namespace,
+    target: Any,
+    y0: Sequence[complex],
+    max_epochs: int,
+    tol: float,
+    accept: float,
+    trial_timeout: float,
+    line_search: int = 12,
+    probe_scale: float = 0.035,
+    direction_seed: int = 0,
+    probe_candidates: int = 8,
+    probe_radii: Sequence[float] = (0.0, 0.5, 1.0, 2.0, 4.0),
+    include_self_probe: bool = True,
+) -> dict[str, Any]:
+    y = np.asarray(y0, dtype=np.complex128).copy()
+    t0 = ENGINE118.now()
+    deadline = t0 + trial_timeout if trial_timeout and trial_timeout > 0 else None
+    best_y = y.copy()
+    best_r = ENGINE118.finite_residual(target, y)
+    ok = False
+    status = "started"
+    epochs = 0
+    prev_delta = None
+    last_cond = None
+    last_probe_meta: dict[str, Any] = {}
+    total_probe_evals = 0
+    for ep in range(max(1, int(max_epochs))):
+        if deadline is not None and ENGINE118.now() > deadline:
+            status = "timeout"
+            break
+        try:
+            f = target.eval(y)
+            r = float(np.linalg.norm(f))
+        except Exception as exc:
+            status = f"eval-error:{type(exc).__name__}"
+            break
+        if math.isfinite(r) and r < best_r:
+            best_r = r
+            best_y = y.copy()
+        if r <= max(float(tol), float(accept)) and (accept <= 0 or r < accept):
+            ok = True
+            status = "converged"
+            break
+        try:
+            b, pmeta = probe_endpoint_candidates_metal(
+                args=args,
+                target=target,
+                y=y,
+                residual=r,
+                prev_delta=prev_delta,
+                ep=ep,
+                direction_seed=direction_seed,
+                probe_scale=float(probe_scale),
+                probe_candidates=int(probe_candidates),
+                probe_radii=probe_radii,
+                include_self_probe=bool(include_self_probe),
+            )
+            last_probe_meta = pmeta
+            total_probe_evals += int(pmeta.get("probe_evals", 0))
+        except Exception as exc:
+            status = f"probe-error:{type(exc).__name__}"
+            break
+        try:
+            Q = target.slope_matrix(y, b)
+            last_cond = float(np.linalg.cond(Q))
+            delta = np.linalg.solve(Q, -f)
+        except Exception as exc:
+            status = f"slope-solve-error:{type(exc).__name__}"
+            break
+        if not np.all(np.isfinite(delta)):
+            status = "nonfinite-step"
+            break
+        ynorm = max(1.0, float(np.linalg.norm(y)))
+        dnorm = float(np.linalg.norm(delta))
+        if dnorm > 18.0 * ynorm:
+            delta = delta * ((18.0 * ynorm) / max(dnorm, 1e-300))
+        accepted = False
+        base_r = r
+        for k in range(max(1, int(line_search))):
+            lam = 1.0 / (2.0 ** k)
+            yy = y + lam * delta
+            rr = ENGINE118.finite_residual(target, yy)
+            if math.isfinite(rr) and (rr < base_r or rr < best_r):
+                prev_delta = lam * delta
+                y = yy
+                if rr < best_r:
+                    best_y = yy.copy()
+                    best_r = rr
+                accepted = True
+                break
+        epochs = ep + 1
+        if not accepted:
+            status = "no-decrease"
+            break
+    else:
+        status = "max-epochs"
+    final_r = ENGINE118.finite_residual(target, best_y)
+    if final_r <= max(float(tol), float(accept)) and (accept <= 0 or final_r < accept):
+        ok = True
+        status = "converged"
+    return {
+        "accepted": bool(ok if accept <= 0 else (math.isfinite(final_r) and final_r < accept)),
+        "ok": bool(ok),
+        "status": status,
+        "epochs": int(epochs),
+        "residual": float(final_r),
+        "y": best_y,
+        "seconds": float(ENGINE118.now() - t0),
+        "slope_cond": last_cond,
+        "corrector": "probe-aware-pure-pandrosion-metal-probe-scoring",
+        "probe_total_evals": int(total_probe_evals),
+        **last_probe_meta,
+    }
+
+
 def refine_selected(args: argparse.Namespace, system: Any, selected: Sequence[dict[str, Any]], geom_meta: Sequence[dict[str, Any]]) -> dict[str, Any]:
     n = int(system.n)
     chart = ENGINE118.LinearChart.identity(n, scale=float(args.linear_scale))
@@ -443,20 +753,37 @@ def refine_selected(args: argparse.Namespace, system: Any, selected: Sequence[di
             gains,
             int(args.startopt_micro_epochs),
         )
-        loc = ENGINE118.pandrosion_corrector(
-            target,
-            y0,
-            max_epochs=int(args.epochs),
-            tol=float(args.tol),
-            accept=float(args.accept),
-            trial_timeout=float(args.trial_timeout),
-            line_search=int(args.line_search),
-            probe_scale=float(getattr(args, "probe_scale", 0.035)),
-            direction_seed=int(system.seed) + 7919 * trial,
-            probe_candidates=int(args.probe_candidates),
-            probe_radii=probe_radii,
-            include_self_probe=bool(args.probe_self),
-        )
+        if bool(args.metal_probe_evals):
+            loc = pandrosion_corrector_metal_probes(
+                args,
+                target,
+                y0,
+                max_epochs=int(args.epochs),
+                tol=float(args.tol),
+                accept=float(args.accept),
+                trial_timeout=float(args.trial_timeout),
+                line_search=int(args.line_search),
+                probe_scale=float(getattr(args, "probe_scale", 0.035)),
+                direction_seed=int(system.seed) + 7919 * trial,
+                probe_candidates=int(args.probe_candidates),
+                probe_radii=probe_radii,
+                include_self_probe=bool(args.probe_self),
+            )
+        else:
+            loc = ENGINE118.pandrosion_corrector(
+                target,
+                y0,
+                max_epochs=int(args.epochs),
+                tol=float(args.tol),
+                accept=float(args.accept),
+                trial_timeout=float(args.trial_timeout),
+                line_search=int(args.line_search),
+                probe_scale=float(getattr(args, "probe_scale", 0.035)),
+                direction_seed=int(system.seed) + 7919 * trial,
+                probe_candidates=int(args.probe_candidates),
+                probe_radii=probe_radii,
+                include_self_probe=bool(args.probe_self),
+            )
         z = chart.z_from_y(loc["y"])
         r_orig = float(np.linalg.norm(system.eval(z)))
         accepted = bool(math.isfinite(r_orig) and r_orig < float(args.accept))
@@ -530,6 +857,8 @@ def refine_selected(args: argparse.Namespace, system: Any, selected: Sequence[di
             "duplicates": int(duplicates),
             "failures": int(failures),
             "refine_seconds": float(seconds),
+            "metal_probe_stats": dict(getattr(args, "_metal_probe_stats", {})),
+            "metal_polish2_stats": dict(getattr(args, "_metal_polish2_stats", {})),
             "eval_stats": system.stats(),
         },
     }
@@ -546,6 +875,8 @@ def run_123_case(args: argparse.Namespace, case_raw: str, helper_build: dict[str
         seed_index=int(args.seed_index),
         equation_normalize=bool(args.equation_normalize),
     )
+    setattr(args, "_metal_probe_stats", {"calls": 0, "points": 0, "seconds": 0.0, "kernel_seconds": 0.0})
+    setattr(args, "_metal_polish2_stats", {"calls": 0, "points": 0, "seconds": 0.0, "kernel_seconds": 0.0})
     input_path = Path(args.outdir) / "inputs" / f"123_{n}x{d}_starts{args.metal_candidates}.json"
     output_path = Path(args.outdir) / "inputs" / f"123_{n}x{d}_top{args.refine_top}.json"
     if bool(args.metal_generate_starts):
@@ -573,6 +904,14 @@ def run_123_case(args: argparse.Namespace, case_raw: str, helper_build: dict[str
     else:
         selector = run_selector(binary, input_path, output_path, selector_top)
     selected = diversify_selected(selector.get("selected", []), int(args.refine_top), float(args.diversity_sep))
+    selector["selected_before_polish"] = selected
+    selector["selected_before_polish_count"] = int(len(selected))
+    if bool(getattr(args, "metal_polish2", False)):
+        polish_path = Path(args.outdir) / "inputs" / f"125_{n}x{d}_polish2_top{args.refine_top}.json"
+        polished, polish_result = metal_polish2_selected(args, selected, polish_path, system)
+        selector["polish2"] = polish_result
+        selector["polish2_output_path"] = str(polish_path)
+        selected = diversify_selected(polished, int(args.refine_top), float(args.diversity_sep))
     selector["selected_for_refine"] = selected
     selector["selected_for_refine_count"] = int(len(selected))
     selector["diversity_sep"] = float(args.diversity_sep)
@@ -584,6 +923,14 @@ def run_123_case(args: argparse.Namespace, case_raw: str, helper_build: dict[str
             "generation_seconds": float(system.generation_seconds + generate_seconds),
             "metal_select_kernel_seconds": float(selector.get("kernel_seconds", 0.0)),
             "metal_select_process_seconds": float(selector.get("process_wall_seconds", 0.0)),
+            "metal_polish2_calls": int(summary.get("metal_polish2_stats", {}).get("calls", 0)),
+            "metal_polish2_points": int(summary.get("metal_polish2_stats", {}).get("points", 0)),
+            "metal_polish2_seconds": float(summary.get("metal_polish2_stats", {}).get("seconds", 0.0)),
+            "metal_polish2_kernel_seconds": float(summary.get("metal_polish2_stats", {}).get("kernel_seconds", 0.0)),
+            "metal_probe_calls": int(summary.get("metal_probe_stats", {}).get("calls", 0)),
+            "metal_probe_points": int(summary.get("metal_probe_stats", {}).get("points", 0)),
+            "metal_probe_seconds": float(summary.get("metal_probe_stats", {}).get("seconds", 0.0)),
+            "metal_probe_kernel_seconds": float(summary.get("metal_probe_stats", {}).get("kernel_seconds", 0.0)),
             "total_seconds": float(total_seconds),
         }
     )
@@ -597,7 +944,7 @@ def run_123_case(args: argparse.Namespace, case_raw: str, helper_build: dict[str
         "terms_per_poly": int(system.terms_per_poly),
         "terms": int(system.total_terms),
         "bezout": int(system.bezout),
-        "mode": "swift-metal-batch-selector/118-complex128-refine",
+        "mode": "swift-metal-batch-selector/polish2/118-complex128-refine" if bool(getattr(args, "metal_polish2", False)) else "swift-metal-batch-selector/118-complex128-refine",
         "helper_build": helper_build,
         "selector": selector,
         "roots": refined["roots"],
@@ -626,6 +973,14 @@ def summarize_result(engine: str, case_raw: str, result: dict[str, Any], seconds
         "refine_seconds": float(summary.get("refine_seconds", summary.get("extract_seconds", 0.0))),
         "metal_select_kernel_seconds": float(summary.get("metal_select_kernel_seconds", 0.0)),
         "metal_select_process_seconds": float(summary.get("metal_select_process_seconds", 0.0)),
+        "metal_polish2_calls": int(summary.get("metal_polish2_calls", 0)),
+        "metal_polish2_points": int(summary.get("metal_polish2_points", 0)),
+        "metal_polish2_seconds": float(summary.get("metal_polish2_seconds", 0.0)),
+        "metal_polish2_kernel_seconds": float(summary.get("metal_polish2_kernel_seconds", 0.0)),
+        "metal_probe_calls": int(summary.get("metal_probe_calls", 0)),
+        "metal_probe_points": int(summary.get("metal_probe_points", 0)),
+        "metal_probe_seconds": float(summary.get("metal_probe_seconds", 0.0)),
+        "metal_probe_kernel_seconds": float(summary.get("metal_probe_kernel_seconds", 0.0)),
         "eval_used": int(eval_stats.get("eval_count", 0)) if eval_stats.get("eval_count") is not None else None,
         "slope_calls": int(eval_stats.get("slope_count", 0)) if eval_stats.get("slope_count") is not None else None,
         "seconds_eval": float(eval_stats.get("seconds_eval", 0.0)),
@@ -656,6 +1011,14 @@ def error_row(engine: str, case_raw: str, exc: BaseException, seconds: float) ->
         "refine_seconds": None,
         "metal_select_kernel_seconds": None,
         "metal_select_process_seconds": None,
+        "metal_polish2_calls": None,
+        "metal_polish2_points": None,
+        "metal_polish2_seconds": None,
+        "metal_polish2_kernel_seconds": None,
+        "metal_probe_calls": None,
+        "metal_probe_points": None,
+        "metal_probe_seconds": None,
+        "metal_probe_kernel_seconds": None,
         "eval_used": None,
         "slope_calls": None,
         "seconds_eval": None,
@@ -736,6 +1099,14 @@ def write_csv(path: Path, rows: Sequence[dict[str, Any]]) -> None:
         "refine_seconds",
         "metal_select_kernel_seconds",
         "metal_select_process_seconds",
+        "metal_polish2_calls",
+        "metal_polish2_points",
+        "metal_polish2_seconds",
+        "metal_polish2_kernel_seconds",
+        "metal_probe_calls",
+        "metal_probe_points",
+        "metal_probe_seconds",
+        "metal_probe_kernel_seconds",
         "eval_used",
         "slope_calls",
         "seconds_eval",
@@ -786,13 +1157,17 @@ def write_pair_csv(path: Path, rows: Sequence[dict[str, Any]]) -> None:
 def write_markdown(path: Path, payload: dict[str, Any]) -> None:
     p = payload["parameters"]
     s = payload["summary"]
+    scope = "Metal batch start selection"
+    if p.get("metal_polish2"):
+        scope += ", Metal n=2 polish pre-pass"
+    scope += ", 118 complex128 refinement"
     lines = [
         "# 123 Swift Metal Hybrid vs 118 Benchmark",
         "",
         f"- cases: `{', '.join(payload['cases'])}`",
         f"- metal candidates/selector top/refine top: `{p['metal_candidates']}/{p['selector_top']}/{p['refine_top']}`",
         f"- count/pool/epochs: `{p['count']}/{p['pool']}/{p['epochs']}`",
-        "- scope: Metal batch start selection, 118 complex128 refinement",
+        f"- scope: {scope}",
         "",
         "## Summary",
         "",
@@ -818,14 +1193,16 @@ def write_markdown(path: Path, payload: dict[str, Any]) -> None:
             "",
             "## Timing Breakdown",
             "",
-            "| case | engine | generation | metal select process | refine/extract | eval sec | slope sec |",
-            "|---|---|---:|---:|---:|---:|---:|",
+            "| case | engine | generation | metal select process | metal polish2 process | metal probe process | refine/extract | eval sec | slope sec |",
+            "|---|---|---:|---:|---:|---:|---:|---:|---:|",
         ]
     )
     for row in payload["runs"]:
         lines.append(
             f"| `{row.get('case')}` | `{row.get('engine')}` | {fmt_float(row.get('generation_seconds'), 4)} | "
-            f"{fmt_float(row.get('metal_select_process_seconds'), 4)} | {fmt_float(row.get('refine_seconds'), 4)} | "
+            f"{fmt_float(row.get('metal_select_process_seconds'), 4)} | {fmt_float(row.get('metal_polish2_seconds'), 4)} | "
+            f"{fmt_float(row.get('metal_probe_seconds'), 4)} | "
+            f"{fmt_float(row.get('refine_seconds'), 4)} | "
             f"{fmt_float(row.get('seconds_eval'), 4)} | {fmt_float(row.get('seconds_slope'), 4)} |"
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -849,6 +1226,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--metal-generate-starts", action=argparse.BooleanOptionalAction, default=False)
     p.add_argument("--selector-server", action=argparse.BooleanOptionalAction, default=False)
     p.add_argument("--stateful-selector-server", action=argparse.BooleanOptionalAction, default=False)
+    p.add_argument("--metal-probe-evals", action=argparse.BooleanOptionalAction, default=False)
+    p.add_argument("--metal-probe-min-batch", type=int, default=32)
+    p.add_argument("--metal-polish2", action=argparse.BooleanOptionalAction, default=False)
+    p.add_argument("--metal-polish-epochs", type=int, default=4)
+    p.add_argument("--metal-polish-probes", type=int, default=8)
+    p.add_argument("--metal-polish-line-search", type=int, default=6)
+    p.add_argument("--metal-polish-probe-scale", type=float, default=0.035)
     p.add_argument("--swift-source", default=str(FLOW / "123_swift_metal_select.swift"))
     p.add_argument("--swift-bin", default=None)
     p.add_argument("--rebuild-swift", action="store_true")
@@ -864,6 +1248,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     out_json = Path(args.out) if args.out else Path(args.outdir) / "123_swift_metal_hybrid_vs_118_benchmark.json"
     swift_source = Path(args.swift_source)
     if bool(args.stateful_selector_server):
+        args.selector_server = True
+        args.metal_generate_starts = True
+    if bool(args.metal_probe_evals):
+        args.stateful_selector_server = True
+        args.selector_server = True
+        args.metal_generate_starts = True
+    if bool(args.metal_polish2):
+        args.stateful_selector_server = True
         args.selector_server = True
         args.metal_generate_starts = True
     if bool(args.selector_server):
@@ -899,7 +1291,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     print(
         f"cases={cases} count={args.count} pool={args.pool} epochs={args.epochs} "
         f"metal_candidates={args.metal_candidates} selector_top={args.selector_top or int(args.refine_top) * 8} "
-        f"refine_top={args.refine_top} metal_generate_starts={args.metal_generate_starts}",
+        f"refine_top={args.refine_top} metal_generate_starts={args.metal_generate_starts} "
+        f"metal_polish2={args.metal_polish2}",
         flush=True,
     )
     print("=" * 120, flush=True)
@@ -993,6 +1386,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "metal_generate_starts": bool(args.metal_generate_starts),
             "selector_server": bool(args.selector_server),
             "stateful_selector_server": bool(args.stateful_selector_server),
+            "metal_probe_evals": bool(args.metal_probe_evals),
+            "metal_probe_min_batch": int(args.metal_probe_min_batch),
+            "metal_polish2": bool(args.metal_polish2),
+            "metal_polish_epochs": int(args.metal_polish_epochs),
+            "metal_polish_probes": int(args.metal_polish_probes),
+            "metal_polish_line_search": int(args.metal_polish_line_search),
+            "metal_polish_probe_scale": float(args.metal_polish_probe_scale),
             "run_order": str(args.run_order),
         },
         "summary": summary,

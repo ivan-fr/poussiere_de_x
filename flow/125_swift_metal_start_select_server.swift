@@ -40,6 +40,25 @@ struct StoredStartSelectJob: Decodable {
     let radii: [Float]
 }
 
+struct EvalPointsJob: Decodable {
+    let op: String
+    let points: Int
+    let pointsRe: [Float]
+    let pointsIm: [Float]
+}
+
+struct Polish2Job: Decodable {
+    let op: String
+    let points: Int
+    let epochs: Int
+    let probeCandidates: Int
+    let lineSearch: Int
+    let seed: UInt64
+    let probeScale: Float
+    let pointsRe: [Float]
+    let pointsIm: [Float]
+}
+
 struct Params {
     var n: UInt32
     var equations: UInt32
@@ -52,6 +71,19 @@ struct Params {
     var seedLo: UInt32
     var seedHi: UInt32
     var powerCap: Float
+}
+
+struct PolishParams {
+    var n: UInt32
+    var equations: UInt32
+    var terms: UInt32
+    var points: UInt32
+    var epochs: UInt32
+    var probeCandidates: UInt32
+    var lineSearch: UInt32
+    var seedLo: UInt32
+    var seedHi: UInt32
+    var probeScale: Float
 }
 
 struct Complex2 {
@@ -104,6 +136,19 @@ struct Params {
     float powerCap;
 };
 
+struct PolishParams {
+    uint n;
+    uint equations;
+    uint terms;
+    uint points;
+    uint epochs;
+    uint probeCandidates;
+    uint lineSearch;
+    uint seedLo;
+    uint seedHi;
+    float probeScale;
+};
+
 static inline float2 cmul(float2 a, float2 b) {
     return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
 }
@@ -134,6 +179,10 @@ static inline ulong splitmix64(ulong x) {
     x = ((x ^ (x >> 30)) * 0xBF58476D1CE4E5B9UL);
     x = ((x ^ (x >> 27)) * 0x94D049BB133111EBUL);
     return (x ^ (x >> 31));
+}
+
+static inline ulong make_seed_polish(constant PolishParams &p) {
+    return (ulong(p.seedHi) << 32) | ulong(p.seedLo);
 }
 
 static inline float u01_hash(ulong x) {
@@ -252,6 +301,234 @@ kernel void start_eval_dense_ks(
 
     out[gid] = sum;
 }
+
+kernel void eval_points_residuals(
+    device const int *exps [[buffer(0)]],
+    device const float2 *coeff [[buffer(1)]],
+    device const float2 *points [[buffer(2)]],
+    device float *residuals [[buffer(3)]],
+    constant Params &p [[buffer(4)]],
+    uint gid [[thread_position_in_grid]]
+) {
+    if (gid >= p.candidates || p.n > 8u) {
+        return;
+    }
+
+    float norm2 = 0.0f;
+    for (uint equation = 0; equation < p.equations; ++equation) {
+        float2 sum = float2(0.0f, 0.0f);
+        for (uint t = 0; t < p.terms; ++t) {
+            float2 mon = float2(1.0f, 0.0f);
+            for (uint j = 0; j < p.n; ++j) {
+                int e = exps[t * p.n + j];
+                float2 z = points[gid * p.n + j];
+                mon = cmul(mon, cpow_int(z, e));
+            }
+            float2 c = coeff[equation * p.terms + t];
+            sum += cmul(c, mon);
+        }
+        norm2 += dot(sum, sum);
+    }
+    residuals[gid] = sqrt(norm2);
+}
+
+static inline float eval_system_residual2(
+    float2 y0,
+    float2 y1,
+    device const int *exps,
+    device const float2 *coeff,
+    constant PolishParams &p,
+    thread float2 f[2]
+) {
+    f[0] = float2(0.0f, 0.0f);
+    f[1] = float2(0.0f, 0.0f);
+    for (uint equation = 0; equation < 2u; ++equation) {
+        float2 sum = float2(0.0f, 0.0f);
+        for (uint t = 0; t < p.terms; ++t) {
+            int e0 = exps[t * 2u];
+            int e1 = exps[t * 2u + 1u];
+            float2 mon = cmul(cpow_int(y0, e0), cpow_int(y1, e1));
+            float2 c = coeff[equation * p.terms + t];
+            sum += cmul(c, mon);
+        }
+        f[equation] = sum;
+    }
+    return sqrt(dot(f[0], f[0]) + dot(f[1], f[1]));
+}
+
+static inline void slope_sum_pow(float2 a, float2 b, int e, thread float2 &out) {
+    float2 acc = float2(0.0f, 0.0f);
+    for (int r = 0; r < e; ++r) {
+        float2 left = cpow_int(b, e - 1 - r);
+        float2 right = cpow_int(a, r);
+        acc += cmul(left, right);
+    }
+    out = acc;
+}
+
+static inline void slope_matrix2(
+    float2 a0,
+    float2 a1,
+    float2 b0,
+    float2 b1,
+    device const int *exps,
+    device const float2 *coeff,
+    constant PolishParams &p,
+    thread float2 q[4]
+) {
+    q[0] = float2(0.0f, 0.0f);
+    q[1] = float2(0.0f, 0.0f);
+    q[2] = float2(0.0f, 0.0f);
+    q[3] = float2(0.0f, 0.0f);
+    for (uint equation = 0; equation < 2u; ++equation) {
+        float2 col0 = float2(0.0f, 0.0f);
+        float2 col1 = float2(0.0f, 0.0f);
+        for (uint t = 0; t < p.terms; ++t) {
+            int e0 = exps[t * 2u];
+            int e1 = exps[t * 2u + 1u];
+            float2 s0;
+            float2 s1;
+            slope_sum_pow(a0, b0, e0, s0);
+            slope_sum_pow(a1, b1, e1, s1);
+            float2 term0 = cmul(s0, cpow_int(a1, e1));
+            float2 term1 = cmul(cpow_int(b0, e0), s1);
+            float2 c = coeff[equation * p.terms + t];
+            col0 += cmul(c, term0);
+            col1 += cmul(c, term1);
+        }
+        q[equation * 2u] = col0;
+        q[equation * 2u + 1u] = col1;
+    }
+}
+
+static inline bool solve2(thread float2 q[4], float2 f0, float2 f1, thread float2 &d0, thread float2 &d1) {
+    float2 a = q[0];
+    float2 b = q[1];
+    float2 c = q[2];
+    float2 d = q[3];
+    float2 det = cmul(a, d) - cmul(b, c);
+    float den = dot(det, det);
+    if (!isfinite(den) || den < 1.0e-30f) {
+        return false;
+    }
+    float2 nf0 = -f0;
+    float2 nf1 = -f1;
+    d0 = cdiv(cmul(d, nf0) - cmul(b, nf1), det);
+    d1 = cdiv(cmul(a, nf1) - cmul(c, nf0), det);
+    return isfinite(d0.x) && isfinite(d0.y) && isfinite(d1.x) && isfinite(d1.y);
+}
+
+static inline float probe_radius(uint k) {
+    switch (k % 7u) {
+        case 0u: return 0.0f;
+        case 1u: return 0.35f;
+        case 2u: return 0.7f;
+        case 3u: return 1.0f;
+        case 4u: return 1.6f;
+        case 5u: return 2.6f;
+        default: return 4.2f;
+    }
+}
+
+kernel void polish2_points(
+    device const int *exps [[buffer(0)]],
+    device const float2 *coeff [[buffer(1)]],
+    device const float2 *pointsIn [[buffer(2)]],
+    device float2 *pointsOut [[buffer(3)]],
+    device float *residualsOut [[buffer(4)]],
+    constant PolishParams &p [[buffer(5)]],
+    uint gid [[thread_position_in_grid]]
+) {
+    if (gid >= p.points || p.n != 2u || p.equations != 2u) {
+        return;
+    }
+    float2 y0 = pointsIn[gid * 2u];
+    float2 y1 = pointsIn[gid * 2u + 1u];
+    float2 best0 = y0;
+    float2 best1 = y1;
+    float2 f[2];
+    float bestR = eval_system_residual2(y0, y1, exps, coeff, p, f);
+    ulong seed = make_seed_polish(p) + 7919UL * ulong(gid);
+
+    for (uint ep = 0; ep < p.epochs; ++ep) {
+        float r = eval_system_residual2(y0, y1, exps, coeff, p, f);
+        if (isfinite(r) && r < bestR) {
+            bestR = r;
+            best0 = y0;
+            best1 = y1;
+        }
+
+        float ynorm = max(1.0f, sqrt(dot(y0, y0) + dot(y1, y1)));
+        float2 bestB0 = y0;
+        float2 bestB1 = y1;
+        float bestProbeR = r;
+        uint budget = max(1u, p.probeCandidates);
+        for (uint k = 1; k < budget; ++k) {
+            float rad = p.probeScale * ynorm * probe_radius(k - 1u);
+            float2 dir[8];
+            raw_direction(dir, 2u, uint(seed + 104729UL * ulong(ep + 1u) + 7919UL * ulong(k + 1u)), seed ^ (0x116116UL + 17UL * ulong(k)), true);
+            float ph = 0.6180339887498948f * float(ep + 1u) + 2.399963229728653f * float(k + 1u);
+            float2 phasev = cphase(ph);
+            float2 step0 = rad * cmul(phasev, dir[0]);
+            float2 step1 = rad * cmul(phasev, dir[1]);
+            if (ynorm > 0.0f) {
+                float2 radialPhase = cphase(0.38196601125f * float(k + 1u));
+                step0 += (0.12f * rad / ynorm) * cmul(y0, radialPhase);
+                step1 += (0.12f * rad / ynorm) * cmul(y1, radialPhase);
+            }
+            float2 b0 = y0 + step0;
+            float2 b1 = y1 + step1;
+            float2 pf[2];
+            float pr = eval_system_residual2(b0, b1, exps, coeff, p, pf);
+            if (isfinite(pr) && pr < bestProbeR) {
+                bestProbeR = pr;
+                bestB0 = b0;
+                bestB1 = b1;
+            }
+        }
+
+        float2 q[4];
+        slope_matrix2(y0, y1, bestB0, bestB1, exps, coeff, p, q);
+        float2 d0;
+        float2 d1;
+        if (!solve2(q, f[0], f[1], d0, d1)) {
+            break;
+        }
+        float dnorm = sqrt(dot(d0, d0) + dot(d1, d1));
+        if (dnorm > 18.0f * ynorm) {
+            float scale = (18.0f * ynorm) / max(dnorm, 1.0e-30f);
+            d0 *= scale;
+            d1 *= scale;
+        }
+
+        bool accepted = false;
+        uint lineSteps = max(1u, p.lineSearch);
+        for (uint ls = 0; ls < lineSteps; ++ls) {
+            float lam = exp2(-float(ls));
+            float2 yy0 = y0 + lam * d0;
+            float2 yy1 = y1 + lam * d1;
+            float2 lf[2];
+            float rr = eval_system_residual2(yy0, yy1, exps, coeff, p, lf);
+            if (isfinite(rr) && (rr < r || rr < bestR)) {
+                y0 = yy0;
+                y1 = yy1;
+                if (rr < bestR) {
+                    bestR = rr;
+                    best0 = yy0;
+                    best1 = yy1;
+                }
+                accepted = true;
+                break;
+            }
+        }
+        if (!accepted) {
+            break;
+        }
+    }
+    pointsOut[gid * 2u] = best0;
+    pointsOut[gid * 2u + 1u] = best1;
+    residualsOut[gid] = bestR;
+}
 """
 
 guard let device = MTLCreateSystemDefaultDevice() else {
@@ -265,6 +542,14 @@ guard let function = library.makeFunction(name: "start_eval_dense_ks") else {
     fail("missing start_eval_dense_ks function")
 }
 let pipeline = try device.makeComputePipelineState(function: function)
+guard let evalFunction = library.makeFunction(name: "eval_points_residuals") else {
+    fail("missing eval_points_residuals function")
+}
+let evalPipeline = try device.makeComputePipelineState(function: evalFunction)
+guard let polishFunction = library.makeFunction(name: "polish2_points") else {
+    fail("missing polish2_points function")
+}
+let polishPipeline = try device.makeComputePipelineState(function: polishFunction)
 
 func runJob(_ job: StartSelectJob) throws -> [String: Any] {
     if job.n > 8 {
@@ -537,6 +822,173 @@ func runStoredJob(_ job: StoredStartSelectJob, system: LoadedSystem) throws -> [
     ]
 }
 
+func runEvalPoints(_ job: EvalPointsJob, system: LoadedSystem) throws -> [String: Any] {
+    if job.pointsRe.count != job.points * system.n || job.pointsIm.count != job.points * system.n {
+        throw NSError(domain: "StartSelect", code: 50, userInfo: [NSLocalizedDescriptionKey: "bad points length"])
+    }
+    let totalStart = CFAbsoluteTimeGetCurrent()
+    let points = zip(job.pointsRe, job.pointsIm).map { Complex2(re: $0.0, im: $0.1) }
+    guard let pointsBuffer = device.makeBuffer(bytes: points, length: points.count * MemoryLayout<Complex2>.stride, options: .storageModeShared),
+          let residualsBuffer = device.makeBuffer(length: job.points * MemoryLayout<Float>.stride, options: .storageModeShared) else {
+        throw NSError(domain: "StartSelect", code: 51, userInfo: [NSLocalizedDescriptionKey: "cannot create eval buffers"])
+    }
+    var params = Params(
+        n: UInt32(system.n),
+        equations: UInt32(system.equations),
+        terms: UInt32(system.terms),
+        candidates: UInt32(job.points),
+        targetCount: 1,
+        powersCount: 0,
+        anglesCount: 0,
+        radiiCount: 0,
+        seedLo: 0,
+        seedHi: 0,
+        powerCap: 0.0
+    )
+    guard let paramsBuffer = device.makeBuffer(bytes: &params, length: MemoryLayout<Params>.stride, options: .storageModeShared) else {
+        throw NSError(domain: "StartSelect", code: 52, userInfo: [NSLocalizedDescriptionKey: "cannot create eval params"])
+    }
+    let kernelStart = CFAbsoluteTimeGetCurrent()
+    guard let commandBuffer = queue.makeCommandBuffer(),
+          let encoder = commandBuffer.makeComputeCommandEncoder() else {
+        throw NSError(domain: "StartSelect", code: 53, userInfo: [NSLocalizedDescriptionKey: "cannot create eval command buffer"])
+    }
+    encoder.setComputePipelineState(evalPipeline)
+    encoder.setBuffer(system.expsBuffer, offset: 0, index: 0)
+    encoder.setBuffer(system.coeffBuffer, offset: 0, index: 1)
+    encoder.setBuffer(pointsBuffer, offset: 0, index: 2)
+    encoder.setBuffer(residualsBuffer, offset: 0, index: 3)
+    encoder.setBuffer(paramsBuffer, offset: 0, index: 4)
+    let threadsPerGroup = min(evalPipeline.maxTotalThreadsPerThreadgroup, 256)
+    let grid = MTLSize(width: job.points, height: 1, depth: 1)
+    let group = MTLSize(width: threadsPerGroup, height: 1, depth: 1)
+    encoder.dispatchThreads(grid, threadsPerThreadgroup: group)
+    encoder.endEncoding()
+    commandBuffer.commit()
+    commandBuffer.waitUntilCompleted()
+    let kernelSeconds = CFAbsoluteTimeGetCurrent() - kernelStart
+
+    let residualPtr = residualsBuffer.contents().bindMemory(to: Float.self, capacity: job.points)
+    var residuals: [Double] = []
+    residuals.reserveCapacity(job.points)
+    for i in 0..<job.points {
+        residuals.append(Double(residualPtr[i]))
+    }
+    return [
+        "op": "eval_points",
+        "points": job.points,
+        "residuals": residuals,
+        "kernel_seconds": kernelSeconds,
+        "total_seconds": CFAbsoluteTimeGetCurrent() - totalStart,
+        "stateful": true
+    ]
+}
+
+func runPolish2(_ job: Polish2Job, system: LoadedSystem) throws -> [String: Any] {
+    if system.n != 2 || system.equations != 2 {
+        throw NSError(domain: "StartSelect", code: 60, userInfo: [NSLocalizedDescriptionKey: "polish2 requires n=2 and equations=2"])
+    }
+    if job.pointsRe.count != job.points * system.n || job.pointsIm.count != job.points * system.n {
+        throw NSError(domain: "StartSelect", code: 61, userInfo: [NSLocalizedDescriptionKey: "bad polish points length"])
+    }
+
+    let totalStart = CFAbsoluteTimeGetCurrent()
+    let points = zip(job.pointsRe, job.pointsIm).map { Complex2(re: $0.0, im: $0.1) }
+    guard let pointsInBuffer = device.makeBuffer(bytes: points, length: points.count * MemoryLayout<Complex2>.stride, options: .storageModeShared),
+          let pointsOutBuffer = device.makeBuffer(length: points.count * MemoryLayout<Complex2>.stride, options: .storageModeShared),
+          let residualsBuffer = device.makeBuffer(length: job.points * MemoryLayout<Float>.stride, options: .storageModeShared) else {
+        throw NSError(domain: "StartSelect", code: 62, userInfo: [NSLocalizedDescriptionKey: "cannot create polish buffers"])
+    }
+    var params = PolishParams(
+        n: UInt32(system.n),
+        equations: UInt32(system.equations),
+        terms: UInt32(system.terms),
+        points: UInt32(job.points),
+        epochs: UInt32(max(0, job.epochs)),
+        probeCandidates: UInt32(max(1, job.probeCandidates)),
+        lineSearch: UInt32(max(1, job.lineSearch)),
+        seedLo: UInt32(job.seed & 0xFFFFFFFF),
+        seedHi: UInt32((job.seed >> 32) & 0xFFFFFFFF),
+        probeScale: job.probeScale
+    )
+    guard let paramsBuffer = device.makeBuffer(bytes: &params, length: MemoryLayout<PolishParams>.stride, options: .storageModeShared) else {
+        throw NSError(domain: "StartSelect", code: 63, userInfo: [NSLocalizedDescriptionKey: "cannot create polish params"])
+    }
+
+    let kernelStart = CFAbsoluteTimeGetCurrent()
+    guard let commandBuffer = queue.makeCommandBuffer(),
+          let encoder = commandBuffer.makeComputeCommandEncoder() else {
+        throw NSError(domain: "StartSelect", code: 64, userInfo: [NSLocalizedDescriptionKey: "cannot create polish command buffer"])
+    }
+    encoder.setComputePipelineState(polishPipeline)
+    encoder.setBuffer(system.expsBuffer, offset: 0, index: 0)
+    encoder.setBuffer(system.coeffBuffer, offset: 0, index: 1)
+    encoder.setBuffer(pointsInBuffer, offset: 0, index: 2)
+    encoder.setBuffer(pointsOutBuffer, offset: 0, index: 3)
+    encoder.setBuffer(residualsBuffer, offset: 0, index: 4)
+    encoder.setBuffer(paramsBuffer, offset: 0, index: 5)
+    let threadsPerGroup = min(polishPipeline.maxTotalThreadsPerThreadgroup, 256)
+    let grid = MTLSize(width: job.points, height: 1, depth: 1)
+    let group = MTLSize(width: threadsPerGroup, height: 1, depth: 1)
+    encoder.dispatchThreads(grid, threadsPerThreadgroup: group)
+    encoder.endEncoding()
+    commandBuffer.commit()
+    commandBuffer.waitUntilCompleted()
+    let kernelSeconds = CFAbsoluteTimeGetCurrent() - kernelStart
+
+    let pointsOut = pointsOutBuffer.contents().bindMemory(to: Complex2.self, capacity: points.count)
+    let residualsOut = residualsBuffer.contents().bindMemory(to: Float.self, capacity: job.points)
+    var candidates: [Candidate] = []
+    candidates.reserveCapacity(job.points)
+    for point in 0..<job.points {
+        let residual = Double(residualsOut[point])
+        if residual.isFinite {
+            candidates.append(Candidate(index: point, trial: point, residual: residual))
+        }
+    }
+    candidates.sort {
+        if $0.residual == $1.residual {
+            return $0.index < $1.index
+        }
+        return $0.residual < $1.residual
+    }
+
+    var rows: [[String: Any]] = []
+    rows.reserveCapacity(candidates.count)
+    for cand in candidates {
+        var zr: [Double] = []
+        var zi: [Double] = []
+        zr.reserveCapacity(system.n)
+        zi.reserveCapacity(system.n)
+        for j in 0..<system.n {
+            let p = pointsOut[cand.index * system.n + j]
+            zr.append(Double(p.re))
+            zi.append(Double(p.im))
+        }
+        rows.append([
+            "rank": rows.count,
+            "index": cand.index,
+            "trial": cand.trial,
+            "residual": cand.residual,
+            "re": zr,
+            "im": zi
+        ])
+    }
+
+    return [
+        "op": "polish2",
+        "device": device.name,
+        "points": job.points,
+        "epochs": job.epochs,
+        "probe_candidates": job.probeCandidates,
+        "line_search": job.lineSearch,
+        "selected": rows,
+        "kernel_seconds": kernelSeconds,
+        "total_seconds": CFAbsoluteTimeGetCurrent() - totalStart,
+        "stateful": true
+    ]
+}
+
 let decoder = JSONDecoder()
 var loadedSystem: LoadedSystem? = nil
 while let line = readLine() {
@@ -565,6 +1017,18 @@ while let line = readLine() {
             }
             let job = try decoder.decode(StoredStartSelectJob.self, from: data)
             payload = try runStoredJob(job, system: system)
+        } else if op == "eval_points" {
+            guard let system = loadedSystem else {
+                throw NSError(domain: "StartSelect", code: 41, userInfo: [NSLocalizedDescriptionKey: "no loaded system"])
+            }
+            let job = try decoder.decode(EvalPointsJob.self, from: data)
+            payload = try runEvalPoints(job, system: system)
+        } else if op == "polish2" {
+            guard let system = loadedSystem else {
+                throw NSError(domain: "StartSelect", code: 42, userInfo: [NSLocalizedDescriptionKey: "no loaded system"])
+            }
+            let job = try decoder.decode(Polish2Job.self, from: data)
+            payload = try runPolish2(job, system: system)
         } else {
             let job = try decoder.decode(StartSelectJob.self, from: data)
             payload = try runJob(job)
