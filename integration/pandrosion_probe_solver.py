@@ -1,16 +1,21 @@
-"""Runtime wrapper around the 118 probe-aware Pandrosion corrector.
+"""Runtime wrapper around Pandrosion probe-aware correctors.
 
-The copied 118/119 scripts are CLI-oriented and their filenames start with
-digits, so normal Python imports cannot load them.  This module provides a
-small deterministic market-consensus probe that uses the 118 exact telescopic
-slope corrector directly inside the bot.
+The bot now prefers the persistent Swift/Metal 129 server for the correction
+step and falls back to the copied 118 Python engine when Swift is unavailable.
+The copied engine filenames start with digits, so normal Python imports cannot
+load them directly.
 """
 
 from __future__ import annotations
 
+import atexit
 import importlib.util
+import json
 import math
+import os
+import subprocess
 import sys
+import threading
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Sequence
@@ -38,6 +43,212 @@ def _signed_power_root(value: float, degree: int) -> float:
     if value == 0.0:
         return 0.0
     return math.copysign(abs(value) ** (1.0 / max(1, int(degree))), value)
+
+
+_SWIFT129_LAST_ERROR = ""
+
+
+def _swift129_enabled() -> bool:
+    disabled = os.getenv("PANDROSION_DISABLE_SWIFT_129", "").strip().lower()
+    if disabled in {"1", "true", "yes", "on"}:
+        return False
+    engine = os.getenv("PANDROSION_CORE_ENGINE", "129").strip().lower()
+    return engine in {"129", "swift129", "swift-129", "swift_metal", "swift-metal"}
+
+
+def _record_swift129_error(message: str) -> None:
+    global _SWIFT129_LAST_ERROR
+    _SWIFT129_LAST_ERROR = message[:500]
+
+
+@lru_cache(maxsize=1)
+def _swift129_binary() -> Path | None:
+    source = Path(__file__).resolve().with_name("129_pandrosion_swift_metal_full.swift")
+    configured = os.getenv("PANDROSION_129_BINARY", "").strip()
+    if configured:
+        binary = Path(configured).expanduser()
+        return binary if binary.exists() else None
+    if not source.exists():
+        _record_swift129_error(f"missing Swift 129 source: {source}")
+        return None
+    binary = Path(__file__).resolve().with_name("bin") / "129_pandrosion_swift_metal_full"
+    try:
+        needs_build = not binary.exists() or binary.stat().st_mtime < source.stat().st_mtime
+        if needs_build:
+            binary.parent.mkdir(parents=True, exist_ok=True)
+            result = subprocess.run(
+                [
+                    "swiftc",
+                    "-O",
+                    str(source),
+                    "-o",
+                    str(binary),
+                    "-framework",
+                    "Foundation",
+                    "-framework",
+                    "Metal",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=90.0,
+            )
+            if result.returncode != 0:
+                _record_swift129_error(result.stderr or result.stdout or f"swiftc exited {result.returncode}")
+                return None
+    except Exception as exc:
+        _record_swift129_error(f"Swift 129 build failed: {exc}")
+        return None
+    return binary if binary.exists() else None
+
+
+class _Swift129Server:
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._proc: subprocess.Popen[str] | None = None
+        self._next_id = 1
+
+    def close(self) -> None:
+        proc = self._proc
+        self._proc = None
+        if proc is None:
+            return
+        try:
+            proc.terminate()
+            proc.wait(timeout=1.0)
+        except Exception:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+
+    def _ensure(self) -> subprocess.Popen[str]:
+        proc = self._proc
+        if proc is not None and proc.poll() is None and proc.stdin and proc.stdout:
+            return proc
+        binary = _swift129_binary()
+        if binary is None:
+            raise RuntimeError(_SWIFT129_LAST_ERROR or "Swift 129 binary is unavailable")
+        proc = subprocess.Popen(
+            [str(binary), "--server"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            bufsize=1,
+        )
+        self._proc = proc
+        return proc
+
+    def solve(self, payload: dict[str, Any]) -> dict[str, Any]:
+        with self._lock:
+            proc = self._ensure()
+            job_id = self._next_id
+            self._next_id += 1
+            payload = dict(payload)
+            payload["id"] = job_id
+            line = json.dumps(payload, separators=(",", ":"), allow_nan=False)
+            assert proc.stdin is not None and proc.stdout is not None
+            try:
+                proc.stdin.write(line + "\n")
+                proc.stdin.flush()
+                raw = proc.stdout.readline()
+            except Exception:
+                self.close()
+                raise
+            if not raw:
+                code = proc.poll()
+                self.close()
+                raise RuntimeError(f"Swift 129 server exited before response, code={code}")
+            response = json.loads(raw)
+            if not response.get("ok", False):
+                raise RuntimeError(str(response.get("error", "Swift 129 solve failed")))
+            return response
+
+
+_SWIFT129_SERVER = _Swift129Server()
+atexit.register(_SWIFT129_SERVER.close)
+
+
+def _swift129_corrector(
+    engine: Any,
+    *,
+    n: int,
+    degree: int,
+    exps: Any,
+    coeff: Any,
+    y0: Any,
+    max_epochs: int,
+    tol: float,
+    accept: float,
+    line_search: int,
+    probe_scale: float,
+    direction_seed: int,
+    probe_candidates: int,
+    probe_radii: Sequence[float],
+    include_self_probe: bool = True,
+) -> dict[str, Any] | None:
+    if not _swift129_enabled():
+        return None
+    try:
+        np = engine.np
+        exps_arr = np.asarray(exps, dtype=np.int64)
+        if exps_arr.ndim == 1:
+            exps_arr = exps_arr.reshape((-1, int(n)))
+        coeff_arr = np.asarray(coeff, dtype=np.complex128)
+        y0_arr = np.asarray(y0, dtype=np.complex128)
+        if coeff_arr.shape[0] != int(n) or coeff_arr.shape[1] != exps_arr.shape[0]:
+            raise ValueError("coefficient shape does not match exponent table")
+        if y0_arr.shape[0] != int(n):
+            raise ValueError("start point length does not match n")
+        nz = np.any(np.abs(coeff_arr) > 0.0, axis=0)
+        if not bool(np.any(nz)):
+            return None
+        exps_used = np.ascontiguousarray(exps_arr[nz], dtype=np.int64)
+        coeff_used = np.ascontiguousarray(coeff_arr[:, nz], dtype=np.complex128)
+        payload = {
+            "op": "solve_custom",
+            "n": int(n),
+            "d": int(degree),
+            "exps": [int(v) for v in exps_used.reshape(-1).tolist()],
+            "coeff_re": [float(v) for v in coeff_used.real.reshape(-1).tolist()],
+            "coeff_im": [float(v) for v in coeff_used.imag.reshape(-1).tolist()],
+            "y0_re": [float(v) for v in y0_arr.real.reshape(-1).tolist()],
+            "y0_im": [float(v) for v in y0_arr.imag.reshape(-1).tolist()],
+            "direction_seed": int(direction_seed) & ((1 << 63) - 1),
+            "max_epochs": int(max_epochs),
+            "tol": float(tol),
+            "accept": float(accept),
+            "line_search": int(line_search),
+            "probe_scale": float(probe_scale),
+            "probe_candidates": int(probe_candidates),
+            "probe_radii": [float(v) for v in probe_radii],
+            "include_self_probe": bool(include_self_probe),
+            "equation_normalize": False,
+        }
+        response = _SWIFT129_SERVER.solve(payload)
+        y_re = response.get("y_re")
+        y_im = response.get("y_im")
+        if not isinstance(y_re, list) or not isinstance(y_im, list) or len(y_re) != int(n) or len(y_im) != int(n):
+            raise ValueError("Swift 129 response has invalid y vector")
+        y = np.asarray([complex(float(re), float(im)) for re, im in zip(y_re, y_im)], dtype=np.complex128)
+        residual = _finite_float(response.get("residual"), float("inf"))
+        return {
+            "accepted": bool(response.get("accepted", False)),
+            "status": response.get("status", "swift129"),
+            "y": y,
+            "residual": residual,
+            "epochs": int(response.get("epochs", 0)),
+            "seconds": _finite_float(response.get("seconds"), 0.0),
+            "probe_name": "swift129",
+            "probe_total_evals": int(response.get("probe_total_evals", 0)),
+            "source": "129",
+            "swift_terms_per_poly": int(response.get("terms_per_poly", 0)),
+            "swift_total_terms": int(response.get("total_terms", 0)),
+        }
+    except Exception as exc:
+        _record_swift129_error(str(exc))
+        return None
 
 
 @lru_cache(maxsize=1)
@@ -302,13 +513,16 @@ def solve_univariate_core_118(x_c: complex, p: int, direction_seed: int = 0) -> 
     target = engine.TargetTrack(system, engine.LinearChart.identity(1))
     y0 = np.asarray([s_0], dtype=np.complex128)
 
-    loc = engine.pandrosion_corrector(
-        target,
-        y0,
+    loc = _swift129_corrector(
+        engine,
+        n=1,
+        degree=p,
+        exps=exps,
+        coeff=coeff,
+        y0=y0,
         max_epochs=4,
         tol=1e-12,
         accept=1e-10,
-        trial_timeout=0.0,
         line_search=8,
         probe_scale=0.05,
         direction_seed=int(direction_seed),
@@ -316,6 +530,21 @@ def solve_univariate_core_118(x_c: complex, p: int, direction_seed: int = 0) -> 
         probe_radii=(0.0, 0.25, 0.5, 1.0, 1.8),
         include_self_probe=True,
     )
+    if loc is None:
+        loc = engine.pandrosion_corrector(
+            target,
+            y0,
+            max_epochs=4,
+            tol=1e-12,
+            accept=1e-10,
+            trial_timeout=0.0,
+            line_search=8,
+            probe_scale=0.05,
+            direction_seed=int(direction_seed),
+            probe_candidates=5,
+            probe_radii=(0.0, 0.25, 0.5, 1.0, 1.8),
+            include_self_probe=True,
+        )
 
     root = complex(np.asarray(loc.get("y", y0), dtype=np.complex128)[0])
     residual = _finite_float(loc.get("residual"), float("inf"))
@@ -419,13 +648,16 @@ def solve_multiscale_consensus_118(
     y0 = np.asarray([_principal_root_seed_118(complex(r), p) for r in ratios], dtype=np.complex128)
     initial_residual = target.residual(y0)
 
-    loc = engine.pandrosion_corrector(
-        target,
-        y0,
+    loc = _swift129_corrector(
+        engine,
+        n=n,
+        degree=p,
+        exps=exps,
+        coeff=coeff,
+        y0=y0,
         max_epochs=4,
         tol=1e-10,
         accept=5e-8,
-        trial_timeout=0.0,
         line_search=8,
         probe_scale=0.045,
         direction_seed=int(direction_seed),
@@ -433,6 +665,21 @@ def solve_multiscale_consensus_118(
         probe_radii=(0.0, 0.25, 0.5, 1.0, 1.8, 3.0),
         include_self_probe=True,
     )
+    if loc is None:
+        loc = engine.pandrosion_corrector(
+            target,
+            y0,
+            max_epochs=4,
+            tol=1e-10,
+            accept=5e-8,
+            trial_timeout=0.0,
+            line_search=8,
+            probe_scale=0.045,
+            direction_seed=int(direction_seed),
+            probe_candidates=6,
+            probe_radii=(0.0, 0.25, 0.5, 1.0, 1.8, 3.0),
+            include_self_probe=True,
+        )
 
     y = np.asarray(loc.get("y", y0), dtype=np.complex128)
     residual = _finite_float(loc.get("residual"), float("inf"))
@@ -670,13 +917,16 @@ def solve_trade_decision_system_118(
     y0[11] = complex(_signed_cuberoot(capital_anchor), 0.0)
     initial_residual = target.residual(y0)
 
-    loc = engine.pandrosion_corrector(
-        target,
-        y0,
+    loc = _swift129_corrector(
+        engine,
+        n=n,
+        degree=p,
+        exps=exps,
+        coeff=coeff,
+        y0=y0,
         max_epochs=5,
         tol=1e-10,
         accept=2e-7,
-        trial_timeout=0.0,
         line_search=8,
         probe_scale=0.040,
         direction_seed=int(direction_seed),
@@ -684,6 +934,21 @@ def solve_trade_decision_system_118(
         probe_radii=(0.0, 0.18, 0.35, 0.7, 1.2, 2.0),
         include_self_probe=True,
     )
+    if loc is None:
+        loc = engine.pandrosion_corrector(
+            target,
+            y0,
+            max_epochs=5,
+            tol=1e-10,
+            accept=2e-7,
+            trial_timeout=0.0,
+            line_search=8,
+            probe_scale=0.040,
+            direction_seed=int(direction_seed),
+            probe_candidates=6,
+            probe_radii=(0.0, 0.18, 0.35, 0.7, 1.2, 2.0),
+            include_self_probe=True,
+        )
 
     y = np.asarray(loc.get("y", y0), dtype=np.complex128)
     residual = _finite_float(loc.get("residual"), float("inf"))
@@ -924,13 +1189,16 @@ def solve_trade_management_system_118(
     y0 = np.asarray([complex(_signed_cuberoot(anchor), 0.0) for anchor in anchors], dtype=np.complex128)
     initial_residual = target.residual(y0)
 
-    loc = engine.pandrosion_corrector(
-        target,
-        y0,
+    loc = _swift129_corrector(
+        engine,
+        n=n,
+        degree=p,
+        exps=exps,
+        coeff=coeff,
+        y0=y0,
         max_epochs=5,
         tol=1e-10,
         accept=2e-7,
-        trial_timeout=0.0,
         line_search=8,
         probe_scale=0.035,
         direction_seed=int(direction_seed),
@@ -938,6 +1206,21 @@ def solve_trade_management_system_118(
         probe_radii=(0.0, 0.16, 0.32, 0.64, 1.1, 1.8),
         include_self_probe=True,
     )
+    if loc is None:
+        loc = engine.pandrosion_corrector(
+            target,
+            y0,
+            max_epochs=5,
+            tol=1e-10,
+            accept=2e-7,
+            trial_timeout=0.0,
+            line_search=8,
+            probe_scale=0.035,
+            direction_seed=int(direction_seed),
+            probe_candidates=6,
+            probe_radii=(0.0, 0.16, 0.32, 0.64, 1.1, 1.8),
+            include_self_probe=True,
+        )
 
     y = np.asarray(loc.get("y", y0), dtype=np.complex128)
     residual = _finite_float(loc.get("residual"), float("inf"))
@@ -1160,13 +1443,16 @@ def solve_entry_allocation_system_118(
     y0 = np.asarray([complex(_signed_cuberoot(anchor), 0.0) for anchor in anchors], dtype=np.complex128)
     initial_residual = target.residual(y0)
 
-    loc = engine.pandrosion_corrector(
-        target,
-        y0,
+    loc = _swift129_corrector(
+        engine,
+        n=n,
+        degree=p,
+        exps=exps,
+        coeff=coeff,
+        y0=y0,
         max_epochs=5,
         tol=1e-10,
         accept=2e-7,
-        trial_timeout=0.0,
         line_search=8,
         probe_scale=0.035,
         direction_seed=int(direction_seed),
@@ -1174,6 +1460,21 @@ def solve_entry_allocation_system_118(
         probe_radii=(0.0, 0.16, 0.32, 0.64, 1.1, 1.8),
         include_self_probe=True,
     )
+    if loc is None:
+        loc = engine.pandrosion_corrector(
+            target,
+            y0,
+            max_epochs=5,
+            tol=1e-10,
+            accept=2e-7,
+            trial_timeout=0.0,
+            line_search=8,
+            probe_scale=0.035,
+            direction_seed=int(direction_seed),
+            probe_candidates=6,
+            probe_radii=(0.0, 0.16, 0.32, 0.64, 1.1, 1.8),
+            include_self_probe=True,
+        )
 
     y = np.asarray(loc.get("y", y0), dtype=np.complex128)
     residual = _finite_float(loc.get("residual"), float("inf"))
@@ -1406,13 +1707,16 @@ def solve_curve_regime_system_118(
     y0 = np.asarray([complex(_signed_power_root(anchor, degree), 0.0) for anchor in anchors], dtype=np.complex128)
     initial_residual = target.residual(y0)
 
-    loc = engine.pandrosion_corrector(
-        target,
-        y0,
+    loc = _swift129_corrector(
+        engine,
+        n=n,
+        degree=degree,
+        exps=exps,
+        coeff=coeff,
+        y0=y0,
         max_epochs=4,
         tol=1e-10,
         accept=4e-7,
-        trial_timeout=0.0,
         line_search=6,
         probe_scale=0.026,
         direction_seed=int(direction_seed),
@@ -1420,6 +1724,21 @@ def solve_curve_regime_system_118(
         probe_radii=(0.0, 0.12, 0.30, 0.70),
         include_self_probe=True,
     )
+    if loc is None:
+        loc = engine.pandrosion_corrector(
+            target,
+            y0,
+            max_epochs=4,
+            tol=1e-10,
+            accept=4e-7,
+            trial_timeout=0.0,
+            line_search=6,
+            probe_scale=0.026,
+            direction_seed=int(direction_seed),
+            probe_candidates=4,
+            probe_radii=(0.0, 0.12, 0.30, 0.70),
+            include_self_probe=True,
+        )
 
     y = np.asarray(loc.get("y", y0), dtype=np.complex128)
     residual = _finite_float(loc.get("residual"), float("inf"))
@@ -1536,20 +1855,41 @@ def solve_market_consensus_probe(
     y0 = np.asarray(start, dtype=np.complex128)
     initial_residual = target.residual(y0)
 
-    loc = engine.pandrosion_corrector(
-        target,
-        y0,
-        max_epochs=4,
-        tol=1e-10,
-        accept=1e-8,
-        trial_timeout=0.0,
-        line_search=8,
-        probe_scale=0.08,
-        direction_seed=int(direction_seed),
-        probe_candidates=6,
-        probe_radii=(0.0, 0.35, 0.7, 1.0, 1.6),
-        include_self_probe=True,
-    )
+    target_system = getattr(target, "system", None)
+    loc = None
+    if target_system is not None:
+        loc = _swift129_corrector(
+            engine,
+            n=3,
+            degree=2,
+            exps=getattr(target_system, "exps", None),
+            coeff=getattr(target_system, "coeff", None),
+            y0=y0,
+            max_epochs=4,
+            tol=1e-10,
+            accept=1e-8,
+            line_search=8,
+            probe_scale=0.08,
+            direction_seed=int(direction_seed),
+            probe_candidates=6,
+            probe_radii=(0.0, 0.35, 0.7, 1.0, 1.6),
+            include_self_probe=True,
+        )
+    if loc is None:
+        loc = engine.pandrosion_corrector(
+            target,
+            y0,
+            max_epochs=4,
+            tol=1e-10,
+            accept=1e-8,
+            trial_timeout=0.0,
+            line_search=8,
+            probe_scale=0.08,
+            direction_seed=int(direction_seed),
+            probe_candidates=6,
+            probe_radii=(0.0, 0.35, 0.7, 1.0, 1.6),
+            include_self_probe=True,
+        )
 
     y = np.asarray(loc.get("y", y0), dtype=np.complex128)
     residual = _finite_float(loc.get("residual"), float("inf"))
