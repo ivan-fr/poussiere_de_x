@@ -1,0 +1,2 @@
+case,roots_118,roots_128,root_delta_128_minus_118,success_118,success_128,seconds_118,seconds_128,speedup_128_vs_118,evals_118,evals_128,slopes_118,slopes_128,winner
+"2,34",32,32,0,True,True,2.311100292019546,0.20281724981032312,11.394988809782758,57638,17097,4960,1316,128(swift)

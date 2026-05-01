@@ -26,6 +26,8 @@ struct LoadSystemJob: Decodable {
     let exps: [Int32]
     let coeffRe: [Float]
     let coeffIm: [Float]
+    let coeffRe64: [Double]?
+    let coeffIm64: [Double]?
 }
 
 struct StoredStartSelectJob: Decodable {
@@ -57,6 +59,39 @@ struct Polish2Job: Decodable {
     let probeScale: Float
     let pointsRe: [Float]
     let pointsIm: [Float]
+}
+
+struct Solve2Job: Decodable {
+    let op: String
+    let candidates: Int
+    let targetCount: Int
+    let topK: Int
+    let refineTop: Int
+    let count: Int
+    let seed: UInt64
+    let powerCap: Float
+    let powers: [Float]
+    let angles: [Float]
+    let radii: [Float]
+    let diversitySep: Double
+    let epochs: Int
+    let tol: Double
+    let accept: Double
+    let clusterSep: Double
+    let lineSearch: Int
+    let probeScale: Double
+    let probeCandidates: Int
+    let probeRadii: [Double]
+    let probeSelf: Bool
+    let startoptSteps: Int
+    let startoptCandidates: Int
+    let startoptGains: [Double]
+    let startoptMicroEpochs: Int
+    let metalPolish2: Bool
+    let metalPolishEpochs: Int
+    let metalPolishProbes: Int
+    let metalPolishLineSearch: Int
+    let metalPolishProbeScale: Float
 }
 
 struct Params {
@@ -91,6 +126,11 @@ struct Complex2 {
     var im: Float
 }
 
+struct ComplexD {
+    var re: Double
+    var im: Double
+}
+
 struct Candidate {
     let index: Int
     let trial: Int
@@ -101,13 +141,19 @@ final class LoadedSystem {
     let n: Int
     let equations: Int
     let terms: Int
+    let degree: Int
+    let exps: [Int32]
+    let coeffD: [ComplexD]
     let expsBuffer: MTLBuffer
     let coeffBuffer: MTLBuffer
 
-    init(n: Int, equations: Int, terms: Int, expsBuffer: MTLBuffer, coeffBuffer: MTLBuffer) {
+    init(n: Int, equations: Int, terms: Int, degree: Int, exps: [Int32], coeffD: [ComplexD], expsBuffer: MTLBuffer, coeffBuffer: MTLBuffer) {
         self.n = n
         self.equations = equations
         self.terms = terms
+        self.degree = degree
+        self.exps = exps
+        self.coeffD = coeffD
         self.expsBuffer = expsBuffer
         self.coeffBuffer = coeffBuffer
     }
@@ -693,12 +739,30 @@ func loadSystem(_ job: LoadSystemJob) throws -> LoadedSystem {
     if job.coeffRe.count != job.equations * job.terms || job.coeffIm.count != job.equations * job.terms {
         throw NSError(domain: "StartSelect", code: 22, userInfo: [NSLocalizedDescriptionKey: "bad coeff length"])
     }
+    if let coeffRe64 = job.coeffRe64, coeffRe64.count != job.equations * job.terms {
+        throw NSError(domain: "StartSelect", code: 24, userInfo: [NSLocalizedDescriptionKey: "bad coeffRe64 length"])
+    }
+    if let coeffIm64 = job.coeffIm64, coeffIm64.count != job.equations * job.terms {
+        throw NSError(domain: "StartSelect", code: 25, userInfo: [NSLocalizedDescriptionKey: "bad coeffIm64 length"])
+    }
     let coeff = zip(job.coeffRe, job.coeffIm).map { Complex2(re: $0.0, im: $0.1) }
+    var coeffD: [ComplexD] = []
+    coeffD.reserveCapacity(job.equations * job.terms)
+    if let coeffRe64 = job.coeffRe64, let coeffIm64 = job.coeffIm64 {
+        for i in 0..<(job.equations * job.terms) {
+            coeffD.append(ComplexD(re: coeffRe64[i], im: coeffIm64[i]))
+        }
+    } else {
+        for i in 0..<(job.equations * job.terms) {
+            coeffD.append(ComplexD(re: Double(job.coeffRe[i]), im: Double(job.coeffIm[i])))
+        }
+    }
+    let degree = Int(job.exps.max() ?? 0)
     guard let expsBuffer = device.makeBuffer(bytes: job.exps, length: job.exps.count * MemoryLayout<Int32>.stride, options: .storageModeShared),
           let coeffBuffer = device.makeBuffer(bytes: coeff, length: coeff.count * MemoryLayout<Complex2>.stride, options: .storageModeShared) else {
         throw NSError(domain: "StartSelect", code: 23, userInfo: [NSLocalizedDescriptionKey: "cannot create loaded buffers"])
     }
-    return LoadedSystem(n: job.n, equations: job.equations, terms: job.terms, expsBuffer: expsBuffer, coeffBuffer: coeffBuffer)
+    return LoadedSystem(n: job.n, equations: job.equations, terms: job.terms, degree: degree, exps: job.exps, coeffD: coeffD, expsBuffer: expsBuffer, coeffBuffer: coeffBuffer)
 }
 
 func runStoredJob(_ job: StoredStartSelectJob, system: LoadedSystem) throws -> [String: Any] {
@@ -989,6 +1053,839 @@ func runPolish2(_ job: Polish2Job, system: LoadedSystem) throws -> [String: Any]
     ]
 }
 
+func +(lhs: ComplexD, rhs: ComplexD) -> ComplexD {
+    ComplexD(re: lhs.re + rhs.re, im: lhs.im + rhs.im)
+}
+
+func -(lhs: ComplexD, rhs: ComplexD) -> ComplexD {
+    ComplexD(re: lhs.re - rhs.re, im: lhs.im - rhs.im)
+}
+
+prefix func -(value: ComplexD) -> ComplexD {
+    ComplexD(re: -value.re, im: -value.im)
+}
+
+func *(lhs: ComplexD, rhs: ComplexD) -> ComplexD {
+    ComplexD(re: lhs.re * rhs.re - lhs.im * rhs.im, im: lhs.re * rhs.im + lhs.im * rhs.re)
+}
+
+func *(lhs: Double, rhs: ComplexD) -> ComplexD {
+    ComplexD(re: lhs * rhs.re, im: lhs * rhs.im)
+}
+
+func *(lhs: ComplexD, rhs: Double) -> ComplexD {
+    ComplexD(re: lhs.re * rhs, im: lhs.im * rhs)
+}
+
+func /(lhs: ComplexD, rhs: ComplexD) -> ComplexD {
+    let den = max(rhs.re * rhs.re + rhs.im * rhs.im, 1.0e-300)
+    return ComplexD(re: (lhs.re * rhs.re + lhs.im * rhs.im) / den, im: (lhs.im * rhs.re - lhs.re * rhs.im) / den)
+}
+
+func cabs2(_ z: ComplexD) -> Double {
+    z.re * z.re + z.im * z.im
+}
+
+func isFinite(_ z: ComplexD) -> Bool {
+    z.re.isFinite && z.im.isFinite
+}
+
+func phaseD(_ theta: Double) -> ComplexD {
+    ComplexD(re: cos(theta), im: sin(theta))
+}
+
+func vectorNorm(_ y: [ComplexD]) -> Double {
+    sqrt(y.reduce(0.0) { $0 + cabs2($1) })
+}
+
+func vectorDistance(_ a: [ComplexD], _ b: [ComplexD]) -> Double {
+    var acc = 0.0
+    for i in 0..<min(a.count, b.count) {
+        acc += cabs2(a[i] - b[i])
+    }
+    return sqrt(acc)
+}
+
+func scaleVector(_ y: [ComplexD], _ scale: Double) -> [ComplexD] {
+    y.map { $0 * scale }
+}
+
+func addVectors(_ a: [ComplexD], _ b: [ComplexD]) -> [ComplexD] {
+    var out: [ComplexD] = []
+    out.reserveCapacity(min(a.count, b.count))
+    for i in 0..<min(a.count, b.count) {
+        out.append(a[i] + b[i])
+    }
+    return out
+}
+
+func subVectors(_ a: [ComplexD], _ b: [ComplexD]) -> [ComplexD] {
+    var out: [ComplexD] = []
+    out.reserveCapacity(min(a.count, b.count))
+    for i in 0..<min(a.count, b.count) {
+        out.append(a[i] - b[i])
+    }
+    return out
+}
+
+func splitmix64D(_ input: UInt64) -> UInt64 {
+    var x = input &+ 0x9E3779B97F4A7C15
+    x = ((x ^ (x >> 30)) &* 0xBF58476D1CE4E5B9)
+    x = ((x ^ (x >> 27)) &* 0x94D049BB133111EB)
+    return x ^ (x >> 31)
+}
+
+func u01D(_ input: UInt64) -> Double {
+    let y = (splitmix64D(input) >> 11) & ((UInt64(1) << 53) - 1)
+    return Double(y) / Double(UInt64(1) << 53)
+}
+
+func rawDirectionD(n: Int, trial: UInt64, seed: UInt64, normalize: Bool = true) -> [ComplexD] {
+    var vals: [ComplexD] = []
+    vals.reserveCapacity(n)
+    var norm2 = 0.0
+    for j in 0..<n {
+        let jj = UInt64(j + 1)
+        let h1 = seed &+ 0xD1A5E &+ 0x1000003 &* trial &+ 0x9E37 &* jj
+        let h2 = seed &+ 0xBADC0DE &+ 0x1000033 &* trial &+ 0xC2B2 &* jj
+        let angle = 2.0 * Double.pi * u01D(h1)
+        let amp = exp(0.45 * (2.0 * u01D(h2) - 1.0))
+        let v = amp * phaseD(angle)
+        vals.append(v)
+        norm2 += cabs2(v)
+    }
+    if normalize && norm2 > 0.0 {
+        let scale = sqrt(Double(max(1, n))) / sqrt(norm2)
+        vals = vals.map { $0 * scale }
+    }
+    return vals
+}
+
+final class SolveContext {
+    let system: LoadedSystem
+    var evalCount = 0
+    var slopeCount = 0
+    var secondsEval = 0.0
+    var secondsSlope = 0.0
+
+    init(system: LoadedSystem) {
+        self.system = system
+    }
+
+    func powers(_ z: ComplexD) -> [ComplexD] {
+        var out = Array(repeating: ComplexD(re: 1.0, im: 0.0), count: max(1, system.degree + 1))
+        if system.degree >= 1 {
+            out[1] = z
+            if system.degree >= 2 {
+                for k in 2...system.degree {
+                    out[k] = out[k - 1] * z
+                }
+            }
+        }
+        return out
+    }
+
+    func eval(_ y: [ComplexD]) -> [ComplexD] {
+        let t0 = CFAbsoluteTimeGetCurrent()
+        let p0 = powers(y[0])
+        let p1 = powers(y[1])
+        var out = Array(repeating: ComplexD(re: 0.0, im: 0.0), count: system.equations)
+        for eq in 0..<system.equations {
+            var sum = ComplexD(re: 0.0, im: 0.0)
+            for t in 0..<system.terms {
+                let e0 = Int(system.exps[t * system.n])
+                let e1 = Int(system.exps[t * system.n + 1])
+                let mon = p0[e0] * p1[e1]
+                sum = sum + system.coeffD[eq * system.terms + t] * mon
+            }
+            out[eq] = sum
+        }
+        evalCount += 1
+        secondsEval += CFAbsoluteTimeGetCurrent() - t0
+        return out
+    }
+
+    func residual(_ y: [ComplexD]) -> Double {
+        let f = eval(y)
+        let r = sqrt(f.reduce(0.0) { $0 + cabs2($1) })
+        return r.isFinite ? r : Double.infinity
+    }
+
+    func slopeTable(a: ComplexD, b: ComplexD) -> [ComplexD] {
+        var out = Array(repeating: ComplexD(re: 0.0, im: 0.0), count: max(1, system.degree + 1))
+        if system.degree >= 1 {
+            var acc = ComplexD(re: 0.0, im: 0.0)
+            let powsB = powers(b)
+            for m in 1...system.degree {
+                acc = powsB[m - 1] + a * acc
+                out[m] = acc
+            }
+        }
+        return out
+    }
+
+    func slopeMatrix(_ a: [ComplexD], _ b: [ComplexD]) -> [ComplexD] {
+        let t0 = CFAbsoluteTimeGetCurrent()
+        let powsA1 = powers(a[1])
+        let powsB0 = powers(b[0])
+        let s0 = slopeTable(a: a[0], b: b[0])
+        let s1 = slopeTable(a: a[1], b: b[1])
+        var q = Array(repeating: ComplexD(re: 0.0, im: 0.0), count: 4)
+        for eq in 0..<system.equations {
+            var col0 = ComplexD(re: 0.0, im: 0.0)
+            var col1 = ComplexD(re: 0.0, im: 0.0)
+            for t in 0..<system.terms {
+                let e0 = Int(system.exps[t * system.n])
+                let e1 = Int(system.exps[t * system.n + 1])
+                let c = system.coeffD[eq * system.terms + t]
+                col0 = col0 + c * (s0[e0] * powsA1[e1])
+                col1 = col1 + c * (powsB0[e0] * s1[e1])
+            }
+            q[eq * 2] = col0
+            q[eq * 2 + 1] = col1
+        }
+        slopeCount += 1
+        secondsSlope += CFAbsoluteTimeGetCurrent() - t0
+        return q
+    }
+
+    func stats() -> [String: Any] {
+        [
+            "eval_count": evalCount,
+            "slope_count": slopeCount,
+            "seconds_eval": secondsEval,
+            "seconds_slope": secondsSlope,
+            "terms_per_poly": system.terms,
+            "total_terms": system.terms * system.equations
+        ]
+    }
+}
+
+func solve2x2(_ q: [ComplexD], _ f: [ComplexD]) -> [ComplexD]? {
+    let det = q[0] * q[3] - q[1] * q[2]
+    if !det.re.isFinite || !det.im.isFinite || cabs2(det) < 1.0e-300 {
+        return nil
+    }
+    let nf0 = -f[0]
+    let nf1 = -f[1]
+    let d0 = (q[3] * nf0 - q[1] * nf1) / det
+    let d1 = (q[0] * nf1 - q[2] * nf0) / det
+    if !isFinite(d0) || !isFinite(d1) {
+        return nil
+    }
+    return [d0, d1]
+}
+
+func rowPoint(_ row: [String: Any]) -> [ComplexD] {
+    let re = row["re"] as? [Double] ?? []
+    let im = row["im"] as? [Double] ?? []
+    var out: [ComplexD] = []
+    out.reserveCapacity(min(re.count, im.count))
+    for i in 0..<min(re.count, im.count) {
+        out.append(ComplexD(re: re[i], im: im[i]))
+    }
+    return out
+}
+
+func rootJSON(_ y: [ComplexD]) -> [[Double]] {
+    y.map { [$0.re, $0.im] }
+}
+
+func doubleValue(_ row: [String: Any], _ key: String, _ fallback: Double = 0.0) -> Double {
+    if let x = row[key] as? Double {
+        return x
+    }
+    if let x = row[key] as? Int {
+        return Double(x)
+    }
+    return fallback
+}
+
+func intValue(_ row: [String: Any], _ key: String, _ fallback: Int = 0) -> Int {
+    if let x = row[key] as? Int {
+        return x
+    }
+    if let x = row[key] as? Double {
+        return Int(x)
+    }
+    return fallback
+}
+
+func diversifyRows(_ selected: [[String: Any]], limit: Int, sep: Double) -> [[String: Any]] {
+    let wanted = max(1, limit)
+    if sep <= 0 {
+        return Array(selected.prefix(wanted))
+    }
+    var chosen: [[String: Any]] = []
+    var chosenPoints: [[ComplexD]] = []
+    var deferred: [[String: Any]] = []
+    for row in selected {
+        let z = rowPoint(row)
+        let zn = max(1.0, vectorNorm(z))
+        var near = false
+        for prev in chosenPoints {
+            let dist = vectorDistance(z, prev) / max(zn, vectorNorm(prev), 1.0)
+            if dist < sep {
+                near = true
+                break
+            }
+        }
+        if near {
+            deferred.append(row)
+            continue
+        }
+        chosen.append(row)
+        chosenPoints.append(z)
+        if chosen.count >= wanted {
+            return chosen
+        }
+    }
+    var seen = Set<Int>(chosen.map { intValue($0, "index", -1) })
+    for row in deferred {
+        let idx = intValue(row, "index", -1)
+        if seen.contains(idx) {
+            continue
+        }
+        chosen.append(row)
+        seen.insert(idx)
+        if chosen.count >= wanted {
+            break
+        }
+    }
+    return chosen
+}
+
+func finiteResidual(_ ctx: SolveContext, _ y: [ComplexD]) -> Double {
+    let r = ctx.residual(y)
+    return r.isFinite ? r : Double.infinity
+}
+
+func probeEndpoint(
+    ctx: SolveContext,
+    y: [ComplexD],
+    residual: Double,
+    prevDelta: [ComplexD]?,
+    epoch: Int,
+    directionSeed: UInt64,
+    probeScale: Double,
+    probeCandidates: Int,
+    probeRadii: [Double],
+    includeSelf: Bool
+) throws -> ([ComplexD], [String: Any]) {
+    let n = y.count
+    let ynorm = max(1.0, vectorNorm(y))
+    let radii = probeRadii.filter { $0 >= 0.0 }
+    let usableRadii = radii.isEmpty ? [1.0] : radii
+    var candidates: [(String, [ComplexD])] = []
+    if includeSelf {
+        candidates.append(("self", y))
+    }
+    if let prev = prevDelta {
+        let pdn = max(1.0e-300, vectorNorm(prev))
+        let base = scaleVector(prev, min(max(pdn, probeScale * ynorm), 2.5 * ynorm) / pdn)
+        candidates.append(("inertial", addVectors(y, base)))
+    }
+    let budget = max(1, probeCandidates)
+    var k = 0
+    while candidates.count < budget {
+        let rad = probeScale * ynorm * usableRadii[k % usableRadii.count]
+        var qdir = rawDirectionD(n: n, trial: UInt64(epoch + 1) &* 104729 &+ UInt64(k + 1) &* 7919 &+ directionSeed, seed: directionSeed ^ (0x116116 &+ UInt64(17 * k)), normalize: true)
+        let qnorm = max(1.0e-300, vectorNorm(qdir))
+        qdir = scaleVector(qdir, sqrt(Double(max(1, n))) / qnorm)
+        let ph = phaseD(0.6180339887498948 * Double(epoch + 1) + 2.399963229728653 * Double(k + 1))
+        var step: [ComplexD] = []
+        step.reserveCapacity(n)
+        for j in 0..<n {
+            var s = rad * (ph * qdir[j])
+            if ynorm > 0.0 {
+                s = s + (0.12 * rad / ynorm) * (y[j] * phaseD(0.38196601125 * Double(k + 1)))
+            }
+            let tiny = 1.0e-12 * ynorm
+            if sqrt(cabs2(s)) < tiny {
+                s = s + tiny * phaseD(0.17 + Double(j) + Double(epoch) + Double(k))
+            }
+            step.append(s)
+        }
+        candidates.append(("geom-\(k)", addVectors(y, step)))
+        k += 1
+    }
+
+    var bestName = ""
+    var bestB: [ComplexD]? = nil
+    var bestRes = Double.infinity
+    var bestDistance = 0.0
+    var evals = 0
+    for (name, b) in candidates.prefix(budget) {
+        let rb = finiteResidual(ctx, b)
+        evals += 1
+        let dist = vectorDistance(b, y)
+        let score = rb.isFinite ? log1p(max(0.0, rb)) + 1.0e-14 * log1p(dist) : Double.infinity
+        let old = bestRes.isFinite ? log1p(max(0.0, bestRes)) + 1.0e-14 * log1p(bestDistance) : Double.infinity
+        if score.isFinite && score < old {
+            bestName = name
+            bestB = b
+            bestRes = rb
+            bestDistance = dist
+        }
+    }
+    guard let selected = bestB else {
+        throw NSError(domain: "StartSelect", code: 70, userInfo: [NSLocalizedDescriptionKey: "no finite probe"])
+    }
+    return (
+        selected,
+        [
+            "probe_mode": "swift-double-theorem-guided-residual-min",
+            "probe_name": bestName,
+            "probe_candidates": min(budget, candidates.count),
+            "probe_evals": evals,
+            "probe_residual": bestRes,
+            "probe_distance": bestDistance,
+            "probe_improvement_proxy": (bestRes.isFinite && bestRes > 0.0 && residual.isFinite) ? residual / bestRes : NSNull(),
+            "probe_self_enabled": includeSelf
+        ]
+    )
+}
+
+func pandrosionCorrectorSwift(
+    ctx: SolveContext,
+    y0: [ComplexD],
+    maxEpochs: Int,
+    tol: Double,
+    accept: Double,
+    lineSearch: Int,
+    probeScale: Double,
+    directionSeed: UInt64,
+    probeCandidates: Int,
+    probeRadii: [Double],
+    includeSelf: Bool
+) -> [String: Any] {
+    let t0 = CFAbsoluteTimeGetCurrent()
+    var y = y0
+    var bestY = y
+    var bestR = finiteResidual(ctx, y)
+    var ok = false
+    var status = "started"
+    var epochs = 0
+    var prevDelta: [ComplexD]? = nil
+    var lastProbeMeta: [String: Any] = [:]
+    var totalProbeEvals = 0
+
+    for ep in 0..<max(1, maxEpochs) {
+        let f = ctx.eval(y)
+        let r = sqrt(f.reduce(0.0) { $0 + cabs2($1) })
+        if r.isFinite && r < bestR {
+            bestR = r
+            bestY = y
+        }
+        if r <= max(tol, accept) && (accept <= 0.0 || r < accept) {
+            ok = true
+            status = "converged"
+            break
+        }
+        let b: [ComplexD]
+        do {
+            let probe = try probeEndpoint(
+                ctx: ctx,
+                y: y,
+                residual: r,
+                prevDelta: prevDelta,
+                epoch: ep,
+                directionSeed: directionSeed,
+                probeScale: probeScale,
+                probeCandidates: probeCandidates,
+                probeRadii: probeRadii,
+                includeSelf: includeSelf
+            )
+            b = probe.0
+            lastProbeMeta = probe.1
+            totalProbeEvals += intValue(probe.1, "probe_evals", 0)
+        } catch {
+            status = "probe-error:\(type(of: error))"
+            break
+        }
+        let q = ctx.slopeMatrix(y, b)
+        guard var delta = solve2x2(q, f) else {
+            status = "slope-solve-error"
+            break
+        }
+        let ynorm = max(1.0, vectorNorm(y))
+        let dnorm = vectorNorm(delta)
+        if dnorm > 18.0 * ynorm {
+            delta = scaleVector(delta, (18.0 * ynorm) / max(dnorm, 1.0e-300))
+        }
+        var accepted = false
+        let baseR = r
+        for k in 0..<max(1, lineSearch) {
+            let lambda = 1.0 / pow(2.0, Double(k))
+            let yy = addVectors(y, scaleVector(delta, lambda))
+            let rr = finiteResidual(ctx, yy)
+            if rr.isFinite && (rr < baseR || rr < bestR) {
+                prevDelta = scaleVector(delta, lambda)
+                y = yy
+                if rr < bestR {
+                    bestY = yy
+                    bestR = rr
+                }
+                accepted = true
+                break
+            }
+        }
+        epochs = ep + 1
+        if !accepted {
+            status = "no-decrease"
+            break
+        }
+    }
+    let finalR = finiteResidual(ctx, bestY)
+    if finalR <= max(tol, accept) && (accept <= 0.0 || finalR < accept) {
+        ok = true
+        status = "converged"
+    }
+    var out: [String: Any] = [
+        "accepted": accept <= 0.0 ? ok : (finalR.isFinite && finalR < accept),
+        "ok": ok,
+        "status": status,
+        "epochs": epochs,
+        "residual": finalR,
+        "y": bestY,
+        "seconds": CFAbsoluteTimeGetCurrent() - t0,
+        "corrector": "swift-double-probe-aware-pure-pandrosion-exact-telescopic-slope",
+        "probe_total_evals": totalProbeEvals
+    ]
+    for (k, v) in lastProbeMeta {
+        out[k] = v
+    }
+    return out
+}
+
+func startoptSwift(
+    ctx: SolveContext,
+    y0: [ComplexD],
+    trial: Int,
+    seed: UInt64,
+    steps: Int,
+    candidates: Int,
+    gains: [Double],
+    microEpochs: Int,
+    job: Solve2Job
+) -> ([ComplexD], [String: Any]) {
+    var best = y0
+    var bestR = finiteResidual(ctx, best)
+    let initial = bestR
+    var evals = 1
+    var microTotal = 0
+    var chosenGain = 1.0
+    let usableGains = gains.isEmpty ? [1.0] : gains
+
+    if steps > 0 {
+        for step in 0..<steps {
+            let base = best
+            var pool: [(Double, [ComplexD])] = [(1.0, base)]
+            if candidates > 1 {
+                for c in 0..<(candidates - 1) {
+                    let gain = usableGains[(trial + 3 * step + c) % usableGains.count]
+                    var cand = scaleVector(base, gain)
+                    if c % 3 == 1 {
+                        var pert: [ComplexD] = []
+                        pert.reserveCapacity(cand.count)
+                        for j in 0..<cand.count {
+                            let h1 = seed &+ 0x5157A47 &+ UInt64(65537 * trial) &+ UInt64(4099 * c) &+ UInt64(193 * (j + 1))
+                            let h2 = seed &+ 0x7150F7 &+ UInt64(104729 * trial) &+ UInt64(8191 * c) &+ UInt64(389 * (j + 1))
+                            let ph = 0.23 * (2.0 * u01D(h1) - 1.0)
+                            let amp = exp(0.28 * (2.0 * u01D(h2) - 1.0))
+                            pert.append(cand[j] * amp * phaseD(ph))
+                        }
+                        cand = pert
+                    } else if c % 3 == 2 {
+                        let fresh = rawDirectionD(n: base.count, trial: UInt64(trial + 31 * (step + 1) + c), seed: seed, normalize: true)
+                        let nm = max(1.0e-300, vectorNorm(base))
+                        let freshNorm = max(1.0e-300, vectorNorm(fresh))
+                        cand = addVectors(scaleVector(cand, 0.70), scaleVector(fresh, 0.30 * gain * nm / freshNorm))
+                    }
+                    pool.append((gain, cand))
+                }
+            }
+            for (gain, cand0) in pool {
+                evals += 1
+                var yscore = cand0
+                var r = finiteResidual(ctx, yscore)
+                if microEpochs > 0 {
+                    let loc = pandrosionCorrectorSwift(
+                        ctx: ctx,
+                        y0: yscore,
+                        maxEpochs: microEpochs,
+                        tol: 1.0e-12,
+                        accept: 0.0,
+                        lineSearch: 6,
+                        probeScale: job.probeScale,
+                        directionSeed: seed,
+                        probeCandidates: job.probeCandidates,
+                        probeRadii: job.probeRadii,
+                        includeSelf: job.probeSelf
+                    )
+                    microTotal += intValue(loc, "epochs", 0)
+                    if let yy = loc["y"] as? [ComplexD] {
+                        let rr = doubleValue(loc, "residual", Double.infinity)
+                        if rr < r {
+                            yscore = yy
+                            r = rr
+                        }
+                    }
+                }
+                let score = r.isFinite ? log1p(max(0.0, r)) + 1.0e-15 * log1p(vectorNorm(yscore)) : Double.infinity
+                let old = bestR.isFinite ? log1p(max(0.0, bestR)) + 1.0e-15 * log1p(vectorNorm(best)) : Double.infinity
+                if score < old {
+                    best = yscore
+                    bestR = r
+                    chosenGain = gain
+                }
+            }
+        }
+    }
+    return (
+        best,
+        [
+            "startopt_enabled": steps > 0,
+            "startopt_r0": initial,
+            "startopt_r1": bestR,
+            "startopt_ratio": (initial.isFinite && bestR.isFinite && initial > 0.0) ? bestR / initial : NSNull(),
+            "startopt_steps": max(0, steps),
+            "startopt_evals": evals,
+            "startopt_micro_epochs": microTotal,
+            "startopt_gain": chosenGain
+        ]
+    )
+}
+
+func clusterIndex(_ roots: [[String: Any]], _ z: [ComplexD], sep: Double) -> Int? {
+    let zn = max(1.0, vectorNorm(z))
+    for (i, root) in roots.enumerated() {
+        guard let rzJSON = root["z"] as? [[Double]] else {
+            continue
+        }
+        let rz = rzJSON.map { ComplexD(re: $0[0], im: $0[1]) }
+        let dist = vectorDistance(z, rz) / max(zn, vectorNorm(rz), 1.0)
+        if dist <= sep {
+            return i
+        }
+    }
+    return nil
+}
+
+func polishedRows(_ result: [String: Any], originals: [[String: Any]]) -> [[String: Any]] {
+    guard let selected = result["selected"] as? [[String: Any]] else {
+        return originals
+    }
+    var rows: [[String: Any]] = []
+    rows.reserveCapacity(selected.count)
+    for row in selected {
+        let localIndex = intValue(row, "index", -1)
+        if localIndex < 0 || localIndex >= originals.count {
+            continue
+        }
+        var out = originals[localIndex]
+        out["pre_polish_rank"] = intValue(out, "rank", -1)
+        out["pre_polish_residual"] = doubleValue(out, "residual", Double.infinity)
+        out["polish2_rank"] = intValue(row, "rank", -1)
+        out["polish2_input_index"] = localIndex
+        out["polish2_residual"] = doubleValue(row, "residual", Double.infinity)
+        out["rank"] = intValue(row, "rank", rows.count)
+        out["index"] = intValue(out, "index", localIndex)
+        out["residual"] = doubleValue(row, "residual", Double.infinity)
+        out["re"] = row["re"] as? [Double] ?? []
+        out["im"] = row["im"] as? [Double] ?? []
+        out["metal_polish2"] = true
+        rows.append(out)
+    }
+    return rows
+}
+
+func refineRowsSwift(ctx: SolveContext, selected: [[String: Any]], job: Solve2Job) -> [String: Any] {
+    var roots: [[String: Any]] = []
+    var trials: [[String: Any]] = []
+    var failures = 0
+    var duplicates = 0
+    let t0 = CFAbsoluteTimeGetCurrent()
+
+    for cand in selected {
+        if roots.count >= job.count {
+            break
+        }
+        let trial = intValue(cand, "trial", intValue(cand, "index", 0))
+        let yRaw = rowPoint(cand)
+        if yRaw.count != 2 {
+            failures += 1
+            continue
+        }
+        let start = startoptSwift(
+            ctx: ctx,
+            y0: yRaw,
+            trial: trial,
+            seed: job.seed &+ 0x112555,
+            steps: job.startoptSteps,
+            candidates: job.startoptCandidates,
+            gains: job.startoptGains,
+            microEpochs: job.startoptMicroEpochs,
+            job: job
+        )
+        let y0 = start.0
+        let loc = pandrosionCorrectorSwift(
+            ctx: ctx,
+            y0: y0,
+            maxEpochs: job.epochs,
+            tol: job.tol,
+            accept: job.accept,
+            lineSearch: job.lineSearch,
+            probeScale: job.probeScale,
+            directionSeed: job.seed &+ UInt64(7919 * trial),
+            probeCandidates: job.probeCandidates,
+            probeRadii: job.probeRadii,
+            includeSelf: job.probeSelf
+        )
+        let y = loc["y"] as? [ComplexD] ?? y0
+        let rOrig = finiteResidual(ctx, y)
+        let accepted = rOrig.isFinite && rOrig < job.accept
+        var rec: [String: Any] = [
+            "trial": trial,
+            "selector_rank": intValue(cand, "rank", -1),
+            "selector_residual": doubleValue(cand, "residual", Double.infinity),
+            "accepted": accepted,
+            "status": loc["status"] as? String ?? "",
+            "r1": rOrig,
+            "epochs": intValue(loc, "epochs", 0),
+            "seconds": doubleValue(loc, "seconds", 0.0),
+            "probe_total_evals": intValue(loc, "probe_total_evals", 0)
+        ]
+        for (k, v) in start.1 {
+            rec[k] = v
+        }
+        if !accepted {
+            failures += 1
+            trials.append(rec)
+            continue
+        }
+        if let dup = clusterIndex(roots, y, sep: job.clusterSep) {
+            duplicates += 1
+            rec["status"] = "duplicate"
+            rec["cluster"] = dup
+            trials.append(rec)
+            continue
+        }
+        let rid = roots.count
+        roots.append([
+            "id": rid,
+            "source": "128-swift-metal-selector-polish2/swift-double-refine",
+            "trial": trial,
+            "selector_rank": intValue(cand, "rank", -1),
+            "selector_residual": doubleValue(cand, "residual", Double.infinity),
+            "residual": rOrig,
+            "epochs": intValue(loc, "epochs", 0),
+            "seconds": doubleValue(loc, "seconds", 0.0),
+            "z": rootJSON(y),
+            "y": rootJSON(y)
+        ])
+        rec["status"] = "new-root"
+        rec["root_id"] = rid
+        trials.append(rec)
+    }
+
+    return [
+        "roots": roots,
+        "trials": trials,
+        "summary": [
+            "requested_roots": job.count,
+            "unique_roots": roots.count,
+            "success": roots.count >= job.count,
+            "trials_used": trials.count,
+            "duplicates": duplicates,
+            "failures": failures,
+            "refine_seconds": CFAbsoluteTimeGetCurrent() - t0,
+            "eval_stats": ctx.stats()
+        ]
+    ]
+}
+
+func runSolve2(_ job: Solve2Job, system: LoadedSystem) throws -> [String: Any] {
+    if system.n != 2 || system.equations != 2 {
+        throw NSError(domain: "StartSelect", code: 80, userInfo: [NSLocalizedDescriptionKey: "solve2 requires n=2 and equations=2"])
+    }
+    let totalStart = CFAbsoluteTimeGetCurrent()
+    let startJob = StoredStartSelectJob(
+        op: "start_select",
+        candidates: job.candidates,
+        targetCount: job.targetCount,
+        topK: job.topK,
+        seed: job.seed,
+        powerCap: job.powerCap,
+        powers: job.powers,
+        angles: job.angles,
+        radii: job.radii
+    )
+    let selector = try runStoredJob(startJob, system: system)
+    let selectorRows = selector["selected"] as? [[String: Any]] ?? []
+    var selected = diversifyRows(selectorRows, limit: job.refineTop, sep: job.diversitySep)
+    let selectedBeforePolish = selected
+    var polishResult: [String: Any] = [
+        "enabled": false,
+        "points": 0,
+        "kernel_seconds": 0.0,
+        "total_seconds": 0.0
+    ]
+    if job.metalPolish2 {
+        var pointsRe: [Float] = []
+        var pointsIm: [Float] = []
+        for row in selected {
+            for z in rowPoint(row) {
+                pointsRe.append(Float(z.re))
+                pointsIm.append(Float(z.im))
+            }
+        }
+        let polishJob = Polish2Job(
+            op: "polish2",
+            points: selected.count,
+            epochs: job.metalPolishEpochs,
+            probeCandidates: job.metalPolishProbes,
+            lineSearch: job.metalPolishLineSearch,
+            seed: job.seed &+ 0x125000,
+            probeScale: job.metalPolishProbeScale,
+            pointsRe: pointsRe,
+            pointsIm: pointsIm
+        )
+        polishResult = try runPolish2(polishJob, system: system)
+        polishResult["enabled"] = true
+        selected = diversifyRows(polishedRows(polishResult, originals: selected), limit: job.refineTop, sep: job.diversitySep)
+    }
+
+    let ctx = SolveContext(system: system)
+    let refined = refineRowsSwift(ctx: ctx, selected: selected, job: job)
+    let refinedSummary = refined["summary"] as? [String: Any] ?? [:]
+    var summary = refinedSummary
+    summary["generation_seconds"] = 0.0
+    summary["metal_select_kernel_seconds"] = selector["kernel_seconds"] as? Double ?? 0.0
+    summary["metal_select_process_seconds"] = selector["total_seconds"] as? Double ?? 0.0
+    summary["metal_polish2_seconds"] = polishResult["total_seconds"] as? Double ?? 0.0
+    summary["metal_polish2_kernel_seconds"] = polishResult["kernel_seconds"] as? Double ?? 0.0
+    summary["total_seconds"] = CFAbsoluteTimeGetCurrent() - totalStart
+
+    return [
+        "script": "125_swift_metal_start_select_server.swift",
+        "mode": "128-swift-metal-selector-polish2/swift-double-refine",
+        "op": "solve2",
+        "n": system.n,
+        "equations": system.equations,
+        "terms_per_poly": system.terms,
+        "terms": system.terms * system.equations,
+        "device": device.name,
+        "selector": selector,
+        "selected_before_polish_count": selectedBeforePolish.count,
+        "selected_for_refine_count": selected.count,
+        "polish2": polishResult,
+        "roots": refined["roots"] as? [[String: Any]] ?? [],
+        "trials": refined["trials"] as? [[String: Any]] ?? [],
+        "summary": summary
+    ]
+}
+
 let decoder = JSONDecoder()
 var loadedSystem: LoadedSystem? = nil
 while let line = readLine() {
@@ -1029,6 +1926,12 @@ while let line = readLine() {
             }
             let job = try decoder.decode(Polish2Job.self, from: data)
             payload = try runPolish2(job, system: system)
+        } else if op == "solve2" {
+            guard let system = loadedSystem else {
+                throw NSError(domain: "StartSelect", code: 43, userInfo: [NSLocalizedDescriptionKey: "no loaded system"])
+            }
+            let job = try decoder.decode(Solve2Job.self, from: data)
+            payload = try runSolve2(job, system: system)
         } else {
             let job = try decoder.decode(StartSelectJob.self, from: data)
             payload = try runJob(job)

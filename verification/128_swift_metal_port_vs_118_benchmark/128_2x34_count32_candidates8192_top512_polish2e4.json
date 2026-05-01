@@ -1,0 +1,123 @@
+{
+  "script": "128_pandrosion_swift_metal_port_vs_118_benchmark.py",
+  "engines": {
+    "118": "flow/118_pandrosion_probe_aware_pure_thales_engine.py",
+    "128(swift)": "flow/125_swift_metal_start_select_server.swift op=solve2"
+  },
+  "helper_build": {
+    "source": "/Users/ivanbesevic/Documents/poussiere/flow/125_swift_metal_start_select_server.swift",
+    "binary": "verification/128_swift_metal_port_vs_118_benchmark/bin/125_swift_metal_start_select_server",
+    "rebuilt": false
+  },
+  "cases": [
+    "2,34"
+  ],
+  "parameters": {
+    "count": 32,
+    "pool": 2048,
+    "epochs": 24,
+    "accept": 1e-08,
+    "tol": 1e-12,
+    "cluster_sep": 1e-08,
+    "line_search": 12,
+    "probe_scale": 0.035,
+    "probe_candidates": 8,
+    "seed_index": 0,
+    "metal_candidates": 8192,
+    "selector_top": 8192,
+    "refine_top": 512,
+    "diversity_sep": 0.35,
+    "metal_polish2": true,
+    "metal_polish_epochs": 4,
+    "metal_polish_probes": 8,
+    "metal_polish_line_search": 6,
+    "metal_polish_probe_scale": 0.035,
+    "run_order": "118-first"
+  },
+  "summary": {
+    "pairs": 1,
+    "runs": 2,
+    "successes_118": 1,
+    "successes_128": 1,
+    "roots_118": 32,
+    "roots_128": 32,
+    "requested_118": 32,
+    "requested_128": 32,
+    "seconds_118": 2.311100292019546,
+    "seconds_128": 0.20281724981032312,
+    "root_delta_128_minus_118": 0,
+    "wins_118": 0,
+    "wins_128": 1,
+    "ties": 0,
+    "seconds": 2.556275208014995
+  },
+  "pairs": [
+    {
+      "case": "2,34",
+      "roots_118": 32,
+      "roots_128": 32,
+      "root_delta_128_minus_118": 0,
+      "success_118": true,
+      "success_128": true,
+      "seconds_118": 2.311100292019546,
+      "seconds_128": 0.20281724981032312,
+      "speedup_128_vs_118": 11.394988809782758,
+      "evals_118": 57638,
+      "evals_128": 17097,
+      "slopes_118": 4960,
+      "slopes_128": 1316,
+      "winner": "128(swift)"
+    }
+  ],
+  "runs": [
+    {
+      "case": "2,34",
+      "engine": "118",
+      "status": "ok",
+      "success": true,
+      "requested_roots": 32,
+      "unique_roots": 32,
+      "trials_used": 429,
+      "duplicates": 196,
+      "failures": 201,
+      "seconds": 2.311100292019546,
+      "reported_seconds": 2.3110389709472656,
+      "refine_seconds": 2.3106648921966553,
+      "metal_select_seconds": 0.0,
+      "metal_polish2_seconds": 0.0,
+      "eval_used": 57638,
+      "slope_calls": 4960,
+      "seconds_eval": 1.058476448059082,
+      "seconds_slope": 0.24352097511291504,
+      "residual_min": 6.009282715427518e-16,
+      "residual_mean": 4.202779367116446e-10,
+      "residual_max": 6.34229238227186e-09,
+      "error": null
+    },
+    {
+      "case": "2,34",
+      "engine": "128(swift)",
+      "status": "ok",
+      "success": true,
+      "requested_roots": 32,
+      "unique_roots": 32,
+      "trials_used": 216,
+      "duplicates": 180,
+      "failures": 4,
+      "seconds": 0.20281724981032312,
+      "reported_seconds": 0.17120397090911865,
+      "refine_seconds": 0.04887998104095459,
+      "metal_select_seconds": 0.0073969364166259766,
+      "metal_polish2_seconds": 0.11323297023773193,
+      "eval_used": 17097,
+      "slope_calls": 1316,
+      "seconds_eval": 0.037398457527160645,
+      "seconds_slope": 0.005073904991149902,
+      "residual_min": 9.082678549036535e-16,
+      "residual_mean": 7.388871035294237e-10,
+      "residual_max": 7.920484212572986e-09,
+      "error": null
+    }
+  ],
+  "full_results": {}
+}
