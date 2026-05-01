@@ -1,0 +1,107 @@
+{
+  "autonomous" : true,
+  "bezout" : 1336336,
+  "case" : "4,34",
+  "degree" : 34,
+  "family" : "ks",
+  "mode" : "swift-metal-full-general-kostlan\/metal-start-selector\/swift-double-pandrosion",
+  "n" : 4,
+  "roots" : [
+    {
+      "epochs" : 7,
+      "id" : 0,
+      "residual" : 1.9642458969125757e-13,
+      "seconds" : 0.13012003898620605,
+      "selector_rank" : 150,
+      "selector_residual" : 0.93715788855268867,
+      "source" : "129-swift-metal-full",
+      "trial" : 150,
+      "y" : [
+        [
+          -0.054597743422571947,
+          -0.027476003751812712
+        ],
+        [
+          -0.0090868480853249067,
+          0.003888925726301804
+        ],
+        [
+          -0.0069846978264137272,
+          0.0078269927402112027
+        ],
+        [
+          0.1382311151181779,
+          0.012733158145399614
+        ]
+      ],
+      "z" : [
+        [
+          -0.054597743422571947,
+          -0.027476003751812712
+        ],
+        [
+          -0.0090868480853249067,
+          0.003888925726301804
+        ],
+        [
+          -0.0069846978264137272,
+          0.0078269927402112027
+        ],
+        [
+          0.1382311151181779,
+          0.012733158145399614
+        ]
+      ]
+    }
+  ],
+  "script" : "129_pandrosion_swift_metal_full.swift",
+  "seed" : 1685878936,
+  "seed_index" : 0,
+  "selector" : {
+    "candidates" : 512,
+    "device" : "Apple M5",
+    "kernel_seconds" : 0.068513035774230957,
+    "mode" : "metal-start-selector",
+    "top_k" : 512
+  },
+  "summary" : {
+    "duplicates" : 0,
+    "eval_stats" : {
+      "eval_count" : 93,
+      "seconds_eval" : 0.11109447479248047,
+      "seconds_slope" : 0.03463900089263916,
+      "slope_count" : 7,
+      "terms_per_poly" : 73815,
+      "total_terms" : 295260
+    },
+    "extract_seconds" : 0.14606297016143799,
+    "failures" : 0,
+    "generation_seconds" : 0.006213068962097168,
+    "requested_roots" : 1,
+    "success" : true,
+    "total_seconds" : 0.2221299409866333,
+    "trials_used" : 1,
+    "unique_roots" : 1
+  },
+  "terms" : 295260,
+  "terms_per_poly" : 73815,
+  "trials" : [
+    {
+      "accepted" : true,
+      "epochs" : 7,
+      "r1" : 1.9642458969125757e-13,
+      "root_id" : 0,
+      "seconds" : 0.13012003898620605,
+      "selector_rank" : 150,
+      "selector_residual" : 0.93715788855268867,
+      "startopt_evals" : 13,
+      "startopt_gain" : 0.78000000000000003,
+      "startopt_micro_epochs" : 0,
+      "startopt_r0" : 0.93715795263906299,
+      "startopt_r1" : 0.89540232010383203,
+      "startopt_ratio" : 0.95544440249624307,
+      "status" : "new-root",
+      "trial" : 150
+    }
+  ]
+}

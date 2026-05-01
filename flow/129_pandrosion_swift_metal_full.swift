@@ -586,25 +586,32 @@ static inline ulong make_seed(constant Params &p) {
     return (ulong(p.seedHi) << 32) | ulong(p.seedLo);
 }
 
-static inline void raw_direction(float2 outv[8], uint n, uint trial, ulong seed, bool normalize) {
-    float norm2 = 0.0f;
-    for (uint j = 0; j < n; ++j) {
-        ulong h1 = splitmix64(seed + 0xD1A5EUL + 0x1000003UL * ulong(trial) + 0x9E37UL * ulong(j + 1));
-        ulong h2 = splitmix64(seed + 0xBADC0DEUL + 0x1000033UL * ulong(trial) + 0xC2B2UL * ulong(j + 1));
-        float ang = 6.283185307179586f * u01_hash(h1);
-        float amp = exp(0.45f * (2.0f * u01_hash(h2) - 1.0f));
-        outv[j] = amp * cphase(ang);
-        norm2 += dot(outv[j], outv[j]);
-    }
-    if (normalize && norm2 > 0.0f) {
-        float scale = sqrt(float(n)) / sqrt(norm2);
-        for (uint j = 0; j < n; ++j) {
-            outv[j] *= scale;
-        }
-    }
+static inline float2 raw_direction_coord(uint j, uint trial, ulong seed) {
+    ulong h1 = splitmix64(seed + 0xD1A5EUL + 0x1000003UL * ulong(trial) + 0x9E37UL * ulong(j + 1));
+    ulong h2 = splitmix64(seed + 0xBADC0DEUL + 0x1000033UL * ulong(trial) + 0xC2B2UL * ulong(j + 1));
+    float ang = 6.283185307179586f * u01_hash(h1);
+    float amp = exp(0.45f * (2.0f * u01_hash(h2) - 1.0f));
+    return amp * cphase(ang);
 }
 
-static inline void mobius_start(float2 y[8], uint trial, constant Params &p, device const float *powers, device const float *angles, device const float *radii) {
+static inline float raw_direction_norm2(uint n, uint trial, ulong seed) {
+    float norm2 = 0.0f;
+    for (uint j = 0; j < n; ++j) {
+        float2 v = raw_direction_coord(j, trial, seed);
+        norm2 += dot(v, v);
+    }
+    return norm2;
+}
+
+static inline float2 mobius_start_coord(
+    uint j,
+    uint trial,
+    constant Params &p,
+    device const float *powers,
+    device const float *angles,
+    device const float *radii,
+    float dirNorm2
+) {
     uint pressureSpan = max(1u, p.candidates / max(1u, p.targetCount));
     uint rootsFound = min(max(0u, p.targetCount - 1u), trial / pressureSpan);
     uint duplicates = (trial / 17u + 3u * rootsFound) % max(2u, 2u * p.targetCount + 3u);
@@ -626,24 +633,24 @@ static inline void mobius_start(float2 y[8], uint trial, constant Params &p, dev
     float thetaJitter = 0.06981317007977318f * sin(1.324717957244746f * float(trial + 1u) + 0.31f * float(rootsFound));
     float radius0 = radii[(trial * 13u + failures * 5u + rootsFound * 2u) % lr];
     float radius = max(1.0e-30f, radius0 * exp(0.22f * sin(0.754877666f * float(trial + 1u) + 0.17f * float(duplicates))));
-    float2 dir[8];
     ulong seed = make_seed(p);
-    raw_direction(dir, p.n, trial, seed, true);
-    for (uint j = 0; j < p.n; ++j) {
-        float2 u = radius * dir[j];
-        ulong hj = splitmix64(seed + 0xA11CEUL + 982451653UL * ulong(trial) + 1009UL * ulong(j + 1));
-        float2 pole = cphase(6.283185307179586f * u01_hash(hj));
-        float tj = theta0 + thetaJitter * cos(0.5f + float(j)) + 0.03490658503988659f * sin(float(j + 1u) * float(trial + 1u) * 0.38196601125f);
-        float c = cos(tj);
-        float s = sin(tj);
-        float2 w = cdiv(u, pole);
-        float2 denom = float2(-s * w.x + c, -s * w.y);
-        if (dot(denom, denom) < 1.0e-24f) {
-            denom += 1.0e-12f * cphase(0.37f + float(j));
-        }
-        float2 num = float2(c * w.x + s, c * w.y);
-        y[j] = pwr * cmul(pole, cdiv(num, denom));
+    float2 dir = raw_direction_coord(j, trial, seed);
+    if (dirNorm2 > 0.0f) {
+        dir *= sqrt(float(p.n)) / sqrt(dirNorm2);
     }
+    float2 u = radius * dir;
+    ulong hj = splitmix64(seed + 0xA11CEUL + 982451653UL * ulong(trial) + 1009UL * ulong(j + 1));
+    float2 pole = cphase(6.283185307179586f * u01_hash(hj));
+    float tj = theta0 + thetaJitter * cos(0.5f + float(j)) + 0.03490658503988659f * sin(float(j + 1u) * float(trial + 1u) * 0.38196601125f);
+    float c = cos(tj);
+    float s = sin(tj);
+    float2 w = cdiv(u, pole);
+    float2 denom = float2(-s * w.x + c, -s * w.y);
+    if (dot(denom, denom) < 1.0e-24f) {
+        denom += 1.0e-12f * cphase(0.37f + float(j));
+    }
+    float2 num = float2(c * w.x + s, c * w.y);
+    return pwr * cmul(pole, cdiv(num, denom));
 }
 
 kernel void start_eval_dense_ks(
@@ -658,16 +665,15 @@ kernel void start_eval_dense_ks(
     uint gid [[thread_position_in_grid]]
 ) {
     uint total = p.candidates * p.equations;
-    if (gid >= total || p.n > 8u) {
+    if (gid >= total) {
         return;
     }
     uint pointIndex = gid / p.equations;
     uint equation = gid - pointIndex * p.equations;
-    float2 y[8];
-    mobius_start(y, pointIndex, p, powers, angles, radii);
+    float dirNorm2 = raw_direction_norm2(p.n, pointIndex, make_seed(p));
     if (equation == 0u) {
         for (uint j = 0; j < p.n; ++j) {
-            pointsOut[pointIndex * p.n + j] = y[j];
+            pointsOut[pointIndex * p.n + j] = mobius_start_coord(j, pointIndex, p, powers, angles, radii, dirNorm2);
         }
     }
     float2 sum = float2(0.0f, 0.0f);
@@ -675,7 +681,8 @@ kernel void start_eval_dense_ks(
         float2 mon = float2(1.0f, 0.0f);
         for (uint j = 0; j < p.n; ++j) {
             int e = exps[t * p.n + j];
-            mon = cmul(mon, cpow_int(y[j], e));
+            float2 yj = mobius_start_coord(j, pointIndex, p, powers, angles, radii, dirNorm2);
+            mon = cmul(mon, cpow_int(yj, e));
         }
         float2 c = coeff[equation * p.terms + t];
         sum += cmul(c, mon);
@@ -708,9 +715,6 @@ final class MetalStartSelector {
     }
 
     func select(system: DenseKostlanSystem, candidates: Int, targetCount: Int, topK: Int, seed: UInt64, powerCap: Double, powers: [Double], angles: [Double], radii: [Double]) throws -> ([CandidateRow], [String: Any]) {
-        if system.n > 8 {
-            throw NSError(domain: "MetalStartSelector", code: 1, userInfo: [NSLocalizedDescriptionKey: "Metal start selector supports n <= 8"])
-        }
         let coeff2 = system.coeff.map { Complex2(re: Float($0.re), im: Float($0.im)) }
         let powersF = powers.map { Float($0) }
         let anglesF = angles.map { Float($0) }
@@ -1237,7 +1241,7 @@ func runCase(_ args: Args, _ caseRaw: String, selector: MetalStartSelector?) -> 
     let selectorTop = args.selectorTop > 0 ? args.selectorTop : args.refineTop * 8
     let selectedAll: [CandidateRow]
     let selectorStats: [String: Any]
-    if let selector, n <= 8 {
+    if let selector {
         do {
             let result = try selector.select(system: system, candidates: args.metalCandidates, targetCount: args.count, topK: selectorTop, seed: system.seed + 0x113000, powerCap: args.powerCap, powers: powers, angles: angles, radii: radii)
             selectedAll = result.0
