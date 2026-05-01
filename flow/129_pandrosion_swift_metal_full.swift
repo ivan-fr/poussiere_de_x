@@ -1,5 +1,6 @@
 import Foundation
 import Metal
+import Darwin
 
 struct ComplexD {
     var re: Double
@@ -237,6 +238,52 @@ struct DenseKostlanSystem {
             exps: exps,
             coeff: coeff,
             weights: weights,
+            generationSeconds: CFAbsoluteTimeGetCurrent() - t0
+        )
+    }
+
+    static func custom(n: Int, d: Int, seed: UInt64, exps rawExps: [Int], coeff rawCoeff: [ComplexD], equationNormalize: Bool) throws -> DenseKostlanSystem {
+        let t0 = CFAbsoluteTimeGetCurrent()
+        guard n > 0, d > 0 else {
+            throw NSError(domain: "DenseKostlanSystem", code: 10, userInfo: [NSLocalizedDescriptionKey: "n and d must be positive"])
+        }
+        guard !rawExps.isEmpty, rawExps.count % n == 0 else {
+            throw NSError(domain: "DenseKostlanSystem", code: 11, userInfo: [NSLocalizedDescriptionKey: "exps length must be a non-empty multiple of n"])
+        }
+        let terms = rawExps.count / n
+        guard rawCoeff.count == n * terms else {
+            throw NSError(domain: "DenseKostlanSystem", code: 12, userInfo: [NSLocalizedDescriptionKey: "coeff length must equal n * terms"])
+        }
+        var exps: [Int32] = []
+        exps.reserveCapacity(rawExps.count)
+        for value in rawExps {
+            guard value >= 0, value <= d else {
+                throw NSError(domain: "DenseKostlanSystem", code: 13, userInfo: [NSLocalizedDescriptionKey: "exponent out of range"])
+            }
+            exps.append(Int32(value))
+        }
+        var coeff = rawCoeff
+        if equationNormalize {
+            for eq in 0..<n {
+                var norm2 = 0.0
+                for t in 0..<terms {
+                    norm2 += cabs2(coeff[eq * terms + t])
+                }
+                let norm = sqrt(norm2)
+                if norm > 0.0 {
+                    for t in 0..<terms {
+                        coeff[eq * terms + t] = coeff[eq * terms + t] * (1.0 / norm)
+                    }
+                }
+            }
+        }
+        return DenseKostlanSystem(
+            n: n,
+            d: d,
+            seed: seed,
+            exps: exps,
+            coeff: coeff,
+            weights: Array(repeating: 1.0, count: terms),
             generationSeconds: CFAbsoluteTimeGetCurrent() - t0
         )
     }
@@ -1344,6 +1391,218 @@ func runCase(_ args: Args, _ caseRaw: String, selector: MetalStartSelector?) -> 
             "eval_stats": ctx.stats()
         ]
     ]
+}
+
+struct ServerEnvelope: Decodable {
+    let id: Int?
+    let op: String?
+}
+
+struct CustomSolveJob: Decodable {
+    let id: Int?
+    let op: String?
+    let n: Int
+    let d: Int
+    let exps: [Int]
+    let coeff_re: [Double]
+    let coeff_im: [Double]?
+    let y0_re: [Double]
+    let y0_im: [Double]?
+    let seed: UInt64?
+    let direction_seed: UInt64?
+    let equation_normalize: Bool?
+    let max_epochs: Int?
+    let tol: Double?
+    let accept: Double?
+    let line_search: Int?
+    let probe_scale: Double?
+    let probe_candidates: Int?
+    let probe_radii: [Double]?
+    let include_self_probe: Bool?
+    let startopt_steps: Int?
+    let startopt_candidates: Int?
+    let startopt_micro_epochs: Int?
+}
+
+func jsonFinite(_ value: Double) -> Any {
+    value.isFinite ? value : NSNull()
+}
+
+func jsonFiniteArray(_ values: [Double]) -> [Any] {
+    values.map { jsonFinite($0) }
+}
+
+func serverError(id: Int?, _ message: String) -> [String: Any] {
+    var out: [String: Any] = [
+        "ok": false,
+        "source": "129-swift-custom-server",
+        "error": message
+    ]
+    if let id = id {
+        out["id"] = id
+    }
+    return out
+}
+
+func makeServerArgs(_ job: CustomSolveJob) -> Args {
+    var args = Args()
+    args.epochs = max(1, job.max_epochs ?? 5)
+    args.tol = job.tol ?? 1.0e-10
+    args.accept = job.accept ?? 2.0e-7
+    args.lineSearch = max(1, job.line_search ?? 8)
+    args.probeScale = job.probe_scale ?? 0.04
+    args.probeCandidates = max(1, job.probe_candidates ?? 6)
+    if let radii = job.probe_radii, !radii.isEmpty {
+        args.probeRadii = radii.map { String($0) }.joined(separator: ",")
+    }
+    args.probeSelf = job.include_self_probe ?? true
+    args.startoptSteps = max(0, job.startopt_steps ?? 0)
+    args.startoptCandidates = max(1, job.startopt_candidates ?? 1)
+    args.startoptMicroEpochs = max(0, job.startopt_micro_epochs ?? 0)
+    return args
+}
+
+func solveCustomJob(_ job: CustomSolveJob) -> [String: Any] {
+    let t0 = CFAbsoluteTimeGetCurrent()
+    do {
+        if let op = job.op, op != "solve_custom" {
+            return serverError(id: job.id, "unsupported op \(op)")
+        }
+        guard job.coeff_re.count == job.coeff_im?.count ?? job.coeff_re.count else {
+            return serverError(id: job.id, "coeff_re and coeff_im lengths differ")
+        }
+        guard job.y0_re.count == job.n, job.y0_im == nil || job.y0_im?.count == job.n else {
+            return serverError(id: job.id, "y0 length must equal n")
+        }
+        let coeffIm = job.coeff_im ?? Array(repeating: 0.0, count: job.coeff_re.count)
+        var coeff: [ComplexD] = []
+        coeff.reserveCapacity(job.coeff_re.count)
+        for i in 0..<job.coeff_re.count {
+            let z = ComplexD(re: job.coeff_re[i], im: coeffIm[i])
+            guard isFinite(z) else {
+                return serverError(id: job.id, "non-finite coefficient")
+            }
+            coeff.append(z)
+        }
+        let y0Im = job.y0_im ?? Array(repeating: 0.0, count: job.y0_re.count)
+        var y0: [ComplexD] = []
+        y0.reserveCapacity(job.y0_re.count)
+        for i in 0..<job.y0_re.count {
+            let z = ComplexD(re: job.y0_re[i], im: y0Im[i])
+            guard isFinite(z) else {
+                return serverError(id: job.id, "non-finite start point")
+            }
+            y0.append(z)
+        }
+        let seed = job.seed ?? stableSeed(n: job.n, d: job.d, seedIndex: Int(job.id ?? 0), salt: 0x129)
+        let system = try DenseKostlanSystem.custom(
+            n: job.n,
+            d: job.d,
+            seed: seed,
+            exps: job.exps,
+            coeff: coeff,
+            equationNormalize: job.equation_normalize ?? false
+        )
+        let ctx = SolveContext(system: system)
+        let args = makeServerArgs(job)
+        let initialResidual = finiteResidual(ctx, y0)
+        var startInfo: [String: Any] = [:]
+        var startY = y0
+        if args.startoptSteps > 0 {
+            let start = startopt(ctx: ctx, y0: y0, trial: job.id ?? 0, seed: seed ^ 0x1295157, args: args)
+            startY = start.0
+            startInfo = start.1
+        }
+        let loc = pandrosionCorrector(
+            ctx: ctx,
+            y0: startY,
+            args: args,
+            directionSeed: job.direction_seed ?? seed,
+            maxEpochs: args.epochs,
+            acceptOverride: args.accept,
+            lineSearchOverride: args.lineSearch
+        )
+        let y = loc["y"] as? [ComplexD] ?? startY
+        var out: [String: Any] = [
+            "ok": true,
+            "source": "129-swift-custom-server",
+            "mode": "custom-system-jsonl/persistent-swift-corrector",
+            "n": job.n,
+            "degree": job.d,
+            "terms_per_poly": system.terms,
+            "total_terms": system.totalTerms,
+            "accepted": loc["accepted"] as? Bool ?? false,
+            "status": loc["status"] as? String ?? "",
+            "initial_residual": jsonFinite(initialResidual),
+            "residual": jsonFinite(loc["residual"] as? Double ?? Double.infinity),
+            "epochs": loc["epochs"] as? Int ?? 0,
+            "seconds": jsonFinite(loc["seconds"] as? Double ?? 0.0),
+            "wall_seconds": jsonFinite(CFAbsoluteTimeGetCurrent() - t0),
+            "probe_total_evals": loc["probe_total_evals"] as? Int ?? 0,
+            "y_re": jsonFiniteArray(y.map { $0.re }),
+            "y_im": jsonFiniteArray(y.map { $0.im }),
+            "eval_stats": ctx.stats()
+        ]
+        if let id = job.id {
+            out["id"] = id
+        }
+        for (k, v) in startInfo {
+            out[k] = v
+        }
+        return out
+    } catch {
+        return serverError(id: job.id, error.localizedDescription)
+    }
+}
+
+func writeJSONLine(_ object: [String: Any]) {
+    do {
+        let data = try JSONSerialization.data(withJSONObject: object, options: [])
+        FileHandle.standardOutput.write(data)
+        FileHandle.standardOutput.write(Data([0x0A]))
+    } catch {
+        let escaped = error.localizedDescription.replacingOccurrences(of: "\"", with: "\\\"")
+        if let data = "{\"ok\":false,\"source\":\"129-swift-custom-server\",\"error\":\"json write failed: \(escaped)\"}\n".data(using: .utf8) {
+            FileHandle.standardOutput.write(data)
+        }
+    }
+}
+
+func runCustomServer() {
+    let decoder = JSONDecoder()
+    while let line = readLine(strippingNewline: true) {
+        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            continue
+        }
+        guard let data = trimmed.data(using: .utf8) else {
+            writeJSONLine(serverError(id: nil, "input is not utf8"))
+            continue
+        }
+        if let envelope = try? decoder.decode(ServerEnvelope.self, from: data), envelope.op == "ping" {
+            var pong: [String: Any] = [
+                "ok": true,
+                "source": "129-swift-custom-server",
+                "op": "pong"
+            ]
+            if let id = envelope.id {
+                pong["id"] = id
+            }
+            writeJSONLine(pong)
+            continue
+        }
+        do {
+            let job = try decoder.decode(CustomSolveJob.self, from: data)
+            writeJSONLine(solveCustomJob(job))
+        } catch {
+            writeJSONLine(serverError(id: nil, "decode failed: \(error.localizedDescription)"))
+        }
+    }
+}
+
+if CommandLine.arguments.contains("--server") {
+    runCustomServer()
+    exit(0)
 }
 
 let args = parseArgs()
