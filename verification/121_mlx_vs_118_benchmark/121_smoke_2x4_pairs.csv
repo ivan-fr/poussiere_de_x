@@ -1,0 +1,2 @@
+case,roots_118,roots_121,root_delta_121_minus_118,success_118,success_121,seconds_118,seconds_121,speedup_121_vs_118,evals_118,evals_121,slopes_118,slopes_121,residual_min_118,residual_min_121,winner
+"2,4",0,0,0,False,False,0.026543041924014688,0.3057944590691477,0.08680027102130274,292,292,16,16,,,118
