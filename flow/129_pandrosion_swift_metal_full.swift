@@ -1422,6 +1422,16 @@ struct CustomSolveJob: Decodable {
     let startopt_steps: Int?
     let startopt_candidates: Int?
     let startopt_micro_epochs: Int?
+    let use_geometry: Bool?
+    let selector_candidates: Int?
+    let selector_top: Int?
+    let refine_top: Int?
+    let diversity_sep: Double?
+    let power_cap: Double?
+    let powers: [Double]?
+    let angles_degrees: [Double]?
+    let rays: [Double]?
+    let startopt_gains: [Double]?
 }
 
 func jsonFinite(_ value: Double) -> Any {
@@ -1446,6 +1456,7 @@ func serverError(id: Int?, _ message: String) -> [String: Any] {
 
 func makeServerArgs(_ job: CustomSolveJob) -> Args {
     var args = Args()
+    args.count = 1
     args.epochs = max(1, job.max_epochs ?? 5)
     args.tol = job.tol ?? 1.0e-10
     args.accept = job.accept ?? 2.0e-7
@@ -1459,10 +1470,29 @@ func makeServerArgs(_ job: CustomSolveJob) -> Args {
     args.startoptSteps = max(0, job.startopt_steps ?? 0)
     args.startoptCandidates = max(1, job.startopt_candidates ?? 1)
     args.startoptMicroEpochs = max(0, job.startopt_micro_epochs ?? 0)
+    args.metalCandidates = max(1, job.selector_candidates ?? 128)
+    args.selectorTop = max(1, job.selector_top ?? 16)
+    args.refineTop = max(1, job.refine_top ?? 4)
+    args.diversitySep = max(0.0, job.diversity_sep ?? 0.20)
+    if let powerCap = job.power_cap, powerCap.isFinite, powerCap > 0.0 {
+        args.powerCap = powerCap
+    }
+    if let powers = job.powers, !powers.isEmpty {
+        args.powers = powers.map { String($0) }.joined(separator: ",")
+    }
+    if let angles = job.angles_degrees, !angles.isEmpty {
+        args.angles = angles.map { String($0) }.joined(separator: ",")
+    }
+    if let rays = job.rays, !rays.isEmpty {
+        args.rays = rays.map { String($0) }.joined(separator: ",")
+    }
+    if let gains = job.startopt_gains, !gains.isEmpty {
+        args.startoptGains = gains.map { String($0) }.joined(separator: ",")
+    }
     return args
 }
 
-func solveCustomJob(_ job: CustomSolveJob) -> [String: Any] {
+func solveCustomJob(_ job: CustomSolveJob, selector: MetalStartSelector?) -> [String: Any] {
     let t0 = CFAbsoluteTimeGetCurrent()
     do {
         if let op = job.op, op != "solve_custom" {
@@ -1506,27 +1536,110 @@ func solveCustomJob(_ job: CustomSolveJob) -> [String: Any] {
         let ctx = SolveContext(system: system)
         let args = makeServerArgs(job)
         let initialResidual = finiteResidual(ctx, y0)
-        var startInfo: [String: Any] = [:]
-        var startY = y0
-        if args.startoptSteps > 0 {
-            let start = startopt(ctx: ctx, y0: y0, trial: job.id ?? 0, seed: seed ^ 0x1295157, args: args)
-            startY = start.0
-            startInfo = start.1
+
+        var selectorInfo: [String: Any] = [
+            "enabled": false,
+            "mode": "provided-y0-only"
+        ]
+        var selected: [CandidateRow] = [
+            CandidateRow(index: -1, trial: job.id ?? 0, residual: initialResidual, y: y0)
+        ]
+        let useGeometry = job.use_geometry ?? false
+        if useGeometry {
+            let powers = args.powersList
+            let angles = args.anglesList
+            let radii = args.radiiList
+            let selectorTop = args.selectorTop > 0 ? args.selectorTop : max(1, args.refineTop)
+            do {
+                let result: ([CandidateRow], [String: Any])
+                if let selector {
+                    result = try selector.select(
+                        system: system,
+                        candidates: args.metalCandidates,
+                        targetCount: 1,
+                        topK: selectorTop,
+                        seed: system.seed + 0x113000,
+                        powerCap: args.powerCap,
+                        powers: powers,
+                        angles: angles,
+                        radii: radii
+                    )
+                } else {
+                    result = cpuSelectStarts(ctx: ctx, args: args, powers: powers, angles: angles, radii: radii)
+                }
+                let diversified = diversify(result.0, limit: max(1, args.refineTop), sep: args.diversitySep)
+                selected.append(contentsOf: diversified)
+                selectorInfo = result.1
+                selectorInfo["enabled"] = true
+                selectorInfo["fallback"] = selector == nil ? "cpu-no-metal-device" : NSNull()
+            } catch {
+                let result = cpuSelectStarts(ctx: ctx, args: args, powers: powers, angles: angles, radii: radii)
+                let diversified = diversify(result.0, limit: max(1, args.refineTop), sep: args.diversitySep)
+                selected.append(contentsOf: diversified)
+                selectorInfo = result.1
+                selectorInfo["enabled"] = true
+                selectorInfo["fallback"] = "cpu-after-metal-error"
+                selectorInfo["metal_error"] = error.localizedDescription
+            }
         }
-        let loc = pandrosionCorrector(
-            ctx: ctx,
-            y0: startY,
-            args: args,
-            directionSeed: job.direction_seed ?? seed,
-            maxEpochs: args.epochs,
-            acceptOverride: args.accept,
-            lineSearchOverride: args.lineSearch
-        )
-        let y = loc["y"] as? [ComplexD] ?? startY
+
+        var bestLoc: [String: Any]? = nil
+        var bestY = y0
+        var bestStartInfo: [String: Any] = [:]
+        var bestCandidate = selected[0]
+        var bestResidual = Double.infinity
+        var refinedCount = 0
+        var totalProbeEvals = 0
+        let refineLimit = useGeometry ? max(1, args.refineTop + 1) : 1
+        for cand in selected.prefix(min(refineLimit, selected.count)) {
+            var startInfo: [String: Any] = [:]
+            var startY = cand.y
+            if args.startoptSteps > 0 {
+                let start = startopt(
+                    ctx: ctx,
+                    y0: cand.y,
+                    trial: max(0, cand.trial),
+                    seed: seed ^ 0x1295157 ^ UInt64(max(0, cand.trial)),
+                    args: args
+                )
+                startY = start.0
+                startInfo = start.1
+            }
+            let loc = pandrosionCorrector(
+                ctx: ctx,
+                y0: startY,
+                args: args,
+                directionSeed: (job.direction_seed ?? seed) ^ UInt64(max(0, cand.trial)),
+                maxEpochs: args.epochs,
+                acceptOverride: args.accept,
+                lineSearchOverride: args.lineSearch
+            )
+            refinedCount += 1
+            totalProbeEvals += loc["probe_total_evals"] as? Int ?? 0
+            let yy = loc["y"] as? [ComplexD] ?? startY
+            let rr = loc["residual"] as? Double ?? finiteResidual(ctx, yy)
+            let score = rr.isFinite ? rr : Double.infinity
+            if score < bestResidual {
+                bestResidual = score
+                bestLoc = loc
+                bestY = yy
+                bestStartInfo = startInfo
+                bestCandidate = cand
+            }
+        }
+        let loc = bestLoc ?? [
+            "accepted": false,
+            "status": "no-candidate-refined",
+            "epochs": 0,
+            "residual": initialResidual,
+            "seconds": 0.0,
+            "probe_total_evals": 0
+        ]
+        let y = bestY
         var out: [String: Any] = [
             "ok": true,
             "source": "129-swift-custom-server",
-            "mode": "custom-system-jsonl/persistent-swift-corrector",
+            "mode": useGeometry ? "custom-system-jsonl/metal-homothety-mobius-start-selector/swift-pandrosion" : "custom-system-jsonl/persistent-swift-corrector",
             "n": job.n,
             "degree": job.d,
             "terms_per_poly": system.terms,
@@ -1538,7 +1651,17 @@ func solveCustomJob(_ job: CustomSolveJob) -> [String: Any] {
             "epochs": loc["epochs"] as? Int ?? 0,
             "seconds": jsonFinite(loc["seconds"] as? Double ?? 0.0),
             "wall_seconds": jsonFinite(CFAbsoluteTimeGetCurrent() - t0),
-            "probe_total_evals": loc["probe_total_evals"] as? Int ?? 0,
+            "probe_total_evals": totalProbeEvals,
+            "selector": selectorInfo,
+            "geometry_enabled": useGeometry,
+            "candidates_selected": selected.count,
+            "candidates_refined": refinedCount,
+            "selected_start": [
+                "source": bestCandidate.index < 0 ? "provided-y0" : "homothety-mobius",
+                "trial": bestCandidate.trial,
+                "selector_rank": bestCandidate.index,
+                "selector_residual": jsonFinite(bestCandidate.residual)
+            ],
             "y_re": jsonFiniteArray(y.map { $0.re }),
             "y_im": jsonFiniteArray(y.map { $0.im }),
             "eval_stats": ctx.stats()
@@ -1546,7 +1669,7 @@ func solveCustomJob(_ job: CustomSolveJob) -> [String: Any] {
         if let id = job.id {
             out["id"] = id
         }
-        for (k, v) in startInfo {
+        for (k, v) in bestStartInfo {
             out[k] = v
         }
         return out
@@ -1570,6 +1693,7 @@ func writeJSONLine(_ object: [String: Any]) {
 
 func runCustomServer() {
     let decoder = JSONDecoder()
+    let selector = MetalStartSelector()
     while let line = readLine(strippingNewline: true) {
         let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
@@ -1593,7 +1717,7 @@ func runCustomServer() {
         }
         do {
             let job = try decoder.decode(CustomSolveJob.self, from: data)
-            writeJSONLine(solveCustomJob(job))
+            writeJSONLine(solveCustomJob(job, selector: selector))
         } catch {
             writeJSONLine(serverError(id: nil, "decode failed: \(error.localizedDescription)"))
         }
