@@ -1,2 +1,0 @@
-case,degree,terms_per_poly,points,loops,numpy_seconds,metal_kernel_seconds,metal_process_seconds,numpy_point_evals_per_second,metal_point_evals_per_second,eval_speedup_metal_vs_118_loop,metal_kernel_speedup_vs_118_seconds,metal_process_speedup_vs_118_seconds,solver_118_roots,solver_118_requested,solver_118_seconds
-"2,34",34,630,4096,1,0.05704537499696016,0.0040389299392700195,0.051808041986078024,143604.98113013606,2028259.990437118,14.123883269752959,14.123883269752959,1.1010911204150415,,,

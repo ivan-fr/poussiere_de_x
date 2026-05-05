@@ -1,2 +1,0 @@
-case,family,solver,status,success,requested_roots,unique_roots,trials_used,duplicates,failures,eval_budget,eval_used,stop_reason,seconds,residual_min,residual_mean,residual_max,skip_reason
-"3,4",ks,scipy_multistart,ok,False,4,0,1,0,0,10,10,eval_budget_exhausted,0.24917754204943776,,,,

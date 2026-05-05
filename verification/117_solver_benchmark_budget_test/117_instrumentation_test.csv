@@ -1,3 +1,0 @@
-case,family,solver,status,success,requested_roots,unique_roots,trials_used,duplicates,failures,eval_budget,eval_used,slope_calls,stop_reason,seconds,residual_min,residual_mean,residual_max,skip_reason
-"3,4",ks,pandrosion116,ok,True,2,2,10,1,7,,531,152,,0.01275412505492568,4.0776108029656053e-10,1.6724634002510734e-09,2.9371657202055863e-09,
-"3,4",ks,scipy_multistart,ok,False,2,1,2,0,0,64,64,,eval_budget_exhausted,0.24343941593542695,8.065919498384758e-11,8.065919498384758e-11,8.065919498384758e-11,

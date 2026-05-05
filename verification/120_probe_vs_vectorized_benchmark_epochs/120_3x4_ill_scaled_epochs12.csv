@@ -1,3 +1,0 @@
-case,family,engine,status,success,requested_roots,unique_roots,trials_used,duplicates,failures,seconds,reported_seconds,extract_seconds,generation_seconds,eval_used,slope_calls,probe_eval_sum,seed,terms,active_terms,bezout,residual_min,residual_mean,residual_max,error
-"3,4",ill_scaled,116(115),ok,False,4,0,512,0,512,0.38792699994519353,0.38791990280151367,0.368149995803833,0.019683122634887695,19437,3516,,279561621,105,105,64,,,,
-"3,4",ill_scaled,119(118),ok,True,4,4,36,9,23,0.08277174993418157,0.08275914192199707,0.08254194259643555,0.0001418590545654297,4479,374,2992,279561621,105,105,64,6.186957846166872e-13,1.5369427991157667e-10,4.584661822352086e-10,
