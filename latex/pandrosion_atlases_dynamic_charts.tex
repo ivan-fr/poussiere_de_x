@@ -1,0 +1,186 @@
+
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=0.92in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,graphicx,booktabs,float,hyperref,xcolor,enumitem}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{remark}[definition]{Remark}
+\newcommand{\C}{\mathbb C}
+\newcommand{\PP}{\mathbb P}
+\newcommand{\GG}{G}
+\title{\textbf{Pandrosion Atlases and Dynamic Geometric Charts}\\[2mm]\large A Dynamic Numerical Atlas for Pandrosion Root-Finding}
+\author{Ivan Besevic\\Independent Mathematical Research}
+\date{May 2026}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper formulates Pandrosion as a numerical method living on a dynamic atlas rather than on a fixed affine coordinate patch.  The central finite-slope correction
+\[
+        Q_G(a,b)\delta=-G(a)
+\]
+is evaluated inside a chart, while chart scores decide when to rescale, invert, or move through a Mobius transition.  The goal is not to replace the Pandrosion correction, but to describe the global coordinate geometry that makes the correction stable.  We define Pandrosion atlases, transition scores, projective scaling rules, and a chart-switching algorithm that separates global coordinate control from local finite-slope correction.
+\end{abstract}
+
+\section{Motivation}
+Earlier Pandrosion papers introduced homothetic scaling, Riemann inversion, finite-slope probes, and local high-order corrections.  These mechanisms are most naturally understood as pieces of a numerical atlas.  A solver does not merely move a point in $\C^n$; it moves a point together with a choice of coordinates.  When the coordinates become poorly conditioned, the solver should change chart before forcing a fragile correction.
+
+\section{Pandrosion atlas}
+\begin{definition}[Numerical Pandrosion atlas]
+A Pandrosion atlas for a system $F:\C^n\to\C^n$ is a finite or locally finite collection
+\[
+        \mathcal A=\{(U_i,\phi_i,\lambda_i)\}_{i\in I},
+\]
+where $U_i$ is a numerical chart domain, $\phi_i:U_i\to\C^n$ is a coordinate map, and $\lambda_i$ is a projective or homothetic scale.  The transformed residual in chart $i$ is
+\[
+        G_i(u)=F(\phi_i^{-1}(\lambda_i u)).
+\]
+\end{definition}
+
+\begin{definition}[Chart transition]
+Whenever $U_i\cap U_j\ne\emptyset$, the transition map is
+\[
+        \tau_{ij}=\phi_j\circ\phi_i^{-1}.
+\]
+A dynamic atlas solver may replace $u_i$ by $u_j=\tau_{ij}(u_i)$ when chart $j$ improves the numerical score.
+\end{definition}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.96\textwidth]{figures/main_atlas.png}
+\caption{Dynamic numerical atlas: local Pandrosion corrections are performed inside charts, while transition maps, inversion, and projective scaling move the solver through better coordinates.}
+\end{figure}
+
+\section{Chart scores}
+A practical atlas needs a scalar comparison between charts.  We propose
+\[
+D_i(u)=w_R\log(1+\|G_i(u)\|)+w_C\log(1+\kappa(Q_i))+w_L\mathcal L_i(u)+w_P\Pi_i(u),
+\]
+where $Q_i$ is the finite-slope matrix in chart $i$, $\mathcal L_i$ is a logarithmic scale energy, and $\Pi_i$ is an equal-value or singularity penalty.  The active chart is then selected by
+\[
+        i_k\in\arg\min_i D_i(u_k).
+\]
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.84\textwidth]{figures/atlas_scores.png}
+\caption{Synthetic chart-score landscape.  The colored regions indicate which chart minimizes the distortion score.  A stable atlas trajectory follows regions of low score rather than staying in a single coordinate patch.}
+\end{figure}
+
+\section{Local finite-slope correction in a chart}
+Inside a chart the local update is unchanged:
+\[
+        Q_{G_i}(a,b)\delta=-G_i(a),\qquad a_+=a+\delta.
+\]
+The difference is that the pair $(a,b)$ is interpreted in chart coordinates.  The chart determines what counts as a small step, what counts as a good probe, and when infinity or a near singularity has been moved into a regular neighborhood.
+
+\begin{proposition}[Coordinate covariance of the finite-slope step]
+Let $\tau_{ij}$ be a smooth nonsingular transition between two charts.  If $Q_{G_i}(a,b)$ is well conditioned and $\tau_{ij}$ has bounded distortion near $a$, then the chart-transformed finite-slope correction in chart $j$ differs from the push-forward of the chart-$i$ correction by a term controlled by the transition distortion and the finite-slope curvature.
+\end{proposition}
+\begin{proof}
+The telescopic finite-slope identity is applied to $G_j=G_i\circ \tau_{ij}^{-1}$.  Expanding the transition along the finite-slope path gives a first push-forward term plus a remainder bounded by the variation of the transition differential and by the finite-slope curvature.  No analytic Jacobian of $F$ is required; only the smoothness of the transition and the finite-slope matrices enter the estimate.
+\end{proof}
+
+\section{Atlas control loop}
+\begin{figure}[H]
+\centering
+\includegraphics[width=.82\textwidth]{figures/atlas_workflow.png}
+\caption{A clean separation of responsibilities: the atlas layer controls coordinates, while the local Pandrosion layer computes the finite-slope correction.}
+\end{figure}
+
+The chart-control loop is:
+\begin{enumerate}[leftmargin=2em]
+\item evaluate candidate chart scores $D_i$;
+\item choose a chart with low residual, low condition penalty, and low log distortion;
+\item apply the finite-slope Pandrosion update in that chart;
+\item monitor equal-value poles and singularity scores;
+\item transition or projectively renormalize if the score degrades.
+\end{enumerate}
+
+\section{Conclusion}
+The atlas viewpoint explains why homothety, inversion, and Mobius changes are not peripheral tricks.  They are coordinate transitions in a dynamic numerical geometry.  This paper therefore shifts the global theory of Pandrosion from a single affine iteration to an atlas-valued dynamical system.
+
+
+\section{Gauge structure of projective scaling}
+The homothetic factor $\lambda_i$ in a chart is best interpreted as a gauge variable.  Two coordinate representatives $u$ and $\lambda u$ can describe the same projective state while producing very different floating point magnitudes.  A dynamic atlas therefore carries two coupled variables: the affine coordinate $u_i$ and the gauge $\lambda_i$.  The gauge should be selected so that the logarithmic scale energy
+\[
+        \mathcal L_i(u,\lambda)=\left\|\log\left(1+|\lambda u|\right)\right\|
+\]
+remains moderate.  In monomial problems this reduces the familiar instability produced by extremely large or extremely small targets; in multivariate systems it keeps all coordinates in a numerically meaningful range.
+
+\begin{definition}[Atlas state]
+An atlas state is a triple $(i,u,\lambda)$ consisting of an active chart index, local coordinates, and a projective scale.  The physical point is reconstructed by
+\[
+        x=\phi_i^{-1}(\lambda u).
+\]
+The solver may change $u$, may change $\lambda$, or may change the chart index $i$.
+\end{definition}
+
+\begin{remark}
+This distinction matters because some numerical failures are not failures of the root geometry itself; they are failures of a particular coordinate representation.  A root may be easy in one chart and nearly singular in another.
+\end{remark}
+
+\section{Transition acceptance rule}
+A chart transition is accepted only when the new chart improves a controlled score.  A conservative rule is
+\[
+        D_j(\tau_{ij}(u)) \le D_i(u)-\epsilon_D,
+\]
+where $\epsilon_D\ge 0$ prevents excessive switching.  A softer alternative is the probabilistic rule
+\[
+        \mathbb P(i\to j)\propto \exp[-\beta D_j(\tau_{ij}(u))].
+\]
+The deterministic rule is simpler and more reproducible; the probabilistic rule is useful when the score landscape is noisy or when multiple charts are comparably good.
+
+\begin{proposition}[No worse chart principle]
+Assume every accepted chart transition satisfies $D_{i_{k+1}}(u_{k+1})\le D_{i_k}(u_k)$ and every local line search satisfies $\|G_{i_k}(u_{k+1})\|\le \|G_{i_k}(u_k)\|$.  Then the combined distortion-residual score
+\[
+        \mathcal A_k=\|G_{i_k}(u_k)\|+\rho D_{i_k}(u_k)
+\]
+is nonincreasing up to the tolerance used in line search and transition acceptance.
+\end{proposition}
+\begin{proof}
+The claim follows by adding the two monotonicity inequalities.  The role of the constant $\rho$ is to express how much chart distortion the algorithm tolerates in exchange for residual decrease.  If tolerances are present, the same calculation gives a perturbed monotonicity bound.
+\end{proof}
+
+\section{Singularities and boundaries}
+The atlas must also identify regions where a finite-slope update is unreliable.  Three boundaries are especially important:
+\begin{enumerate}[leftmargin=2em]
+\item chart boundary, where $\phi_i$ loses numerical resolution;
+\item equal-value boundary, where $G_i(a)\approx G_i(b)$ and finite slopes become uninformative;
+\item rank-loss boundary, where $Q_{G_i}(a,b)$ becomes nearly singular.
+\end{enumerate}
+The transition logic should react to all three.  If the active chart approaches a rank-loss boundary, it may be better to move to a chart in which the same physical neighborhood is represented with smaller condition number.
+
+\section{Algorithmic form}
+A minimal atlas solver is given by the following schematic procedure.
+\[
+\begin{array}{ll}
+\textbf{Input:} & x_0,\ \mathcal A,\ \{D_i\},\ \text{finite-slope configuration}.\\
+\textbf{Initialize:} & (i_0,u_0,\lambda_0).\\
+\textbf{For } k=0,1,\ldots &: \\
+1. & \text{compute local probes in chart } i_k;\\
+2. & \text{solve } Q_{G_{i_k}}(a,b)\delta=-G_{i_k}(a);\\
+3. & \text{line-search in chart coordinates;}\\
+4. & \text{evaluate neighboring chart scores;}\\
+5. & \text{transition if a neighboring chart is better;}\\
+6. & \text{renormalize } \lambda_k \text{ to control log energy.}
+\end{array}
+\]
+
+\section{Relation to Pandrosion engines}
+In script terms, a dynamic atlas explains the difference between the local engine and the global scheduler.  The finite-slope solver belongs to the local engine.  The atlas belongs to the global scheduler.  This separation is useful because aggressive local corrections can be dangerous when the chart is bad, while a chart transition can repair the geometry without changing the finite-slope philosophy.
+
+\section{Open research problems}
+Several questions remain open.  Is there a canonical minimal atlas for a polynomial system?  Can chart scores be learned from failed probes?  Can the transition graph be used to predict basin boundaries?  Can monodromy be expressed as a loop in the chart-transition graph?  These questions suggest that dynamic atlases are not only implementation tools but also mathematical objects.
+
+\begin{thebibliography}{9}
+\bibitem{traub} J. F. Traub, \emph{Iterative Methods for the Solution of Equations}, Prentice-Hall, 1964.
+\bibitem{householder} A. S. Householder, \emph{The Numerical Treatment of a Single Nonlinear Equation}, McGraw-Hill, 1970.
+\bibitem{doCarmo} M. do Carmo, \emph{Riemannian Geometry}, Birkhauser, 1992.
+\bibitem{amari} S. Amari, \emph{Information Geometry and Its Applications}, Springer, 2016.
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,141 @@
+
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx,booktabs,float,enumitem,xcolor,hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}[definition]{Assumption}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{remark}[definition]{Remark}
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\dist}{dist}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\PG}{\mathrm{Pand}}
+\newcommand{\res}{\mathcal{R}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\Q}{Q_G}
+\newcommand{\dd}{\mathrm{d}}
+
+\title{Stable Numerical Atlases for Pandrosion Dynamics\\[3pt]\large Dynamic charts, transition stability, and projective conditioning}
+\author{Ivan Besevic\\Independent Mathematical Research}
+\date{May 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+This paper develops the atlas viewpoint suggested by projective scaling, Riemann inversion, and Mobius chart switching. We define numerical atlases, atlas scores, and chart transition maps. We then prove conditional stability theorems showing how finite-slope conditioning transforms between compatible charts and formulate the stable numerical atlas conjecture.
+\end{abstract}
+
+\paragraph{Scope and status.} This manuscript is written as a theorem-and-conjecture paper inside the Pandrosion research programme. It gives precise definitions, conditional theorems, and conjectures that can be tested by the existing finite-slope engines. The results are structural: they are not trading models and do not rely on empirical market data.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.97\textwidth]{figures/pandrosion_root_finding_dynamic_atlas_diagram.png}
+\caption{Conceptual overview for this paper. The diagram is intentionally synthetic: it organizes the geometric objects used in the definitions and conjectures.}
+\end{figure}
+
+
+\section{Numerical atlases}
+Let $X$ denote a projective compactification of the numerical phase space. A numerical atlas is a family
+\begin{equation}
+    \mathfrak A=\{(U_i,\phi_i)\}_{i\in I},\qquad \phi_i:U_i\to \C^n,
+\end{equation}
+where each chart may combine affine coordinates, homothety, Riemann inversion, or a Mobius transformation. In chart $i$ the residual becomes
+\begin{equation}
+    G_i(u)=G(\phi_i^{-1}(u)).
+\end{equation}
+Pandrosion may then run in $u$-coordinates and transfer iterates through transition maps
+\begin{equation}
+    \tau_{ij}=\phi_j\circ\phi_i^{-1}.
+\end{equation}
+
+\begin{definition}[Atlas score]
+For an iterate represented in chart $i$, define
+\begin{equation}
+\A_i(x)=w_R\log(1+\|G_i(x)\|)+w_C\log(1+\cond \Q^{(i)})+w_L\mathcal L_i(x)+w_P\mathcal P_i(x),
+\end{equation}
+where $\mathcal L_i$ is logarithmic scale energy and $\mathcal P_i$ is an equal-value pole penalty. A dynamic atlas selects a chart with low $\A_i$.
+\end{definition}
+
+\section{Transition stability}
+Chart changes must not destroy the finite-slope geometry. The following theorem gives a sufficient condition.
+
+\begin{assumption}[Bi-Lipschitz chart transition]
+For overlapping charts $i,j$, the transition $\tau_{ij}$ and its inverse are differentiable on the relevant overlap and satisfy
+\begin{equation}
+    m\|u-v\|\le \|\tau_{ij}(u)-\tau_{ij}(v)\|\le M\|u-v\|.
+\end{equation}
+\end{assumption}
+
+\begin{theorem}[Finite-slope transition stability]
+Assume a bi-Lipschitz transition between charts $i$ and $j$. If the finite-slope matrix $\Q^{(i)}(a,b)$ is invertible with condition number at most $K$, then the transformed finite-slope matrix in chart $j$ has condition number bounded by
+\begin{equation}
+    \cond \Q^{(j)}(\tau_{ij}a,\tau_{ij}b)\le C(M,m)\,K + O(\|b-a\|),
+\end{equation}
+where $C(M,m)$ depends only on the transition distortion.
+\end{theorem}
+
+\begin{proof}
+The finite-slope matrix in chart $j$ is the conjugated local finite-slope model plus a higher-order transition defect. The bi-Lipschitz constants control the singular values of the transition derivative. Perturbation of singular values gives the stated bound for sufficiently small probe distances.
+\end{proof}
+
+\section{Existence of stable local charts}
+The next theorem is a compactness statement. It explains why a finite atlas can control a long trajectory when the trajectory avoids the singular set.
+
+\begin{theorem}[Compact stable atlas theorem]
+Let $K\subset X\setminus\Sigma$ be compact, where $\Sigma$ is the union of equal-value poles, chart degeneracies, and finite-slope rank-loss loci. Assume that for every $x\in K$ there exists a chart $U_i$ and a neighborhood $V_x$ such that $\A_i$ is finite and the local Pandrosion probe condition number is bounded. Then there exists a finite subatlas controlling $K$.
+\end{theorem}
+
+\begin{proof}
+The neighborhoods $V_x$ form an open cover of $K$. By compactness, take a finite subcover. The constants defining bounded logarithmic energy, pole separation, and finite-slope conditioning can be replaced by their finite maxima over the selected charts.
+\end{proof}
+
+\begin{remark}
+The theorem is simple but important: it converts local chart regularity into a global numerical atlas statement. The singular set is the true obstruction, not the use of multiple charts.
+\end{remark}
+
+\section{Atlas conjectures}
+\begin{conjecture}[Stable numerical atlas conjecture]
+For every regular Pandrosion trajectory that does not converge to a singular point, there exists a finite dynamic atlas such that the selected chart sequence keeps logarithmic energy and finite-slope condition bounded along the trajectory.
+\end{conjecture}
+
+\begin{conjecture}[Projective contraction conjecture]
+There exists a projective metric $d_{\mathfrak A}$ associated with a stable numerical atlas such that the normalized Pandrosion map is locally contractive near each regular zero:
+\begin{equation}
+    d_{\mathfrak A}(T(x),T(y))\le \rho\,d_{\mathfrak A}(x,y),\qquad 0<\rho<1.
+\end{equation}
+\end{conjecture}
+
+\section{Algorithmic consequences}
+An atlas engine should treat chart selection as part of the solver state. The state is not merely $x_k$ but $(i_k,x_k)$, where $i_k$ is the active chart. The transition rule
+\begin{equation}
+    i_{k+1}=\arg\min_i \A_i(x_k)
+\end{equation}
+should be evaluated before high-order local corrections. This gives a clean separation between global projective stabilization and local finite-slope acceleration.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.82\textwidth]{figures/atlas_score.png}
+\caption{A supporting numerical-geometric schematic generated from the formal objects of the paper.}
+\end{figure}
+
+\section{Outlook}
+The main purpose of this note is to isolate a precise mathematical direction. The next step is to attach each conjecture to a benchmarkable engine: finite-slope descent tests for the first paper, chart-selection tests for the second, and probe-path tests for the third. A successful theory should explain not only convergence, but also why the equal-value poles, logarithmic normalization, and projective charts observed in prior Pandrosion experiments are structurally necessary.
+
+\begin{thebibliography}{9}
+\bibitem{pand0} I. Besevic, \emph{Pandrosion Monomial Paper 0}, manuscript, 2026.
+\bibitem{pand0bis} I. Besevic, \emph{Pandrosion 0 bis: finite-slope Halley acceleration}, manuscript, 2026.
+\bibitem{householder} A. S. Householder, \emph{The Numerical Treatment of a Single Nonlinear Equation}, McGraw--Hill, 1970.
+\bibitem{traub} J. F. Traub, \emph{Iterative Methods for the Solution of Equations}, Prentice--Hall, 1964.
+
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,126 @@
+
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx,booktabs,float,enumitem,xcolor,hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}[definition]{Assumption}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{remark}[definition]{Remark}
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\dist}{dist}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\PG}{\mathrm{Pand}}
+\newcommand{\res}{\mathcal{R}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\Q}{Q_G}
+\newcommand{\dd}{\mathrm{d}}
+
+\title{Geodesic Optimality in Pandrosion Probe Geometry\\[3pt]\large Finite-slope probes as low-action paths in a stability metric}
+\author{Ivan Besevic\\Independent Mathematical Research}
+\date{May 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+This paper proposes that optimal Pandrosion probes are geodesic objects. We define a stability metric built from residual, conditioning, logarithmic energy, and equal-value pole barriers. We prove a local Euclidean limit and a finite-action pole avoidance theorem, then state a geodesic optimality conjecture for probe engines.
+\end{abstract}
+
+\paragraph{Scope and status.} This manuscript is written as a theorem-and-conjecture paper inside the Pandrosion research programme. It gives precise definitions, conditional theorems, and conjectures that can be tested by the existing finite-slope engines. The results are structural: they are not trading models and do not rely on empirical market data.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.97\textwidth]{figures/geodesic_flows_in_pandrosion_geometry.png}
+\caption{Conceptual overview for this paper. The diagram is intentionally synthetic: it organizes the geometric objects used in the definitions and conjectures.}
+\end{figure}
+
+
+\section{Probe manifolds and metric costs}
+A Pandrosion update depends on a probe $b$. Instead of regarding $b$ as a heuristic sample, we regard it as an endpoint of a curve $\gamma$ starting at the current point $a$. The cost of the curve is determined by a stability metric.
+
+\begin{definition}[Pandrosion stability metric]
+Let $r(x)=\|G(x)\|$, let $\kappa(x)$ denote a local finite-slope conditioning proxy, and let $\phi(x)=\log(1+\|x\|)$. A stability metric is a positive definite tensor of the form
+\begin{equation}
+    g_x = \alpha\,\dd\phi\otimes\dd\phi + \beta\,C_x + \gamma\,R_x + \lambda\,P_x,
+\end{equation}
+where $C_x$ penalizes conditioning, $R_x$ penalizes residual curvature, and $P_x$ is an equal-value pole barrier.
+\end{definition}
+
+The action of a probe path is
+\begin{equation}
+    \mathcal S(\gamma)=\int_0^1 \sqrt{g_{\gamma(t)}(\dot\gamma(t),\dot\gamma(t))}\,\dd t.
+\end{equation}
+Optimal probes are endpoints of low-action curves.
+
+\section{Local geodesic limit}
+When the metric is flat and the singular barriers are absent, the geodesic viewpoint reduces to the usual finite-slope probe.
+
+\begin{theorem}[Euclidean local limit]
+Assume $g_x=g_0+O(\|x-a\|)$ near $a$ and no pole barrier is active. Then the minimizing probe path from $a$ to $b$ is, to first order, the straight segment
+\begin{equation}
+    \gamma(t)=a+t(b-a)+O(\|b-a\|^2).
+\end{equation}
+Consequently the geodesic finite-slope matrix agrees with the ordinary telescopic finite-slope matrix up to second-order path error.
+\end{theorem}
+
+\begin{proof}
+In normal coordinates for $g_0$, geodesics satisfy $\ddot\gamma^k+\Gamma^k_{ij}\dot\gamma^i\dot\gamma^j=0$. Since $\Gamma=O(\|x-a\|)$, the first-order solution is the straight line. The finite-slope integral along the geodesic differs from the coordinate segment integral only by the quadratic path displacement.
+\end{proof}
+
+\section{Pole barriers}
+Equal-value pole sets have the form
+\begin{equation}
+    \mathcal P=\{(a,b):G(a)=G(b)\}.
+\end{equation}
+When projected into the probe manifold, they form regions where finite-slope information degenerates. The metric should become expensive near these regions.
+
+\begin{theorem}[Finite-action pole avoidance]
+Assume that near an equal-value pole hypersurface $\Pi$ the metric contains a barrier term
+\begin{equation}
+    P_x \succeq \frac{c}{\dist(x,\Pi)^2} I.
+\end{equation}
+Then every path crossing $\Pi$ has infinite action. Therefore every finite-action geodesic avoids $\Pi$.
+\end{theorem}
+
+\begin{proof}
+Let $s(t)=\dist(\gamma(t),\Pi)$. If $\gamma$ crosses $\Pi$, then $s(t_0)=0$ for some $t_0$. The barrier contribution to the path length dominates $\int |\dot s|/s\,dt$ near $t_0$, which diverges logarithmically. Hence finite action is impossible for crossing paths.
+\end{proof}
+
+\section{Geodesic probe conjectures}
+\begin{conjecture}[Geodesic optimality conjecture]
+Let $b_k$ be the probe selected by a probe engine minimizing a composite score made of residual decrease, finite-slope conditioning, logarithmic energy, and equal-value separation. In the small-step limit, the piecewise linear paths from $a_k$ to $b_k$ converge to geodesics of a stability metric $g$.
+\end{conjecture}
+
+\begin{conjecture}[Geodesic descent conjecture]
+If a Pandrosion direction is built from a finite-action geodesic probe and the associated finite-slope matrix is uniformly coercive, then the resulting update is energy-decreasing for sufficiently small flow time.
+\end{conjecture}
+
+\section{Algorithmic implications}
+The geodesic perspective suggests that probes should not merely be sampled radially. A robust engine should search for low-cost paths in the stability metric. Practical approximations include: (i) detouring around equal-value pole barriers; (ii) penalizing directions that cross high-conditioning ridges; (iii) preferring probes whose logarithmic energy evolves smoothly; and (iv) applying spectral filtering when the local metric becomes anisotropic.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.82\textwidth]{figures/geodesic_obstacle.png}
+\caption{A supporting numerical-geometric schematic generated from the formal objects of the paper.}
+\end{figure}
+
+\section{Outlook}
+The main purpose of this note is to isolate a precise mathematical direction. The next step is to attach each conjecture to a benchmarkable engine: finite-slope descent tests for the first paper, chart-selection tests for the second, and probe-path tests for the third. A successful theory should explain not only convergence, but also why the equal-value poles, logarithmic normalization, and projective charts observed in prior Pandrosion experiments are structurally necessary.
+
+\begin{thebibliography}{9}
+\bibitem{pand0} I. Besevic, \emph{Pandrosion Monomial Paper 0}, manuscript, 2026.
+\bibitem{pand0bis} I. Besevic, \emph{Pandrosion 0 bis: finite-slope Halley acceleration}, manuscript, 2026.
+\bibitem{householder} A. S. Householder, \emph{The Numerical Treatment of a Single Nonlinear Equation}, McGraw--Hill, 1970.
+\bibitem{traub} J. F. Traub, \emph{Iterative Methods for the Solution of Equations}, Prentice--Hall, 1964.
+
+\end{thebibliography}
+\end{document}
