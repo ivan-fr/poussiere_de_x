@@ -1,0 +1,234 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem,xcolor,hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}[definition]{Assumption}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\C}{\mathbb C}
+\newcommand{\Oterm}{\mathcal O}
+\newcommand{\D}{\mathrm D}
+\newcommand{\Q}{\mathcal Q}
+\newcommand{\A}{\mathfrak A}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\cond}{cond}
+
+\title{Uniform \(m\)-Flat Pandrosion Atlases\\[3pt]
+\large Finite chart covers, anchor palettes, and uniform local contraction}
+\author{Ivan Besevic\\Independent Mathematical Research}
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The all-order tensor inverse-jet theorem gives a canonical \(m\)-flat chart near every regular zero of an analytic system. This paper globalizes that local statement over finite collections of regular zeros. An \(m\)-flat Pandrosion atlas is a finite family of local charts in which the transformed residuals satisfy
+\[
+        G_i(u)=u+\Oterm(\norm{u}^{m+1})
+\]
+with uniform constants. In such an atlas, the anchored averaged-Jacobian Pandrosion map satisfies the uniform estimate
+\[
+        \norm{P_{G_i,a}(s)}
+        \le
+        C\norm{s}(\norm{a}+\norm{s})^m.
+\]
+Consequently, if anchors and iterates remain in a chart ball of radius \(h\), the raw charted Pandrosion map is a contraction with Lipschitz constant at most \(C h^m\). For analytic systems with finitely many regular zeros in a compact region, inverse jets produce a finite \(m\)-flat atlas after the neighborhoods are chosen small enough. The paper then formulates the dynamic atlas reconstruction conjecture: a chart-switching Pandrosion engine with equal-value pole avoidance and finite-slope conditioning control should asymptotically behave as if it were selecting from such a finite \(m\)-flat atlas.
+\end{abstract}
+
+\paragraph{Scope and status.}
+This paper is the atlas continuation of the all-order tensor inverse-jet paper. The main theorems are local-uniform compactness statements. The final dynamic reconstruction principle is conjectural.
+
+\section{Why uniform atlases?}
+
+Local inverse jets solve one root at a time. A numerical method, however, does not begin with the root already identified. It moves through a phase space where several roots, charts, scales, and singular barriers coexist. The atlas viewpoint separates two tasks:
+\begin{enumerate}[label=(\roman*)]
+\item near a regular zero, use an \(m\)-flat chart to suppress the local multiplier;
+\item away from one chart, switch to another chart before conditioning or logarithmic scale becomes unstable.
+\end{enumerate}
+
+The purpose of this paper is to state what a finite, uniformly controlled version of this picture gives.
+
+\section{\(m\)-flat atlas data}
+
+Let \(G:U\subset\C^n\to\C^n\) be analytic. Assume \(G\) has finitely many regular zeros \(\rho_1,\ldots,\rho_N\) in a compact set \(K\subset U\), meaning
+\[
+        G(\rho_j)=0,\qquad \D G(\rho_j)\ \text{is invertible}.
+\]
+
+\begin{definition}[\(m\)-flat Pandrosion chart]
+A chart \(\phi_j:V_j\to U\) centered at \(\rho_j\) is \(m\)-flat if
+\[
+        \phi_j(0)=\rho_j,\qquad
+        G(\phi_j(u))=u+\Oterm(\norm{u}^{m+1}).
+\]
+It is \((m,C,r)\)-controlled if \(B(0,r)\subset V_j\) and, for all \(\norm{u}\le r\),
+\[
+        \norm{G(\phi_j(u))-u}\le C\norm{u}^{m+1},
+        \qquad
+        \norm{D(G\circ\phi_j)(u)-I}\le C\norm{u}^{m}.
+\]
+\end{definition}
+
+\begin{definition}[Uniform \(m\)-flat atlas]
+A finite family
+\[
+        \A_m=\{(V_j,\phi_j)\}_{j=1}^N
+\]
+is a uniform \(m\)-flat atlas for the regular zeros in \(K\) if each \(\phi_j\) is \((m,C,r)\)-controlled with the same constants \(C,r\).
+\end{definition}
+
+\begin{theorem}[Finite inverse-jet atlas]\label{thm:finite-atlas}
+Let \(G\) have finitely many regular zeros \(\rho_1,\ldots,\rho_N\) in \(K\). For every \(m\ge1\), there exists a uniform \(m\)-flat atlas around these zeros.
+\end{theorem}
+
+\begin{proof}
+At each regular zero, the all-order tensor inverse-jet theorem produces a polynomial chart \(\phi_{j,m}\) satisfying
+\[
+        G(\phi_{j,m}(u))=u+\Oterm(\norm{u}^{m+1}).
+\]
+For each fixed \(j\), analyticity gives constants \(C_j,r_j>0\) controlling the residual and derivative remainders on \(B(0,r_j)\). Since the number of roots is finite, take
+\[
+        C=\max_j C_j,\qquad r=\min_j r_j.
+\]
+After shrinking \(r\) if necessary so that all chart maps are biholomorphic on their balls, the family is uniformly controlled.
+\end{proof}
+
+\section{Uniform anchored estimates}
+
+Inside chart \(j\), write
+\[
+        F_j(u)=G(\phi_j(u)).
+\]
+The averaged-Jacobian divided difference is
+\[
+        \Q_j(a,s)=\int_0^1 DF_j(s+t(a-s))\,dt,
+\]
+and the charted anchored Pandrosion map is
+\[
+        P_{j,a}(s)=s-\Q_j(a,s)^{-1}F_j(s).
+\]
+
+\begin{theorem}[Uniform two-point atlas estimate]\label{thm:uniform-two-point}
+Let \(\A_m\) be a uniform \((m,C,r)\)-controlled atlas. There are constants \(C_1>0\) and \(0<r_1\le r\), depending only on the atlas constants, such that for every chart \(j\), every \(\norm{a},\norm{s}\le r_1\), and every invertible \(\Q_j(a,s)\),
+\[
+        \norm{P_{j,a}(s)}
+        \le
+        C_1\norm{s}(\norm{a}+\norm{s})^m.
+\]
+\end{theorem}
+
+\begin{proof}
+The proof is uniform version of the local two-point estimate. From the controlled atlas bounds,
+\[
+        F_j(s)=s+R_j(s),\qquad \norm{R_j(s)}\le C\norm{s}^{m+1},
+\]
+and
+\[
+        \Q_j(a,s)=I+E_j(a,s),\qquad
+        \norm{E_j(a,s)}\le C'(\norm{a}+\norm{s})^m
+\]
+with \(C'\) independent of \(j\). Choose \(r_1\) so small that \(\norm{E_j(a,s)}\le 1/2\). Then
+\[
+        \Q_j(a,s)^{-1}=I-E_j(a,s)+\Oterm(\norm{E_j(a,s)}^2)
+\]
+with a uniform inverse bound. Substituting into \(P_{j,a}(s)=s-\Q_j(a,s)^{-1}F_j(s)\) gives the estimate with a constant independent of \(j\).
+\end{proof}
+
+\begin{corollary}[Uniform chart contraction]\label{cor:contraction}
+Under the hypotheses of \cref{thm:uniform-two-point}, suppose \(\norm{a}\le h\), \(\norm{s}\le h\), and \(h\le r_1\). Then
+\[
+        \norm{P_{j,a}(s)}\le C_2 h^m\norm{s}
+\]
+uniformly in \(j\). If \(C_2h^m<1\), the charted anchored map is a contraction on the local chart ball.
+\end{corollary}
+
+\begin{proof}
+Apply \cref{thm:uniform-two-point} and use \(\norm{a}+\norm{s}\le2h\).
+\end{proof}
+
+\section{Anchor palettes}
+
+The monomial theory used scale palettes; the charted theory uses anchor palettes. In a local chart, an anchor palette at mesh \(h\) is a finite set \(\mathcal P_h\subset B(0,h)\setminus\{0\}\) from which the algorithm chooses anchors.
+
+\begin{proposition}[Palette multiplier bound]\label{prop:palette}
+Let \(\A_m\) be a uniform \(m\)-flat atlas. If every selected anchor satisfies \(0<\norm{a}\le h\), then
+\[
+        \norm{D P_{j,a}(0)}\le C_3 h^m
+\]
+with \(C_3\) independent of the chart and of the selected palette point.
+\end{proposition}
+
+\begin{proof}
+The derivative version follows from the same uniform estimate applied to the derivative at \(s=0\), or directly from
+\[
+        D P_{j,a}(0)=I-\Q_j(a,0)^{-1}.
+\]
+Since \(DF_j(u)=I+\Oterm(\norm{u}^{m})\) uniformly in \(j\), the result follows.
+\end{proof}
+
+\section{Singular set and chart switching}
+
+The atlas estimates are local. The obstruction to a global theorem is the singular set
+\[
+        \Sigma
+        =
+        \{\det DG=0\}
+        \cup
+        \{\text{equal-value pole configurations}\}
+        \cup
+        \{\text{chart degeneracies}\}.
+\]
+A dynamic engine should switch charts before the trajectory approaches \(\Sigma\) or before logarithmic scale becomes large.
+
+\begin{definition}[Atlas-admissible trajectory]
+A trajectory is atlas-admissible if every iterate is represented in some chart of a finite atlas, the charted coordinate remains in a controlled ball, the selected anchor belongs to a bounded palette, and the equal-value separation and finite-slope condition number remain bounded away from their singular limits.
+\end{definition}
+
+\begin{theorem}[Local uniform convergence under atlas admissibility]\label{thm:admissible}
+Let an atlas-admissible trajectory eventually remain in a single \(m\)-flat chart with anchor radius \(h\) satisfying \(C_2h^m<1\). Then the raw charted anchored Pandrosion iterates converge linearly to the chart root. The contraction factor is at most \(C_2h^m\).
+\end{theorem}
+
+\begin{proof}
+After the final chart switch, \cref{cor:contraction} applies at every step in the chart ball. The Banach fixed-point argument gives convergence to the unique fixed point in that ball, namely the chart coordinate \(0\) of the regular zero.
+\end{proof}
+
+\section{Dynamic reconstruction conjecture}
+
+\begin{conjecture}[Uniform \(m\)-flat atlas reconstruction]
+Let \(G\) be analytic with finitely many regular zeros in a compact nonsingular region. A Pandrosion engine that combines dynamic chart switching, equal-value pole avoidance, finite-slope conditioning filters, and symmetric finite-probe inverse-jet estimation asymptotically selects from a finite uniform \(m\)-flat atlas along every regular convergent trajectory.
+\end{conjecture}
+
+\begin{conjecture}[Atlas contraction outside transition times]
+For a regular trajectory that avoids \(\Sigma\), there is a finite set of chart-transition times outside of which the normalized Pandrosion map is locally contractive in the active \(m\)-flat chart. The effective contraction factor is controlled by the active anchor radius as \(\Oterm(h^m)\).
+\end{conjecture}
+
+\section{Conclusion}
+
+The all-order inverse-jet theorem is local; the uniform \(m\)-flat atlas theorem is finite and geometric. It says that once the regular roots are covered by controlled inverse-jet charts, the raw anchored Pandrosion map has a uniform local contraction factor of order \(h^m\). This gives a clean mathematical target for dynamic chart engines: construct, approximate, and switch among such charts without direct access to the exact roots.
+
+\begin{thebibliography}{9}
+\bibitem{monomial}
+I. Besevic, \emph{A Monomial Pandrosion Scheme}, manuscript, May 2026.
+\bibitem{charts}
+I. Besevic, \emph{Optimal Geometric Charts for Anchored Divided-Difference Iterations}, manuscript, May 2026.
+\bibitem{tensor}
+I. Besevic, \emph{Tensorial Multidimensional Pandrosion}, manuscript, May 2026.
+\bibitem{allorder}
+I. Besevic, \emph{All-Order Tensor Inverse Jets for Multidimensional Pandrosion}, manuscript, May 2026.
+\bibitem{stableatlas}
+I. Besevic, \emph{Stable Numerical Atlases for Pandrosion Dynamics}, manuscript, May 2026.
+\end{thebibliography}
+
+\end{document}
