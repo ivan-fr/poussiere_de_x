@@ -51,7 +51,7 @@ A dynamic atlas solver may replace $u_i$ by $u_j=\tau_{ij}(u_i)$ when chart $j$ 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=.96\textwidth]{figures/main_atlas.png}
+\includegraphics[width=.96\textwidth]{../figures/main_atlas.png}
 \caption{Dynamic numerical atlas: local Pandrosion corrections are performed inside charts, while transition maps, inversion, and projective scaling move the solver through better coordinates.}
 \end{figure}
 
@@ -67,7 +67,7 @@ where $Q_i$ is the finite-slope matrix in chart $i$, $\mathcal L_i$ is a logarit
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=.84\textwidth]{figures/atlas_scores.png}
+\includegraphics[width=.84\textwidth]{../figures/atlas_scores.png}
 \caption{Synthetic chart-score landscape.  The colored regions indicate which chart minimizes the distortion score.  A stable atlas trajectory follows regions of low score rather than staying in a single coordinate patch.}
 \end{figure}
 
@@ -88,7 +88,7 @@ The telescopic finite-slope identity is applied to $G_j=G_i\circ \tau_{ij}^{-1}$
 \section{Atlas control loop}
 \begin{figure}[H]
 \centering
-\includegraphics[width=.82\textwidth]{figures/atlas_workflow.png}
+\includegraphics[width=.82\textwidth]{../figures/atlas_workflow.png}
 \caption{A clean separation of responsibilities: the atlas layer controls coordinates, while the local Pandrosion layer computes the finite-slope correction.}
 \end{figure}
 
