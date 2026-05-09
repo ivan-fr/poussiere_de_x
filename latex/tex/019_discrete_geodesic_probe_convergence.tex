@@ -1,0 +1,168 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem,xcolor,hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}[definition]{Assumption}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\R}{\mathbb R}
+\newcommand{\A}{\mathcal A}
+\newcommand{\M}{\mathcal M}
+\newcommand{\Pset}{\mathcal P}
+\newcommand{\Oterm}{\mathcal O}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\DeclareMathOperator{\dist}{dist}
+
+\title{Discrete Geodesic Probe Convergence for Pandrosion\\[3pt]
+\large Graph actions, pole barriers, and low-action finite-slope probes}
+\author{Ivan Besevic\\Independent Mathematical Research}
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The geodesic Pandrosion papers propose that good finite-slope probes are low-action paths in a stability metric combining residual, conditioning, logarithmic scale, and equal-value pole barriers. Practical engines do not solve continuous geodesic equations; they score finite probe candidates. This paper formalizes the link. Let \((\M,g)\) be a compact stability domain with a positive continuous metric away from a pole set \(\Pset\), and let \(\A(\gamma)\) be the induced path action with a barrier that makes pole crossing infinite. If probe graphs \(X_h\) become dense and their edge weights approximate the metric length, then the discrete shortest-path actions \(\A_h\) converge to the continuous action \(\A\) in the standard recovery/liminf sense. Consequently, cluster points of discrete minimizers are continuous geodesic minimizers when minimizers are compact. The final conjecture states that Pandrosion probe engines using residual, condition, log-scale, and equal-value scores implement this graph-action convergence asymptotically.
+\end{abstract}
+
+\paragraph{Scope and status.}
+The graph convergence statements are deterministic approximation theorems. The identification of actual engine scores with these graph actions is conjectural and depends on implementation details.
+
+\section{Continuous stability action}
+
+Let \(\M\subset\R^n\) be compact and let \(\Pset\subset\M\) be the equal-value pole or rank-loss barrier set. On \(\M\setminus\Pset\), let \(g_x\) be a continuous positive definite tensor. For an absolutely continuous path \(\gamma:[0,1]\to\M\setminus\Pset\), define
+\[
+        \A(\gamma)=\int_0^1\sqrt{g_{\gamma(t)}(\dot\gamma(t),\dot\gamma(t))}\,dt.
+\]
+If \(\gamma\) crosses \(\Pset\), set \(\A(\gamma)=+\infty\).
+
+\begin{definition}[Pandrosion stability metric]
+A stability metric is a tensor whose coefficients penalize residual curvature, finite-slope conditioning, logarithmic scale, and equal-value pole proximity. A typical model has the form
+\[
+        g_x=g_x^{0}+\lambda B_x,
+\]
+where \(g^0\) is uniformly elliptic away from singularities and \(B_x\) is a barrier term growing near \(\Pset\).
+\end{definition}
+
+\begin{proposition}[Finite action avoids pole barriers]\label{prop:avoid}
+Assume that near a smooth component of \(\Pset\), with \(s(x)=\dist(x,\Pset)\), the metric satisfies
+\[
+        g_x(v,v)\ge \frac{c}{s(x)^2}\norm{v}^2.
+\]
+Then every path crossing that component has infinite action.
+\end{proposition}
+
+\begin{proof}
+Along a crossing path, \(s(\gamma(t))\to0\) at some time. Since \(|\frac{d}{dt}s(\gamma(t))|\le \norm{\dot\gamma(t)}\), the action dominates a constant multiple of
+\[
+        \int \frac{|s'(t)|}{s(t)}\,dt,
+\]
+which diverges logarithmically as \(s\to0\).
+\end{proof}
+
+\section{Discrete probe graphs}
+
+Let \(X_h\subset\M\setminus\Pset\) be a finite probe set whose mesh tends to zero. Edges connect nearby points, and each edge \(e=(x,y)\) has weight
+\[
+        w_h(x,y)=\sqrt{g_x(y-x,y-x)}+\Oterm(\norm{x-y}^2).
+\]
+A discrete path \(\Gamma=(x_0,\ldots,x_N)\) has action
+\[
+        \A_h(\Gamma)=\sum_{i=0}^{N-1} w_h(x_i,x_{i+1}).
+\]
+For fixed endpoints \(a,b\), let \(d_h(a,b)\) be the minimal discrete action among paths from nodes near \(a\) to nodes near \(b\).
+
+\begin{assumption}[Graph consistency]\label{ass:graph}
+The graphs \(X_h\) satisfy:
+\begin{enumerate}[label=(\roman*)]
+\item every compact subset of \(\M\setminus\Pset\) is approximated by nodes with mesh \(o(1)\);
+\item every \(C^1\) curve in \(\M\setminus\Pset\) can be sampled by graph paths whose maximum edge length tends to zero;
+\item edge weights approximate metric segment lengths uniformly on compact subsets away from \(\Pset\).
+\end{enumerate}
+\end{assumption}
+
+\section{Graph-action convergence}
+
+\begin{theorem}[Recovery sequence]\label{thm:recovery}
+Assume graph consistency. For every \(C^1\) path \(\gamma\subset\M\setminus\Pset\), there are discrete paths \(\Gamma_h\) converging uniformly to \(\gamma\) such that
+\[
+        \limsup_{h\to0}\A_h(\Gamma_h)\le \A(\gamma).
+\]
+\end{theorem}
+
+\begin{proof}
+Sample \(\gamma\) at a partition whose mesh tends to zero and replace each sample point by a nearby graph node. Graph consistency connects successive nodes by short graph paths. Uniform continuity of \(g\) away from \(\Pset\) and the edge-weight approximation imply that the sum of edge weights converges to the Riemann sum for \(\A(\gamma)\).
+\end{proof}
+
+\begin{theorem}[Liminf inequality]\label{thm:liminf}
+Let \(\Gamma_h\) be graph paths whose polygonal interpolants converge uniformly to an absolutely continuous path \(\gamma\subset\M\setminus\Pset\), and suppose \(\sup_h\A_h(\Gamma_h)<\infty\). Then
+\[
+        \A(\gamma)\le \liminf_{h\to0}\A_h(\Gamma_h).
+\]
+\end{theorem}
+
+\begin{proof}
+The edge-weight lower approximation gives a uniform bound on the metric length of polygonal interpolants. Lower semicontinuity of length for continuous Finsler/Riemannian metrics on compact subsets away from \(\Pset\) gives the inequality. If the limiting path touched \(\Pset\), \cref{prop:avoid} would force infinite limiting action, contradicting the bounded action assumption.
+\end{proof}
+
+\begin{corollary}[Convergence of discrete geodesic probes]\label{cor:minimizers}
+Assume graph consistency and compactness of continuous minimizers between endpoints \(a,b\). Let \(\Gamma_h\) minimize \(\A_h\) among graph paths between endpoint nodes converging to \(a,b\). Every uniformly convergent subsequence of polygonal interpolants has a limit that minimizes \(\A\) between \(a\) and \(b\).
+\end{corollary}
+
+\begin{proof}
+The recovery theorem gives the upper bound by approximating a continuous minimizer. The liminf theorem gives the lower bound for any convergent discrete minimizer. Together they identify the limit as a continuous minimizer.
+\end{proof}
+
+\section{From geodesics to finite-slope probes}
+
+A Pandrosion probe engine usually selects an endpoint \(b\), not a full path. The geodesic interpretation says that the endpoint is good when it is reachable from the current point \(a\) by a low-action path. Let
+\[
+        S_h(a,b)=\A_h(\Gamma_{a,b})+\mu C_h(a,b)+\nu P_h(a,b)
+\]
+be a discrete score, where \(C_h\) penalizes finite-slope conditioning and \(P_h\) penalizes equal-value proximity.
+
+\begin{proposition}[Consistent endpoint selection]\label{prop:endpoint}
+Suppose \(S_h(a,b)\) converges uniformly on compact admissible endpoint sets to a continuous score \(S(a,b)\), and suppose minimizers of \(S\) are compact. Then every cluster point of discrete minimizers of \(S_h\) is a minimizer of \(S\).
+\end{proposition}
+
+\begin{proof}
+Uniform convergence of objective functions on a compact set implies convergence of minimizers in the standard variational sense: any nonoptimal cluster point would have score larger than the minimum by a fixed margin, contradicting uniform convergence and discrete optimality.
+\end{proof}
+
+\section{Pandrosion probe conjectures}
+
+\begin{conjecture}[Discrete geodesic probe convergence]
+A Pandrosion engine whose candidate probes become dense and whose score consistently approximates residual action, finite-slope condition, logarithmic scale, and equal-value separation selects probe endpoints converging to minimizers of a continuous stability action.
+\end{conjecture}
+
+\begin{conjecture}[Geodesic descent compatibility]
+If the limiting stability metric includes a coercive finite-slope term and an equal-value pole barrier, then low-action geodesic probes produce stable finite-slope pairs on compact nonsingular subsets, hence satisfy the descent hypotheses of the Pandrosion Lojasiewicz theorem after line search.
+\end{conjecture}
+
+\section{Conclusion}
+
+The geodesic probe idea does not require solving continuous geodesic equations exactly. Dense finite probe graphs with consistent weights already converge to the continuous action. This turns practical probe scoring into a variational approximation problem: design the discrete score so that its low-action paths approximate the stability geometry that Pandrosion theory predicts.
+
+\begin{thebibliography}{9}
+\bibitem{geoflows}
+I. Besevic, \emph{Geodesic Probe Flows in Pandrosion Geometry}, manuscript, May 2026.
+\bibitem{geoopt}
+I. Besevic, \emph{Geodesic Optimality in Pandrosion Probe Geometry}, manuscript, May 2026.
+\bibitem{descent}
+I. Besevic, \emph{Geometric Descent Theorems for Pandrosion Flows}, manuscript, May 2026.
+\bibitem{loja}
+I. Besevic, \emph{Lojasiewicz Pandrosion Descent}, manuscript, May 2026.
+\end{thebibliography}
+
+\end{document}
