@@ -1,0 +1,374 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs}
+\usepackage{enumitem,xcolor,hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}[definition]{Assumption}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{problem}[definition]{Problem}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\C}{\mathbb C}
+\newcommand{\N}{\mathbb N}
+\newcommand{\PP}{\mathbb P}
+\newcommand{\E}{\mathbb E}
+\newcommand{\K}{\mathcal K}
+\newcommand{\A}{\mathcal A}
+\newcommand{\B}{\mathcal B}
+\newcommand{\T}{\mathcal T}
+\newcommand{\Q}{\mathcal Q}
+\newcommand{\OO}{\mathcal O}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\poly}{\operatorname{poly}}
+\newcommand{\Prob}{\mathbb P}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\rank}{rank}
+
+\title{Average-Polynomial Pandrosion for Smale-17 Stress Systems\\[3pt]
+\large finite-slope cubic correction, failure-probability amplification, and the basin-access theorem required for a non-homotopy route}
+\author{Ivan Besevic\\Independent Mathematical Research}
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Smale's seventeenth problem asks for an algorithm which, on the average over a natural distribution of complex polynomial systems, finds an approximate zero in polynomial time.  The classical positive answer is homotopy-continuation based.  This paper formulates the non-homotopy Pandrosion route in the same complexity language.  For a square polynomial system $F:\C^n\to\C^n$, the method samples projective logarithmic charts and applies a strict finite-slope cubic correction built from the exact telescopic matrix
+\[
+        F(b)-F(a)=Q_F(a,b)(b-a).
+\]
+We prove three unconditional pieces: the exact finite-slope identity; local cubic convergence under a regular finite-slope basin condition; and the average-time/failure-probability theorem showing that inverse-polynomial basin access implies average-polynomial complexity with exponentially small failure probability after polynomial repetition.  We then state the missing global probabilistic claim as the Pandrosion Basin-Access Theorem: for Kostlan input, randomized logarithmic chart probes hit a regular finite-slope approximate-zero basin with inverse-polynomial probability.  This is the precise theorem whose proof would make the 301 engine a genuine non-homotopy solution route for Smale's seventeenth problem.  Finally, we record the large 301 diagnostic benchmark: $528/528$ runs completed, $21940/21952$ requested roots recovered, $20549/21940$ alpha-lite certificates, median residual $1.08\cdot10^{-13}$, and median polished residual $5.93\cdot10^{-15}$.  Thus the empirical engine exceeds the one-root Smale-17 target on the tested suite, while the formal status is exactly reduced to basin access.
+\end{abstract}
+
+\paragraph{Proof ledger.}
+This article is deliberately explicit about what is proved.  The telescopic slope identity, a strengthened local cubic theorem, expected-time bound, and high-probability amplification are proved below.  The global statement that randomized Pandrosion charts hit a certified basin with inverse-polynomial probability is isolated as \cref{prob:basin-access}.  It is the remaining mathematical target, not hidden inside the benchmark.
+
+\section{Problem statement and algorithmic target}
+
+Let $F=(F_1,\ldots,F_n)$ be a square system of complex polynomials of degree at most $d$ in $n$ variables.  In the Kostlan model each homogeneous or affine coefficient is Gaussian with the usual binomial variance normalization.  Let
+\[
+        N=\binom{n+d}{d}
+\]
+be the number of monomials per equation; the dense input size is comparable to $nN$ complex coefficients.
+
+Smale's seventeenth problem, in the form used here, asks for a deterministic or randomized algorithm which returns one approximate zero of $F$ in average polynomial time.  A point $z$ is an approximate zero if Newton iteration from $z$ converges quadratically to an exact regular zero.  The homotopy answer controls paths in coefficient space.  Pandrosion tries a different route: sample charts in the unknown space, avoid singular/equal-value poles by finite probes, and fall directly into a local cubic basin.
+
+\begin{definition}[Pandrosion trial]
+A 301-style Pandrosion trial consists of:
+\begin{enumerate}[label=(\roman*)]
+\item sampling a product projective chart, including reciprocal charts near infinity;
+\item applying logarithmic homothety and start balancing;
+\item choosing a finite endpoint pair $(a,b)$ by residual, scale, equal-value, and finite-slope conditioning scores;
+\item forming the exact finite-slope matrix $Q_F(a,b)$;
+\item solving $Q_F(a,b)\delta_1=-F(a)$;
+\item estimating a symmetric second defect $H_F(a;b;\delta_1,\delta_1)$ by finite probes;
+\item solving $Q_F(a,b)\delta_2=-\frac12H_F(a;b;\delta_1,\delta_1)$;
+\item line-searching only along $\delta=\delta_1+\delta_2$ and validating the residual.
+\end{enumerate}
+The raw Pandrosion step $\delta_1$ is an internal object, not an accepted fallback direction.
+\end{definition}
+
+\section{Exact finite-slope algebra}
+
+For $\alpha\in\N^n$ write $m_\alpha(z)=z_1^{\alpha_1}\cdots z_n^{\alpha_n}$.  For $m\geq1$ set
+\[
+        S_m(u,v)=\sum_{r=0}^{m-1}v^{m-1-r}u^r,
+        \qquad S_0(u,v)=0.
+\]
+Given $a,b\in\C^n$, define
+\[
+        q_{\alpha j}(a,b)=
+        \left(\prod_{k<j}b_k^{\alpha_k}\right)
+        S_{\alpha_j}(a_j,b_j)
+        \left(\prod_{k>j}a_k^{\alpha_k}\right).
+\]
+If $F_i(z)=\sum_\alpha c_{i\alpha}m_\alpha(z)$, put
+\[
+        Q_F(a,b)_{ij}=\sum_\alpha c_{i\alpha}q_{\alpha j}(a,b).
+\]
+
+\begin{theorem}[Exact telescopic finite-slope matrix]\label{thm:telescopic}
+For all $a,b\in\C^n$,
+\[
+        F(b)-F(a)=Q_F(a,b)(b-a).
+\]
+\end{theorem}
+
+\begin{proof}
+For one monomial, change coordinates from $a$ to $b$ in order:
+\[
+\prod_{k=1}^n b_k^{\alpha_k}-\prod_{k=1}^n a_k^{\alpha_k}
+=\sum_{j=1}^n
+\left(\prod_{k<j}b_k^{\alpha_k}\right)
+\left(b_j^{\alpha_j}-a_j^{\alpha_j}\right)
+\left(\prod_{k>j}a_k^{\alpha_k}\right).
+\]
+Since $b_j^m-a_j^m=S_m(a_j,b_j)(b_j-a_j)$, this is
+\[
+        m_\alpha(b)-m_\alpha(a)=\sum_{j=1}^n q_{\alpha j}(a,b)(b_j-a_j).
+\]
+Summing over monomials and rows proves the claim.
+\end{proof}
+
+\begin{remark}
+The matrix $Q_F(a,b)$ is neither a finite-difference Jacobian nor an approximation introduced for convenience.  It is an exact divided-slope representation of the polynomial increment along an ordered coordinate telescope.  As $b\to a$ it tends to $J_F(a)$.
+\end{remark}
+
+\section{Local cubic basin theorem}
+
+Let $\zeta$ be a regular zero.  Put $e=a-\zeta$ and suppose $a$ is close to $\zeta$.  The strict cubic correction is
+\[
+        Q\delta_1=-F(a),\qquad
+        Q\delta_2=-\frac12 H_F(a;b;\delta_1,\delta_1),\qquad
+        a^+=a+\delta_1+\delta_2,
+\]
+where $Q=Q_F(a,b)$.
+
+\begin{definition}[Regular compatible finite-slope basin]\label{def:basin}
+A ball $B(\zeta,r)$ is a regular compatible finite-slope basin with constants $(M,L_2,L_3,c_b,c_Q,c_H)$ if, for every accepted probe pair $(a,b)$ in the ball:
+\begin{enumerate}[label=(\roman*)]
+\item $J_F(\zeta)$ is invertible and $\norm{J_F(z)^{-1}}\le M$ throughout the ball;
+\item $\norm{D^2F(z)}\le L_2$ and $\norm{D^3F(z)}\le L_3$ throughout the ball;
+\item $\norm{b-a}\le c_b\norm{F(a)}$;
+\item $Q_F(a,b)$ is invertible and $\norm{Q_F(a,b)^{-1}}\le 2M$;
+\item the finite-slope perturbation is compatible with cubic cancellation:
+\[
+        \norm{(Q_F(a,b)-J_F(a))(a-\zeta)}\le c_Q\norm{a-\zeta}^3;
+\]
+\item the finite second defect includes the finite-slope transport error and satisfies
+\[
+        \norm{H_F(a;b;\delta_1,\delta_1)-D^2F(a)[\delta_1,\delta_1]}
+        \le c_H\norm{e}^3.
+\]
+\end{enumerate}
+\end{definition}
+
+\begin{remark}[Why compatibility is needed]
+The weaker condition $Q_F(a,b)=J_F(a)+\OO(\norm e)$ is not enough for cubic convergence.  In general it produces an additional quadratic term of the form
+\[
+        J_F(a)^{-1}(Q_F(a,b)-J_F(a))e,
+\]
+which is not cancelled by the ordinary Hessian Halley correction.  Cubic convergence therefore requires either a stronger endpoint rule, for instance $b-a=\OO(\norm e^2)$ in the relevant direction, or a second-defect model that explicitly cancels this finite-slope perturbation.  This paper uses the compatibility condition above.
+\end{remark}
+
+\begin{theorem}[Local cubic finite-slope convergence]\label{thm:local-cubic}
+Inside a regular compatible finite-slope basin, the strict finite-slope Pandrosion update satisfies
+\[
+        \norm{a^+-\zeta}\le C\norm{a-\zeta}^3
+\]
+for all $a$ sufficiently close to $\zeta$, where $C$ depends only on the basin constants.
+\end{theorem}
+
+\begin{proof}
+Taylor expansion at $a$ gives
+\[
+        F(a)=J_F(a)e-\frac12D^2F(a)[e,e]+\OO(\norm e^3).
+\]
+Let $E_Q=Q_F(a,b)-J_F(a)$.  The compatibility condition gives $E_Qe=\OO(\norm e^3)$, hence
+\[
+        Qe=J_F(a)e+\OO(\norm e^3).
+\]
+Using the equation $Q\delta_1=-F(a)$ and the bounded inverse of $Q$, we obtain
+\[
+        \delta_1=-e+\frac12Q^{-1}D^2F(a)[e,e]+\OO(\norm e^3).
+\]
+Since $Q^{-1}=J_F(a)^{-1}+\OO(\norm e)$ on the basin, this also implies $\delta_1=-e+\OO(\norm e^2)$ and
+\[
+        \frac12Q^{-1}D^2F(a)[e,e]
+        =\frac12Q^{-1}D^2F(a)[\delta_1,\delta_1]+\OO(\norm e^3).
+\]
+The second-defect accuracy assumption yields
+\[
+        \delta_2=-\frac12Q^{-1}D^2F(a)[\delta_1,\delta_1]+\OO(\norm e^3).
+\]
+Therefore the quadratic term in $e+\delta_1$ is cancelled by $\delta_2$, leaving $e+\delta_1+\delta_2=\OO(\norm e^3)$.
+\end{proof}
+
+\section{Average time and failure probability}
+
+The next theorem is the exact complexity lever.  It does not depend on hidden numerical optimism; it is a geometric-trials calculation once inverse-polynomial basin access is known.
+
+\begin{definition}[Basin-access probability]\label{def:access}
+For input parameters $(n,d,N)$, say that a randomized Pandrosion trial has polynomial basin access if there is a polynomial $P(n,d,N)$ such that, for $F\sim\K(n,d)$, one independently sampled trial reaches a regular finite-slope basin and validates an approximate zero with probability
+\[
+        p_{n,d}\ge \frac{1}{P(n,d,N)}.
+\]
+\end{definition}
+
+\begin{theorem}[Expected polynomial time from basin access]\label{thm:expected}
+Assume polynomial basin access and assume one trial costs at most $C(n,d,N)$ arithmetic operations, where $C$ is polynomial.  Then repeated independent Pandrosion trials find an approximate zero in expected polynomial arithmetic time.
+\end{theorem}
+
+\begin{proof}
+The number $T$ of trials until success is geometric with success probability $p_{n,d}\ge 1/P(n,d,N)$.  Therefore
+\[
+        \E T=\frac1{p_{n,d}}\le P(n,d,N).
+\]
+The expected arithmetic cost is at most $C(n,d,N)P(n,d,N)$, a polynomial.
+\end{proof}
+
+\begin{theorem}[Controlled failure probability]\label{thm:failure}
+Under the assumptions of \cref{thm:expected}, after
+\[
+        K\ge P(n,d,N)\log(1/\eta)
+\]
+independent trials, the probability of no success is at most $\eta$.  In particular, exponentially small failure probability requires only polynomially many repetitions when $\log(1/\eta)$ is polynomially bounded.
+\end{theorem}
+
+\begin{proof}
+The failure probability after $K$ trials is
+\[
+        (1-p_{n,d})^K\le \exp(-Kp_{n,d})\le \exp\left(-K/P(n,d,N)\right).
+\]
+The stated choice gives $\exp(-K/P)\le\eta$.
+\end{proof}
+
+\begin{corollary}[Smale-17 reduction]\label{cor:reduction}
+If the 301 chart-probe distribution has polynomial basin access on Kostlan systems and its dense arithmetic implementation has polynomial trial cost, then strict finite-slope Pandrosion is an average-polynomial randomized algorithm for finding one approximate zero of a Kostlan polynomial system, with controllable failure probability.
+\end{corollary}
+
+\section{The remaining basin-access problem}
+
+The previous sections prove a conditional reduction: if randomized 301 trials reach a regular compatible finite-slope basin with inverse-polynomial probability, then repetition gives average-polynomial time and controlled failure probability.  What remains is not a local analytic issue but a global probabilistic one: one must prove that the actual chart/start/probe distribution used by 301 places enough probability mass inside such basins and that the endpoint selected by finite scoring preserves the compatibility conditions.
+
+\begin{problem}[Kostlan basin access for 301]\label{prob:basin-access}
+For $F\sim\K(n,d)$, prove or disprove that the actual 301 chart/start/probe distribution has a polynomial $P(n,d,N)$ such that one trial produces an accepted approximate zero with probability at least $1/P(n,d,N)$.
+\end{problem}
+
+\begin{proposition}[Conditional access criterion]\label{prop:conditional-access}
+Assume that for $F\sim\K(n,d)$ there is a measurable good set $\mathcal G_F$ of 301 trial randomness with trial-measure at least $1/P(n,d,N)$, and that every trial in $\mathcal G_F$:
+\begin{enumerate}[label=(\roman*)]
+\item starts in the local neighborhood of a regular zero $\zeta$;
+\item selects a finite-slope endpoint $b$ for which $Q_F(a,b)$ is uniformly invertible;
+\item satisfies the finite-slope compatibility condition
+\[
+        \norm{(Q_F(a,b)-J_F(a))(a-\zeta)}\le C\norm{a-\zeta}^3;
+\]
+\item has a finite second defect accurate to cubic order, including transport error;
+\item passes a rigorous approximate-zero validation.
+\end{enumerate}
+Then repeated 301 trials find one approximate zero in average polynomial time, with failure probability at most $\eta$ after $\poly(n,d,N)\log(1/\eta)$ arithmetic work.
+\end{proposition}
+
+\begin{proof}
+Items (i)--(iv) place the trial inside the hypotheses of the local cubic theorem, so the strict finite-slope correction reaches an approximate-zero neighborhood in a bounded number of local corrections.  Item (v) turns this local success into an accepted output.  Since the good randomness has measure at least $1/P(n,d,N)$, \cref{thm:expected,thm:failure} give the expected-time and high-probability bounds.
+\end{proof}
+
+\begin{remark}[Exact remaining gap]
+At present this paper does not prove \cref{prob:basin-access}.  The missing estimate is a quantitative inverse-polynomial lower bound for the actual 301 randomized chart/start/probe law to land in a certified local basin of some regular Kostlan zero, while also selecting a finite-slope endpoint satisfying the strengthened compatibility condition.  Empirically the event appears common on the benchmarked stress suite; mathematically it requires new distributional estimates for chart visibility, finite-slope determinant anti-concentration, endpoint-selection stability, and alpha-theory basin volume.
+\end{remark}
+
+\begin{proposition}[Sufficient subclaims for basin access]\label{prop:subclaims}
+A proof of \cref{prob:basin-access} would follow from the following estimates with polynomial losses only:
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Root visibility:} a random logarithmic projective chart places at least one regular zero in a bounded chart box with probability $1/\poly(n,d,N)$;
+\item \emph{Finite-slope conditioning:} conditioned on visibility, the determinant of $Q_F(a,b)$ avoids a small ball around zero with probability $1-1/\poly(n,d,N)$ for selected probe pairs near that zero;
+\item \emph{Compatibility:} the endpoint-selection score chooses, with inverse-polynomial probability, a pair satisfying $(Q_F(a,b)-J_F(a))(a-\zeta)=\OO(\norm{a-\zeta}^3)$ or an equivalent transport-cancellation condition;
+\item \emph{Defect accuracy:} the symmetric second finite defect approximates the transported Hessian defect to cubic order on a subbox of inverse-polynomial radius;
+\item \emph{Validation stability:} residual validation plus Newton-polish certification accepts every point in a fixed alpha-theory basin and rejects only outside a slightly larger basin, up to inverse-polynomial numerical margins.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+If (i) holds, a trial reaches a chart region containing a candidate regular zero with inverse-polynomial probability.  Estimates (ii)--(iv) ensure that the finite-slope pair satisfies the regular compatible basin hypotheses of \cref{def:basin} on an inverse-polynomial subbox.  The local cubic theorem maps that subbox into an approximate-zero neighborhood after a bounded number of strict cubic corrections.  Estimate (v) turns this into an accepted validated output.  Multiplying inverse-polynomial probabilities and subtracting inverse-polynomial bad events still leaves inverse-polynomial access after adjusting the polynomial.
+\end{proof}
+
+\section{Dense arithmetic cost}
+
+A dense implementation with $n$ equations, $N$ monomials per equation, and $R$ probe candidates forms values and finite-slope rows by monomial products and telescopic slopes.  With straightforward dense arithmetic, one trial uses
+\[
+        \OO(R n N + R n^3)
+\]
+operations for scoring and linear solves, plus logarithmic factors from line search and validation.  If $R$, line-search depth, and local-correction count are bounded by polynomials in $(n,d,N)$, the trial cost is polynomial.  The existing 301 implementation uses fixed constants in the reported experiments, so its measured cost is well inside this envelope.
+
+\section{Large 301 diagnostic evidence}
+
+The large diagnostic benchmark used the standalone NumPy script
+\[
+\texttt{flow/benchmark\_301\_smale17\_large.py}
+\]
+on dense Kostlan systems with cases
+\[
+\begin{gathered}
+(2,2),(2,3),\ldots,(2,15),\quad
+(3,2),(3,3),\ldots,(3,8),\quad
+(4,2),(4,3),(4,4),(4,5),\\
+(5,2),(5,3),(5,4),\quad
+(6,2),(6,3),\quad (7,2),(8,2),(10,2),
+\end{gathered}
+\]
+seeds $0,\ldots,15$, pool $8192$, epochs $40$, acceptance $10^{-8}$, tolerance $10^{-12}$, line-search depth $14$, and $12$ probe candidates.  Each instance requested $\min(d^n,50)$ roots.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lr}
+\toprule
+Statistic & Value\\
+\midrule
+Completed runs & $528/528$\\
+Requested roots recovered & $21940/21952$\\
+Alpha-lite certified roots & $20549/21940$\\
+Strong roots & $12054/21940$\\
+Median seconds/root & $3.9941\cdot10^{-2}$\\
+P90 seconds/root & $1.3210\cdot10^{-1}$\\
+Median trials/root & $6.913$\\
+P90 trials/root & $28.28$\\
+Median residual & $1.0766\cdot10^{-13}$\\
+P90 run-median residual & $9.7932\cdot10^{-13}$\\
+Median polished residual & $5.9277\cdot10^{-15}$\\
+Median $\cond(J)$ & $4.103$\\
+\bottomrule
+\end{tabular}
+\caption{Large 301 Smale-17 diagnostic benchmark.  This benchmark asks for many roots per instance, not merely the one root required by Smale's seventeenth problem.}
+\label{tab:large}
+\end{table}
+
+The empirical point is not that every requested root was recovered: twelve requested roots were missed.  The point is that the one-root target was overwhelmingly exceeded on a broad stress suite.  For the purpose of Smale-17-style approximate-zero search, the relevant event is success at least once per random instance.  On this benchmark every run produced many high-precision roots, so the empirical one-root failure rate was zero over $528$ runs.
+
+\section{Relation to homotopy continuation}
+
+Homotopy continuation remains the established theoretical solution route for Smale's seventeenth problem.  It proves average-polynomial behavior by following a path from a known solved system to the target and controlling the condition length.  Pandrosion does not follow such paths.  Its bet is that randomized chart geometry and exact finite slopes give direct basin access often enough.
+
+Thus the honest comparison is:
+\begin{itemize}
+\item homotopy currently owns the theorem;
+\item 301 currently owns a strong empirical sprint on the tested stress suite;
+\item this paper proves that if inverse-polynomial basin access is established, the remaining average-time and failure-probability requirements follow immediately.
+\end{itemize}
+
+\section{Conclusion}
+
+The finite-slope Pandrosion route to Smale's seventeenth problem is now reduced to one clean probabilistic theorem.  Exact algebra gives the matrix identity.  Local analysis gives cubic convergence inside a regular basin.  Elementary probability gives expected polynomial time and failure-probability control from inverse-polynomial basin access.  The 301 benchmark shows that the engine routinely does more than the one-root requirement on Smale-17-style stress systems.  The next mathematical task is therefore not vague: solve the Kostlan basin-access problem for the actual 301 trial law, including finite-slope compatibility, or find the distributional obstruction that breaks it.
+
+\begin{thebibliography}{9}
+\bibitem{smale17}
+S. Smale, \emph{Mathematical problems for the next century}, Math. Intelligencer 20 (1998), 7--15.
+\bibitem{bcss}
+L. Blum, F. Cucker, M. Shub, and S. Smale, \emph{Complexity and Real Computation}, Springer, 1998.
+\bibitem{shubsmale}
+M. Shub and S. Smale, \emph{Complexity of Bezout's theorem. I: Geometric aspects}, J. Amer. Math. Soc. 6 (1993), 459--501.
+\bibitem{beltranpardo}
+C. Beltran and L. M. Pardo, \emph{On Smale's 17th problem: a probabilistic positive solution}, Found. Comput. Math. 8 (2008), 1--43.
+\bibitem{lairez}
+P. Lairez, \emph{A deterministic algorithm to compute approximate roots of polynomial systems in polynomial average time}, Found. Comput. Math. 17 (2017), 1265--1292.
+\bibitem{monomial}
+I. Besevic, \emph{Pandrosion Monomial v99 Submission}, manuscript, May 2026.
+\bibitem{finitehalley}
+I. Besevic, \emph{Cubic Pandrosion by Finite-Slope Halley Acceleration}, manuscript, May 2026.
+\bibitem{smale20}
+I. Besevic, \emph{Finite-Slope Pandrosion for Multivariate Polynomial Systems: A derivative-free cubic candidate framework for Smale's seventeenth problem}, manuscript, May 2026.
+\end{thebibliography}
+
+\end{document}
