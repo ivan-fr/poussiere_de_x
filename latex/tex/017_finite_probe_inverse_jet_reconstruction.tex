@@ -33,7 +33,7 @@
 \maketitle
 
 \begin{abstract}
-The all-order tensor inverse-jet theorem identifies the optimal local chart for a regular zero of an analytic system, but it is stated in terms of Taylor tensors. A derivative-free Pandrosion engine should recover those tensors from finite probes. This paper formulates and proves the local consistency statement behind that goal. For an analytic map \(G:\C^n\to\C^n\) near a regular zero \(\rho\), finite symmetric probes at radius \(h\) recover the homogeneous Taylor coefficients \(G_q\) with error \(\Oterm(h)\), provided the probe stencil is unisolvent for homogeneous polynomials through degree \(m\). Applying the inverse-jet recursion to the recovered tensors gives estimated chart coefficients \(\widehat B_q(h)\) satisfying
+The all-order tensor inverse-jet theorem identifies the optimal local chart for a regular zero of an analytic system, but it is stated in terms of Taylor tensors. A derivative-free Pandrosion engine should recover those tensors from finite probes. This paper formulates and proves the local consistency statement behind that goal. For an analytic map \(G:\C^n\to\C^n\) near a regular zero \(\rho\), a fixed total-degree unisolvent probe cloud, evaluated at radius \(h\), recovers the homogeneous Taylor coefficients \(G_q\) with error \(\Oterm(h)\). The reconstruction is done by one scaled polynomial fit, not by recursively subtracting lower-order \(\Oterm(h)\) approximations; this avoids the loss of powers of \(h\) that would otherwise contaminate higher tensors. Applying the inverse-jet recursion to the recovered tensors gives estimated chart coefficients \(\widehat B_q(h)\) satisfying
 \[
         \widehat B_q(h)\longrightarrow B_q,\qquad 1\le q\le m,
 \]
@@ -62,20 +62,35 @@ The coefficients \(B_q\) are computable from the Taylor tensors of \(G\). A Pand
 Can the inverse-jet coefficients be reconstructed from finite probe evaluations as the probe radius tends to zero?
 \end{quote}
 
+
 \section{Probe stencils}
 
-Let \(H_q\) denote the finite-dimensional vector space of homogeneous polynomial maps \(P:\C^n\to\C^n\) of degree \(q\).
+Let \(H_q\) denote the finite-dimensional vector space of homogeneous polynomial maps \(P:\C^n\to\C^n\) of degree \(q\), and let
+\[
+        \Pi_m^0=H_1\oplus\cdots\oplus H_m
+\]
+be the space of \(\C^n\)-valued polynomials of total degree at most \(m\) with zero constant term.
 
-\begin{definition}[Unisolvent probe stencil]
-A finite set of directions \(V=\{v_1,\ldots,v_N\}\subset\C^n\) is unisolvent through degree \(m\) if, for every \(1\le q\le m\), the evaluation map
+\begin{definition}[Homogeneous unisolvency]
+A finite set of directions \(V=\{v_1,\ldots,v_N\}\subset\C^n\) is homogeneous-unisolvent through degree \(m\) if, for every \(1\le q\le m\), the evaluation map
 \[
         H_q\to(\C^n)^N,\qquad P\mapsto(P(v_1),\ldots,P(v_N))
 \]
 is injective.
 \end{definition}
 
+\begin{definition}[Total-degree probe cloud]
+A finite probe cloud \(Y=\{y_1,\ldots,y_M\}\subset\C^n\) is total-degree unisolvent through degree \(m\) if the evaluation map
+\[
+        \Pi_m^0\to(\C^n)^M,
+        \qquad P\mapsto(P(y_1),\ldots,P(y_M))
+\]
+is injective.
+Equivalently, a polynomial in \(\Pi_m^0\) that vanishes on all points of \(Y\) must be zero.
+\end{definition}
+
 \begin{remark}
-Generic directions are unisolvent once \(N\) is at least the dimension of the relevant homogeneous polynomial space. In implementation, one may use an overdetermined stencil and solve by least squares.
+Generic probe clouds are total-degree unisolvent once the number of nodes is at least \(\dim \Pi_m^0\). In implementation, one may use an overdetermined cloud and a fixed least-squares reconstruction operator. Homogeneous-unisolvent directions are still useful, but isolating the degree-\(q\) tensor from a single radius requires a total-degree fit or an equivalent multi-radius finite-difference formula.
 \end{remark}
 
 Write the Taylor expansion at a regular zero \(\rho\) as
@@ -87,15 +102,19 @@ Write the Taylor expansion at a regular zero \(\rho\) as
 \section{Homogeneous tensor recovery}
 
 \begin{theorem}[Finite-probe Taylor tensor recovery]\label{thm:tensor-recovery}
-Let \(G\) be analytic near \(\rho\), and let \(V\) be unisolvent through degree \(m\). For \(h>0\), define homogeneous coefficient estimates recursively by fitting the values
+Let \(G\) be analytic near \(\rho\), and let \(Y\) be total-degree unisolvent through degree \(m\). Let
 \[
-        R_q(h,v_i)
-        =
-        h^{-q}\left(
-        G(\rho+h v_i)-\sum_{\ell=1}^{q-1}h^\ell \widehat G_\ell(h)[v_i,\ldots,v_i]
-        \right)
+        E_Y:\Pi_m^0\to(\C^n)^M,
+        \qquad E_Y(P)=(P(y_1),\ldots,P(y_M)),
 \]
-over the stencil \(V\). Then, for each \(1\le q\le m\),
+and choose once and for all a bounded linear reconstruction operator
+\(L_Y:(\C^n)^M\to\Pi_m^0\) such that \(L_YE_Y=\mathrm{id}_{\Pi_m^0}\).
+For \(h>0\), define
+\[
+        \widehat P_h(y)=\sum_{q=1}^m h^{q-1}\widehat G_q(h)[y,\ldots,y]
+        =L_Y\bigl(h^{-1}G(\rho+h y_1),\ldots,h^{-1}G(\rho+h y_M)\bigr).
+\]
+When \(E_Y\) is square this is ordinary interpolation; when the cloud is overdetermined it is a fixed least-squares-type reconstruction. Then, for each \(1\le q\le m\),
 \[
         \widehat G_q(h)\to G_q
         \quad\text{as }h\to0.
@@ -104,25 +123,27 @@ If the evaluations of \(G\) are exact, the error is \(\Oterm(h)\).
 \end{theorem}
 
 \begin{proof}
-For \(q=1\),
+Taylor expansion gives, uniformly for \(y\) in the fixed finite cloud \(Y\),
 \[
-        h^{-1}G(\rho+h v)=G_1[v]+\Oterm(h)
-\]
-uniformly for \(v\in V\). Since the evaluation map on \(H_1\) is injective and finite-dimensional, the inverse on its image is bounded after choosing any fixed reconstruction operator. Hence \(\widehat G_1(h)=G_1+\Oterm(h)\).
-
-Assume \(\widehat G_\ell(h)=G_\ell+\Oterm(h)\) for all \(\ell<q\). Taylor expansion gives
-\[
-        G(\rho+h v)
+        h^{-1}G(\rho+h y)
         =
-        \sum_{\ell=1}^{q}h^\ell G_\ell[v,\ldots,v]
-        +\Oterm(h^{q+1}).
+        \sum_{q=1}^{m}h^{q-1}G_q[y,\ldots,y]
+        +\Oterm(h^m).
 \]
-Subtracting the already reconstructed lower-order terms and dividing by \(h^q\) gives
+Let
 \[
-        R_q(h,v)=G_q[v,\ldots,v]+\Oterm(h)
+        P_h^*(y)=\sum_{q=1}^{m}h^{q-1}G_q[y,\ldots,y]\in\Pi_m^0.
 \]
-on the finite stencil. Unisolvency again converts value error into coefficient error. Induction proves the result.
+Thus the scaled data differ from \(E_Y(P_h^*)\) by \(\Oterm(h^m)\). Applying the fixed bounded reconstruction operator \(L_Y\) gives \(\widehat P_h-P_h^*=\Oterm(h^m)\) in coefficient norm. In particular, the degree-\(q\) homogeneous coefficient satisfies
+\[
+        h^{q-1}\bigl(\widehat G_q(h)-G_q\bigr)=\Oterm(h^m).
+\]
+Hence \(\widehat G_q(h)-G_q=\Oterm(h^{m-q+1})\), which is at least \(\Oterm(h)\) for \(q\le m\). This proves the claim.
 \end{proof}
+
+\begin{remark}[Why recursive subtraction is avoided]
+If one first reconstructs \(\widehat G_\ell-G_\ell=\Oterm(h)\) and then subtracts those lower orders before dividing by \(h^q\), the lower-order errors are amplified by factors \(h^{\ell-q}\). For \(\ell<q-1\), this amplification can diverge. The total-degree interpolation in \cref{thm:tensor-recovery} isolates all degrees in one finite-dimensional solve, so no lower-order \(\Oterm(h)\) error is divided by a higher power of \(h\).
+\end{remark}
 
 \section{Inverse-jet reconstruction}
 
@@ -165,21 +186,21 @@ Substitute the coefficient convergence from \cref{thm:inverse-consistency} into 
 \section{Noise and conditioning}
 
 \begin{proposition}[Stable overdetermined reconstruction]\label{prop:noise}
-Suppose the stencil reconstruction operator has condition number at most \(\kappa_V\), and suppose probe evaluations have additive error at most \(\varepsilon_h\). Then the recovered \(q\)-th Taylor tensor has an additional error bounded by
+Suppose the total-degree reconstruction operator has condition number at most \(\kappa_Y\), and suppose probe evaluations have additive error at most \(\varepsilon_h\). Then the recovered \(q\)-th Taylor tensor has an additional error bounded by
 \[
-        \Oterm(\kappa_V\,\varepsilon_h h^{-q})
+        \Oterm(\kappa_Y\,\varepsilon_h h^{-q})
 \]
 at order \(q\). Consequently consistent order-\(m\) reconstruction requires \(\varepsilon_h=o(h^m)\) for the highest tensor.
 \end{proposition}
 
 \begin{proof}
-The fit at degree \(q\) is a finite-dimensional linear inverse problem after lower-order subtraction. Additive value errors are divided by \(h^q\), and the reconstruction operator amplifies them by at most \(\kappa_V\). The highest recovered degree imposes the strongest scaling requirement.
+The scaled data \(h^{-1}G(\rho+h y_j)\) inherit additive error at most \(\varepsilon_h h^{-1}\). The fixed polynomial reconstruction amplifies this by at most \(\kappa_Y\). The degree-\(q\) coefficient of \(\widehat P_h\) is \(h^{q-1}\widehat G_q(h)\), so division by \(h^{q-1}\) gives an additional tensor error of size \(\Oterm(\kappa_Y\varepsilon_h h^{-q})\). The highest recovered degree imposes the strongest scaling requirement.
 \end{proof}
 
 \section{Pandrosion engine conjecture}
 
 \begin{conjecture}[Derivative-free inverse-jet reconstruction by stable probes]
-A Pandrosion engine using symmetric probe clouds, finite-slope rank filtering, equal-value pole avoidance, and shrinking probe radius \(h\) reconstructs the all-order inverse-jet coefficients through degree \(m\) whenever the probe stencil remains uniformly unisolvent and the effective evaluation noise is \(o(h^m)\).
+A Pandrosion engine using symmetric total-degree probe clouds, finite-slope rank filtering, equal-value pole avoidance, and shrinking probe radius \(h\) reconstructs the all-order inverse-jet coefficients through degree \(m\) whenever the probe cloud remains uniformly unisolvent and the effective evaluation noise is \(o(h^m)\).
 \end{conjecture}
 
 \begin{conjecture}[Reconstructed chart multiplier law]
