@@ -1,0 +1,313 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs}
+\usepackage{enumitem,xcolor,hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}[definition]{Assumption}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\C}{\mathbb C}
+\newcommand{\N}{\mathbb N}
+\newcommand{\PP}{\mathbb P}
+\newcommand{\E}{\mathbb E}
+\newcommand{\K}{\mathcal K}
+\newcommand{\B}{\mathcal B}
+\newcommand{\G}{\mathcal G}
+\newcommand{\Q}{\mathcal Q}
+\newcommand{\OO}{\mathcal O}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\diag}{diag}
+
+\title{Finite-Slope Pandrosion for Multivariate Polynomial Systems\\[3pt]
+\large A derivative-free cubic candidate framework for Smale's seventeenth problem}
+\author{Ivan Besevic\\Independent Mathematical Research}
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Smale's seventeenth problem asks for a deterministic or randomized algorithm that finds an approximate zero of a complex polynomial system in average polynomial time.  This paper develops a finite-slope Pandrosion framework for square systems $F:\C^n\to\C^n$, motivated by the exact monomial chart-scaling theory and by the multivariate engine \texttt{301}.  The method replaces analytic Jacobians and Hessians by exact telescopic slope matrices and symmetric finite-slope second defects.  A trial consists of a projective product chart, logarithmic homothety/inversion, start optimization, and a strict cubic finite-slope Halley correction
+\[
+        Q_F(a,b)\delta_1=-F(a),\qquad
+        Q_F(a,b)\delta_2=-\frac12 H_F(a;b;\delta_1,\delta_1),
+        \qquad \delta=\delta_1+\delta_2.
+\]
+The raw Pandrosion step $\delta_1$ is not accepted as a fallback.  We prove the exact finite-slope identity, a local cubic-style convergence theorem under regularity and second-defect accuracy assumptions, and a conditional average-polynomial complexity theorem reducing a Smale-17 result to a randomized chart-basin access hypothesis.  Finally, we report a diagnostic Kostlan benchmark: on $120$ runs across dimensions and degrees, engines 200, 201, and 301 each found $2024/2024$ requested roots; 301 achieved the best median residual ($5.90\cdot10^{-14}$), the best median time per root ($2.13\cdot10^{-2}$s), and the largest number of strong Newton-polished certificates ($1411/2024$).  The result is not a solution of Smale's problem, but it isolates a concrete finite-slope route: prove that Pandrosion chart-probes hit approximate-zero basins with inverse-polynomial probability.
+\end{abstract}
+
+\paragraph{Scope and status.}
+The paper contains rigorous local and conditional statements plus empirical evidence.  It does not claim that Smale's seventeenth problem is solved.  Its main contribution is a precise candidate architecture and a falsifiable complexity reduction.
+
+\section{Introduction}
+
+The monomial Pandrosion paper showed that for $z^p=x$ the homothetic chart variable $y$ controls an exact multiplier
+\[
+        \lambda_{p,y}=1-\frac{p}{S_p(y^{1/p})},
+\]
+where $S_p$ is the finite geometric slope.  The practical lesson is simple: chart scaling and inversion should move the problem near a logarithmically balanced region before applying a finite-slope corrector.  In one variable this is an exact theorem; in several variables it becomes a chart-and-condition principle.
+
+The purpose of this paper is to turn that principle into a multivariate candidate for Smale's seventeenth problem.  Let
+\[
+        F=(F_1,\ldots,F_n):\C^n\to\C^n
+\]
+be a square polynomial system, with dense or Kostlan-distributed coefficients.  We want a method that does not follow homotopy paths and does not require analytic derivatives during the main correction.  The proposed Pandrosion engine uses:
+\begin{enumerate}[label=(\roman*)]
+\item coordinatewise Riemann/Mobius charts and reciprocal charts;
+\item global homothety inspired by the monomial logarithmic rule;
+\item finite probe scoring for residual, condition, scale, and equal-value separation;
+\item an exact telescopic matrix $Q_F(a,b)$ satisfying $F(b)-F(a)=Q_F(a,b)(b-a)$;
+\item a strict cubic finite-slope Halley step using a symmetric second defect.
+\end{enumerate}
+
+The resulting algorithm is derivative-free in its correction.  Its certification, used only for benchmarking, may of course reconstruct analytic Jacobians to check whether the produced point is an approximate zero in the usual Newton sense.
+
+\section{The exact multivariate finite-slope matrix}
+
+Let $m_\alpha(z)=z_1^{\alpha_1}\cdots z_n^{\alpha_n}$ with $\alpha\in\N^n$.  For two points $a,b\in\C^n$, define the coordinate power slope
+\[
+        S_m(a_j,b_j)=\sum_{r=0}^{m-1} b_j^{m-1-r}a_j^r,
+        \qquad S_0(a_j,b_j)=0.
+\]
+For a monomial $m_\alpha$, set
+\[
+        q_{\alpha j}(a,b)=
+        \left(\prod_{k<j} b_k^{\alpha_k}\right)
+        S_{\alpha_j}(a_j,b_j)
+        \left(\prod_{k>j} a_k^{\alpha_k}\right).
+\]
+If $F_i(z)=\sum_\alpha c_{i\alpha}m_\alpha(z)$, define
+\[
+        Q_F(a,b)_{ij}=\sum_\alpha c_{i\alpha}q_{\alpha j}(a,b).
+\]
+
+\begin{theorem}[Exact telescopic Pandrosion slope]\label{thm:telescopic}
+For all $a,b\in\C^n$,
+\[
+        F(b)-F(a)=Q_F(a,b)(b-a).
+\]
+\end{theorem}
+
+\begin{proof}
+For a monomial, telescope by changing coordinates from $a$ to $b$ one at a time:
+\[
+\prod_{k=1}^n b_k^{\alpha_k}-\prod_{k=1}^n a_k^{\alpha_k}
+=\sum_{j=1}^n
+\left(\prod_{k<j}b_k^{\alpha_k}\right)
+\left(b_j^{\alpha_j}-a_j^{\alpha_j}\right)
+\left(\prod_{k>j}a_k^{\alpha_k}\right).
+\]
+Since $b_j^m-a_j^m=S_m(a_j,b_j)(b_j-a_j)$, the monomial identity follows.  Summing over all monomials and rows gives the stated matrix identity.
+\end{proof}
+
+\begin{remark}
+$Q_F(a,b)$ is not a numerical Jacobian.  It is an exact divided-slope object attached to the pair $(a,b)$ and the ordered coordinate telescope.  As $b\to a$, it converges to the analytic Jacobian $J_F(a)$, but the identity in \cref{thm:telescopic} holds at finite separation.
+\end{remark}
+
+\section{Strict finite-slope cubic correction}
+
+At a current point $a$, choose a probe endpoint $b$ by the chart-probe score.  Let $Q=Q_F(a,b)$.  The first defect solves
+\[
+        Q\delta_1=-F(a).
+\]
+For a small finite probe scale $h$, define a symmetric second defect in the direction $\delta_1$ by
+\[
+        H_F(a;b;\delta_1,\delta_1)
+        =\frac{F(a+h\delta_1)-2F(a)+F(a-h\delta_1)}{h^2}
+        +R_Q(a,b,h,\delta_1),
+\]
+where $R_Q$ denotes the correction needed when the same finite-slope chart $Q_F(a,b)$ is used to transport the second defect.  In the implementation this is estimated by symmetric finite probes; no analytic Hessian is formed.  The cubic correction is
+\[
+        Q\delta_2=-\frac12 H_F(a;b;\delta_1,\delta_1),
+        \qquad \delta=\delta_1+\delta_2.
+\]
+A line search accepts only points $a+\tau\delta$.  The raw step $a+\tau\delta_1$ is not an admissible fallback.
+
+\begin{definition}[Strict cubic Pandrosion step]
+A local correction is strict cubic if every accepted direction is of the form $\delta_1+\delta_2$ above and if $\delta_1$ alone is used only as an internal finite-slope defect, never as an accepted candidate direction.
+\end{definition}
+
+\section{Local cubic theorem}
+
+Let $\zeta$ be a regular zero of $F$.  Write $e=a-\zeta$.  The following theorem is intentionally local.  It says that finite-slope Pandrosion can inherit Halley-type cubic behavior once the chart-probe has entered a well-conditioned basin.
+
+\begin{assumption}[Regular finite-slope basin]\label{ass:basin}
+On a ball $B(\zeta,r)$:
+\begin{enumerate}[label=(\roman*)]
+\item $F$ is analytic and $J_F(\zeta)$ is invertible;
+\item $\norm{J_F(z)^{-1}}\le M$ and the second and third derivatives are bounded by $L_2,L_3$;
+\item the probe endpoint satisfies $\norm{b-a}\le c_b\norm{F(a)}$;
+\item $Q_F(a,b)$ is invertible and $\norm{Q_F(a,b)^{-1}}\le 2M$;
+\item the finite second defect satisfies
+\[
+        H_F(a;b;\delta_1,\delta_1)=D^2F(a)[\delta_1,\delta_1]+\OO(\norm{e}^3).
+\]
+\end{enumerate}
+\end{assumption}
+
+\begin{theorem}[Local cubic-style finite-slope convergence]\label{thm:local-cubic}
+Under \cref{ass:basin}, the strict cubic Pandrosion update $a^+=a+\delta_1+\delta_2$ satisfies
+\[
+        \norm{a^+-\zeta}\le C\norm{a-\zeta}^3
+\]
+for $a$ sufficiently close to $\zeta$, with $C$ depending on $M,L_2,L_3,c_b$ and the defect constants.
+\end{theorem}
+
+\begin{proof}
+Since $Q_F(a,b)=J_F(a)+\OO(\norm{b-a})$ and $\norm{b-a}=\OO(\norm{F(a)})=\OO(\norm e)$, the first solve gives
+\[
+        \delta_1=-J_F(a)^{-1}F(a)+\OO(\norm e^2).
+\]
+The Newton expansion at a regular zero gives
+\[
+        a+\delta_1-\zeta=\frac12 J_F(a)^{-1}D^2F(a)[e,e]+\OO(\norm e^3),
+\]
+up to the same finite-slope perturbation order.  By the second-defect assumption,
+\[
+        \delta_2=-\frac12 Q^{-1}D^2F(a)[\delta_1,\delta_1]+\OO(\norm e^3).
+\]
+Because $\delta_1=-e+\OO(\norm e^2)$ and $Q^{-1}=J_F(a)^{-1}+\OO(\norm e)$, the quadratic term cancels the Newton quadratic error.  The remaining terms are cubic, giving the stated bound.
+\end{proof}
+
+\begin{remark}
+The theorem is not a global convergence proof.  It isolates the local target: once the randomized chart-probe mechanism reaches a regular basin and produces a controlled finite-slope pair, the strict cubic correction has the expected order.
+\end{remark}
+
+\section{A conditional Smale-17 complexity reduction}
+
+Let $\K(n,d)$ denote the standard square Kostlan distribution of $n$ polynomials of degree at most $d$ in $n$ variables.  Let $N=\binom{n+d}{d}$ be the number of monomials per equation, so the input size is proportional to $nN$ complex coefficients.
+
+\begin{definition}[Approximate-zero certificate]
+A point $z$ is a certified approximate zero for a regular root $\zeta$ if the Newton sequence from $z$ is well-defined and converges quadratically to $\zeta$.  In numerical diagnostics we use a conservative surrogate: small residual, small Newton correction $\beta(z)=\norm{J_F(z)^{-1}F(z)}$, and a tiny residual after one analytic Newton polish.
+\end{definition}
+
+\begin{assumption}[Randomized Pandrosion basin access]\label{ass:access}
+There is a randomized chart-probe distribution $\Pi_{n,d}$ and polynomials $P_1,P_2,P_3$ such that for $F\sim\K(n,d)$:
+\begin{enumerate}[label=(\roman*)]
+\item one trial can be generated, scored, and corrected using at most $P_1(n,d,N)$ arithmetic operations;
+\item with probability at least $1/P_2(n,d,N)$, a trial lands in a regular finite-slope basin satisfying \cref{ass:basin};
+\item the line search and residual validation certify success inside such a basin in at most $P_3(n,d,N)$ local operations.
+\end{enumerate}
+\end{assumption}
+
+\begin{theorem}[Conditional average-polynomial complexity]\label{thm:conditional-smale}
+Under \cref{ass:access}, strict cubic finite-slope Pandrosion finds a certified approximate zero of $F\sim\K(n,d)$ in expected polynomial arithmetic time.
+\end{theorem}
+
+\begin{proof}
+Each independent trial succeeds with probability at least $p\ge 1/P_2(n,d,N)$.  The expected number of trials before success is at most $1/p\le P_2(n,d,N)$.  Each trial costs at most $P_1+P_3$ operations.  Therefore the expected cost is at most
+\[
+        P_2(n,d,N)\bigl(P_1(n,d,N)+P_3(n,d,N)\bigr),
+\]
+which is polynomial.
+\end{proof}
+
+\begin{corollary}[The real obstruction]
+For this Pandrosion route, Smale's seventeenth problem reduces to proving \cref{ass:access}: randomized logarithmic charting, inversion, homothety, and finite probe scoring must hit a regular cubic basin with inverse-polynomial probability on Kostlan input.
+\end{corollary}
+
+\section{The 301 algorithm}
+
+The implementation \texttt{301\_pandrosion\_anchored\_full\_cubic\_halley\_numpy\_engine.py} is a direct realization of the framework:
+\begin{enumerate}[label=(\roman*)]
+\item generate a dense square Kostlan system;
+\item sample a Riemann/Mobius chart coordinatewise, including reciprocal near-infinity charts;
+\item apply a global homothety $\Lambda$ inspired by the monomial logarithmic rule;
+\item improve the start by radial/geometric start optimization;
+\item score probe endpoints by residual, finite-slope condition, logarithmic scale, equal-value gap, and curvature proxies;
+\item solve the exact telescopic finite-slope system $Q\delta_1=-F(a)$;
+\item estimate the second defect by symmetric finite probes;
+\item solve $Q\delta_2=-\frac12H$ and line-search only along $\delta_1+\delta_2$;
+\item validate residual and cluster roots.
+\end{enumerate}
+The engine is intentionally standalone: NumPy only, no SciPy, no analytic Newton or Jacobian fallback, no homotopy continuation, and no imports from earlier flow scripts.
+
+\section{Empirical diagnostic}
+
+A diagnostic suite compared engines 200, 201, and 301 on random dense Kostlan systems.  The tested cases were
+\[
+(2,2),(2,3),(2,4),(2,5),(2,6),(2,8),(2,10),
+(3,2),(3,3),(3,4),(3,5),(4,2),(4,3),(5,2),(6,2),
+\]
+with seeds $0,\ldots,7$ and requested roots $\min(d^n,20)$.  The suite used pool $4096$, epochs $32$, tolerance $10^{-12}$, residual acceptance $10^{-8}$, and $10$ probe candidates.  Certification was performed after the fact by reconstructing the same Kostlan system, evaluating the analytic Jacobian, applying one Newton polish, and checking residual/correction thresholds.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Engine & Runs & Roots & Certified & Strong & Median sec/root & Median residual\\
+\midrule
+200 & 120/120 & 2024/2024 & 1991/2024 & 1364/2024 & $2.143\cdot10^{-2}$ & $4.43\cdot10^{-13}$\\
+201 & 120/120 & 2024/2024 & 1990/2024 & 1341/2024 & $2.247\cdot10^{-2}$ & $6.96\cdot10^{-13}$\\
+301 & 120/120 & 2024/2024 & 1989/2024 & 1411/2024 & $2.126\cdot10^{-2}$ & $5.90\cdot10^{-14}$\\
+\bottomrule
+\end{tabular}
+\caption{Smale-17 candidate diagnostic.  All engines found all requested roots.  Engine 301 had the best median residual, best median time per root, and most strong certificates, while 200 had a slight advantage in weak certificates.}
+\label{tab:diagnostic}
+\end{table}
+
+Pairwise wins over the $120$ case/seed groups were:
+\begin{itemize}
+\item roots found: complete tie;
+\item certified roots: 301 wins $7$, 200 wins $1$, 201 wins $1$, ties $111$;
+\item speed per root: 301 wins $67$, 200 wins $51$, 201 wins $2$;
+\item median residual: 301 wins $91$, 200 wins $19$, 201 wins $5$, ties $5$.
+\end{itemize}
+
+\begin{remark}
+The benchmark is deliberately not presented as a proof.  It is evidence that strict cubic finite-slope Pandrosion is competitive enough to justify a theoretical attack on \cref{ass:access}.
+\end{remark}
+
+\section{Why this could matter}
+
+The classical homotopy route to Smale's problem controls paths in coefficient space.  Pandrosion suggests a different geometry: move the unknowns through chart scaling, inversion, equal-value separation, and finite-slope probes until a local approximate-zero basin is reached directly.  If \cref{ass:access} can be proved for Kostlan systems, the method would give a non-homotopy average-polynomial algorithm.
+
+The monomial paper supplies the exact one-dimensional chart-scaling invariant.  The present paper identifies its multivariate analogue: not a closed scalar multiplier, but the conditioning and basin-access behavior of $Q_F(a,b)$ under randomized logarithmic charts.  The research program is therefore concrete:
+\begin{enumerate}[label=(\arabic*)]
+\item prove probabilistic conditioning bounds for $Q_F(a,b)$ under Kostlan input and logarithmic chart probes;
+\item bound equal-value and rank-loss pole avoidance under reciprocal charts;
+\item show inverse-polynomial probability of entering a regular finite-slope basin;
+\item convert the local cubic theorem into a certified approximate-zero theorem;
+\item compare rigorously against homotopy continuation baselines.
+\end{enumerate}
+
+\section{Conclusion}
+
+Strict cubic finite-slope Pandrosion is not yet a solution to Smale's seventeenth problem, but it is now a sharply defined candidate.  The finite-slope matrix is exact, the cubic correction has a local theorem, the complexity statement is reduced to a single randomized basin-access hypothesis, and the empirical evidence favors the 301 architecture over earlier Pandrosion engines on a capped Kostlan diagnostic.  A proof of the basin-access hypothesis would turn the framework into an average-polynomial derivative-free route to approximate zeros.
+
+\begin{thebibliography}{9}
+\bibitem{smale17}
+S. Smale, \emph{Mathematical problems for the next century}, Math. Intelligencer 20 (1998), 7--15.
+\bibitem{bcss}
+L. Blum, F. Cucker, M. Shub, and S. Smale, \emph{Complexity and Real Computation}, Springer, 1998.
+\bibitem{shubsmale}
+M. Shub and S. Smale, \emph{Complexity of Bezout's theorem. I: Geometric aspects}, J. Amer. Math. Soc. 6 (1993), 459--501.
+\bibitem{beltranpardo}
+C. Beltran and L. M. Pardo, \emph{On Smale's 17th problem: a probabilistic positive solution}, Found. Comput. Math. 8 (2008), 1--43.
+\bibitem{monomial}
+I. Besevic, \emph{Pandrosion Monomial v99 Submission}, manuscript, May 2026.
+\bibitem{halley}
+I. Besevic, \emph{Cubic Pandrosion by Finite-Slope Halley Acceleration}, manuscript, May 2026.
+\bibitem{atlas}
+I. Besevic, \emph{Pandrosion Atlases and Dynamic Charts}, manuscript, May 2026.
+\bibitem{geodesic}
+I. Besevic, \emph{Geodesic Probe Flows in Pandrosion Geometry}, manuscript, May 2026.
+\bibitem{lojasiewicz}
+I. Besevic, \emph{Lojasiewicz Pandrosion Descent}, manuscript, May 2026.
+\end{thebibliography}
+
+\end{document}
