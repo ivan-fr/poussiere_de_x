@@ -1,0 +1,801 @@
+best_residual,bezout,case,degree,duplicates,engine,extract_seconds,failures,json,median_residual,n,requested_count,requested_roots,returncode,seed_index,stderr_tail,stdout_tail,success,total_seconds,trials_used,unique_roots,wall_seconds,worst_residual
+1.3472327678558681e-13,4,"2,2",2,3,201,0.026551246643066406,0,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed0.json,3.478942424410843e-12,2,4,4,0,0,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=125315038, terms=12, Bezout=4
+roots=4/4 success=True trials=7 duplicates=3 failures=0
+seconds: generation=0.02, extract=0.03, total=0.04
+best_root: residual=5.170e-10, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999865744338
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed0.json
+",True,0.04461526870727539,7,4,0.13090896606445312,5.169912724924825e-10
+7.631521572941402e-16,4,"2,2",2,20,301,0.09360408782958984,12,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed0.json,1.0048591735576161e-14,2,4,4,0,0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=125315038, terms=12, Bezout=4
+roots=4/4 success=True trials=36 duplicates=20 failures=12
+seconds: generation=0.01, extract=0.09, total=0.10
+best_root: residual=7.632e-16, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999865744338
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed0.json
+",True,0.10250687599182129,36,4,0.1587672233581543,5.009881802543133e-09
+5.155369359468229e-16,4,"2,2",2,3,201,0.023778915405273438,0,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed1.json,7.11392364266206e-14,2,4,4,0,1,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1102160111, terms=12, Bezout=4
+roots=4/4 success=True trials=7 duplicates=3 failures=0
+seconds: generation=0.01, extract=0.02, total=0.03
+best_root: residual=2.157e-10, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=0.007225009081018349
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed1.json
+",True,0.03240394592285156,7,4,0.08722090721130371,2.15650841840864e-10
+7.832041159795668e-16,4,"2,2",2,5,301,0.039685726165771484,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed1.json,1.3317774958330842e-11,2,4,4,0,1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1102160111, terms=12, Bezout=4
+roots=4/4 success=True trials=14 duplicates=5 failures=5
+seconds: generation=0.01, extract=0.04, total=0.05
+best_root: residual=7.832e-16, trial=11, Lambda=122.2530862738412, theta=72.0, startopt_ratio=0.001327987738673062
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed1.json
+",True,0.04864168167114258,14,4,0.10373473167419434,3.478215255963923e-09
+3.927683650008203e-16,4,"2,2",2,4,201,0.03342008590698242,2,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed2.json,1.3746771448506478e-13,2,4,4,0,2,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1416315366, terms=12, Bezout=4
+roots=4/4 success=True trials=10 duplicates=4 failures=2
+seconds: generation=0.01, extract=0.03, total=0.04
+best_root: residual=1.375e-13, trial=9, Lambda=1048576.0, theta=24.000000000000004, startopt_ratio=0.001224992337621971
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed2.json
+",True,0.04205322265625,10,4,0.09680509567260742,7.141009937724729e-11
+3.3422138886441676e-16,4,"2,2",2,34,301,0.13569116592407227,18,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed2.json,2.9062619228322592e-15,2,4,4,0,2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1416315366, terms=12, Bezout=4
+roots=4/4 success=True trials=56 duplicates=34 failures=18
+seconds: generation=0.01, extract=0.14, total=0.14
+best_root: residual=2.846e-15, trial=55, Lambda=46.43731958238136, theta=108.0, startopt_ratio=0.00327251969389865
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed2.json
+",True,0.14431285858154297,56,4,0.199462890625,4.140994481037676e-09
+2.8576114088871287e-16,4,"2,2",2,11,201,0.052993059158325195,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed3.json,4.967007407645019e-16,2,4,4,0,3,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1103600935, terms=12, Bezout=4
+roots=4/4 success=True trials=18 duplicates=11 failures=3
+seconds: generation=0.01, extract=0.05, total=0.06
+best_root: residual=2.858e-16, trial=7, Lambda=488957.28170624166, theta=18.0, startopt_ratio=0.3364000542187284
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed3.json
+",True,0.06123185157775879,18,4,0.11526679992675781,3.1313406925571506e-15
+6.305236623395947e-16,4,"2,2",2,5,301,0.03814101219177246,7,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed3.json,1.8474145323799477e-15,2,4,4,0,3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1103600935, terms=12, Bezout=4
+roots=4/4 success=True trials=16 duplicates=5 failures=7
+seconds: generation=0.01, extract=0.04, total=0.05
+best_root: residual=1.847e-15, trial=6, Lambda=2456.0042175443955, theta=12.000000000000002, startopt_ratio=0.15998389246656194
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed3.json
+",True,0.0464320182800293,16,4,0.09819388389587402,3.127737461881519e-11
+1.6476622377199301e-15,4,"2,2",2,7,201,0.03793907165527344,2,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed4.json,1.798634820682585e-13,2,4,4,0,4,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=809515332, terms=12, Bezout=4
+roots=4/4 success=True trials=13 duplicates=7 failures=2
+seconds: generation=0.01, extract=0.04, total=0.05
+best_root: residual=1.799e-13, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.999999991585299
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x2_seed4.json
+",True,0.046066999435424805,13,4,0.0978081226348877,2.2190948521745726e-09
+8.95090418262362e-16,4,"2,2",2,8,301,0.05624699592590332,17,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed4.json,4.360393982518402e-09,2,4,4,0,4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=809515332, terms=12, Bezout=4
+roots=4/4 success=True trials=29 duplicates=8 failures=17
+seconds: generation=0.01, extract=0.06, total=0.06
+best_root: residual=9.756e-09, trial=3, Lambda=21569.02416483192, theta=48.00000000000001, startopt_ratio=0.01440067106281099
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x2_seed4.json
+",True,0.06493496894836426,29,4,0.11912178993225098,9.75621158803425e-09
+3.6624741468941755e-15,9,"2,3",3,95,201,0.3889021873474121,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed0.json,2.6059968190221707e-12,2,9,9,0,0,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=1758292748, terms=20, Bezout=9
+roots=9/9 success=True trials=109 duplicates=95 failures=5
+seconds: generation=0.01, extract=0.39, total=0.40
+best_root: residual=2.606e-12, trial=5, Lambda=307241.8482784513, theta=108.0, startopt_ratio=0.01968298669494411
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed0.json
+",True,0.3975181579589844,109,9,0.45577192306518555,6.330169684615451e-09
+2.1305003386368745e-15,9,"2,3",3,52,301,0.267625093460083,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed0.json,9.257115758712225e-13,2,9,9,0,0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=1758292748, terms=20, Bezout=9
+roots=9/9 success=True trials=66 duplicates=52 failures=5
+seconds: generation=0.01, extract=0.27, total=0.28
+best_root: residual=9.257e-13, trial=11, Lambda=432941.77535487816, theta=32.0, startopt_ratio=4.427629547747471e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed0.json
+",True,0.27585625648498535,66,9,0.33065295219421387,1.9881261336712133e-10
+4.373154964984119e-16,9,"2,3",3,78,201,0.321943998336792,2,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed1.json,2.060771555637337e-12,2,9,9,0,1,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=788669912, terms=20, Bezout=9
+roots=9/9 success=True trials=89 duplicates=78 failures=2
+seconds: generation=0.01, extract=0.32, total=0.33
+best_root: residual=1.008e-09, trial=14, Lambda=6659.569431669384, theta=172.0, startopt_ratio=3.326225767785401e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed1.json
+",True,0.33037400245666504,89,9,0.3860287666320801,1.806522795696952e-09
+1.711418785518059e-15,9,"2,3",3,78,301,0.42821288108825684,36,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed1.json,2.763362727283444e-14,2,9,9,0,1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=788669912, terms=20, Bezout=9
+roots=9/9 success=True trials=123 duplicates=78 failures=36
+seconds: generation=0.01, extract=0.43, total=0.44
+best_root: residual=5.544e-15, trial=1, Lambda=356304.8104436325, theta=116.00000000000001, startopt_ratio=0.00016638126293411117
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed1.json
+",True,0.4366116523742676,123,9,0.4918851852416992,1.7594559749543884e-09
+4.652682298944613e-16,9,"2,3",3,34,201,0.20569300651550293,2,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed2.json,2.0356552994310694e-14,2,9,9,0,2,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=2049645671, terms=20, Bezout=9
+roots=9/9 success=True trials=45 duplicates=34 failures=2
+seconds: generation=0.01, extract=0.21, total=0.21
+best_root: residual=3.384e-15, trial=3, Lambda=475528.4351483534, theta=128.0, startopt_ratio=0.001728001819483042
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed2.json
+",True,0.21457409858703613,45,9,0.26787900924682617,9.194560495480847e-09
+1.8303955122475676e-15,9,"2,3",3,48,301,0.3302321434020996,42,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed2.json,4.950150691486844e-15,2,9,9,0,2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=2049645671, terms=20, Bezout=9
+roots=9/9 success=True trials=99 duplicates=48 failures=42
+seconds: generation=0.01, extract=0.33, total=0.34
+best_root: residual=1.830e-15, trial=20, Lambda=977.508951716827, theta=0.0, startopt_ratio=0.0006150524635298679
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed2.json
+",True,0.3392059803009033,99,9,0.39553213119506836,5.193536701007629e-09
+9.930136612989092e-16,9,"2,3",3,41,201,0.2032639980316162,0,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed3.json,5.579007180489124e-12,2,9,9,0,3,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=899627301, terms=20, Bezout=9
+roots=9/9 success=True trials=50 duplicates=41 failures=0
+seconds: generation=0.01, extract=0.20, total=0.21
+best_root: residual=6.534e-13, trial=20, Lambda=2356.5084255409383, theta=90.0, startopt_ratio=0.0006141116761831681
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed3.json
+",True,0.21189618110656738,50,9,0.2669970989227295,7.054062714838539e-09
+6.004449063730082e-16,9,"2,3",3,79,301,0.45154881477355957,37,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed3.json,2.3784615455207426e-13,2,9,9,0,3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=899627301, terms=20, Bezout=9
+roots=9/9 success=True trials=125 duplicates=79 failures=37
+seconds: generation=0.01, extract=0.45, total=0.46
+best_root: residual=5.956e-15, trial=4, Lambda=1048576.0, theta=91.0, startopt_ratio=0.005138136521985332
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed3.json
+",True,0.46025681495666504,125,9,0.5165970325469971,6.575726195293013e-09
+4.3199839306544087e-16,9,"2,3",3,158,201,0.5934209823608398,7,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed4.json,8.331852114593072e-15,2,9,9,0,4,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=163523047, terms=20, Bezout=9
+roots=9/9 success=True trials=174 duplicates=158 failures=7
+seconds: generation=0.01, extract=0.59, total=0.60
+best_root: residual=2.423e-14, trial=4, Lambda=1048576.0, theta=140.0, startopt_ratio=0.0058319821747637
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x3_seed4.json
+",True,0.6024811267852783,174,9,0.65972900390625,1.2794711131979068e-09
+9.222861737981938e-16,9,"2,3",3,9,301,0.0914926528930664,1,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed4.json,1.3845841284915053e-13,2,9,9,0,4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=163523047, terms=20, Bezout=9
+roots=9/9 success=True trials=19 duplicates=9 failures=1
+seconds: generation=0.01, extract=0.09, total=0.10
+best_root: residual=9.044e-10, trial=9, Lambda=1048576.0, theta=90.0, startopt_ratio=4.287518123621774e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x3_seed4.json
+",True,0.09982776641845703,19,9,0.1544811725616455,9.589792142471743e-10
+7.676812899781355e-16,16,"2,4",4,35,201,0.24779915809631348,1,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed0.json,9.644816117669725e-14,2,12,12,0,0,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1677141180, terms=30, Bezout=16
+roots=12/12 success=True trials=48 duplicates=35 failures=1
+seconds: generation=0.01, extract=0.25, total=0.26
+best_root: residual=5.139e-09, trial=14, Lambda=119388.72431684588, theta=18.0, startopt_ratio=1.3410313938844297e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed0.json
+",True,0.25654125213623047,48,12,0.31067585945129395,7.1827484631638835e-09
+7.756677862503847e-16,16,"2,4",4,33,301,0.24497485160827637,9,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed0.json,5.36340645125792e-14,2,12,12,0,0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1677141180, terms=30, Bezout=16
+roots=12/12 success=True trials=54 duplicates=33 failures=9
+seconds: generation=0.01, extract=0.24, total=0.25
+best_root: residual=4.255e-10, trial=14, Lambda=229358.8007855054, theta=94.0, startopt_ratio=1.8876621470924619e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed0.json
+",True,0.2537410259246826,54,12,0.30841684341430664,8.509477722387685e-09
+5.828670879282072e-16,16,"2,4",4,24,201,0.1980729103088379,0,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed1.json,2.0107815405369786e-11,2,12,12,0,1,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=2020015459, terms=30, Bezout=16
+roots=12/12 success=True trials=36 duplicates=24 failures=0
+seconds: generation=0.01, extract=0.20, total=0.21
+best_root: residual=2.011e-11, trial=12, Lambda=1048576.0, theta=89.0, startopt_ratio=1.5006209218080708e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed1.json
+",True,0.20654702186584473,36,12,0.2612617015838623,7.052302612437837e-10
+9.506031400676578e-16,16,"2,4",4,37,301,0.2450580596923828,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed1.json,2.285657748838647e-14,2,12,12,0,1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=2020015459, terms=30, Bezout=16
+roots=12/12 success=True trials=54 duplicates=37 failures=5
+seconds: generation=0.01, extract=0.25, total=0.25
+best_root: residual=1.070e-09, trial=10, Lambda=386212.45536276867, theta=56.0, startopt_ratio=9.82402177196103e-08
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed1.json
+",True,0.2537360191345215,54,12,0.30771470069885254,1.0950941079150591e-09
+6.524059525901931e-16,16,"2,4",4,62,201,0.39604997634887695,4,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed2.json,3.5128414301565405e-11,2,12,12,0,2,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1191724032, terms=30, Bezout=16
+roots=12/12 success=True trials=78 duplicates=62 failures=4
+seconds: generation=0.01, extract=0.40, total=0.40
+best_root: residual=1.184e-10, trial=13, Lambda=1048576.0, theta=48.00000000000001, startopt_ratio=8.196590181252008e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed2.json
+",True,0.4044480323791504,78,12,0.45987725257873535,4.627966915701515e-09
+4.871083751574258e-16,16,"2,4",4,21,301,0.20981383323669434,14,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed2.json,1.3337471054414258e-14,2,12,12,0,2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1191724032, terms=30, Bezout=16
+roots=12/12 success=True trials=47 duplicates=21 failures=14
+seconds: generation=0.01, extract=0.21, total=0.22
+best_root: residual=2.736e-09, trial=8, Lambda=209688.17641449103, theta=24.000000000000004, startopt_ratio=1.9244841844216977e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed2.json
+",True,0.2179567813873291,47,12,0.272597074508667,2.735739172432835e-09
+2.1138016631127878e-16,16,"2,4",4,21,201,0.19987988471984863,0,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed3.json,5.516767807327926e-13,2,12,12,0,3,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=898234875, terms=30, Bezout=16
+roots=12/12 success=True trials=33 duplicates=21 failures=0
+seconds: generation=0.01, extract=0.20, total=0.21
+best_root: residual=4.926e-11, trial=32, Lambda=123.75517035919833, theta=164.0, startopt_ratio=3.638070996175841e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed3.json
+",True,0.20878887176513672,33,12,0.2643427848815918,7.903978862527227e-09
+8.312783312742731e-16,16,"2,4",4,28,301,0.23655915260314941,6,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed3.json,6.740800259667266e-14,2,12,12,0,3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=898234875, terms=30, Bezout=16
+roots=12/12 success=True trials=46 duplicates=28 failures=6
+seconds: generation=0.01, extract=0.24, total=0.25
+best_root: residual=9.548e-15, trial=22, Lambda=1043655.6630517064, theta=80.0, startopt_ratio=0.0010497633052192093
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed3.json
+",True,0.2454688549041748,46,12,0.3007020950317383,1.5003745302744378e-09
+4.053454519487839e-15,16,"2,4",4,18,201,0.18222284317016602,1,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed4.json,2.4367791659792206e-12,2,12,12,0,4,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1411265138, terms=30, Bezout=16
+roots=12/12 success=True trials=31 duplicates=18 failures=1
+seconds: generation=0.01, extract=0.18, total=0.19
+best_root: residual=2.390e-14, trial=17, Lambda=1048576.0, theta=12.000000000000002, startopt_ratio=4.299277690691434e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x4_seed4.json
+",True,0.1907820701599121,31,12,0.24466180801391602,6.245190706020408e-09
+9.25971927890472e-16,16,"2,4",4,13,301,0.18396806716918945,7,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed4.json,3.939392211918832e-13,2,12,12,0,4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1411265138, terms=30, Bezout=16
+roots=12/12 success=True trials=32 duplicates=13 failures=7
+seconds: generation=0.01, extract=0.18, total=0.19
+best_root: residual=1.481e-14, trial=18, Lambda=282368.3134828381, theta=91.0, startopt_ratio=1.5005050286703223e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x4_seed4.json
+",True,0.1926121711730957,32,12,0.2469942569732666,3.998305115785053e-09
+4.079219866531555e-16,25,"2,5",5,34,201,0.2356102466583252,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed0.json,2.2100279786712528e-13,2,12,12,0,0,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=692535776, terms=42, Bezout=25
+roots=12/12 success=True trials=49 duplicates=34 failures=3
+seconds: generation=0.01, extract=0.24, total=0.24
+best_root: residual=2.035e-15, trial=22, Lambda=2661.3005420262966, theta=40.0, startopt_ratio=0.00018926869676466282
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed0.json
+",True,0.2440173625946045,49,12,0.2981760501861572,4.0519932075795395e-09
+2.159233940399377e-15,25,"2,5",5,9,301,0.16048288345336914,9,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed0.json,9.615326208293849e-14,2,12,12,0,0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=692535776, terms=42, Bezout=25
+roots=12/12 success=True trials=30 duplicates=9 failures=9
+seconds: generation=0.01, extract=0.16, total=0.17
+best_root: residual=5.020e-12, trial=2, Lambda=1048576.0, theta=128.0, startopt_ratio=4.437117687034203e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed0.json
+",True,0.16896772384643555,30,12,0.22322320938110352,5.461297350658279e-09
+5.8575115842189e-16,25,"2,5",5,11,201,0.15989303588867188,2,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed1.json,6.467327001770892e-13,2,12,12,0,1,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=709653174, terms=42, Bezout=25
+roots=12/12 success=True trials=25 duplicates=11 failures=2
+seconds: generation=0.01, extract=0.16, total=0.17
+best_root: residual=5.858e-16, trial=12, Lambda=299249.7974070448, theta=40.0, startopt_ratio=5.252140960394311e-08
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed1.json
+",True,0.16854524612426758,25,12,0.22292613983154297,4.981086770523086e-10
+1.4043333874306805e-15,25,"2,5",5,15,301,0.15731096267700195,4,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed1.json,9.107297437971305e-12,2,12,12,0,1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=709653174, terms=42, Bezout=25
+roots=12/12 success=True trials=31 duplicates=15 failures=4
+seconds: generation=0.01, extract=0.16, total=0.17
+best_root: residual=2.740e-12, trial=19, Lambda=1048576.0, theta=24.000000000000004, startopt_ratio=5.032879213630533e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed1.json
+",True,0.16556286811828613,31,12,0.21958708763122559,5.718602632832936e-09
+7.021666937153402e-16,25,"2,5",5,23,201,0.18909788131713867,1,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed2.json,8.097180079799249e-14,2,12,12,0,2,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=2106661684, terms=42, Bezout=25
+roots=12/12 success=True trials=36 duplicates=23 failures=1
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=6.621e-15, trial=11, Lambda=542401.1946679661, theta=86.0, startopt_ratio=1.567185498676748e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed2.json
+",True,0.19798970222473145,36,12,0.25221991539001465,2.845281464986662e-09
+1.4349927862323324e-15,25,"2,5",5,12,301,0.1555030345916748,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed2.json,4.9387831689024055e-14,2,12,12,0,2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=2106661684, terms=42, Bezout=25
+roots=12/12 success=True trials=27 duplicates=12 failures=3
+seconds: generation=0.01, extract=0.16, total=0.16
+best_root: residual=9.138e-12, trial=13, Lambda=96310.6551687087, theta=0.0, startopt_ratio=8.421388727604054e-09
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed2.json
+",True,0.16446208953857422,27,12,0.22002506256103516,7.929248195847971e-09
+6.080941944488118e-16,25,"2,5",5,21,201,0.23743104934692383,1,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed3.json,3.308130805622053e-12,2,12,12,0,3,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=1034375148, terms=42, Bezout=25
+roots=12/12 success=True trials=34 duplicates=21 failures=1
+seconds: generation=0.01, extract=0.24, total=0.25
+best_root: residual=3.308e-12, trial=15, Lambda=1048576.0, theta=6.000000000000001, startopt_ratio=5.2524452660897007e-08
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed3.json
+",True,0.24609375,34,12,0.30067992210388184,8.773819320360743e-10
+5.226817118255311e-16,25,"2,5",5,11,301,0.16840815544128418,7,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed3.json,8.685359588078122e-14,2,12,12,0,3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=1034375148, terms=42, Bezout=25
+roots=12/12 success=True trials=30 duplicates=11 failures=7
+seconds: generation=0.01, extract=0.17, total=0.18
+best_root: residual=2.773e-11, trial=12, Lambda=850635.3488793189, theta=6.000000000000001, startopt_ratio=5.2544494909941994e-08
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed3.json
+",True,0.1767411231994629,30,12,0.2305452823638916,9.346533657782614e-11
+8.101585801848734e-16,25,"2,5",5,13,201,0.1717519760131836,1,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed4.json,1.5688358818848954e-14,2,12,12,0,4,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=1889539744, terms=42, Bezout=25
+roots=12/12 success=True trials=26 duplicates=13 failures=1
+seconds: generation=0.01, extract=0.17, total=0.18
+best_root: residual=4.330e-15, trial=25, Lambda=657992.5182321108, theta=94.0, startopt_ratio=0.06563557299036117
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks2x5_seed4.json
+",True,0.1807081699371338,26,12,0.2356243133544922,5.4868094079964233e-11
+2.219231410598507e-15,25,"2,5",5,11,301,0.17326593399047852,9,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed4.json,4.604980406297546e-14,2,12,12,0,4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=1889539744, terms=42, Bezout=25
+roots=12/12 success=True trials=32 duplicates=11 failures=9
+seconds: generation=0.01, extract=0.17, total=0.18
+best_root: residual=2.219e-15, trial=20, Lambda=1583.3231714509664, theta=18.0, startopt_ratio=4.434345225709115e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks2x5_seed4.json
+",True,0.1818399429321289,32,12,0.2363901138305664,6.043864314355651e-11
+1.0175362097255202e-15,8,"3,2",2,32,201,0.14050674438476562,2,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed0.json,5.5529910830537324e-14,3,8,8,0,0,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=853857574, terms=30, Bezout=8
+roots=8/8 success=True trials=42 duplicates=32 failures=2
+seconds: generation=0.01, extract=0.14, total=0.15
+best_root: residual=5.553e-14, trial=41, Lambda=254323.29345096898, theta=172.0, startopt_ratio=0.07290007148699604
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed0.json
+",True,0.14905071258544922,42,8,0.20367002487182617,8.669041167043177e-09
+2.316218999379179e-15,8,"3,2",2,38,301,0.18955707550048828,18,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed0.json,7.546661265525134e-12,3,8,8,0,0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=853857574, terms=30, Bezout=8
+roots=8/8 success=True trials=64 duplicates=38 failures=18
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=5.439e-15, trial=61, Lambda=51.85735761893639, theta=86.0, startopt_ratio=0.3394918233270551
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed0.json
+",True,0.19828104972839355,64,8,0.25415611267089844,1.8123063393719325e-09
+8.733087987518192e-16,8,"3,2",2,32,201,0.1541581153869629,7,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed1.json,5.507909632981803e-13,3,8,8,0,1,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=2094235828, terms=30, Bezout=8
+roots=8/8 success=True trials=47 duplicates=32 failures=7
+seconds: generation=0.01, extract=0.15, total=0.16
+best_root: residual=2.149e-09, trial=11, Lambda=3268.3057860867248, theta=100.0, startopt_ratio=0.0009747819558279449
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed1.json
+",True,0.16328907012939453,47,8,0.21945786476135254,2.1493043733169424e-09
+1.683736582170148e-15,8,"3,2",2,89,301,0.38183093070983887,33,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed1.json,6.411132434611616e-15,3,8,8,0,1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=2094235828, terms=30, Bezout=8
+roots=8/8 success=True trials=130 duplicates=89 failures=33
+seconds: generation=0.01, extract=0.38, total=0.39
+best_root: residual=6.411e-15, trial=60, Lambda=7549.0866130504155, theta=108.0, startopt_ratio=0.15997854061755884
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed1.json
+",True,0.39046478271484375,130,8,0.4475882053375244,5.194504322373311e-10
+4.685680459230494e-16,8,"3,2",2,72,201,0.27944016456604004,7,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed2.json,5.0705642683725435e-12,3,8,8,0,2,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=342645357, terms=30, Bezout=8
+roots=8/8 success=True trials=87 duplicates=72 failures=7
+seconds: generation=0.01, extract=0.28, total=0.29
+best_root: residual=1.609e-11, trial=50, Lambda=1.9755959961086431, theta=86.0, startopt_ratio=0.002462642276155122
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed2.json
+",True,0.2879509925842285,87,8,0.34452104568481445,4.678493683494704e-09
+7.528060329182389e-16,8,"3,2",2,41,301,0.1831657886505127,11,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed2.json,9.424642647609473e-15,3,8,8,0,2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=342645357, terms=30, Bezout=8
+roots=8/8 success=True trials=60 duplicates=41 failures=11
+seconds: generation=0.01, extract=0.18, total=0.19
+best_root: residual=1.165e-15, trial=10, Lambda=37939.824416384494, theta=100.0, startopt_ratio=0.0005593367246636382
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed2.json
+",True,0.1915597915649414,60,8,0.24791383743286133,2.1880400316929677e-13
+5.396300654998293e-16,8,"3,2",2,41,201,0.17060112953186035,10,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed3.json,3.090369605767606e-13,3,8,8,0,3,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=991867219, terms=30, Bezout=8
+roots=8/8 success=True trials=59 duplicates=41 failures=10
+seconds: generation=0.01, extract=0.17, total=0.18
+best_root: residual=6.977e-09, trial=19, Lambda=39.2225709949991, theta=100.0, startopt_ratio=0.0031198061994089504
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed3.json
+",True,0.17912817001342773,59,8,0.2344660758972168,6.977428599087827e-09
+1.6175215081877767e-15,8,"3,2",2,22,301,0.12142324447631836,12,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed3.json,1.5263043145882805e-14,3,8,8,0,3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=991867219, terms=30, Bezout=8
+roots=8/8 success=True trials=42 duplicates=22 failures=12
+seconds: generation=0.01, extract=0.12, total=0.13
+best_root: residual=2.609e-15, trial=41, Lambda=25328.76949878351, theta=116.00000000000001, startopt_ratio=0.07290274281259133
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed3.json
+",True,0.12995505332946777,42,8,0.1838970184326172,3.744088507222061e-09
+3.1465569529417232e-15,8,"3,2",2,30,201,0.15240788459777832,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed4.json,1.3625725162207997e-13,3,8,8,0,4,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=801676614, terms=30, Bezout=8
+roots=8/8 success=True trials=43 duplicates=30 failures=5
+seconds: generation=0.01, extract=0.15, total=0.16
+best_root: residual=1.806e-14, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.999999894005807
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x2_seed4.json
+",True,0.16113686561584473,43,8,0.22049784660339355,8.43501658556754e-10
+6.563768190296064e-16,8,"3,2",2,53,301,0.22850775718688965,21,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed4.json,2.454973994951582e-14,3,8,8,0,4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=801676614, terms=30, Bezout=8
+roots=8/8 success=True trials=82 duplicates=53 failures=21
+seconds: generation=0.01, extract=0.23, total=0.24
+best_root: residual=6.564e-16, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.999999894005807
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x2_seed4.json
+",True,0.23741674423217773,82,8,0.294356107711792,1.3597942636324113e-11
+1.2640409922594522e-15,27,"3,3",3,18,201,0.1810140609741211,1,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed0.json,1.1219170344568691e-13,3,12,12,0,0,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=612744585, terms=60, Bezout=27
+roots=12/12 success=True trials=31 duplicates=18 failures=1
+seconds: generation=0.01, extract=0.18, total=0.19
+best_root: residual=7.655e-09, trial=9, Lambda=522258.34038767614, theta=80.0, startopt_ratio=4.287236345672162e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed0.json
+",True,0.18971610069274902,31,12,0.24399304389953613,7.655062155437457e-09
+1.2009699976900343e-15,27,"3,3",3,18,301,0.16076421737670898,2,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed0.json,9.829145975453788e-13,3,12,12,0,0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=612744585, terms=60, Bezout=27
+roots=12/12 success=True trials=32 duplicates=18 failures=2
+seconds: generation=0.01, extract=0.16, total=0.17
+best_root: residual=1.203e-14, trial=22, Lambda=4934.113956122893, theta=64.0, startopt_ratio=0.005830586315177952
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed0.json
+",True,0.16988706588745117,32,12,0.22642993927001953,2.401051793402137e-09
+3.954560803480502e-16,27,"3,3",3,16,201,0.1551802158355713,0,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed1.json,1.4231485791963452e-12,3,12,12,0,1,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1944581561, terms=60, Bezout=27
+roots=12/12 success=True trials=28 duplicates=16 failures=0
+seconds: generation=0.01, extract=0.16, total=0.16
+best_root: residual=3.955e-16, trial=12, Lambda=1048576.0, theta=89.0, startopt_ratio=4.287603759793281e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed1.json
+",True,0.16351008415222168,28,12,0.21792292594909668,9.941087591758129e-09
+1.4173189761816134e-15,27,"3,3",3,30,301,0.2558259963989258,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed1.json,7.292999086696066e-12,3,12,12,0,1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1944581561, terms=60, Bezout=27
+roots=12/12 success=True trials=47 duplicates=30 failures=5
+seconds: generation=0.01, extract=0.26, total=0.26
+best_root: residual=3.621e-09, trial=41, Lambda=1048576.0, theta=164.0, startopt_ratio=0.019683007060484637
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed1.json
+",True,0.2644338607788086,47,12,0.31871986389160156,8.020214409882862e-09
+2.2079207130766657e-15,27,"3,3",3,14,201,0.14127588272094727,0,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed2.json,5.900089898695692e-13,3,12,12,0,2,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1273453173, terms=60, Bezout=27
+roots=12/12 success=True trials=26 duplicates=14 failures=0
+seconds: generation=0.01, extract=0.14, total=0.15
+best_root: residual=7.755e-11, trial=21, Lambda=0.0005016912482844748, theta=12.000000000000002, startopt_ratio=0.9995578414745196
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed2.json
+",True,0.14968395233154297,26,12,0.2049579620361328,1.3075195529488353e-09
+1.2682809978676727e-15,27,"3,3",3,8,301,0.15169620513916016,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed2.json,7.526304978875272e-14,3,12,12,0,2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1273453173, terms=60, Bezout=27
+roots=12/12 success=True trials=25 duplicates=8 failures=5
+seconds: generation=0.01, extract=0.15, total=0.16
+best_root: residual=6.319e-12, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999780037423
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed2.json
+",True,0.16020703315734863,25,12,0.21430611610412598,8.037973337880716e-10
+3.1985215122904828e-15,27,"3,3",3,20,201,0.17644381523132324,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed3.json,7.041126278436624e-12,3,12,12,0,3,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=23749617, terms=60, Bezout=27
+roots=12/12 success=True trials=35 duplicates=20 failures=3
+seconds: generation=0.01, extract=0.18, total=0.18
+best_root: residual=4.575e-11, trial=6, Lambda=1048576.0, theta=116.00000000000001, startopt_ratio=0.06400003510398368
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed3.json
+",True,0.18489980697631836,35,12,0.23918676376342773,3.2621262365716283e-09
+9.413396663333419e-16,27,"3,3",3,17,301,0.19271397590637207,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed3.json,1.6803246567157925e-13,3,12,12,0,3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=23749617, terms=60, Bezout=27
+roots=12/12 success=True trials=32 duplicates=17 failures=3
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=1.259e-12, trial=22, Lambda=1048576.0, theta=90.0, startopt_ratio=0.005831996858236512
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed3.json
+",True,0.2012958526611328,32,12,0.2567312717437744,8.855790465271647e-09
+8.566372960945295e-16,27,"3,3",3,40,201,0.28513503074645996,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed4.json,2.591179435795561e-13,3,12,12,0,4,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1326637865, terms=60, Bezout=27
+roots=12/12 success=True trials=57 duplicates=40 failures=5
+seconds: generation=0.01, extract=0.29, total=0.29
+best_root: residual=9.883e-11, trial=7, Lambda=1041236.4943590225, theta=89.0, startopt_ratio=0.1951119993076453
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x3_seed4.json
+",True,0.29366421699523926,57,12,0.3494129180908203,8.798536786553687e-09
+8.657782246947033e-16,27,"3,3",3,19,301,0.17304491996765137,2,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed4.json,7.721105371850958e-12,3,12,12,0,4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1326637865, terms=60, Bezout=27
+roots=12/12 success=True trials=33 duplicates=19 failures=2
+seconds: generation=0.01, extract=0.17, total=0.18
+best_root: residual=6.262e-15, trial=9, Lambda=1048576.0, theta=90.0, startopt_ratio=4.2874796443358675e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x3_seed4.json
+",True,0.18157577514648438,33,12,0.2383260726928711,2.555688567493718e-09
+3.925231146709438e-16,64,"3,4",4,20,201,0.21067094802856445,1,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed0.json,1.144751386001845e-13,3,12,12,0,0,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=616668615, terms=105, Bezout=64
+roots=12/12 success=True trials=33 duplicates=20 failures=1
+seconds: generation=0.01, extract=0.21, total=0.22
+best_root: residual=8.597e-11, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=5.220052047574692e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed0.json
+",True,0.21934986114501953,33,12,0.27442193031311035,6.785290639622738e-09
+2.766243816990716e-15,64,"3,4",4,10,301,0.1627819538116455,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed0.json,7.528508140925508e-12,3,12,12,0,0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=616668615, terms=105, Bezout=64
+roots=12/12 success=True trials=25 duplicates=10 failures=3
+seconds: generation=0.01, extract=0.16, total=0.17
+best_root: residual=8.007e-15, trial=14, Lambda=119388.72431684588, theta=18.0, startopt_ratio=2.1209602670688948e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed0.json
+",True,0.1714169979095459,25,12,0.22638416290283203,1.0468227235270812e-09
+1.2701777491411144e-15,64,"3,4",4,12,201,0.1994171142578125,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed1.json,1.0228217588148203e-11,3,12,12,0,1,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=979117441, terms=105, Bezout=64
+roots=12/12 success=True trials=27 duplicates=12 failures=3
+seconds: generation=0.01, extract=0.20, total=0.21
+best_root: residual=1.093e-14, trial=6, Lambda=1048576.0, theta=116.00000000000001, startopt_ratio=0.025600003683320036
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed1.json
+",True,0.20819616317749023,27,12,0.2648000717163086,4.121164643612093e-09
+2.2432382635252057e-15,64,"3,4",4,7,301,0.17469382286071777,7,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed1.json,7.739520701289872e-14,3,12,12,0,1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=979117441, terms=105, Bezout=64
+roots=12/12 success=True trials=26 duplicates=7 failures=7
+seconds: generation=0.01, extract=0.17, total=0.18
+best_root: residual=4.085e-13, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=5.22005965797754e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed1.json
+",True,0.1834259033203125,26,12,0.23875999450683594,8.834371068795008e-09
+2.4876491105670564e-15,64,"3,4",4,11,201,0.1884300708770752,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed2.json,3.829021407324936e-13,3,12,12,0,2,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=2054625166, terms=105, Bezout=64
+roots=12/12 success=True trials=26 duplicates=11 failures=3
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=1.176e-12, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=5.220053247346357e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed2.json
+",True,0.19701910018920898,26,12,0.2509498596191406,2.9751486488382108e-09
+1.3065773236608868e-15,64,"3,4",4,13,301,0.1547408103942871,1,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed2.json,2.2350529484359107e-14,3,12,12,0,2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=2054625166, terms=105, Bezout=64
+roots=12/12 success=True trials=26 duplicates=13 failures=1
+seconds: generation=0.01, extract=0.15, total=0.16
+best_root: residual=4.452e-15, trial=24, Lambda=1048576.0, theta=91.0, startopt_ratio=0.02560004185242539
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed2.json
+",True,0.16396069526672363,26,12,0.21991777420043945,5.916316556863563e-10
+5.7243814028925596e-15,64,"3,4",4,13,201,0.19948482513427734,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed3.json,1.9234959141045939e-13,3,12,12,0,3,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=466071337, terms=105, Bezout=64
+roots=12/12 success=True trials=28 duplicates=13 failures=3
+seconds: generation=0.01, extract=0.20, total=0.21
+best_root: residual=5.887e-14, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999158067737
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed3.json
+",True,0.20824790000915527,28,12,0.263369083404541,1.5078669101982688e-09
+1.6579165288486218e-15,64,"3,4",4,5,301,0.1552581787109375,7,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed3.json,8.043901018690523e-14,3,12,12,0,3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=466071337, terms=105, Bezout=64
+roots=12/12 success=True trials=24 duplicates=5 failures=7
+seconds: generation=0.01, extract=0.16, total=0.16
+best_root: residual=1.306e-09, trial=8, Lambda=1048576.0, theta=56.0, startopt_ratio=7.730781456035651e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed3.json
+",True,0.16374492645263672,24,12,0.2179548740386963,8.665918884962743e-09
+5.28085841456928e-16,64,"3,4",4,11,201,0.1885509490966797,3,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed4.json,4.0801202927099064e-13,3,12,12,0,4,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=173313761, terms=105, Bezout=64
+roots=12/12 success=True trials=26 duplicates=11 failures=3
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=1.594e-14, trial=15, Lambda=1048576.0, theta=172.0, startopt_ratio=1.5005857497596087e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks3x4_seed4.json
+",True,0.1972060203552246,26,12,0.2524442672729492,2.137759921616256e-09
+9.12781096980032e-16,64,"3,4",4,9,301,0.1827390193939209,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed4.json,1.596696028774086e-14,3,12,12,0,4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=173313761, terms=105, Bezout=64
+roots=12/12 success=True trials=26 duplicates=9 failures=5
+seconds: generation=0.01, extract=0.18, total=0.19
+best_root: residual=5.084e-14, trial=24, Lambda=116671.78229226216, theta=18.0, startopt_ratio=0.025599021750535474
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks3x4_seed4.json
+",True,0.1916050910949707,26,12,0.24643182754516602,6.195332159570544e-12
+1.4128276408010783e-15,16,"4,2",2,75,201,0.31702494621276855,8,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed0.json,8.249610988766702e-13,4,12,12,0,0,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=1664500989, terms=60, Bezout=16
+roots=12/12 success=True trials=95 duplicates=75 failures=8
+seconds: generation=0.01, extract=0.32, total=0.33
+best_root: residual=1.413e-15, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999653002452
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed0.json
+",True,0.3259451389312744,95,12,0.3823220729827881,6.637541406980951e-09
+2.800426169986423e-15,16,"4,2",2,29,301,0.19481515884399414,12,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed0.json,1.0886980803209723e-14,4,12,12,0,0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=1664500989, terms=60, Bezout=16
+roots=12/12 success=True trials=53 duplicates=29 failures=12
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=3.912e-10, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999653002452
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed0.json
+",True,0.2033379077911377,53,12,0.25960588455200195,5.023355700854441e-10
+1.3126252612598277e-15,16,"4,2",2,89,201,0.37271595001220703,11,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed1.json,1.454522273941843e-13,4,12,12,0,1,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=1977060929, terms=60, Bezout=16
+roots=12/12 success=True trials=112 duplicates=89 failures=11
+seconds: generation=0.01, extract=0.37, total=0.38
+best_root: residual=1.313e-15, trial=4, Lambda=1048576.0, theta=140.0, startopt_ratio=0.0324000035986543
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed1.json
+",True,0.3816111087799072,112,12,0.43794775009155273,8.201629791619132e-09
+1.4283338510619284e-15,16,"4,2",2,27,301,0.24966192245483398,25,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed1.json,1.8587622189629863e-14,4,12,12,0,1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=1977060929, terms=60, Bezout=16
+roots=12/12 success=True trials=64 duplicates=27 failures=25
+seconds: generation=0.01, extract=0.25, total=0.26
+best_root: residual=1.052e-09, trial=63, Lambda=642597.2794760175, theta=32.0, startopt_ratio=0.0012249973769477985
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed1.json
+",True,0.258533239364624,64,12,0.31523799896240234,1.0521161669649416e-09
+1.904558900508863e-15,16,"4,2",2,14,201,0.11490917205810547,5,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed2.json,5.917190266165446e-11,4,12,12,0,2,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=345646764, terms=60, Bezout=16
+roots=12/12 success=True trials=31 duplicates=14 failures=5
+seconds: generation=0.01, extract=0.11, total=0.12
+best_root: residual=1.517e-10, trial=14, Lambda=1048576.0, theta=24.000000000000004, startopt_ratio=0.0011130995981104084
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed2.json
+",True,0.12360596656799316,31,12,0.1780698299407959,2.354433512571319e-09
+2.463414837531377e-15,16,"4,2",2,23,301,0.17977595329284668,11,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed2.json,7.383117298034143e-12,4,12,12,0,2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=345646764, terms=60, Bezout=16
+roots=12/12 success=True trials=46 duplicates=23 failures=11
+seconds: generation=0.01, extract=0.18, total=0.19
+best_root: residual=7.383e-12, trial=43, Lambda=862457.7689863564, theta=18.0, startopt_ratio=0.3364001530836586
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed2.json
+",True,0.18857097625732422,46,12,0.24454212188720703,1.7124614228039897e-09
+8.078076586706796e-16,16,"4,2",2,46,201,0.2287580966949463,9,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed3.json,2.7624143535933197e-12,4,12,12,0,3,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=230920569, terms=60, Bezout=16
+roots=12/12 success=True trials=67 duplicates=46 failures=9
+seconds: generation=0.01, extract=0.23, total=0.24
+best_root: residual=9.990e-11, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=0.007224995401822945
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed3.json
+",True,0.2373509407043457,67,12,0.2931640148162842,4.22934166501922e-09
+1.8041124150158794e-15,16,"4,2",2,27,301,0.19220495223999023,12,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed3.json,4.3367249783180355e-14,4,12,12,0,3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=230920569, terms=60, Bezout=16
+roots=12/12 success=True trials=51 duplicates=27 failures=12
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=7.074e-13, trial=18, Lambda=2684.288106441702, theta=32.0, startopt_ratio=0.0012246062664024303
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed3.json
+",True,0.20076799392700195,51,12,0.25589919090270996,1.3701310026320114e-09
+1.4624449402428884e-15,16,"4,2",2,49,201,0.2547309398651123,13,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed4.json,1.1046078885051234e-13,4,12,12,0,4,,"========================================================================================================================
+201 autonomous LOG-STABLE OPTIMAL-PROBE TENSOR-HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; 118/120/200 backbone + logarithmic stability + optimal-probe energy + tensorial gated finite-slope Halley; no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=261529078, terms=60, Bezout=16
+roots=12/12 success=True trials=74 duplicates=49 failures=13
+seconds: generation=0.01, extract=0.25, total=0.26
+best_root: residual=9.246e-15, trial=73, Lambda=13872.10780520285, theta=80.0, startopt_ratio=0.0030210960673272653
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/201_ks4x2_seed4.json
+",True,0.26342296600341797,74,12,0.32013893127441406,5.59527650855312e-10
+8.214020987113793e-16,16,"4,2",2,24,301,0.18843603134155273,18,/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed4.json,1.429875452496953e-13,4,12,12,0,4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=261529078, terms=60, Bezout=16
+roots=12/12 success=True trials=54 duplicates=24 failures=18
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=1.430e-13, trial=14, Lambda=2260.4686550754604, theta=18.0, startopt_ratio=0.0010683645740985745
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/201_vs_301_complete/301_ks4x2_seed4.json
+",True,0.19742798805236816,54,12,0.252474308013916,8.278628371569284e-09
