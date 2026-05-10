@@ -1,0 +1,82 @@
+{
+  "certificates": [
+    {
+      "residual_check": 5.438959822042073e-15,
+      "beta": 1.0827865842280314e-15,
+      "cond_jac": 6.308749111971442,
+      "polished_residual": 3.6231393156961824e-15,
+      "beta_after_one_newton": 8.944294343411376e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 2.316218999379179e-15,
+      "beta": 5.285644991515576e-16,
+      "cond_jac": 2.4815264722643486,
+      "polished_residual": 5.715222817774257e-16,
+      "beta_after_one_newton": 1.6022186921098924e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 1.8123063393719325e-09,
+      "beta": 6.508397897044022e-10,
+      "cond_jac": 2.6803733013612034,
+      "polished_residual": 2.0017837022367557e-16,
+      "beta_after_one_newton": 9.256459802912407e-17,
+      "certified": true,
+      "strong": false
+    },
+    {
+      "residual_check": 1.4468661814726506e-12,
+      "beta": 2.488736582242677e-13,
+      "cond_jac": 4.245013512977336,
+      "polished_residual": 1.1848250235641786e-15,
+      "beta_after_one_newton": 4.276014030221233e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 1.8175077294703524e-11,
+      "beta": 1.1176791481373303e-11,
+      "cond_jac": 4.4400293460862645,
+      "polished_residual": 2.8449465006019636e-16,
+      "beta_after_one_newton": 1.5655517665373426e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 4.273550596062903e-10,
+      "beta": 1.2318139854797738e-10,
+      "cond_jac": 6.8673985705059515,
+      "polished_residual": 5.164625771320267e-15,
+      "beta_after_one_newton": 9.976831949612899e-16,
+      "certified": true,
+      "strong": false
+    },
+    {
+      "residual_check": 6.343834181149101e-15,
+      "beta": 5.015488883467712e-15,
+      "cond_jac": 15.913270242858195,
+      "polished_residual": 4.100316822212988e-15,
+      "beta_after_one_newton": 1.920261548795047e-15,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 7.546661265525134e-12,
+      "beta": 1.4279018371176893e-12,
+      "cond_jac": 4.513668065755638,
+      "polished_residual": 1.0310738718936457e-15,
+      "beta_after_one_newton": 2.5461284993408045e-16,
+      "certified": true,
+      "strong": true
+    }
+  ],
+  "certified_roots": 8,
+  "strong_roots": 6,
+  "median_beta": 8.383877476709785e-13,
+  "median_polished_residual": 1.1079494477289121e-15,
+  "max_polished_residual": 5.164625771320267e-15,
+  "median_cond_jac": 4.476848705920951
+}

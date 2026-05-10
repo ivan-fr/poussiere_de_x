@@ -1,0 +1,1201 @@
+best_residual,bezout,case,coverage,degree,duplicates,engine,eval_count,evals_per_root,extract_seconds,failures,failures_per_root,json,median_residual,n,requested_count,requested_roots,returncode,seconds_per_root,seed_index,slope_count,slopes_per_root,stderr_tail,stdout_tail,success,terms,terms_per_poly,total_seconds,trials_per_root,trials_used,unique_roots,wall_seconds,worst_residual
+7.631521572941402e-16,4,"2,2",1.0,2,20,301,6575,1643.75,0.0908198356628418,12,3.0,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed0.json,1.0048591735576161e-14,2,4,4,0,0.028950035572052002,0,1580,395.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=125315038, terms=12, Bezout=4
+roots=4/4 success=True trials=36 duplicates=20 failures=12
+seconds: generation=0.02, extract=0.09, total=0.12
+best_root: residual=7.632e-16, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999865744338
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed0.json
+",True,12,6,0.11580014228820801,9.0,36,4,0.20330214500427246,5.009881802543133e-09
+7.832041159795668e-16,4,"2,2",1.0,2,5,301,2733,683.25,0.03782200813293457,5,1.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed1.json,1.3317774958330842e-11,2,4,4,0,0.011482477188110352,1,670,167.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1102160111, terms=12, Bezout=4
+roots=4/4 success=True trials=14 duplicates=5 failures=5
+seconds: generation=0.01, extract=0.04, total=0.05
+best_root: residual=7.832e-16, trial=11, Lambda=122.2530862738412, theta=72.0, startopt_ratio=0.001327987738673062
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed1.json
+",True,12,6,0.045929908752441406,3.5,14,4,0.09839701652526855,3.478215255963923e-09
+3.3422138886441676e-16,4,"2,2",1.0,2,34,301,9609,2402.25,0.12980890274047852,18,4.5,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed2.json,2.9062619228322592e-15,2,4,4,0,0.034525513648986816,2,2292,573.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1416315366, terms=12, Bezout=4
+roots=4/4 success=True trials=56 duplicates=34 failures=18
+seconds: generation=0.01, extract=0.13, total=0.14
+best_root: residual=2.846e-15, trial=55, Lambda=46.43731958238136, theta=108.0, startopt_ratio=0.00327251969389865
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed2.json
+",True,12,6,0.13810205459594727,14.0,56,4,0.19178175926208496,4.140994481037676e-09
+6.305236623395947e-16,4,"2,2",1.0,2,5,301,2740,685.0,0.037780046463012695,7,1.75,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed3.json,1.8474145323799477e-15,2,4,4,0,0.011560022830963135,3,652,163.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1103600935, terms=12, Bezout=4
+roots=4/4 success=True trials=16 duplicates=5 failures=7
+seconds: generation=0.01, extract=0.04, total=0.05
+best_root: residual=1.847e-15, trial=6, Lambda=2456.0042175443955, theta=12.000000000000002, startopt_ratio=0.15998389246656194
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed3.json
+",True,12,6,0.04624009132385254,4.0,16,4,0.0993039608001709,3.127737461881519e-11
+8.95090418262362e-16,4,"2,2",1.0,2,8,301,3926,981.5,0.05354809761047363,17,4.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed4.json,4.360393982518402e-09,2,4,4,0,0.01558375358581543,4,906,226.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=809515332, terms=12, Bezout=4
+roots=4/4 success=True trials=29 duplicates=8 failures=17
+seconds: generation=0.01, extract=0.05, total=0.06
+best_root: residual=9.756e-09, trial=3, Lambda=21569.02416483192, theta=48.00000000000001, startopt_ratio=0.01440067106281099
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed4.json
+",True,12,6,0.06233501434326172,7.25,29,4,0.11510610580444336,9.75621158803425e-09
+1.742422441410819e-15,4,"2,2",1.0,2,15,301,5056,1264.0,0.06941699981689453,13,3.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed5.json,3.2177320244274195e-15,2,4,4,0,0.019477665424346924,5,1188,297.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1170807137, terms=12, Bezout=4
+roots=4/4 success=True trials=32 duplicates=15 failures=13
+seconds: generation=0.01, extract=0.07, total=0.08
+best_root: residual=1.742e-15, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999967753302
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed5.json
+",True,12,6,0.0779106616973877,8.0,32,4,0.13156890869140625,2.4953297345372186e-09
+4.373154964984119e-16,4,"2,2",1.0,2,18,301,5886,1471.5,0.08212089538574219,7,1.75,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed6.json,1.531343299291801e-15,2,4,4,0,0.022689223289489746,6,1404,351.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=2107584491, terms=12, Bezout=4
+roots=4/4 success=True trials=29 duplicates=18 failures=7
+seconds: generation=0.01, extract=0.08, total=0.09
+best_root: residual=1.531e-15, trial=28, Lambda=1048576.0, theta=48.00000000000001, startopt_ratio=0.0011527947347883508
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed6.json
+",True,12,6,0.09075689315795898,7.25,29,4,0.14412403106689453,7.32558257878884e-15
+4.585973723508303e-16,4,"2,2",1.0,2,3,301,2549,637.25,0.03606581687927246,5,1.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed7.json,3.531835650735641e-15,2,4,4,0,0.011128723621368408,7,636,159.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,2), seed=1695931524, terms=12, Bezout=4
+roots=4/4 success=True trials=12 duplicates=3 failures=5
+seconds: generation=0.01, extract=0.04, total=0.04
+best_root: residual=1.655e-12, trial=9, Lambda=3914.615777532087, theta=94.0, startopt_ratio=0.0012284111840931305
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x2_seed7.json
+",True,12,6,0.04451489448547363,3.0,12,4,0.0972130298614502,1.654999442879672e-12
+2.1305003386368745e-15,9,"2,3",1.0,3,52,301,19117,2124.1111111111113,0.26730895042419434,5,0.5555555555555556,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed0.json,9.257115758712225e-13,2,9,9,0,0.030610534879896376,0,4932,548.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=1758292748, terms=20, Bezout=9
+roots=9/9 success=True trials=66 duplicates=52 failures=5
+seconds: generation=0.01, extract=0.27, total=0.28
+best_root: residual=9.257e-13, trial=11, Lambda=432941.77535487816, theta=32.0, startopt_ratio=4.427629547747471e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed0.json
+",True,20,10,0.2754948139190674,7.333333333333333,66,9,0.33094024658203125,1.9881261336712133e-10
+1.711418785518059e-15,9,"2,3",1.0,3,78,301,30655,3406.1111111111113,0.4276859760284424,36,4.0,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed1.json,2.763362727283444e-14,2,9,9,0,0.04847656355963813,1,7876,875.1111111111111,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=788669912, terms=20, Bezout=9
+roots=9/9 success=True trials=123 duplicates=78 failures=36
+seconds: generation=0.01, extract=0.43, total=0.44
+best_root: residual=5.544e-15, trial=1, Lambda=356304.8104436325, theta=116.00000000000001, startopt_ratio=0.00016638126293411117
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed1.json
+",True,20,10,0.43628907203674316,13.666666666666666,123,9,0.4930002689361572,1.7594559749543884e-09
+1.8303955122475676e-15,9,"2,3",1.0,3,48,301,23691,2632.3333333333335,0.330064058303833,42,4.666666666666667,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed2.json,4.950150691486844e-15,2,9,9,0,0.03765222761366102,2,6124,680.4444444444445,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=2049645671, terms=20, Bezout=9
+roots=9/9 success=True trials=99 duplicates=48 failures=42
+seconds: generation=0.01, extract=0.33, total=0.34
+best_root: residual=1.830e-15, trial=20, Lambda=977.508951716827, theta=0.0, startopt_ratio=0.0006150524635298679
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed2.json
+",True,20,10,0.3388700485229492,11.0,99,9,0.39547300338745117,5.193536701007629e-09
+6.004449063730082e-16,9,"2,3",1.0,3,79,301,32263,3584.777777777778,0.46387505531311035,37,4.111111111111111,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed3.json,2.3784615455207426e-13,2,9,9,0,0.05249834060668945,3,8222,913.5555555555555,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=899627301, terms=20, Bezout=9
+roots=9/9 success=True trials=125 duplicates=79 failures=37
+seconds: generation=0.01, extract=0.46, total=0.47
+best_root: residual=5.956e-15, trial=4, Lambda=1048576.0, theta=91.0, startopt_ratio=0.005138136521985332
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed3.json
+",True,20,10,0.4724850654602051,13.88888888888889,125,9,0.52913498878479,6.575726195293013e-09
+9.222861737981938e-16,9,"2,3",1.0,3,9,301,6397,710.7777777777778,0.0908968448638916,1,0.1111111111111111,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed4.json,1.3845841284915053e-13,2,9,9,0,0.011079099443223741,4,1660,184.44444444444446,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=163523047, terms=20, Bezout=9
+roots=9/9 success=True trials=19 duplicates=9 failures=1
+seconds: generation=0.01, extract=0.09, total=0.10
+best_root: residual=9.044e-10, trial=9, Lambda=1048576.0, theta=90.0, startopt_ratio=4.287518123621774e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed4.json
+",True,20,10,0.09971189498901367,2.111111111111111,19,9,0.1537950038909912,9.589792142471743e-10
+6.087272963323595e-16,9,"2,3",1.0,3,233,301,68198,7577.555555555556,0.9429287910461426,24,2.6666666666666665,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed5.json,1.076318850986304e-14,2,9,9,0,0.1056627697414822,5,17446,1938.4444444444443,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=1388256657, terms=20, Bezout=9
+roots=9/9 success=True trials=266 duplicates=233 failures=24
+seconds: generation=0.01, extract=0.94, total=0.95
+best_root: residual=1.319e-14, trial=265, Lambda=174.42058856942242, theta=91.0, startopt_ratio=3.186224645763753e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed5.json
+",True,20,10,0.9509649276733398,29.555555555555557,266,9,1.0073399543762207,1.1099842171173921e-12
+1.025079205553247e-15,9,"2,3",1.0,3,54,301,21232,2359.1111111111113,0.29605913162231445,21,2.3333333333333335,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed6.json,1.3542104343435997e-14,2,9,9,0,0.033833556705051,6,5418,602.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=1544823026, terms=20, Bezout=9
+roots=9/9 success=True trials=84 duplicates=54 failures=21
+seconds: generation=0.01, extract=0.30, total=0.30
+best_root: residual=1.162e-10, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.999999953748998
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed6.json
+",True,20,10,0.304502010345459,9.333333333333334,84,9,0.36060595512390137,1.6276421869375062e-10
+3.360144595992222e-15,9,"2,3",1.0,3,30,301,10995,1221.6666666666667,0.15440797805786133,2,0.2222222222222222,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed7.json,9.073662941413082e-13,2,9,9,0,0.018133534325493708,7,2816,312.8888888888889,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,3), seed=343647948, terms=20, Bezout=9
+roots=9/9 success=True trials=41 duplicates=30 failures=2
+seconds: generation=0.01, extract=0.15, total=0.16
+best_root: residual=1.433e-09, trial=7, Lambda=1048576.0, theta=94.0, startopt_ratio=0.195112033858784
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x3_seed7.json
+",True,20,10,0.16320180892944336,4.555555555555555,41,9,0.21764206886291504,1.965473557735654e-09
+7.756677862503847e-16,16,"2,4",1.0,4,473,301,172860,10803.75,2.4371261596679688,167,10.4375,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed0.json,3.522680098617e-14,2,16,16,0,0.15283800661563873,0,45272,2829.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1677141180, terms=30, Bezout=16
+roots=16/16 success=True trials=656 duplicates=473 failures=167
+seconds: generation=0.01, extract=2.44, total=2.45
+best_root: residual=1.918e-15, trial=23, Lambda=175851.12750331545, theta=12.000000000000002, startopt_ratio=0.0053143046888371815
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed0.json
+",True,30,15,2.4454081058502197,41.0,656,16,2.5032339096069336,9.457326910654012e-09
+2.7844251801988247e-15,16,"2,4",1.0,4,99,301,37813,2363.3125,0.540337085723877,13,0.8125,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed1.json,4.591667681496435e-13,2,16,16,0,0.03431449830532074,1,9964,622.75,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=2020015459, terms=30, Bezout=16
+roots=16/16 success=True trials=128 duplicates=99 failures=13
+seconds: generation=0.01, extract=0.54, total=0.55
+best_root: residual=1.812e-09, trial=50, Lambda=8075.9205193060425, theta=18.0, startopt_ratio=6.862887386344291e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed1.json
+",True,30,15,0.5490319728851318,8.0,128,16,0.6071751117706299,2.1508180473315414e-09
+4.794494508545912e-16,16,"2,4",1.0,4,188,301,76676,4792.25,1.0839948654174805,63,3.9375,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed2.json,1.6546420698092607e-14,2,16,16,0,0.06827481091022491,2,20086,1255.375,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1191724032, terms=30, Bezout=16
+roots=16/16 success=True trials=267 duplicates=188 failures=63
+seconds: generation=0.01, extract=1.08, total=1.09
+best_root: residual=2.994e-10, trial=21, Lambda=426.797612447028, theta=140.0, startopt_ratio=0.00020566372156616798
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed2.json
+",True,30,15,1.0923969745635986,16.6875,267,16,1.1499688625335693,2.993700011767571e-10
+8.312783312742731e-16,16,"2,4",1.0,4,153,301,56964,3560.25,0.823976993560791,26,1.625,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed3.json,6.740800259667266e-14,2,16,16,0,0.052017927169799805,3,14940,933.75,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=898234875, terms=30, Bezout=16
+roots=16/16 success=True trials=195 duplicates=153 failures=26
+seconds: generation=0.01, extract=0.82, total=0.83
+best_root: residual=5.428e-15, trial=73, Lambda=5777.711719448136, theta=140.0, startopt_ratio=9.167324726953894e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed3.json
+",True,30,15,0.8322868347167969,12.1875,195,16,0.8922939300537109,6.626312289787423e-09
+1.5045883838716044e-15,16,"2,4",1.0,4,167,301,62613,3913.3125,0.8928821086883545,47,2.9375,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed4.json,6.365151729146174e-14,2,16,16,0,0.05636775493621826,4,16416,1026.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1411265138, terms=30, Bezout=16
+roots=16/16 success=True trials=230 duplicates=167 failures=47
+seconds: generation=0.01, extract=0.89, total=0.90
+best_root: residual=8.974e-14, trial=153, Lambda=1048576.0, theta=0.0, startopt_ratio=1.5006120443345197e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed4.json
+",True,30,15,0.9018840789794922,14.375,230,16,0.9604008197784424,2.24582536184869e-09
+4.311326371230795e-15,16,"2,4",1.0,4,203,301,71015,4438.4375,1.0225210189819336,37,2.3125,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed5.json,2.0685978570715132e-13,2,16,16,0,0.06445413827896118,5,18540,1158.75,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=1254603029, terms=30, Bezout=16
+roots=16/16 success=True trials=256 duplicates=203 failures=37
+seconds: generation=0.01, extract=1.02, total=1.03
+best_root: residual=3.771e-09, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999528275165
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed5.json
+",True,30,15,1.031266212463379,16.0,256,16,1.0904018878936768,4.78411127392918e-09
+4.004890082993152e-15,16,"2,4",1.0,4,356,301,110488,6905.5,1.5676870346069336,54,3.375,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed6.json,2.7524896644598864e-13,2,16,16,0,0.09854230284690857,6,28716,1794.75,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=4377914, terms=30, Bezout=16
+roots=16/16 success=True trials=426 duplicates=356 failures=54
+seconds: generation=0.01, extract=1.57, total=1.58
+best_root: residual=2.752e-13, trial=12, Lambda=7030.414985170447, theta=172.0, startopt_ratio=1.5374892248958006e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed6.json
+",True,30,15,1.576676845550537,26.625,426,16,1.6355879306793213,6.83655518229469e-09
+2.5341311739065124e-15,16,"2,4",1.0,4,151,301,58404,3650.25,0.836313009262085,40,2.5,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed7.json,1.0712370752558981e-13,2,16,16,0,0.052814990282058716,7,15386,961.625,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,4), seed=981635715, terms=30, Bezout=16
+roots=16/16 success=True trials=207 duplicates=151 failures=40
+seconds: generation=0.01, extract=0.84, total=0.85
+best_root: residual=3.630e-15, trial=1, Lambda=356304.8104436325, theta=116.00000000000001, startopt_ratio=9.150604388278801e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x4_seed7.json
+",True,30,15,0.8450398445129395,12.9375,207,16,0.90456223487854,5.493765139243508e-09
+1.4109690937483662e-15,25,"2,5",1.0,5,87,301,46750,2337.5,0.701016902923584,41,2.05,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed0.json,1.3510825787794842e-13,2,20,20,0,0.035486245155334474,0,12516,625.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=692535776, terms=42, Bezout=25
+roots=20/20 success=True trials=148 duplicates=87 failures=41
+seconds: generation=0.01, extract=0.70, total=0.71
+best_root: residual=5.020e-12, trial=2, Lambda=1048576.0, theta=128.0, startopt_ratio=4.437117687034203e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed0.json
+",True,42,21,0.7097249031066895,7.4,148,20,0.7686049938201904,7.404948586437954e-09
+2.1784148785229476e-15,25,"2,5",1.0,5,92,301,40276,2013.8,0.5969898700714111,17,0.85,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed1.json,4.263256414560601e-13,2,20,20,0,0.03029509782791138,1,10700,535.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=709653174, terms=42, Bezout=25
+roots=20/20 success=True trials=129 duplicates=92 failures=17
+seconds: generation=0.01, extract=0.60, total=0.61
+best_root: residual=2.740e-12, trial=19, Lambda=1048576.0, theta=24.000000000000004, startopt_ratio=5.032879213630533e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed1.json
+",True,42,21,0.6059019565582275,6.45,129,20,0.6650519371032715,5.718602632832936e-09
+1.4349927862323324e-15,25,"2,5",1.0,5,112,301,47760,2388.0,0.6996612548828125,26,1.3,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed2.json,1.0819344107159679e-13,2,20,20,0,0.035446453094482425,2,12848,642.4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=2106661684, terms=42, Bezout=25
+roots=20/20 success=True trials=158 duplicates=112 failures=26
+seconds: generation=0.01, extract=0.70, total=0.71
+best_root: residual=4.616e-12, trial=130, Lambda=64.70540435607867, theta=108.0, startopt_ratio=0.00017453030362593152
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed2.json
+",True,42,21,0.7089290618896484,7.9,158,20,0.7683320045471191,2.653311675832861e-09
+9.064822380140532e-16,25,"2,5",1.0,5,56,301,31490,1574.5,0.46742916107177734,28,1.4,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed3.json,4.990013697488234e-13,2,20,20,0,0.023804104328155516,3,8562,428.1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=1034375148, terms=42, Bezout=25
+roots=20/20 success=True trials=104 duplicates=56 failures=28
+seconds: generation=0.01, extract=0.47, total=0.48
+best_root: residual=6.657e-10, trial=20, Lambda=1048576.0, theta=64.0, startopt_ratio=4.4370035483956955e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed3.json
+",True,42,21,0.47608208656311035,5.2,104,20,0.5338449478149414,8.792763306002615e-09
+2.913410106885645e-15,25,"2,5",1.0,5,123,301,51368,2568.4,0.7533719539642334,32,1.6,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed4.json,6.958967189061294e-13,2,20,20,0,0.03813769817352295,4,13708,685.4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=1889539744, terms=42, Bezout=25
+roots=20/20 success=True trials=175 duplicates=123 failures=32
+seconds: generation=0.01, extract=0.75, total=0.76
+best_root: residual=2.913e-15, trial=17, Lambda=48905.04161101726, theta=86.0, startopt_ratio=5.567099377133185e-08
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed4.json
+",True,42,21,0.762753963470459,8.75,175,20,0.8224413394927979,8.070947065798914e-09
+1.6655658173411744e-15,25,"2,5",1.0,5,182,301,68269,3413.45,1.004939079284668,35,1.75,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed5.json,5.526725454566888e-14,2,20,20,0,0.050669407844543456,5,18082,904.1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=1040565848, terms=42, Bezout=25
+roots=20/20 success=True trials=237 duplicates=182 failures=35
+seconds: generation=0.01, extract=1.00, total=1.01
+best_root: residual=1.871e-14, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=4.436994655995763e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed5.json
+",True,42,21,1.0133881568908691,11.85,237,20,1.07243013381958,1.526731660881286e-09
+7.570711667007543e-16,25,"2,5",1.0,5,209,301,82586,4129.3,1.2076449394226074,48,2.4,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed6.json,1.9588311420321562e-13,2,20,20,0,0.060853850841522214,6,22024,1101.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=991171762, terms=42, Bezout=25
+roots=20/20 success=True trials=277 duplicates=209 failures=48
+seconds: generation=0.01, extract=1.21, total=1.22
+best_root: residual=7.571e-16, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.999999925400094
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed6.json
+",True,42,21,1.2170770168304443,13.85,277,20,1.2787091732025146,8.302358773254791e-09
+1.1281198993241301e-15,25,"2,5",1.0,5,122,301,47729,2386.45,0.6993048191070557,15,0.75,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed7.json,4.7796874181478123e-14,2,20,20,0,0.035380196571350095,7,12684,634.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,5), seed=772894349, terms=42, Bezout=25
+roots=20/20 success=True trials=157 duplicates=122 failures=15
+seconds: generation=0.01, extract=0.70, total=0.71
+best_root: residual=9.761e-10, trial=23, Lambda=25282.796085793147, theta=48.00000000000001, startopt_ratio=0.0014351709707925593
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x5_seed7.json
+",True,42,21,0.707603931427002,7.85,157,20,0.7671630382537842,9.78673241539006e-09
+8.843755709061939e-16,36,"2,6",1.0,6,52,301,40007,2000.35,0.6057229042053223,49,2.45,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed0.json,3.404241433236254e-14,2,20,20,0,0.030741536617279054,0,10934,546.7,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,6), seed=1838054230, terms=56, Bezout=36
+roots=20/20 success=True trials=121 duplicates=52 failures=49
+seconds: generation=0.01, extract=0.61, total=0.61
+best_root: residual=2.430e-15, trial=101, Lambda=1005.4503715389035, theta=128.0, startopt_ratio=6.325382572933972e-10
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed0.json
+",True,56,28,0.614830732345581,6.05,121,20,0.6737511157989502,6.552929509925063e-11
+1.9991512101782908e-16,36,"2,6",1.0,6,52,301,30069,1503.45,0.45595788955688477,20,1.0,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed1.json,1.0640362640310696e-13,2,20,20,0,0.023235201835632324,1,8266,413.3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,6), seed=802300624, terms=56, Bezout=36
+roots=20/20 success=True trials=92 duplicates=52 failures=20
+seconds: generation=0.01, extract=0.46, total=0.46
+best_root: residual=1.999e-16, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999994840078763
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed1.json
+",True,56,28,0.4647040367126465,4.6,92,20,0.5221621990203857,8.199019625899812e-09
+1.4895204919483639e-15,36,"2,6",1.0,6,47,301,35916,1795.8,0.548591136932373,22,1.1,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed2.json,2.2223950230913696e-14,2,20,20,0,0.027880334854125978,2,10004,500.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,6), seed=872687622, terms=56, Bezout=36
+roots=20/20 success=True trials=89 duplicates=47 failures=22
+seconds: generation=0.01, extract=0.55, total=0.56
+best_root: residual=1.223e-14, trial=7, Lambda=107961.99922514372, theta=18.0, startopt_ratio=0.016026383535661635
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed2.json
+",True,56,28,0.5576066970825195,4.45,89,20,0.6194248199462891,4.63118428857877e-09
+2.3347702487811585e-15,36,"2,6",1.0,6,55,301,32594,1629.7,0.4906930923461914,20,1.0,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed3.json,1.7304342048673278e-12,2,20,20,0,0.024967491626739502,3,8888,444.4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,6), seed=1318394294, terms=56, Bezout=36
+roots=20/20 success=True trials=95 duplicates=55 failures=20
+seconds: generation=0.01, extract=0.49, total=0.50
+best_root: residual=8.089e-14, trial=53, Lambda=1048576.0, theta=91.0, startopt_ratio=1.7858264191103788e-09
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed3.json
+",True,56,28,0.49934983253479004,4.75,95,20,0.557222843170166,5.129905953566971e-09
+1.319485001705613e-15,36,"2,6",1.0,6,70,301,39549,1977.45,0.6001179218292236,34,1.7,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed4.json,1.603943011489736e-13,2,20,20,0,0.03043973445892334,4,10850,542.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,6), seed=1853960808, terms=56, Bezout=36
+roots=20/20 success=True trials=124 duplicates=70 failures=34
+seconds: generation=0.01, extract=0.60, total=0.61
+best_root: residual=1.794e-15, trial=11, Lambda=375823.9314154612, theta=152.0, startopt_ratio=1.2492943410908763e-09
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed4.json
+",True,56,28,0.6087946891784668,6.2,124,20,0.6679201126098633,8.164103082221438e-09
+8.1773032027145e-16,36,"2,6",1.0,6,67,301,35270,1763.5,0.530580997467041,37,1.85,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed5.json,1.0558067008634419e-12,2,20,20,0,0.02696526050567627,5,9516,475.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,6), seed=1038899943, terms=56, Bezout=36
+roots=20/20 success=True trials=124 duplicates=67 failures=37
+seconds: generation=0.01, extract=0.53, total=0.54
+best_root: residual=1.184e-14, trial=28, Lambda=813.2080120114819, theta=6.000000000000001, startopt_ratio=6.853293580569354e-11
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed5.json
+",True,56,28,0.5393052101135254,6.2,124,20,0.5990309715270996,1.7652354479671414e-09
+9.566618574882216e-16,36,"2,6",1.0,6,14,301,22544,1127.2,0.3479299545288086,12,0.6,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed6.json,2.1992102972277695e-13,2,20,20,0,0.017831790447235107,6,6442,322.1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,6), seed=47299713, terms=56, Bezout=36
+roots=20/20 success=True trials=46 duplicates=14 failures=12
+seconds: generation=0.01, extract=0.35, total=0.36
+best_root: residual=2.148e-14, trial=40, Lambda=104509.86940277257, theta=152.0, startopt_ratio=3.4013593779324864e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed6.json
+",True,56,28,0.35663580894470215,2.3,46,20,0.4137139320373535,2.2703691224254533e-09
+1.979811259392395e-15,36,"2,6",1.0,6,34,301,23519,1175.95,0.3588559627532959,11,0.55,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed7.json,1.0882269942056128e-13,2,20,20,0,0.01838589906692505,7,6522,326.1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,6), seed=595079374, terms=56, Bezout=36
+roots=20/20 success=True trials=65 duplicates=34 failures=11
+seconds: generation=0.01, extract=0.36, total=0.37
+best_root: residual=1.543e-14, trial=44, Lambda=261.5785692923605, theta=56.0, startopt_ratio=2.3445508069233884e-09
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x6_seed7.json
+",True,56,28,0.367717981338501,3.25,65,20,0.423797607421875,4.867129459526328e-09
+3.107756986173969e-15,64,"2,8",1.0,8,20,301,28228,1411.4,0.45423007011413574,75,3.75,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed0.json,5.0250808526952667e-14,2,20,20,0,0.02317565679550171,0,7744,387.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,8), seed=1565546043, terms=90, Bezout=64
+roots=20/20 success=True trials=115 duplicates=20 failures=75
+seconds: generation=0.01, extract=0.45, total=0.46
+best_root: residual=3.820e-11, trial=34, Lambda=0.005219667117083373, theta=152.0, startopt_ratio=0.9966941812586148
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed0.json
+",True,90,45,0.4635131359100342,5.75,115,20,0.5242359638214111,6.910796314317654e-09
+1.5072580941561347e-15,64,"2,8",1.0,8,68,301,41656,2082.8,0.6713130474090576,60,3.0,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed1.json,1.0586848322980799e-13,2,20,20,0,0.03400590419769287,1,11482,574.1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,8), seed=1936868213, terms=90, Bezout=64
+roots=20/20 success=True trials=148 duplicates=68 failures=60
+seconds: generation=0.01, extract=0.67, total=0.68
+best_root: residual=6.331e-11, trial=4, Lambda=65581.88003002502, theta=80.0, startopt_ratio=1.1020441918239681e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed1.json
+",True,90,45,0.6801180839538574,7.4,148,20,0.7457170486450195,3.86469531170699e-09
+1.0429598422709816e-15,64,"2,8",1.0,8,56,301,41597,2079.85,0.6514480113983154,66,3.3,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed2.json,2.174223763676801e-14,2,20,20,0,0.03300709724426269,2,11456,572.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,8), seed=1808456329, terms=90, Bezout=64
+roots=20/20 success=True trials=142 duplicates=56 failures=66
+seconds: generation=0.01, extract=0.65, total=0.66
+best_root: residual=6.477e-12, trial=141, Lambda=2718.82191148599, theta=32.0, startopt_ratio=2.267199300054739e-12
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed2.json
+",True,90,45,0.6601419448852539,7.1,142,20,0.7191591262817383,1.0623433534883218e-10
+1.810931668866218e-15,64,"2,8",1.0,8,26,301,24742,1237.1,0.392301082611084,35,1.75,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed3.json,2.449183195128648e-13,2,20,20,0,0.02004650831222534,3,6970,348.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,8), seed=694917185, terms=90, Bezout=64
+roots=20/20 success=True trials=81 duplicates=26 failures=35
+seconds: generation=0.01, extract=0.39, total=0.40
+best_root: residual=7.156e-14, trial=28, Lambda=1048576.0, theta=140.0, startopt_ratio=1.5516988553964414e-13
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed3.json
+",True,90,45,0.40093016624450684,4.05,81,20,0.4575932025909424,6.391453860407642e-09
+3.412920201770619e-15,64,"2,8",1.0,8,35,301,27360,1368.0,0.43036794662475586,50,2.5,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed4.json,4.0070520727511793e-13,2,20,20,0,0.02194920778274536,4,7510,375.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,8), seed=226832938, terms=90, Bezout=64
+roots=20/20 success=True trials=105 duplicates=35 failures=50
+seconds: generation=0.01, extract=0.43, total=0.44
+best_root: residual=7.628e-15, trial=70, Lambda=70.30914783591898, theta=164.0, startopt_ratio=1.323213431018758e-13
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed4.json
+",True,90,45,0.4389841556549072,5.25,105,20,0.49618005752563477,7.100636373644963e-09
+2.278663452567752e-15,64,"2,8",1.0,8,45,301,34883,1744.15,0.5551879405975342,44,2.2,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed5.json,1.1379780586684493e-13,2,20,20,0,0.02818145751953125,5,9712,485.6,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,8), seed=1995950316, terms=90, Bezout=64
+roots=20/20 success=True trials=109 duplicates=45 failures=44
+seconds: generation=0.01, extract=0.56, total=0.56
+best_root: residual=1.460e-14, trial=99, Lambda=130235.96854328428, theta=24.000000000000004, startopt_ratio=2.25295984375757e-12
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed5.json
+",True,90,45,0.563629150390625,5.45,109,20,0.6207160949707031,5.764302049105671e-09
+6.849851696944542e-16,64,"2,8",1.0,8,4,301,17101,855.05,0.2964911460876465,23,1.15,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed6.json,1.5751087413001307e-14,2,20,20,0,0.01527235507965088,6,4886,244.3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,8), seed=938511824, terms=90, Bezout=64
+roots=20/20 success=True trials=47 duplicates=4 failures=23
+seconds: generation=0.01, extract=0.30, total=0.31
+best_root: residual=5.551e-15, trial=40, Lambda=5.125740367085845, theta=40.0, startopt_ratio=2.5916577961391166e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed6.json
+",True,90,45,0.3054471015930176,2.35,47,20,0.36177897453308105,2.965000326575758e-10
+6.061909215660398e-16,64,"2,8",1.0,8,77,301,46142,2307.1,0.7300150394439697,70,3.5,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed7.json,4.887244795214058e-14,2,20,20,0,0.03694019317626953,7,12728,636.4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,8), seed=1748736453, terms=90, Bezout=64
+roots=20/20 success=True trials=167 duplicates=77 failures=70
+seconds: generation=0.01, extract=0.73, total=0.74
+best_root: residual=3.961e-15, trial=31, Lambda=541024.7304876276, theta=72.0, startopt_ratio=2.0284246949218463e-14
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x8_seed7.json
+",True,90,45,0.7388038635253906,8.35,167,20,0.8002569675445557,9.893208029270823e-09
+2.853708170976072e-15,100,"2,10",1.0,10,63,301,34492,1724.6,0.5614151954650879,66,3.3,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed0.json,8.198987640921941e-14,2,20,20,0,0.028513002395629882,0,9328,466.4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,10), seed=227049297, terms=132, Bezout=100
+roots=20/20 success=True trials=149 duplicates=63 failures=66
+seconds: generation=0.01, extract=0.56, total=0.57
+best_root: residual=6.253e-14, trial=18, Lambda=69.57773537380781, theta=86.0, startopt_ratio=1.98730268024003e-14
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed0.json
+",True,132,66,0.5702600479125977,7.45,149,20,0.6288208961486816,7.417113351113781e-09
+5.657781934616371e-15,100,"2,10",1.0,10,41,301,28900,1445.0,0.47851014137268066,43,2.15,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed1.json,1.2776371124479755e-13,2,20,20,0,0.024365556240081788,1,8116,405.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,10), seed=603943055, terms=132, Bezout=100
+roots=20/20 success=True trials=104 duplicates=41 failures=43
+seconds: generation=0.01, extract=0.48, total=0.49
+best_root: residual=1.187e-14, trial=71, Lambda=1577.6957188762826, theta=172.0, startopt_ratio=4.086683414305118e-15
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed1.json
+",True,132,66,0.48731112480163574,5.2,104,20,0.54514479637146,8.570667049092927e-09
+9.810133501692532e-16,100,"2,10",1.0,10,65,301,40074,2003.7,0.6538150310516357,94,4.7,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed2.json,2.1706470037074337e-13,2,20,20,0,0.03311769962310791,2,10900,545.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,10), seed=987455831, terms=132, Bezout=100
+roots=20/20 success=True trials=179 duplicates=65 failures=94
+seconds: generation=0.01, extract=0.65, total=0.66
+best_root: residual=9.810e-16, trial=1, Lambda=1.810173763850998e-05, theta=6.000000000000001, startopt_ratio=0.9999105994388578
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed2.json
+",True,132,66,0.6623539924621582,8.95,179,20,0.7230992317199707,3.1763903545946696e-09
+1.3230562068383787e-15,100,"2,10",1.0,10,36,301,30673,1533.65,0.5028431415557861,67,3.35,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed3.json,7.744997303615136e-14,2,20,20,0,0.025570058822631837,3,8440,422.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,10), seed=1684041394, terms=132, Bezout=100
+roots=20/20 success=True trials=123 duplicates=36 failures=67
+seconds: generation=0.01, extract=0.50, total=0.51
+best_root: residual=4.006e-15, trial=16, Lambda=157.004986516536, theta=100.0, startopt_ratio=1.383788449784231e-16
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed3.json
+",True,132,66,0.5114011764526367,6.15,123,20,0.5714397430419922,8.804850252035276e-09
+1.8571363289776713e-15,100,"2,10",1.0,10,36,301,24743,1237.15,0.4075589179992676,51,2.55,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed4.json,9.780351634970877e-14,2,20,20,0,0.020818543434143067,4,6776,338.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,10), seed=287589522, terms=132, Bezout=100
+roots=20/20 success=True trials=107 duplicates=36 failures=51
+seconds: generation=0.01, extract=0.41, total=0.42
+best_root: residual=5.914e-13, trial=80, Lambda=6.935825532920948, theta=48.00000000000001, startopt_ratio=6.206216142386554e-15
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed4.json
+",True,132,66,0.41637086868286133,5.35,107,20,0.47399377822875977,9.715337815555725e-09
+1.988014295440817e-15,100,"2,10",1.0,10,13,301,14194,709.7,0.23530292510986328,38,1.9,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed5.json,1.920990920760983e-12,2,20,20,0,0.012190186977386474,5,3828,191.4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,10), seed=747031023, terms=132, Bezout=100
+roots=20/20 success=True trials=71 duplicates=13 failures=38
+seconds: generation=0.01, extract=0.24, total=0.24
+best_root: residual=4.101e-11, trial=25, Lambda=275.6666011772394, theta=116.00000000000001, startopt_ratio=0.004299309294825973
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed5.json
+",True,132,66,0.2438037395477295,3.55,71,20,0.2997910976409912,4.005792184988898e-09
+1.7990345387298017e-15,100,"2,10",1.0,10,22,301,25858,1292.9,0.42581987380981445,59,2.95,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed6.json,5.798655639382322e-13,2,20,20,0,0.021723353862762453,6,7194,359.7,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,10), seed=2114879916, terms=132, Bezout=100
+roots=20/20 success=True trials=101 duplicates=22 failures=59
+seconds: generation=0.01, extract=0.43, total=0.43
+best_root: residual=1.190e-14, trial=68, Lambda=603.5067764643925, theta=18.0, startopt_ratio=2.560950953046094e-16
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed6.json
+",True,132,66,0.434467077255249,5.05,101,20,0.4911808967590332,7.439658655165908e-09
+1.3600940083626352e-15,100,"2,10",1.0,10,67,301,44561,2228.05,0.7273321151733398,127,6.35,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed7.json,3.2345428974576406e-14,2,20,20,0,0.03680030107498169,7,12094,604.7,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(2,10), seed=1842755578, terms=132, Bezout=100
+roots=20/20 success=True trials=214 duplicates=67 failures=127
+seconds: generation=0.01, extract=0.73, total=0.74
+best_root: residual=4.221e-15, trial=119, Lambda=1.0736741129235539, theta=172.0, startopt_ratio=7.710513370304181e-08
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks2x10_seed7.json
+",True,132,66,0.7360060214996338,10.7,214,20,0.7940800189971924,6.102564978073933e-09
+2.316218999379179e-15,8,"3,2",1.0,2,38,301,12570,1571.25,0.1939401626586914,18,2.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed0.json,7.546661265525134e-12,3,8,8,0,0.025335878133773804,0,2962,370.25,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=853857574, terms=30, Bezout=8
+roots=8/8 success=True trials=64 duplicates=38 failures=18
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=5.439e-15, trial=61, Lambda=51.85735761893639, theta=86.0, startopt_ratio=0.3394918233270551
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed0.json
+",True,30,10,0.20268702507019043,8.0,64,8,0.26007914543151855,1.8123063393719325e-09
+1.683736582170148e-15,8,"3,2",1.0,2,89,301,25277,3159.625,0.3806121349334717,33,4.125,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed1.json,6.411132434611616e-15,3,8,8,0,0.048647910356521606,1,5800,725.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=2094235828, terms=30, Bezout=8
+roots=8/8 success=True trials=130 duplicates=89 failures=33
+seconds: generation=0.01, extract=0.38, total=0.39
+best_root: residual=6.411e-15, trial=60, Lambda=7549.0866130504155, theta=108.0, startopt_ratio=0.15997854061755884
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed1.json
+",True,30,10,0.38918328285217285,16.25,130,8,0.449862003326416,5.194504322373311e-10
+7.528060329182389e-16,8,"3,2",1.0,2,41,301,12109,1513.625,0.18701720237731934,11,1.375,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed2.json,9.424642647609473e-15,3,8,8,0,0.024448871612548828,2,2840,355.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=342645357, terms=30, Bezout=8
+roots=8/8 success=True trials=60 duplicates=41 failures=11
+seconds: generation=0.01, extract=0.19, total=0.20
+best_root: residual=1.165e-15, trial=10, Lambda=37939.824416384494, theta=100.0, startopt_ratio=0.0005593367246636382
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed2.json
+",True,30,10,0.19559097290039062,7.5,60,8,0.25155115127563477,2.1880400316929677e-13
+1.6175215081877767e-15,8,"3,2",1.0,2,22,301,7952,994.0,0.1224968433380127,12,1.5,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed3.json,1.5263043145882805e-14,3,8,8,0,0.016409486532211304,3,1848,231.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=991867219, terms=30, Bezout=8
+roots=8/8 success=True trials=42 duplicates=22 failures=12
+seconds: generation=0.01, extract=0.12, total=0.13
+best_root: residual=2.609e-15, trial=41, Lambda=25328.76949878351, theta=116.00000000000001, startopt_ratio=0.07290274281259133
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed3.json
+",True,30,10,0.13127589225769043,5.25,42,8,0.18707609176635742,3.744088507222061e-09
+6.563768190296064e-16,8,"3,2",1.0,2,53,301,14898,1862.25,0.22860097885131836,21,2.625,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed4.json,2.454973994951582e-14,3,8,8,0,0.02970099449157715,4,3490,436.25,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=801676614, terms=30, Bezout=8
+roots=8/8 success=True trials=82 duplicates=53 failures=21
+seconds: generation=0.01, extract=0.23, total=0.24
+best_root: residual=6.564e-16, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.999999894005807
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed4.json
+",True,30,10,0.2376079559326172,10.25,82,8,0.2930748462677002,1.3597942636324113e-11
+1.0311672620366654e-15,8,"3,2",1.0,2,55,301,19028,2378.5,0.2888000011444092,27,3.375,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed5.json,2.9105578799654724e-12,3,8,8,0,0.03720670938491821,5,4546,568.25,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=1366292976, terms=30, Bezout=8
+roots=8/8 success=True trials=90 duplicates=55 failures=27
+seconds: generation=0.01, extract=0.29, total=0.30
+best_root: residual=4.324e-15, trial=10, Lambda=327449.7362933181, theta=32.0, startopt_ratio=0.0008195861133576504
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed5.json
+",True,30,10,0.2976536750793457,11.25,90,8,0.35445690155029297,9.586748586811116e-09
+8.966221651486438e-16,8,"3,2",1.0,2,4,301,4046,505.75,0.06376504898071289,12,1.5,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed6.json,2.0876094294196747e-11,3,8,8,0,0.009057730436325073,6,962,120.25,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=322535866, terms=30, Bezout=8
+roots=8/8 success=True trials=24 duplicates=4 failures=12
+seconds: generation=0.01, extract=0.06, total=0.07
+best_root: residual=8.966e-16, trial=18, Lambda=69.57773537380781, theta=86.0, startopt_ratio=0.002614876742572955
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed6.json
+",True,30,10,0.07246184349060059,3.0,24,8,0.12701892852783203,7.706558928696124e-09
+8.741904837807691e-16,8,"3,2",1.0,2,55,301,17823,2227.875,0.27017879486083984,22,2.75,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed7.json,1.1559593816482008e-11,3,8,8,0,0.03483012318611145,7,4170,521.25,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,2), seed=1713816939, terms=30, Bezout=8
+roots=8/8 success=True trials=85 duplicates=55 failures=22
+seconds: generation=0.01, extract=0.27, total=0.28
+best_root: residual=1.958e-14, trial=6, Lambda=99906.2417202731, theta=86.0, startopt_ratio=0.16000010330234496
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x2_seed7.json
+",True,30,10,0.2786409854888916,10.625,85,8,0.33435606956481934,1.595841466404354e-09
+1.2009699976900343e-15,27,"3,3",1.0,3,43,301,21026,1051.3,0.3285987377166748,5,0.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed0.json,1.10237934690966e-13,3,20,20,0,0.01687610149383545,0,5246,262.3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=612744585, terms=60, Bezout=27
+roots=20/20 success=True trials=68 duplicates=43 failures=5
+seconds: generation=0.01, extract=0.33, total=0.34
+best_root: residual=1.050e-11, trial=44, Lambda=1899.2208989762553, theta=12.000000000000002, startopt_ratio=3.8831016341055084e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed0.json
+",True,60,20,0.337522029876709,3.4,68,20,0.3943490982055664,2.401051793402137e-09
+1.4173189761816134e-15,27,"3,3",1.0,3,27,301,18670,933.5,0.2944960594177246,6,0.3,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed1.json,6.379379238526204e-14,3,20,20,0,0.01514345407485962,1,4712,235.6,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1944581561, terms=60, Bezout=27
+roots=20/20 success=True trials=53 duplicates=27 failures=6
+seconds: generation=0.01, extract=0.29, total=0.30
+best_root: residual=6.379e-14, trial=15, Lambda=441514.84970312787, theta=164.0, startopt_ratio=4.2874976620580606e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed1.json
+",True,60,20,0.3028690814971924,2.65,53,20,0.3580620288848877,6.431760941316281e-09
+1.191874962812805e-15,27,"3,3",1.0,3,34,301,21228,1061.4,0.33443689346313477,10,0.5,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed2.json,4.0984159644200137e-14,3,20,20,0,0.017166244983673095,2,5364,268.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1273453173, terms=60, Bezout=27
+roots=20/20 success=True trials=64 duplicates=34 failures=10
+seconds: generation=0.01, extract=0.33, total=0.34
+best_root: residual=6.319e-12, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999780037423
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed2.json
+",True,60,20,0.3433248996734619,3.2,64,20,0.4004940986633301,2.325654434325416e-09
+9.413396663333419e-16,27,"3,3",1.0,3,143,301,53582,2679.1,0.8507530689239502,21,1.05,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed3.json,4.0605373155651335e-14,3,20,20,0,0.042971456050872804,3,13252,662.6,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=23749617, terms=60, Bezout=27
+roots=20/20 success=True trials=184 duplicates=143 failures=21
+seconds: generation=0.01, extract=0.85, total=0.86
+best_root: residual=2.086e-09, trial=46, Lambda=962380.4880314067, theta=91.0, startopt_ratio=2.5782729077917994e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed3.json
+",True,60,20,0.859429121017456,9.2,184,20,0.9177708625793457,5.681318731044695e-09
+8.657782246947033e-16,27,"3,3",1.0,3,42,301,21107,1055.35,0.33011889457702637,8,0.4,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed4.json,5.893651107648941e-13,3,20,20,0,0.01696399450302124,4,5228,261.4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1326637865, terms=60, Bezout=27
+roots=20/20 success=True trials=70 duplicates=42 failures=8
+seconds: generation=0.01, extract=0.33, total=0.34
+best_root: residual=6.262e-15, trial=9, Lambda=1048576.0, theta=90.0, startopt_ratio=4.2874796443358675e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed4.json
+",True,60,20,0.3392798900604248,3.5,70,20,0.3973231315612793,7.375601071971318e-09
+1.3909367213127814e-15,27,"3,3",1.0,3,47,301,22596,1129.8,0.3595869541168213,2,0.1,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed5.json,1.0649463886842592e-14,3,20,20,0,0.018426644802093505,5,5688,284.4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1050386318, terms=60, Bezout=27
+roots=20/20 success=True trials=69 duplicates=47 failures=2
+seconds: generation=0.01, extract=0.36, total=0.37
+best_root: residual=1.567e-14, trial=36, Lambda=1048576.0, theta=40.0, startopt_ratio=4.2875290188019886e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed5.json
+",True,60,20,0.3685328960418701,3.45,69,20,0.4261648654937744,2.4950175115416924e-09
+2.804824172177818e-15,27,"3,3",1.0,3,40,301,22273,1113.65,0.3502919673919678,8,0.4,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed6.json,2.7276750468459634e-14,3,20,20,0,0.017957842350006102,6,5658,282.9,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=1598834407, terms=60, Bezout=27
+roots=20/20 success=True trials=68 duplicates=40 failures=8
+seconds: generation=0.01, extract=0.35, total=0.36
+best_root: residual=5.610e-15, trial=18, Lambda=1048576.0, theta=94.0, startopt_ratio=4.287313837133459e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed6.json
+",True,60,20,0.35915684700012207,3.4,68,20,0.4164237976074219,6.541686042903988e-09
+8.825498386826706e-16,27,"3,3",1.0,3,63,301,28107,1405.35,0.4399757385253906,6,0.3,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed7.json,1.284792373955795e-14,3,20,20,0,0.022425901889801026,7,7008,350.4,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,3), seed=2138784928, terms=60, Bezout=27
+roots=20/20 success=True trials=89 duplicates=63 failures=6
+seconds: generation=0.01, extract=0.44, total=0.45
+best_root: residual=6.016e-15, trial=32, Lambda=38431.84405662652, theta=18.0, startopt_ratio=2.7373257459640257e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x3_seed7.json
+",True,60,20,0.4485180377960205,4.45,89,20,0.5059511661529541,4.1428742103127526e-09
+2.9802044445870114e-15,64,"3,4",1.0,4,22,301,17787,889.35,0.2904229164123535,3,0.15,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed0.json,1.7438123763960722e-14,3,20,20,0,0.01495283842086792,0,4626,231.3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=616668615, terms=105, Bezout=64
+roots=20/20 success=True trials=45 duplicates=22 failures=3
+seconds: generation=0.01, extract=0.29, total=0.30
+best_root: residual=1.215e-14, trial=11, Lambda=279648.689680901, theta=56.0, startopt_ratio=1.7025486126683125e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed0.json
+",True,105,35,0.2990567684173584,2.25,45,20,0.35527491569519043,9.448871638698392e-10
+2.2432382635252057e-15,64,"3,4",1.0,4,12,301,16420,821.0,0.26715707778930664,11,0.55,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed1.json,1.5059651145692972e-12,3,20,20,0,0.013784706592559814,1,4206,210.3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=979117441, terms=105, Bezout=64
+roots=20/20 success=True trials=43 duplicates=12 failures=11
+seconds: generation=0.01, extract=0.27, total=0.28
+best_root: residual=4.085e-13, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=5.22005965797754e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed1.json
+",True,105,35,0.2756941318511963,2.15,43,20,0.33098483085632324,8.834371068795008e-09
+1.3065773236608868e-15,64,"3,4",1.0,4,24,301,17289,864.45,0.2860598564147949,1,0.05,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed2.json,2.2338393549198347e-14,3,20,20,0,0.014734840393066407,2,4440,222.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=2054625166, terms=105, Bezout=64
+roots=20/20 success=True trials=45 duplicates=24 failures=1
+seconds: generation=0.01, extract=0.29, total=0.29
+best_root: residual=1.482e-14, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=5.220053247346357e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed2.json
+",True,105,35,0.2946968078613281,2.25,45,20,0.35100793838500977,8.191607671075198e-09
+3.6977729549238225e-15,64,"3,4",1.0,4,14,301,18945,947.25,0.31026268005371094,12,0.6,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed3.json,3.8717346695586304e-14,3,20,20,0,0.01594468355178833,3,4922,246.1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=466071337, terms=105, Bezout=64
+roots=20/20 success=True trials=46 duplicates=14 failures=12
+seconds: generation=0.01, extract=0.31, total=0.32
+best_root: residual=1.306e-09, trial=8, Lambda=1048576.0, theta=56.0, startopt_ratio=7.730781456035651e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed3.json
+",True,105,35,0.3188936710357666,2.3,46,20,0.3745548725128174,7.508276286733218e-09
+9.887375990478772e-16,64,"3,4",1.0,4,21,301,19170,958.5,0.31645703315734863,3,0.15,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed4.json,1.765291703480095e-14,3,20,20,0,0.016281235218048095,4,5054,252.7,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=173313761, terms=105, Bezout=64
+roots=20/20 success=True trials=44 duplicates=21 failures=3
+seconds: generation=0.01, extract=0.32, total=0.33
+best_root: residual=1.869e-09, trial=13, Lambda=1048576.0, theta=72.0, startopt_ratio=2.7730981469856755e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed4.json
+",True,105,35,0.3256247043609619,2.2,44,20,0.3821370601654053,1.86920786224209e-09
+1.9774751980957545e-15,64,"3,4",1.0,4,21,301,16229,811.45,0.2665290832519531,2,0.1,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed5.json,6.028664367485974e-14,3,20,20,0,0.01375734806060791,5,4204,210.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=510432033, terms=105, Bezout=64
+roots=20/20 success=True trials=43 duplicates=21 failures=2
+seconds: generation=0.01, extract=0.27, total=0.28
+best_root: residual=9.763e-15, trial=28, Lambda=1048576.0, theta=56.0, startopt_ratio=4.655069767183914e-07
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed5.json
+",True,105,35,0.2751469612121582,2.15,43,20,0.3309459686279297,8.866745877609279e-09
+1.0655439223536894e-15,64,"3,4",1.0,4,27,301,21045,1052.25,0.3463437557220459,6,0.3,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed6.json,1.1734800031003633e-14,3,20,20,0,0.017795252799987792,6,5458,272.9,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=848052922, terms=105, Bezout=64
+roots=20/20 success=True trials=53 duplicates=27 failures=6
+seconds: generation=0.01, extract=0.35, total=0.36
+best_root: residual=2.798e-15, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999480800554
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed6.json
+",True,105,35,0.35590505599975586,2.65,53,20,0.4127969741821289,1.0037034624038361e-09
+6.568992625221257e-16,64,"3,4",1.0,4,22,301,19953,997.65,0.3330221176147461,4,0.2,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed7.json,7.546413836119154e-14,3,20,20,0,0.01706780195236206,7,5276,263.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,4), seed=366590044, terms=105, Bezout=64
+roots=20/20 success=True trials=46 duplicates=22 failures=4
+seconds: generation=0.01, extract=0.33, total=0.34
+best_root: residual=6.569e-16, trial=7, Lambda=1048576.0, theta=94.0, startopt_ratio=0.1131648337025061
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x4_seed7.json
+",True,105,35,0.3413560390472412,2.3,46,20,0.39870190620422363,6.00495602916757e-09
+6.125121657294927e-16,125,"3,5",1.0,5,24,301,17164,858.2,0.2915010452270508,1,0.05,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed0.json,6.248573477515807e-14,3,20,20,0,0.015014052391052246,0,4510,225.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,5), seed=416615349, terms=168, Bezout=125
+roots=20/20 success=True trials=45 duplicates=24 failures=1
+seconds: generation=0.01, extract=0.29, total=0.30
+best_root: residual=9.434e-09, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999260830982
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed0.json
+",True,168,56,0.3002810478210449,2.25,45,20,0.3573000431060791,9.433943846971491e-09
+2.6681468187551033e-15,125,"3,5",1.0,5,22,301,17503,875.15,0.2957737445831299,4,0.2,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed1.json,6.131809104587036e-14,3,20,20,0,0.015234386920928955,1,4556,227.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,5), seed=635291615, terms=168, Bezout=125
+roots=20/20 success=True trials=46 duplicates=22 failures=4
+seconds: generation=0.01, extract=0.30, total=0.30
+best_root: residual=3.296e-11, trial=22, Lambda=1048576.0, theta=140.0, startopt_ratio=0.00018895616973831373
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed1.json
+",True,168,56,0.3046877384185791,2.3,46,20,0.36141395568847656,4.5180554317131474e-09
+2.226898518972675e-15,125,"3,5",1.0,5,18,301,18610,930.5,0.320065975189209,4,0.2,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed2.json,3.2754037149170875e-14,3,20,20,0,0.016429448127746583,2,4920,246.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,5), seed=684844376, terms=168, Bezout=125
+roots=20/20 success=True trials=42 duplicates=18 failures=4
+seconds: generation=0.01, extract=0.32, total=0.33
+best_root: residual=2.227e-15, trial=31, Lambda=1048576.0, theta=24.000000000000004, startopt_ratio=3.061003537928286e-08
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed2.json
+",True,168,56,0.32858896255493164,2.1,42,20,0.3841381072998047,4.357099558093108e-09
+3.3583099550713978e-15,125,"3,5",1.0,5,16,301,17042,852.1,0.29088902473449707,5,0.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed3.json,4.3702191653813493e-14,3,20,20,0,0.01500610113143921,3,4526,226.3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,5), seed=1039904220, terms=168, Bezout=125
+roots=20/20 success=True trials=41 duplicates=16 failures=5
+seconds: generation=0.01, extract=0.29, total=0.30
+best_root: residual=7.247e-15, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=4.437062817589748e-06
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed3.json
+",True,168,56,0.3001220226287842,2.05,41,20,0.35676097869873047,9.771432022057412e-09
+3.391749510770782e-15,125,"3,5",1.0,5,21,301,17895,894.75,0.30243420600891113,3,0.15,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed4.json,6.184265406614608e-12,3,20,20,0,0.015590310096740723,4,4750,237.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,5), seed=1878905540, terms=168, Bezout=125
+roots=20/20 success=True trials=44 duplicates=21 failures=3
+seconds: generation=0.01, extract=0.30, total=0.31
+best_root: residual=2.863e-14, trial=15, Lambda=1048576.0, theta=12.000000000000002, startopt_ratio=5.2521725893884616e-08
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed4.json
+",True,168,56,0.31180620193481445,2.2,44,20,0.36919212341308594,9.096027296668062e-09
+2.5480767312854315e-15,125,"3,5",1.0,5,20,301,17985,899.25,0.30598878860473633,5,0.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed5.json,1.7291045521628427e-13,3,20,20,0,0.015740203857421874,5,4796,239.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,5), seed=246198606, terms=168, Bezout=125
+roots=20/20 success=True trials=45 duplicates=20 failures=5
+seconds: generation=0.01, extract=0.31, total=0.31
+best_root: residual=6.499e-15, trial=11, Lambda=279648.689680901, theta=56.0, startopt_ratio=4.108112366045226e-08
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed5.json
+",True,168,56,0.3148040771484375,2.25,45,20,0.37134313583374023,6.566980938076246e-09
+4.202770669327397e-15,125,"3,5",1.0,5,16,301,17949,897.45,0.304718017578125,7,0.35,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed6.json,6.973194951210054e-14,3,20,20,0,0.015667486190795898,6,4816,240.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,5), seed=352794560, terms=168, Bezout=125
+roots=20/20 success=True trials=43 duplicates=16 failures=7
+seconds: generation=0.01, extract=0.30, total=0.31
+best_root: residual=1.126e-13, trial=23, Lambda=503699.4809249195, theta=91.0, startopt_ratio=0.0014348915715150078
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed6.json
+",True,168,56,0.31334972381591797,2.15,43,20,0.36918187141418457,1.6571941051501466e-09
+3.1647746642985215e-15,125,"3,5",1.0,5,12,301,15213,760.65,0.2761871814727783,9,0.45,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed7.json,1.0284477146264328e-13,3,20,20,0,0.014247250556945801,7,3978,198.9,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(3,5), seed=1669638782, terms=168, Bezout=125
+roots=20/20 success=True trials=41 duplicates=12 failures=9
+seconds: generation=0.01, extract=0.28, total=0.28
+best_root: residual=1.141e-09, trial=4, Lambda=1048576.0, theta=108.0, startopt_ratio=0.00018895653092655714
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks3x5_seed7.json
+",True,168,56,0.284945011138916,2.05,41,20,0.3414161205291748,2.5096349628161425e-09
+1.9714275608739575e-15,16,"4,2",1.0,2,187,301,48614,3038.375,0.7864511013031006,43,2.6875,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed0.json,9.50869563357174e-14,4,16,16,0,0.049703553318977356,0,11102,693.875,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=1664500989, terms=60, Bezout=16
+roots=16/16 success=True trials=246 duplicates=187 failures=43
+seconds: generation=0.01, extract=0.79, total=0.80
+best_root: residual=3.912e-10, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999653002452
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed0.json
+",True,60,15,0.7952568531036377,15.375,246,16,0.8538389205932617,5.700615353241437e-09
+5.0988088282317264e-15,16,"4,2",1.0,2,338,301,123047,7690.4375,2.031200885772705,244,15.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed1.json,8.953465151918836e-14,4,16,16,0,0.12751924991607666,1,28206,1762.875,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=1977060929, terms=60, Bezout=16
+roots=16/16 success=True trials=598 duplicates=338 failures=244
+seconds: generation=0.01, extract=2.03, total=2.04
+best_root: residual=5.364e-15, trial=45, Lambda=1179.2964497108885, theta=100.0, startopt_ratio=0.0012117037395354394
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed1.json
+",True,60,15,2.0403079986572266,37.375,598,16,2.1012122631073,6.600575536437561e-10
+1.924014019207424e-15,16,"4,2",1.0,2,391,301,107886,6742.875,1.7327940464019775,112,7.0,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed2.json,2.1677913319445742e-14,4,16,16,0,0.10895931720733643,2,24618,1538.625,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=345646764, terms=60, Bezout=16
+roots=16/16 success=True trials=519 duplicates=391 failures=112
+seconds: generation=0.01, extract=1.73, total=1.74
+best_root: residual=2.666e-15, trial=25, Lambda=41.729379035134464, theta=80.0, startopt_ratio=0.3362242959484018
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed2.json
+",True,60,15,1.7433490753173828,32.4375,519,16,1.8052518367767334,1.8052948148436977e-09
+2.1391609448248796e-15,16,"4,2",1.0,2,285,301,86590,5411.875,1.3930459022521973,78,4.875,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed3.json,9.775007782344476e-15,4,16,16,0,0.08765023946762085,3,19872,1242.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=230920569, terms=60, Bezout=16
+roots=16/16 success=True trials=379 duplicates=285 failures=78
+seconds: generation=0.01, extract=1.39, total=1.40
+best_root: residual=5.509e-15, trial=107, Lambda=1048576.0, theta=40.0, startopt_ratio=0.0010802596881280921
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed3.json
+",True,60,15,1.4024038314819336,23.6875,379,16,1.4653959274291992,2.619555113619661e-09
+1.0963013188876744e-15,16,"4,2",1.0,2,485,301,138215,8638.4375,2.2090370655059814,128,8.0,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed4.json,1.1617623272539762e-14,4,16,16,0,0.13860881328582764,4,31686,1980.375,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=261529078, terms=60, Bezout=16
+roots=16/16 success=True trials=629 duplicates=485 failures=128
+seconds: generation=0.01, extract=2.21, total=2.22
+best_root: residual=1.162e-14, trial=24, Lambda=78728.5946156934, theta=18.0, startopt_ratio=0.16000026487475327
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed4.json
+",True,60,15,2.217741012573242,39.3125,629,16,2.2801411151885986,3.629597669484892e-09
+1.0013487476193083e-15,16,"4,2",1.0,2,218,301,58066,3629.125,0.9249260425567627,43,2.6875,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed5.json,1.1397103136903177e-14,4,16,16,0,0.05834287405014038,5,13278,829.875,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=970643016, terms=60, Bezout=16
+roots=16/16 success=True trials=277 duplicates=218 failures=43
+seconds: generation=0.01, extract=0.92, total=0.93
+best_root: residual=1.140e-14, trial=23, Lambda=250811.09205317183, theta=86.0, startopt_ratio=0.07290097546268316
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed5.json
+",True,60,15,0.9334859848022461,17.3125,277,16,0.9937398433685303,4.934266825151817e-10
+1.107443988915824e-15,16,"4,2",1.0,2,290,301,76729,4795.5625,1.2288100719451904,72,4.5,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed6.json,1.3398253154500904e-13,4,16,16,0,0.07738955318927765,6,17504,1094.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=543720110, terms=60, Bezout=16
+roots=16/16 success=True trials=378 duplicates=290 failures=72
+seconds: generation=0.01, extract=1.23, total=1.24
+best_root: residual=1.107e-15, trial=2, Lambda=1048576.0, theta=164.0, startopt_ratio=0.007225003088574853
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed6.json
+",True,60,15,1.2382328510284424,23.625,378,16,1.2998571395874023,3.838297641612106e-09
+2.3569779219553545e-15,16,"4,2",1.0,2,126,301,41603,2600.1875,0.6661550998687744,54,3.375,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed7.json,1.295306235854445e-10,4,16,16,0,0.04218462109565735,7,9486,592.875,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,2), seed=499434832, terms=60, Bezout=16
+roots=16/16 success=True trials=196 duplicates=126 failures=54
+seconds: generation=0.01, extract=0.67, total=0.67
+best_root: residual=8.979e-13, trial=120, Lambda=43.50421235093513, theta=24.000000000000004, startopt_ratio=0.0012994158146581536
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x2_seed7.json
+",True,60,15,0.6749539375305176,12.25,196,16,0.733644962310791,4.37490399696116e-09
+1.5479799859192621e-15,81,"4,3",1.0,3,19,301,15152,757.6,0.25931215286254883,4,0.2,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed0.json,3.014904605523881e-14,4,20,20,0,0.013422107696533203,0,3666,183.3,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,3), seed=1871591907, terms=140, Bezout=81
+roots=20/20 success=True trials=43 duplicates=19 failures=4
+seconds: generation=0.01, extract=0.26, total=0.27
+best_root: residual=5.768e-15, trial=19, Lambda=1048576.0, theta=24.000000000000004, startopt_ratio=0.00016637422757967416
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed0.json
+",True,140,35,0.26844215393066406,2.15,43,20,0.3244059085845947,4.3335380533183576e-09
+1.7620419017000313e-15,81,"4,3",1.0,3,20,301,15794,789.7,0.27727484703063965,4,0.2,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed1.json,1.79897244661201e-14,4,20,20,0,0.014302051067352295,1,3850,192.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,3), seed=1974394753, terms=140, Bezout=81
+roots=20/20 success=True trials=44 duplicates=20 failures=4
+seconds: generation=0.01, extract=0.28, total=0.29
+best_root: residual=6.831e-15, trial=12, Lambda=1048576.0, theta=72.0, startopt_ratio=4.2874986275205816e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed1.json
+",True,140,35,0.2860410213470459,2.2,44,20,0.3427588939666748,7.908199713704632e-09
+1.289365242278177e-15,81,"4,3",1.0,3,16,301,14867,743.35,0.2525928020477295,5,0.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed2.json,6.774726086115216e-14,4,20,20,0,0.013048100471496581,2,3652,182.6,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,3), seed=1457122822, terms=140, Bezout=81
+roots=20/20 success=True trials=41 duplicates=16 failures=5
+seconds: generation=0.01, extract=0.25, total=0.26
+best_root: residual=7.426e-15, trial=20, Lambda=1048576.0, theta=100.0, startopt_ratio=0.0006141244786187506
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed2.json
+",True,140,35,0.26096200942993164,2.05,41,20,0.31669187545776367,8.959358245668208e-09
+1.689802320923109e-15,81,"4,3",1.0,3,19,301,15427,771.35,0.26444172859191895,4,0.2,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed3.json,1.6046971915483892e-14,4,20,20,0,0.013670086860656738,3,3782,189.1,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,3), seed=1220765943, terms=140, Bezout=81
+roots=20/20 success=True trials=43 duplicates=19 failures=4
+seconds: generation=0.01, extract=0.26, total=0.27
+best_root: residual=2.410e-14, trial=12, Lambda=1048576.0, theta=89.0, startopt_ratio=4.2873262636909245e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed3.json
+",True,140,35,0.27340173721313477,2.15,43,20,0.3299870491027832,3.007434746810472e-09
+2.0267272597439194e-15,81,"4,3",1.0,3,11,301,13271,663.55,0.22748422622680664,9,0.45,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed4.json,1.5189940870535437e-14,4,20,20,0,0.011811494827270508,4,3200,160.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,3), seed=1699960147, terms=140, Bezout=81
+roots=20/20 success=True trials=40 duplicates=11 failures=9
+seconds: generation=0.01, extract=0.23, total=0.24
+best_root: residual=7.839e-15, trial=35, Lambda=18632.777115691573, theta=18.0, startopt_ratio=3.375583262706059e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed4.json
+",True,140,35,0.23622989654541016,2.0,40,20,0.2915818691253662,1.7342326819891413e-09
+4.228332160525659e-15,81,"4,3",1.0,3,24,301,15805,790.25,0.2680389881134033,2,0.1,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed5.json,2.7619350016767564e-14,4,20,20,0,0.013826251029968262,5,3816,190.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,3), seed=712334690, terms=140, Bezout=81
+roots=20/20 success=True trials=46 duplicates=24 failures=2
+seconds: generation=0.01, extract=0.27, total=0.28
+best_root: residual=3.618e-11, trial=12, Lambda=1048576.0, theta=89.0, startopt_ratio=4.2875095224297847e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed5.json
+",True,140,35,0.27652502059936523,2.3,46,20,0.33278632164001465,4.450195395115965e-09
+3.330437769380321e-15,81,"4,3",1.0,3,11,301,16844,842.2,0.2911641597747803,12,0.6,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed6.json,2.974486189263519e-14,4,20,20,0,0.015016961097717284,6,4158,207.9,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,3), seed=1183601719, terms=140, Bezout=81
+roots=20/20 success=True trials=43 duplicates=11 failures=12
+seconds: generation=0.01, extract=0.29, total=0.30
+best_root: residual=1.296e-10, trial=8, Lambda=3720.109023667323, theta=116.00000000000001, startopt_ratio=4.616018006079846e-05
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed6.json
+",True,140,35,0.3003392219543457,2.15,43,20,0.35741686820983887,1.0329571614821322e-09
+1.511086543539286e-15,81,"4,3",1.0,3,4,301,11823,591.15,0.20314335823059082,15,0.75,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed7.json,1.9446341466721254e-14,4,20,20,0,0.010585606098175049,7,2864,143.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(4,3), seed=1312791395, terms=140, Bezout=81
+roots=20/20 success=True trials=39 duplicates=4 failures=15
+seconds: generation=0.01, extract=0.20, total=0.21
+best_root: residual=4.878e-15, trial=1, Lambda=356304.8104436325, theta=116.00000000000001, startopt_ratio=0.0001663759313463648
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks4x3_seed7.json
+",True,140,35,0.21171212196350098,1.95,39,20,0.2677769660949707,3.9693314100547216e-09
+1.8157376394455478e-15,32,"5,2",1.0,2,55,301,25231,1261.55,0.43308401107788086,16,0.8,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed0.json,2.5531267629035526e-14,5,20,20,0,0.02209174633026123,0,5784,289.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(5,2), seed=1312772530, terms=105, Bezout=32
+roots=20/20 success=True trials=91 duplicates=55 failures=16
+seconds: generation=0.01, extract=0.43, total=0.44
+best_root: residual=1.980e-13, trial=41, Lambda=1048576.0, theta=140.0, startopt_ratio=0.07290000399269257
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed0.json
+",True,105,21,0.4418349266052246,4.55,91,20,0.4993741512298584,1.4714301557183294e-09
+8.325588411920918e-16,32,"5,2",1.0,2,55,301,22072,1103.6,0.37960386276245117,17,0.85,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed1.json,1.393805308722557e-14,5,20,20,0,0.01941704750061035,1,5010,250.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(5,2), seed=579057075, terms=105, Bezout=32
+roots=20/20 success=True trials=92 duplicates=55 failures=17
+seconds: generation=0.01, extract=0.38, total=0.39
+best_root: residual=1.295e-11, trial=90, Lambda=4.081110223674671, theta=6.000000000000001, startopt_ratio=0.0018972012198229412
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed1.json
+",True,105,21,0.38834095001220703,4.6,92,20,0.4452848434448242,5.019970906634631e-09
+3.441455291961335e-15,32,"5,2",1.0,2,36,301,17830,891.5,0.30931782722473145,8,0.4,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed2.json,9.195477075734296e-15,5,20,20,0,0.015903997421264648,2,4090,204.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(5,2), seed=918334497, terms=105, Bezout=32
+roots=20/20 success=True trials=64 duplicates=36 failures=8
+seconds: generation=0.01, extract=0.31, total=0.32
+best_root: residual=7.156e-15, trial=9, Lambda=1048576.0, theta=90.0, startopt_ratio=0.0012249987516641612
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed2.json
+",True,105,21,0.31807994842529297,3.2,64,20,0.3757472038269043,5.887837022908082e-09
+3.778277111831141e-15,32,"5,2",1.0,2,39,301,16638,831.9,0.28656506538391113,10,0.5,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed3.json,2.8200757543505397e-14,5,20,20,0,0.01477140188217163,3,3764,188.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(5,2), seed=508800681, terms=105, Bezout=32
+roots=20/20 success=True trials=69 duplicates=39 failures=10
+seconds: generation=0.01, extract=0.29, total=0.30
+best_root: residual=2.579e-13, trial=64, Lambda=313.6220508231788, theta=100.0, startopt_ratio=0.000620543272585155
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed3.json
+",True,105,21,0.2954280376434326,3.45,69,20,0.3527507781982422,7.138786266965246e-09
+3.453868856157474e-15,32,"5,2",1.0,2,16,301,13606,680.3,0.23554086685180664,9,0.45,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed4.json,1.3185608050032667e-13,5,20,20,0,0.01221308708190918,4,3160,158.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(5,2), seed=515968252, terms=105, Bezout=32
+roots=20/20 success=True trials=45 duplicates=16 failures=9
+seconds: generation=0.01, extract=0.24, total=0.24
+best_root: residual=4.326e-13, trial=6, Lambda=1048576.0, theta=116.00000000000001, startopt_ratio=0.15999999287259414
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed4.json
+",True,105,21,0.2442617416381836,2.25,45,20,0.29952001571655273,5.586310682263673e-09
+3.3939065708105725e-15,32,"5,2",1.0,2,26,301,16875,843.75,0.29314112663269043,23,1.15,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed5.json,1.363191580351183e-14,5,20,20,0,0.015081143379211426,5,3834,191.7,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(5,2), seed=549339166, terms=105, Bezout=32
+roots=20/20 success=True trials=69 duplicates=26 failures=23
+seconds: generation=0.01, extract=0.29, total=0.30
+best_root: residual=5.350e-15, trial=5, Lambda=54196.77506235822, theta=64.0, startopt_ratio=0.07289575591870265
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed5.json
+",True,105,21,0.3016228675842285,3.45,69,20,0.3582570552825928,6.851225175123633e-09
+1.279337099825094e-15,32,"5,2",1.0,2,25,301,16750,837.5,0.289215087890625,35,1.75,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed6.json,1.3652520467976675e-13,5,20,20,0,0.014893651008605957,6,3752,187.6,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(5,2), seed=2139449542, terms=105, Bezout=32
+roots=20/20 success=True trials=80 duplicates=25 failures=35
+seconds: generation=0.01, extract=0.29, total=0.30
+best_root: residual=2.426e-12, trial=30, Lambda=2921.335327468223, theta=152.0, startopt_ratio=0.0012253047379387266
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed6.json
+",True,105,21,0.29787302017211914,4.0,80,20,0.3545668125152588,3.2346983949132813e-09
+4.806525277255028e-15,32,"5,2",1.0,2,26,301,15862,793.1,0.27744293212890625,5,0.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed7.json,1.9100999153570946e-14,5,20,20,0,0.014297950267791747,7,3658,182.9,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(5,2), seed=1891283395, terms=105, Bezout=32
+roots=20/20 success=True trials=51 duplicates=26 failures=5
+seconds: generation=0.01, extract=0.28, total=0.29
+best_root: residual=1.910e-14, trial=12, Lambda=1048576.0, theta=72.0, startopt_ratio=0.0012250025082104962
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks5x2_seed7.json
+",True,105,21,0.28595900535583496,2.55,51,20,0.3429868221282959,2.08691714001851e-09
+6.274479225496417e-15,64,"6,2",1.0,2,17,301,12059,602.95,0.22109198570251465,5,0.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed0.json,2.558089972720477e-13,6,20,20,0,0.011490702629089355,0,2736,136.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(6,2), seed=1944501729, terms=168, Bezout=64
+roots=20/20 success=True trials=42 duplicates=17 failures=5
+seconds: generation=0.01, extract=0.22, total=0.23
+best_root: residual=1.226e-10, trial=11, Lambda=542401.1946679661, theta=86.0, startopt_ratio=0.001212983105697585
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed0.json
+",True,168,28,0.2298140525817871,2.1,42,20,0.2860109806060791,7.954592024048668e-09
+1.858224904927247e-15,64,"6,2",1.0,2,17,301,12923,646.15,0.23769211769104004,9,0.45,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed1.json,1.9737317490254217e-14,6,20,20,0,0.012310445308685303,1,2930,146.5,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(6,2), seed=1642342212, terms=168, Bezout=64
+roots=20/20 success=True trials=46 duplicates=17 failures=9
+seconds: generation=0.01, extract=0.24, total=0.25
+best_root: residual=1.540e-11, trial=0, Lambda=1.2339460808244847e-06, theta=0.0, startopt_ratio=0.9999999613833072
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed1.json
+",True,168,28,0.24620890617370605,2.3,46,20,0.3022799491882324,7.928830744110541e-09
+6.898586760908813e-15,64,"6,2",1.0,2,22,301,14601,730.05,0.26696109771728516,7,0.35,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed2.json,1.3251877995807823e-13,6,20,20,0,0.013778913021087646,2,3320,166.0,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(6,2), seed=1491427429, terms=168, Bezout=64
+roots=20/20 success=True trials=49 duplicates=22 failures=7
+seconds: generation=0.01, extract=0.27, total=0.28
+best_root: residual=2.629e-09, trial=8, Lambda=265594.01377470564, theta=48.00000000000001, startopt_ratio=0.0017323914723537117
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed2.json
+",True,168,28,0.27557826042175293,2.45,49,20,0.3335418701171875,2.628649949606759e-09
+2.231045929887776e-15,64,"6,2",1.0,2,18,301,12576,628.8,0.23419785499572754,5,0.25,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed3.json,1.0902395754684296e-14,6,20,20,0,0.012147140502929688,3,2852,142.6,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(6,2), seed=431075947, terms=168, Bezout=64
+roots=20/20 success=True trials=43 duplicates=18 failures=5
+seconds: generation=0.01, extract=0.23, total=0.24
+best_root: residual=1.325e-14, trial=9, Lambda=522258.34038767614, theta=80.0, startopt_ratio=0.0012250099847844482
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed3.json
+",True,168,28,0.24294281005859375,2.15,43,20,0.2988741397857666,4.332043439894051e-09
+2.681835366417615e-15,64,"6,2",1.0,2,19,301,13161,658.05,0.2668139934539795,3,0.15,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed4.json,4.588392061023988e-14,6,20,20,0,0.013781201839447022,4,2996,149.8,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(6,2), seed=108546015, terms=168, Bezout=64
+roots=20/20 success=True trials=42 duplicates=19 failures=3
+seconds: generation=0.01, extract=0.27, total=0.28
+best_root: residual=4.288e-15, trial=29, Lambda=1048576.0, theta=40.0, startopt_ratio=0.0016024099609703321
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed4.json
+",True,168,28,0.27562403678894043,2.1,42,20,0.33400893211364746,3.710842417761747e-09
+4.439694931350381e-15,64,"6,2",1.0,2,24,301,12214,610.7,0.222214937210083,1,0.05,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed5.json,1.972763536793319e-14,6,20,20,0,0.01153949499130249,5,2764,138.2,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(6,2), seed=1227391750, terms=168, Bezout=64
+roots=20/20 success=True trials=45 duplicates=24 failures=1
+seconds: generation=0.01, extract=0.22, total=0.23
+best_root: residual=9.945e-11, trial=14, Lambda=1048576.0, theta=48.00000000000001, startopt_ratio=0.0013122900031071576
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed5.json
+",True,168,28,0.2307898998260498,2.25,45,20,0.28670430183410645,1.868258469965948e-10
+4.384162079745893e-15,64,"6,2",1.0,2,17,301,12716,635.8,0.23243975639343262,7,0.35,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed6.json,1.8103445204280818e-14,6,20,20,0,0.012061393260955811,6,2878,143.9,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(6,2), seed=874013192, terms=168, Bezout=64
+roots=20/20 success=True trials=44 duplicates=17 failures=7
+seconds: generation=0.01, extract=0.23, total=0.24
+best_root: residual=1.592e-14, trial=12, Lambda=59482.68149456686, theta=0.0, startopt_ratio=0.0012249383766617964
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed6.json
+",True,168,28,0.2412278652191162,2.2,44,20,0.2992229461669922,3.898414768414666e-09
+4.062021616455132e-15,64,"6,2",1.0,2,24,301,12948,647.4,0.2362842559814453,0,0.0,/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed7.json,5.762560178017969e-14,6,20,20,0,0.012241148948669433,7,2938,146.9,,"========================================================================================================================
+301 autonomous ANCHORED FULL-CUBIC HALLEY NumPy Pandrosion
+No dependency on previous Python scripts; anchored divided-difference Q plus full cubic finite-slope Halley only; no raw Pandrosion-step acceptance, no Newton/Jacobian fallback path.
+========================================================================================================================
+case=ks(6,2), seed=1290644083, terms=168, Bezout=64
+roots=20/20 success=True trials=44 duplicates=24 failures=0
+seconds: generation=0.01, extract=0.24, total=0.24
+best_root: residual=1.111e-14, trial=29, Lambda=1048576.0, theta=91.0, startopt_ratio=0.0014868866259509451
+out=/Users/ivanbesevic/Documents/poussiere/benchmarks/301_smale17_diagnostic/301_ks6x2_seed7.json
+",True,168,28,0.24482297897338867,2.2,44,20,0.3009910583496094,9.124175788793029e-09

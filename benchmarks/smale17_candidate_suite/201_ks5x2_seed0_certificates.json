@@ -1,0 +1,190 @@
+{
+  "certificates": [
+    {
+      "residual_check": 2.4904370483549043e-09,
+      "beta": 6.298274148668517e-10,
+      "cond_jac": 7.636629986061978,
+      "polished_residual": 8.368018360998551e-15,
+      "beta_after_one_newton": 2.1292091385255285e-15,
+      "certified": true,
+      "strong": false
+    },
+    {
+      "residual_check": 7.711511355765145e-10,
+      "beta": 3.145405834874185e-10,
+      "cond_jac": 9.12953235462208,
+      "polished_residual": 2.6944360297401985e-15,
+      "beta_after_one_newton": 5.111289902739372e-16,
+      "certified": true,
+      "strong": false
+    },
+    {
+      "residual_check": 1.890120055583681e-14,
+      "beta": 3.781943874484635e-15,
+      "cond_jac": 13.307270133817113,
+      "polished_residual": 1.787562503581584e-14,
+      "beta_after_one_newton": 2.3835597390470297e-15,
+      "certified": true,
+      "strong": false
+    },
+    {
+      "residual_check": 1.048190494328539e-11,
+      "beta": 1.5633631751556349e-12,
+      "cond_jac": 5.176385048783978,
+      "polished_residual": 1.9068706655153885e-15,
+      "beta_after_one_newton": 2.664528690091033e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 3.379919538019327e-10,
+      "beta": 1.1002648251352813e-10,
+      "cond_jac": 15.33313793905873,
+      "polished_residual": 1.996087139617986e-15,
+      "beta_after_one_newton": 1.133110464693076e-15,
+      "certified": true,
+      "strong": false
+    },
+    {
+      "residual_check": 2.2977406604205837e-10,
+      "beta": 9.264156653022656e-11,
+      "cond_jac": 15.838920016996823,
+      "polished_residual": 8.688869536365456e-16,
+      "beta_after_one_newton": 3.4784878919409925e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 3.298147782963548e-10,
+      "beta": 1.412357116872465e-10,
+      "cond_jac": 10.296045133515092,
+      "polished_residual": 1.170021796579212e-15,
+      "beta_after_one_newton": 3.3130130162974826e-16,
+      "certified": true,
+      "strong": false
+    },
+    {
+      "residual_check": 2.6602311141423217e-15,
+      "beta": 1.4323452039145173e-15,
+      "cond_jac": 9.442680557281347,
+      "polished_residual": 1.18380865178177e-15,
+      "beta_after_one_newton": 6.806759552186729e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 1.4998287152352736e-15,
+      "beta": 1.0761826072123186e-15,
+      "cond_jac": 9.864502581962924,
+      "polished_residual": 1.5265566588595902e-15,
+      "beta_after_one_newton": 1.1168870590230727e-15,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 2.0486548110427643e-15,
+      "beta": 6.300967632087716e-16,
+      "cond_jac": 11.125393357768036,
+      "polished_residual": 1.5641935306571066e-15,
+      "beta_after_one_newton": 4.2621954250260964e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 1.8413664713936872e-14,
+      "beta": 3.899273598411276e-15,
+      "cond_jac": 3.575697556357261,
+      "polished_residual": 2.0060965110860365e-15,
+      "beta_after_one_newton": 4.222261670101547e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 3.110844122549178e-14,
+      "beta": 5.752848277993137e-15,
+      "cond_jac": 8.217020866451861,
+      "polished_residual": 8.355488621981334e-15,
+      "beta_after_one_newton": 1.1635426444754453e-15,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 1.9050032802934085e-14,
+      "beta": 2.955194297716292e-15,
+      "cond_jac": 4.878683179303422,
+      "polished_residual": 5.811529736373404e-15,
+      "beta_after_one_newton": 1.0742051898637265e-15,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 4.778334152159516e-15,
+      "beta": 1.3787226913236101e-15,
+      "cond_jac": 7.809743967486794,
+      "polished_residual": 1.8032181435859555e-15,
+      "beta_after_one_newton": 7.646305101680741e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 5.663095238658673e-09,
+      "beta": 1.3152947174952306e-09,
+      "cond_jac": 7.729516521493161,
+      "polished_residual": 3.1869396220701337e-15,
+      "beta_after_one_newton": 7.22294297118344e-16,
+      "certified": true,
+      "strong": false
+    },
+    {
+      "residual_check": 1.5989073695633853e-11,
+      "beta": 4.485333057456614e-12,
+      "cond_jac": 7.890166592297595,
+      "polished_residual": 1.9504093996270804e-15,
+      "beta_after_one_newton": 4.680076787168179e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 8.394240831923222e-10,
+      "beta": 2.1699276583305898e-10,
+      "cond_jac": 5.823282863022253,
+      "polished_residual": 1.9167430610055932e-15,
+      "beta_after_one_newton": 6.23606147130865e-16,
+      "certified": true,
+      "strong": false
+    },
+    {
+      "residual_check": 4.970030894746323e-15,
+      "beta": 8.181408011446964e-16,
+      "cond_jac": 10.347780733881908,
+      "polished_residual": 3.833084183753514e-15,
+      "beta_after_one_newton": 5.186018389240374e-16,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 5.739434272539348e-15,
+      "beta": 2.9931892892525284e-15,
+      "cond_jac": 20.262468674644047,
+      "polished_residual": 6.440489792728076e-15,
+      "beta_after_one_newton": 1.4040867819204516e-15,
+      "certified": true,
+      "strong": true
+    },
+    {
+      "residual_check": 1.0035728370269376e-13,
+      "beta": 2.3845161448985783e-14,
+      "cond_jac": 58.10721408986953,
+      "polished_residual": 3.2076032105522416e-14,
+      "beta_after_one_newton": 1.3193983489722427e-14,
+      "certified": true,
+      "strong": false
+    }
+  ],
+  "certified_roots": 20,
+  "strong_roots": 12,
+  "median_beta": 1.479900486348946e-14,
+  "median_polished_residual": 2.001091825352011e-15,
+  "max_polished_residual": 3.2076032105522416e-14,
+  "median_cond_jac": 9.286106455951714
+}
