@@ -71,7 +71,10 @@ def cjson(z: complex) -> list[float]:
     return [float(complex(z).real), float(complex(z).imag)]
 
 def root_to_json(z: Sequence[complex]) -> list[list[float]]:
-    return [cjson(v) for v in z]
+    arr = np.asarray(z, dtype=np.complex128) if np is not None else z
+    if np is not None and getattr(arr, "ndim", 1) == 0:
+        arr = arr.reshape(1)
+    return [cjson(v) for v in arr]
 
 def parse_case(raw: str) -> tuple[int, int]:
     s = str(raw).strip().lower().replace("x", ",").replace(":", ",")
@@ -143,8 +146,10 @@ def multinomial_kostlan_weights(exps: "np.ndarray", d: int) -> "np.ndarray":
         logs -= logfac[exps[:, j].astype(np.int64)]
     return np.exp(0.5 * logs)
 
-def stable_seed(n: int, d: int, seed_index: int = 0) -> int:
-    return int(splitmix64(0x3050000 + 1000003 * n + 9176 * d + 97 * seed_index) & 0x7FFFFFFF)
+def stable_seed(n: int, d: int, seed_index: int = 0, salt: int = 0) -> int:
+    # Same Kostlan seed formula as 301, so 301-vs-305 benchmarks compare the
+    # corrector/start geometry rather than different random systems.
+    return int(splitmix64(0x50414E44524F5349 + 1000003 * n + 9176 * d + 97 * seed_index + salt) & 0x7FFFFFFF)
 
 @dataclasses.dataclass
 class DenseKostlanSystem:
@@ -197,6 +202,12 @@ class TargetTrack:
         return self.system.eval_batch(y)
     def eval_batch(self, Y: "np.ndarray") -> "np.ndarray":
         return self.system.eval_batch(Y)
+    def residual(self, y: Sequence[complex]) -> float:
+        try:
+            rr = float(np.linalg.norm(self.eval(y)))
+            return rr if math.isfinite(rr) else float("inf")
+        except Exception:
+            return float("inf")
     def residuals_batch(self, Y: "np.ndarray") -> "np.ndarray":
         try:
             F = self.eval_batch(Y)
@@ -225,7 +236,7 @@ def _hypercube_quartic_inverse_jet_305(target: TargetTrack, y: np.ndarray, f: np
     n = len(y)
     M = max(2 * n + 4, 16) # Minimal overdetermined hypercube cloud
     ynorm = max(1.0, float(np.linalg.norm(y)))
-    h_cloud = 1e-4 * ynorm
+    h_cloud = 1e-5 * ynorm
 
     # 1. Hypercube Cloud for Jacobian (G1)
     rng = np.random.default_rng(seed + ep * 1337)
@@ -239,18 +250,21 @@ def _hypercube_quartic_inverse_jet_305(target: TargetTrack, y: np.ndarray, f: np
     A, _, _, _ = np.linalg.lstsq(dY, dF, rcond=None)
     A = A.T 
 
+    if not np.all(np.isfinite(A)):
+        return np.zeros_like(y), {"error": "nonfinite_jacobian", "order": 0}
+
     try:
         delta1 = np.linalg.solve(A, -f)
     except Exception:
         return np.zeros_like(y), {"error": "singular_jacobian", "order": 0}
 
     dnorm = float(np.linalg.norm(delta1))
-    if dnorm < 1e-14 or dnorm > 1e4 * ynorm:
+    if (not math.isfinite(dnorm)) or dnorm < 1e-14 or dnorm > 1e4 * ynorm:
         return delta1, {"order": 1}
 
     # 2. 1D Stencil along delta1 for G2(d1, d1) and G3(d1, d1, d1)
     # The step size must be balanced to avoid floating point explosion in h^3
-    h = min(1e-3, 0.05 * ynorm / dnorm)
+    h = max(1e-5, min(1e-2, 0.05 * ynorm / dnorm))
     p1 = target.eval(y + h * delta1)
     m1 = target.eval(y - h * delta1)
     p2 = target.eval(y + 2 * h * delta1)
@@ -264,6 +278,9 @@ def _hypercube_quartic_inverse_jet_305(target: TargetTrack, y: np.ndarray, f: np
         delta2 = np.linalg.solve(A, -0.5 * D2)
     except Exception:
         return delta1, {"order": 1, "error": "singular_delta2"}
+    d2norm = float(np.linalg.norm(delta2))
+    if (not math.isfinite(d2norm)) or d2norm > 2.0 * max(dnorm, ynorm):
+        return delta1, {"order": 1, "error": "delta2_rejected", "d2_norm": d2norm}
 
     # 3. Cross derivative G2(d1, d2)
     # G2(u,v) = (F(u+v) - F(u) - F(v) + F(0)) / h^2
@@ -277,6 +294,9 @@ def _hypercube_quartic_inverse_jet_305(target: TargetTrack, y: np.ndarray, f: np
         delta3 = np.linalg.solve(A, -(G2_cross + (1.0 / 6.0) * D3))
     except Exception:
         return delta1 + delta2, {"order": 2, "error": "singular_delta3"}
+    d3norm = float(np.linalg.norm(delta3))
+    if (not math.isfinite(d3norm)) or d3norm > 2.0 * max(dnorm, ynorm):
+        return delta1 + delta2, {"order": 2, "error": "delta3_rejected", "d3_norm": d3norm}
 
     delta = delta1 + delta2 + delta3
     
@@ -291,7 +311,7 @@ def _hypercube_quartic_inverse_jet_305(target: TargetTrack, y: np.ndarray, f: np
 
 
 def _line_lambdas() -> list[float]:
-    return [1.0, 0.75, 0.5, 0.25, 0.125, 0.0625, 0.03125]
+    return [1.0, 0.75, 0.5, 0.35, 0.25, 0.18, 0.125, 0.09, 0.0625, 0.045, 0.03125, 0.02]
 
 def tensor_corrector(
     target: TargetTrack,
@@ -323,6 +343,9 @@ def tensor_corrector(
             break
 
         delta, meta = _hypercube_quartic_inverse_jet_305(target, y, f, ep, seed)
+        if not np.all(np.isfinite(delta)):
+            status = "nonfinite-step"
+            break
         
         # Line Search
         L = np.asarray(lambdas, dtype=float)
@@ -406,13 +429,19 @@ def universal_atlas_start(target: TargetTrack, n: int, trial: int, cells: int = 
 # Main extractor
 # ---------------------------------------------------------------------------
 
-def run_case(n: int, d: int, count: int, pool: int, epochs: int, accept: float) -> dict:
-    system = DenseKostlanSystem.make(n, d)
+def run_case(n: int, d: int, count: int, pool: int, epochs: int, accept: float, seed_index: int = 0) -> dict:
+    t0 = now()
+    system = DenseKostlanSystem.make(n, d, seed_index=seed_index)
     target = TargetTrack(system)
     
     roots = []
+    trials_used = 0
+    failures = 0
+    duplicates = 0
     for trial in range(pool):
-        if len(roots) >= count: break
+        if len(roots) >= count:
+            break
+        trials_used += 1
         
         y0 = universal_atlas_start(target, n, trial)
         loc = tensor_corrector(target, y0, epochs, 1e-12, accept, system.seed + trial)
@@ -431,13 +460,32 @@ def run_case(n: int, d: int, count: int, pool: int, epochs: int, accept: float) 
                     "residual": loc["residual"],
                     "epochs": loc["epochs"]
                 })
+            else:
+                duplicates += 1
+        else:
+            failures += 1
                 
     return {
+        "script": "305_pandrosion_full_hypercube.py",
+        "mode": "305-hypercube-quartic-inverse-jet",
         "case": f"{n},{d}",
+        "n": int(n),
+        "degree": int(d),
+        "seed_index": int(seed_index),
+        "seed": int(system.seed),
         "success": len(roots) >= count,
         "roots_found": len(roots),
+        "summary": {
+            "requested_roots": int(count),
+            "unique_roots": len(roots),
+            "success": bool(len(roots) >= int(count)),
+            "trials_used": int(trials_used),
+            "duplicates": int(duplicates),
+            "failures": int(failures),
+            "total_seconds": float(now() - t0),
+        },
         "eval_count": system.eval_count,
-        "roots": [{"id": r["id"], "residual": r["residual"], "z": root_to_json([r["z"]])[0]} for r in roots]
+        "roots": [{"id": r["id"], "residual": r["residual"], "epochs": r["epochs"], "z": root_to_json(r["z"])} for r in roots]
     }
 
 def main():
@@ -447,6 +495,8 @@ def main():
     parser.add_argument("--pool", type=int, default=512)
     parser.add_argument("--epochs", type=int, default=24)
     parser.add_argument("--accept", type=float, default=1e-8)
+    parser.add_argument("--seed-index", type=int, default=0)
+    parser.add_argument("--out", default="305_hypercube_quartic.json")
     args = parser.parse_args()
     
     cases = [c.strip() for c in args.cases.replace("|", ";").split(";")]
@@ -459,11 +509,12 @@ def main():
     
     for c in cases:
         n, d = parse_case(c)
-        res = run_case(n, d, args.count, args.pool, args.epochs, args.accept)
-        print(f"Case ks({n},{d}) | Roots: {res['roots_found']}/{args.count} | Evals: {res['eval_count']}")
+        res = run_case(n, d, args.count, args.pool, args.epochs, args.accept, args.seed_index)
+        s = res["summary"]
+        print(f"Case ks({n},{d}) | Roots: {res['roots_found']}/{args.count} | Success: {res['success']} | Trials: {s['trials_used']} | Evals: {res['eval_count']} | Seconds: {s['total_seconds']:.2f}")
         results.append(res)
         
-    Path("305_hypercube_quartic.json").write_text(json.dumps(results, indent=2))
+    Path(args.out).write_text(json.dumps(results[0] if len(results) == 1 else {"script": "305_pandrosion_full_hypercube.py", "cases": results}, indent=2))
 
 if __name__ == "__main__":
     main()
