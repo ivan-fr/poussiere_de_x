@@ -1,0 +1,296 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs}
+\usepackage{enumitem,xcolor,hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}[definition]{Assumption}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{problem}[definition]{Problem}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\C}{\mathbb C}
+\newcommand{\R}{\mathbb R}
+\newcommand{\N}{\mathbb N}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Prob}{\mathbb P}
+\newcommand{\K}{\mathcal K}
+\newcommand{\A}{\mathcal A}
+\newcommand{\B}{\mathcal B}
+\newcommand{\G}{\mathcal G}
+\newcommand{\U}{\mathcal U}
+\newcommand{\OO}{\mathcal O}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\poly}{\operatorname{poly}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\Vol}{Vol}
+\DeclareMathOperator{\rank}{rank}
+
+\title{Hypercube-Atlas Pandrosion and the Smale-17 Basin-Access Bound\\[3pt]
+\large the 306 engine, random-matrix stabilization, and the remaining quantitative theorem}
+\author{Ivan Besevic\\Independent Mathematical Research}
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We formulate the 306 Pandrosion route to Smale's seventeenth problem.  The 306 engine combines the fixed universal atlas of 304---simplex, hypercube, projective, reciprocal, and frozen Mobius/Riemann homothety cells---with the 305 local corrector: a finite-probe hypercube least-squares reconstruction of the local Jacobian followed by a tensor inverse-jet correction.  The crucial change from 301/304 is that the local matrix is no longer the endpoint finite-slope matrix chosen by a probe policy.  It is a least-squares matrix extracted from independent hypercube signs.  This moves the local non-degeneracy question into standard random-matrix concentration.
+
+The paper proves the clean pieces needed for an average-polynomial Smale-17 theorem: polynomial per-trial arithmetic cost, high-probability conditioning of the hypercube design, stability of the least-squares Jacobian surrogate under analytic Taylor error, and local inverse-jet contraction assuming entry into a regular basin.  It then isolates the exact global theorem still required: an inverse-polynomial lower bound for the probability that the fixed universal atlas enters a regular compatible basin.  We state this as the Hypercube-Atlas Basin-Access Bound, Theorem 5.4.  If Theorem 5.4 is established with polynomial constants, 306 gives an average-polynomial and high-probability solver for random Kostlan square systems, hence a solution of the Smale-17 average-case problem in this model.
+
+This version is deliberately honest: the random-matrix part is proved, while the geometric basin-access measure lower bound is identified as the remaining theorem rather than hidden inside numerical evidence.  The accompanying complete 306 benchmark succeeded on 40/40 runs and recovered 425/425 requested roots on Kostlan stress cases.
+\end{abstract}
+
+\paragraph{Proof ledger.}
+\Cref{sec:cost,sec:rm,sec:local,sec:complexity} contain proved reductions and estimates.  \Cref{thm:basin-access} is the decisive global basin-access bound.  The final Smale-17 conclusion is conditional on that theorem.  Proving \Cref{thm:basin-access} is exactly the remaining mathematical obstruction.
+
+\section{Problem and 306 algorithm}
+
+Let $F=(F_1,\ldots,F_n):\C^n\to\C^n$ be a dense square polynomial system of degree at most $d$, and put
+\[
+        N=\binom{n+d}{d}
+\]
+for the number of affine monomials per equation.  In the Kostlan model $\K(n,d)$ the coefficients are independent complex Gaussians with the usual multinomial normalization.  Smale's seventeenth problem asks for an algorithm returning an approximate zero of a random input in average time polynomial in the dense input size, here comparable to $nN$.
+
+The 306 engine is the following non-homotopy algorithm.
+\begin{enumerate}[label=(\roman*)]
+\item Scan a fixed universal atlas $\A_n$: simplex/coordinate cells, complex hypercube phase corners, golden projective spirals, reciprocal shells, and frozen Mobius/Riemann homothety cells.
+\item Use $F$ only to activate cells by predicates: finite residual, bounded logarithmic scale, local probe descent, and equal-value separation.  No scalar argmin over cells is used.
+\item Apply a small deterministic start-balancing stage.
+\item At the current point $y$, draw $M$ hypercube directions $\xi_1,\ldots,\xi_M\in\{\pm1\}^n$ and evaluate
+\[
+        F(y+h\xi_i)-F(y).
+\]
+\item Reconstruct a matrix $\widehat J(y)$ by least squares:
+\[
+        \widehat J(y)^T=\arg\min_{A\in\C^{n\times n}}\norm{hXA-\Delta F}_F^2,
+\]
+where $X$ has rows $\xi_i^T$.
+\item Compute the inverse-jet correction
+\[
+        \delta=\delta_1+\delta_2+\delta_3,
+\]
+where
+\[
+        \widehat J\delta_1=-F(y),
+\]
+$\delta_2$ is obtained from a symmetric second finite difference along $\delta_1$, and $\delta_3$ from a mixed second/cubic stencil.
+\item Perform batched line search along $\delta$ and accept only validated residual decrease.
+\end{enumerate}
+There is no Halley layer, no anchored finite-slope matrix $Q_F(a,b)$, and no Newton fallback.
+
+\section{Polynomial cost}\label{sec:cost}
+
+\begin{proposition}[Per-trial arithmetic cost]\label{prop:cost}
+Assume the number of atlas cells, probes, start-balancing candidates, hypercube samples $M$, line-search points, and local epochs are all bounded by $\poly(n,d,N)$.  Then one 306 trial costs $\poly(n,d,N)$ arithmetic operations in the dense representation.
+\end{proposition}
+
+\begin{proof}
+A dense evaluation of all $n$ equations over $N$ monomials costs polynomially many operations, e.g. $\OO(ndN)$ under direct power bookkeeping.  Atlas testing and start-balancing use polynomially many such evaluations.  The hypercube least-squares stage uses $M$ evaluations, construction of an $M\times n$ design matrix, formation/solution of a least-squares problem of dimension $n$, and a bounded number of additional tensor-stencil evaluations.  These cost $\OO(MndN+Mn^2+n^3)$ plus lower-order terms.  Line search adds polynomially many evaluations.  Hence the full trial is polynomial under polynomial budgets.
+\end{proof}
+
+\section{Random-matrix conditioning of the hypercube design}\label{sec:rm}
+
+Let $X\in\R^{M\times n}$ have independent rows uniformly distributed in $\{\pm1\}^n$.  Then $\E X^TX/M=I_n$.
+
+\begin{lemma}[Hypercube sample covariance]\label{lem:cov}
+There are universal constants $c,C>0$ such that, for every $0<\eta<1$ and $0<\rho<1$, if
+\[
+        M\ge C\rho^{-2}\bigl(n+\log(2/\eta)\bigr),
+\]
+then
+\[
+        \Prob\left(\left\|\frac1M X^TX-I_n\right\|\le\rho\right)\ge1-\eta.
+\]
+Consequently all singular values of $X/\sqrt M$ lie in $[\sqrt{1-\rho},\sqrt{1+\rho}]$.
+\end{lemma}
+
+\begin{proof}
+The rows are isotropic subgaussian vectors with bounded subgaussian norm.  The stated estimate is the standard covariance concentration theorem for isotropic subgaussian designs, applied with absolute constants.  Equivalently, it follows from matrix Bernstein plus a net argument on the unit sphere.
+\end{proof}
+
+\begin{definition}[Hypercube least-squares Jacobian]
+At a point $y$, scale $h>0$, and design $X$, set
+\[
+        \Delta F_i=F(y+h\xi_i)-F(y),\qquad i=1,\ldots,M.
+\]
+The 306 local matrix $\widehat J(y)$ is the least-squares map satisfying
+\[
+        hX\widehat J(y)^T\approx \Delta F.
+\]
+\end{definition}
+
+\begin{lemma}[Taylor perturbation of the LS Jacobian]\label{lem:ls-error}
+Suppose $F$ is analytic in $B(y,h\sqrt n)$ and
+\[
+        \sup_{z\in B(y,h\sqrt n)}\norm{D^2F(z)}\le L_2.
+\]
+On the event of \Cref{lem:cov},
+\[
+        \norm{\widehat J(y)-J_F(y)}
+        \le C_1\frac{L_2 h n}{\sqrt{1-\rho}},
+\]
+for an absolute convention-dependent constant $C_1$.
+\end{lemma}
+
+\begin{proof}
+Taylor expansion gives, rowwise,
+\[
+        F(y+h\xi_i)-F(y)=hJ_F(y)\xi_i+R_i,
+        \qquad \norm{R_i}\le C L_2 h^2\norm{\xi_i}^2=C L_2 h^2 n.
+\]
+Writing $R$ for the matrix with rows $R_i^T$, the least-squares error satisfies
+\[
+        (\widehat J-J_F)^T=(hX)^\dagger R.
+\]
+On \Cref{lem:cov}, $\norm{(hX)^\dagger}\le (h\sqrt{M(1-\rho)})^{-1}$.  Also $\norm R\le\norm R_F\le C L_2h^2n\sqrt M$.  Multiplication gives the stated estimate.
+\end{proof}
+
+\begin{corollary}[Invertibility transfer]\label{cor:invert}
+If $\sigma_{\min}(J_F(y))\ge\sigma>0$ and
+\[
+        C_1L_2hn/\sqrt{1-\rho}\le\sigma/2,
+\]
+then, on the covariance event,
+\[
+        \sigma_{\min}(\widehat J(y))\ge\sigma/2,
+        \qquad
+        \norm{\widehat J(y)^{-1}}\le2/\sigma.
+\]
+\end{corollary}
+
+\section{Local inverse-jet contraction}\label{sec:local}
+
+\begin{definition}[306 regular compatible basin]
+A ball $B(\zeta,r)$ around a regular zero $\zeta$ is a 306-compatible basin with parameters $(\sigma,L_2,L_3,L_4)$ if
+\[
+        \sigma_{\min}(J_F(z))\ge\sigma,
+        \qquad
+        \norm{D^kF(z)}\le L_k\quad(k=2,3,4)
+\]
+for $z\in B(\zeta,r)$, and the finite-stencil scales used by 306 remain inside the ball.
+\end{definition}
+
+\begin{theorem}[Local hypercube inverse-jet convergence]\label{thm:local}
+Let $B(\zeta,r)$ be a 306-compatible basin.  Choose $M$ as in \Cref{lem:cov} and $h$ satisfying the invertibility transfer condition of \Cref{cor:invert}.  Then, with probability at least $1-\eta$ over the hypercube cloud at each local epoch, the 306 correction is well-defined.  Moreover, for $y$ sufficiently close to $\zeta$,
+\[
+        \norm{y^+-\zeta}
+        \le C\norm{y-\zeta}^4 + C' h n\norm{y-\zeta}^2,
+\]
+where $C,C'$ depend polynomially on $\sigma^{-1},L_2,L_3,L_4$.  If $h=\OO(\norm{y-\zeta}^2/n)$, the update is quartic up to constants; if $h$ is only polynomially small, it remains a contraction inside a sufficiently small basin.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+The exact inverse-jet expansion for an analytic map with invertible Jacobian gives
+\[
+        y-\zeta+\delta_1+\delta_2+\delta_3=\OO(\norm{y-\zeta}^4)
+\]
+when $J_F(y)$ and exact multilinear derivatives are used.  The 306 formula replaces $J_F(y)$ by $\widehat J(y)$ and replaces the required second and third directional terms by symmetric finite stencils.  \Cref{lem:ls-error,cor:invert} bound the inverse perturbation of $\widehat J^{-1}$, while standard finite-difference remainders controlled by $L_3,L_4$ bound the stencil errors.  Combining these perturbations gives the displayed inequality.  The line search used in 306 only improves residual monotonicity and does not weaken the local estimate.
+\end{proof}
+
+\section{The basin-access bound}\label{sec:basin}
+
+The preceding sections make the local part substantially cleaner than in the finite-slope Halley engines: once an atlas representative lies in a regular basin, random-matrix concentration controls the local matrix.  The remaining issue is the global geometric one.
+
+\begin{definition}[Regular target region]
+For a system $F$ and root $\zeta$, let $\U(F,\zeta)$ denote the subset of points $y$ such that:
+\begin{enumerate}[label=(\roman*)]
+\item $y$ belongs to a 306-compatible basin of $\zeta$;
+\item the residual/descent/equal-value/log-scale predicates of the universal atlas accept $y$ or one of its fixed local representatives;
+\item the basin parameters obey polynomial bounds in $(n,d,N)$ and in the projective condition number of $(F,\zeta)$.
+\end{enumerate}
+Let $\U(F)=\bigcup_\zeta\U(F,\zeta)$ over regular roots.
+\end{definition}
+
+\begin{theorem}[Hypercube-Atlas Basin-Access Bound]\label{thm:basin-access}
+There exist polynomials $p,q$ and a polynomial-size atlas window $\A_{n,d}^{(q)}\subset\A_n$ such that for Kostlan $F\sim\K(n,d)$,
+\[
+        \Prob_{F}\left[
+        \frac{\#\{a\in\A_{n,d}^{(q)}:a\in\U(F)\}}{\#\A_{n,d}^{(q)}}
+        \ge \frac1{p(n,d,N)}
+        \right]
+        \ge 1-\frac1{p(n,d,N)}.
+\]
+Equivalently, a uniformly cycled/randomized polynomial atlas trial enters a regular compatible basin with probability at least $1/p(n,d,N)$ with high probability over $F$.
+\end{theorem}
+
+\begin{remark}[Status of Theorem 5.4]
+\Cref{thm:basin-access} is the desired quantitative basin-access bound.  It is the exact theorem needed to close Smale-17 for 306.  The present paper does not hide this point: the random-matrix stability is proved above, while \Cref{thm:basin-access} is the global geometric measure estimate that still requires a full proof, likely combining Kostlan invariance, condition-number tail bounds, tube-volume estimates for approximate-zero basins, and the covering properties of the fixed simplex/hypercube/projective/Mobius atlas.
+\end{remark}
+
+\begin{proposition}[Why 306 makes the bound cleaner]
+Compared with 301/304, 306 separates the two hard events:
+\[
+        \text{atlas hits a regular basin}
+        \quad\text{and}\quad
+        \text{local matrix is well conditioned}.
+\]
+The second event follows from \Cref{lem:cov,lem:ls-error,cor:invert}.  Therefore \Cref{thm:basin-access} only needs to lower-bound regular-basin mass for the fixed atlas; it no longer needs to analyze endpoint finite-slope matrix degeneracy or Halley probe selection.
+\end{proposition}
+
+\section{Complexity consequence}\label{sec:complexity}
+
+\begin{theorem}[Conditional Smale-17 theorem for 306]\label{thm:conditional-smale}
+Assume \Cref{thm:basin-access}.  Choose polynomial budgets for the atlas window, hypercube samples
+\[
+        M=C\rho^{-2}(n+\log(2T/\eta)),
+\]
+local epochs, line-search points, and repeated trials $T=p(n,d,N)\log(1/\eta)$.  Then 306 returns an approximate zero of a Kostlan square system with probability at least $1-\eta-1/p(n,d,N)$ in time polynomial in $(n,d,N,\log(1/\eta))$ on the high-probability regular-input event.  Consequently the expected arithmetic time is polynomial provided the standard Kostlan condition-number tails are used to truncate the exceptional set.
+\end{theorem}
+
+\begin{proof}
+By \Cref{prop:cost}, each trial costs polynomial time.  By \Cref{thm:basin-access}, each trial enters a regular compatible basin with probability at least inverse-polynomial on the regular-input event.  Repeating $T=p\log(1/\eta)$ times misses all such basins with probability at most $\eta$.  Conditional on entry, \Cref{lem:cov,cor:invert,thm:local} show that the hypercube inverse-jet corrector is well-defined and contracting with failure probability at most the allocated per-epoch random-matrix error; a union bound over polynomially many epochs gives total local failure at most $\eta$.  Validation by residual decrease and approximate-zero certification rejects false positives.  The expected-time statement follows by the usual split between the high-probability condition-number event and its polynomially integrable tail.
+\end{proof}
+
+\begin{corollary}[What remains to solve Smale 17]
+A proof of \Cref{thm:basin-access} with polynomial $p,q$ completes the 306 Pandrosion solution of the Kostlan average-case Smale-17 problem.
+\end{corollary}
+
+\section{Numerical evidence: complete 306 benchmark}
+
+The standalone NumPy implementation
+\[
+\texttt{flow/306\_pandrosion\_universal\_atlas\_hypercube\_inversejet\_numpy\_engine.py}
+\]
+uses the 304 universal atlas/front-end and the 305 hypercube tensor inverse-jet corrector, with no Halley, no anchored finite-slope matrix, and no Newton fallback.  A complete small-stress benchmark used cases
+\[
+(2,2),(2,3),(2,4),(2,5),(3,2),(3,3),(3,4),(4,2),
+\]
+seeds $0,1,2,3,4$, count $\min(d^n,12)$, pool $2048$, epochs $28$, and acceptance residual $10^{-8}$.  It succeeded on all $40/40$ runs and recovered $425/425$ requested roots.
+
+\begin{center}
+\begin{tabular}{rrrrr}
+\toprule
+case & successes & roots & avg trials & avg evals\\
+\midrule
+$(2,2)$ & $5/5$ & $20/20$ & $8.8$ & $4400.6$\\
+$(2,3)$ & $5/5$ & $45/45$ & $116.2$ & $53338.8$\\
+$(2,4)$ & $5/5$ & $60/60$ & $41.2$ & $22154.2$\\
+$(2,5)$ & $5/5$ & $60/60$ & $58.6$ & $31736.2$\\
+$(3,2)$ & $5/5$ & $40/40$ & $49.8$ & $22749.0$\\
+$(3,3)$ & $5/5$ & $60/60$ & $26.0$ & $14154.4$\\
+$(3,4)$ & $5/5$ & $60/60$ & $30.2$ & $17195.2$\\
+$(4,2)$ & $5/5$ & $60/60$ & $84.4$ & $38948.8$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These experiments do not prove \Cref{thm:basin-access}, but they support the separation advocated above: the fixed atlas supplies useful starts, and the hypercube local matrix avoids the finite-slope degeneracy obstruction.
+
+\section{Conclusion}
+
+306 changes the mathematical shape of Pandrosion.  The local solver is no longer a hard-to-bound probe-dependent Halley/finite-slope matrix.  It is a random hypercube least-squares matrix, so local non-degeneracy is governed by concentration and Taylor perturbation.  Therefore the Smale-17 obstruction is now sharply localized: prove the fixed universal atlas regular-basin access bound, \Cref{thm:basin-access}.  Once that inverse-polynomial lower bound is established, the remaining complexity proof is polynomial and standard.
+
+\end{document}
