@@ -18,6 +18,8 @@
 .env.prod
 .env.dev
 
+benchmarks/*
+
 # LaTeX Build Files
 *.aux
 *.bbl
