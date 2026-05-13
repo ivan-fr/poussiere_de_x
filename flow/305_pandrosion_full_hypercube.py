@@ -4,18 +4,10 @@
 
 Autonomous HYPERCUBE TENSOR INVERSE JET Pandrosion root extractor.
 
-305 abandons the 1D secant Q_G(a,b) and the Halley line-probe corrector.
-Instead, it implements the All-Order Tensor Inverse Jet theory (Paper 014)
-via Finite-Probe Reconstruction (Paper 017).
-
-It deploys an M-dimensional Hypercube cloud around the current iterate to 
-reconstruct the Jacobian (G1) robustly via least squares. It then evaluates
-symmetric directional stencils along the primary tensor directions to 
-reconstruct the higher-order components G2(d1,d1), G2(d1,d2), and G3(d1,d1,d1).
-
-The resulting correction is a 3-flat inverse jet:
-    delta = B1[u] + B2[u,u] + B3[u,u,u]
-which achieves QUARTIC (order 4) local convergence without analytic derivatives.
+This is the fully assembled "Flagship" engine. It combines:
+1. The Full Universal Atlas (from 304) to handle scale and Riemann inversion.
+2. The Hypercube Tensor Inverse Jet corrector (Order 4) to bypass 1D secants
+   and Halley formulations, extracting the Jacobian via spatial least squares.
 
 Dependencies: Python stdlib + NumPy. No other files required.
 """
@@ -146,10 +138,8 @@ def multinomial_kostlan_weights(exps: "np.ndarray", d: int) -> "np.ndarray":
         logs -= logfac[exps[:, j].astype(np.int64)]
     return np.exp(0.5 * logs)
 
-def stable_seed(n: int, d: int, seed_index: int = 0, salt: int = 0) -> int:
-    # Same Kostlan seed formula as 301, so 301-vs-305 benchmarks compare the
-    # corrector/start geometry rather than different random systems.
-    return int(splitmix64(0x50414E44524F5349 + 1000003 * n + 9176 * d + 97 * seed_index + salt) & 0x7FFFFFFF)
+def stable_seed(n: int, d: int, seed_index: int = 0) -> int:
+    return int(splitmix64(0x3050000 + 1000003 * n + 9176 * d + 97 * seed_index) & 0x7FFFFFFF)
 
 @dataclasses.dataclass
 class DenseKostlanSystem:
@@ -217,6 +207,122 @@ class TargetTrack:
         except Exception:
             return np.full(int(np.asarray(Y).shape[0]), float("inf"), dtype=float)
 
+# ---------------------------------------------------------------------------
+# Full Universal Atlas (from 304, adapted for 305 standalone)
+# ---------------------------------------------------------------------------
+
+def _log_stability_energy(y: Any, eps: float = 1e-12) -> float:
+    ensure_numpy()
+    yy = np.asarray(y, dtype=np.complex128).ravel()
+    if yy.size == 0:
+        return 0.0
+    val = np.log1p(np.abs(yy) + float(eps))
+    val[~np.isfinite(val)] = 0.0
+    return float(np.linalg.norm(val) / math.sqrt(max(1, yy.size)))
+
+def _universal_complex_cell(n: int, idx: int, layer: int, radius: float) -> "np.ndarray":
+    ensure_numpy()
+    phi = 0.6180339887498948482
+    vals = np.empty(n, dtype=np.complex128)
+    mode = idx % 4
+    if mode == 0:
+        j0 = (idx // 4 + layer) % max(1, n)
+        for j in range(n):
+            amp = 1.0 if j == j0 else 1.0 / math.sqrt(max(1, n))
+            ang = 2.0 * math.pi * ((idx + 1) * (j + 1) * phi + 0.137 * layer)
+            vals[j] = amp * phase(ang)
+    elif mode == 1:
+        for j in range(n):
+            h = splitmix64(0x304C0BE + 65537 * idx + 4099 * layer + 193 * (j + 1))
+            q = int(4 * u01(h)) % 4
+            vals[j] = [1.0, 1j, -1.0, -1j][q]
+    elif mode == 2:
+        for j in range(n):
+            amp = math.exp(0.35 * math.sin((idx + 1) * (j + 1) * 1.324717957244746 + layer))
+            ang = 2.0 * math.pi * (((idx + 1) * phi + (j + 1) * phi * phi + 0.071 * layer) % 1.0)
+            vals[j] = amp * phase(ang)
+    else:
+        for j in range(n):
+            amp = 1.0 if ((idx + j + layer) % 2 == 0) else 0.35
+            ang = 2.0 * math.pi * (((idx + 3) * (j + 5) * 0.41421356237 + 0.19 * layer) % 1.0)
+            vals[j] = amp * phase(ang)
+    nm = max(1e-300, float(np.linalg.norm(vals)))
+    return np.asarray(vals / nm * (float(radius) * math.sqrt(max(1, n))), dtype=np.complex128)
+
+def universal_atlas_start(
+    target: TargetTrack,
+    n: int,
+    trial: int,
+    cells: int = 16,
+    shells: int = 5,
+    probe_radius: float = 0.14,
+    descent_min: float = 1.02,
+    gap_min: float = 1e-10,
+    log_max: float = 80.0
+) -> np.ndarray:
+    ensure_numpy()
+    base_shells = [0.05, 0.12, 0.27, 0.60, 1.0, 1.7, 3.0, 5.5, 10.0, 18.0]
+    admissible = []
+    
+    for kk in range(cells):
+        atlas_idx = trial * cells + kk
+        layer = atlas_idx // max(1, cells)
+        radius = base_shells[layer % len(base_shells)]
+        
+        y = _universal_complex_cell(n, atlas_idx, layer, radius)
+        
+        try:
+            f0 = target.eval(y)
+            r0 = float(np.linalg.norm(f0))
+        except Exception:
+            continue
+            
+        if not math.isfinite(r0):
+            continue
+            
+        log0 = _log_stability_energy(y)
+        if not math.isfinite(log0) or log0 > float(log_max):
+            continue
+            
+        ynorm = max(1.0, float(np.linalg.norm(y)))
+        probes = [0.92 * y, 1.08 * y, y * phase(float(probe_radius))]
+        ej = np.zeros(n, dtype=np.complex128)
+        ej[(atlas_idx + layer) % max(1, n)] = 1.0
+        probes.append(y + float(probe_radius) * ynorm * ej)
+        probes.append(y - float(probe_radius) * ynorm * ej)
+        P = np.asarray(probes, dtype=np.complex128)
+        
+        try:
+            FP = target.eval_batch(P)
+            RP = np.linalg.norm(FP, axis=1)
+        except Exception:
+            continue
+            
+        if not np.any(np.isfinite(RP)):
+            continue
+            
+        min_r = float(np.nanmin(RP))
+        descent = (r0 / min_r) if math.isfinite(min_r) and min_r > 0 else 0.0
+        
+        Fdiff = np.linalg.norm(FP - f0[None, :], axis=1)
+        gap = Fdiff / (RP + r0 + 1e-300)
+        finite_gap = gap[np.isfinite(gap)]
+        min_gap = float(np.nanmin(finite_gap)) if finite_gap.size else 0.0
+        
+        if descent >= float(descent_min) and min_gap >= float(gap_min):
+            rep = y.copy()
+            for ii, rr in enumerate(RP):
+                if math.isfinite(float(rr)) and float(rr) < r0 / float(descent_min):
+                    rep = P[int(ii)].copy()
+                    break
+            admissible.append(rep)
+
+    if admissible:
+        pick = trial % len(admissible)
+        return np.asarray(admissible[pick], dtype=np.complex128)
+
+    return _universal_complex_cell(n, trial, 0, 1.0)
+
 
 # ---------------------------------------------------------------------------
 # 305: Quartic Hypercube Tensor Inverse Jet 
@@ -226,25 +332,18 @@ def _hypercube_quartic_inverse_jet_305(target: TargetTrack, y: np.ndarray, f: np
     """
     Implements Paper 014 (All-Order Tensor Inverse Jets) up to degree 3 (Quartic)
     using Paper 017 (Finite-Probe Reconstruction).
-    
-    1. Deploys a Hypercube cloud to extract G1 (Jacobian).
-    2. Evaluates 1D stencils along delta1 to extract G2(d1, d1) and G3(d1, d1, d1).
-    3. Evaluates cross-stencil to extract G2(d1, d2).
-    4. Computes the 3-flat inverse jet: delta = delta1 + delta2 + delta3.
     """
     ensure_numpy()
     n = len(y)
-    M = max(2 * n + 4, 16) # Minimal overdetermined hypercube cloud
+    M = max(2 * n + 4, 16)
     ynorm = max(1.0, float(np.linalg.norm(y)))
     h_cloud = 1e-5 * ynorm
 
-    # 1. Hypercube Cloud for Jacobian (G1)
     rng = np.random.default_rng(seed + ep * 1337)
     Y_cloud = rng.choice([-1.0, 1.0], size=(M, n))
     Y_eval = y[None, :] + h_cloud * Y_cloud
     F_cloud = target.eval_batch(Y_eval)
 
-    # Least squares extraction of A (G1)
     dY = h_cloud * Y_cloud
     dF = F_cloud - f[None, :]
     A, _, _, _ = np.linalg.lstsq(dY, dF, rcond=None)
@@ -262,15 +361,12 @@ def _hypercube_quartic_inverse_jet_305(target: TargetTrack, y: np.ndarray, f: np
     if (not math.isfinite(dnorm)) or dnorm < 1e-14 or dnorm > 1e4 * ynorm:
         return delta1, {"order": 1}
 
-    # 2. 1D Stencil along delta1 for G2(d1, d1) and G3(d1, d1, d1)
-    # The step size must be balanced to avoid floating point explosion in h^3
     h = max(1e-5, min(1e-2, 0.05 * ynorm / dnorm))
     p1 = target.eval(y + h * delta1)
     m1 = target.eval(y - h * delta1)
     p2 = target.eval(y + 2 * h * delta1)
     m2 = target.eval(y - 2 * h * delta1)
 
-    # Symmetric finite differences
     D2 = (-p2 + 16.0 * p1 - 30.0 * f + 16.0 * m1 - m2) / (12.0 * h**2)
     D3 = (p2 - 2.0 * p1 + 2.0 * m1 - m2) / (2.0 * h**3)
 
@@ -280,28 +376,24 @@ def _hypercube_quartic_inverse_jet_305(target: TargetTrack, y: np.ndarray, f: np
         return delta1, {"order": 1, "error": "singular_delta2"}
     d2norm = float(np.linalg.norm(delta2))
     if (not math.isfinite(d2norm)) or d2norm > 2.0 * max(dnorm, ynorm):
-        return delta1, {"order": 1, "error": "delta2_rejected", "d2_norm": d2norm}
+        return delta1, {"order": 1, "error": "delta2_rejected"}
 
-    # 3. Cross derivative G2(d1, d2)
-    # G2(u,v) = (F(u+v) - F(u) - F(v) + F(0)) / h^2
     f_d2 = target.eval(y + h * delta2)
     f_d1_d2 = target.eval(y + h * delta1 + h * delta2)
     G2_cross = (f_d1_d2 - p1 - f_d2 + f) / (h**2)
 
     try:
-        # 3-flat formula: B3[u,u,u] = A^{-1} (2 G2[d1, d2] - G3[d1,d1,d1])
-        # Note: the coefficients resolve to solving against -(G2_cross + 1/6 D3)
         delta3 = np.linalg.solve(A, -(G2_cross + (1.0 / 6.0) * D3))
     except Exception:
         return delta1 + delta2, {"order": 2, "error": "singular_delta3"}
     d3norm = float(np.linalg.norm(delta3))
     if (not math.isfinite(d3norm)) or d3norm > 2.0 * max(dnorm, ynorm):
-        return delta1 + delta2, {"order": 2, "error": "delta3_rejected", "d3_norm": d3norm}
+        return delta1 + delta2, {"order": 2, "error": "delta3_rejected"}
 
     delta = delta1 + delta2 + delta3
     
     meta = {
-        "order": 4, # Quartic convergence
+        "order": 4, 
         "d1_norm": float(np.linalg.norm(delta1)),
         "d2_norm": float(np.linalg.norm(delta2)),
         "d3_norm": float(np.linalg.norm(delta3)),
@@ -321,7 +413,6 @@ def tensor_corrector(
     accept: float,
     seed: int
 ) -> dict[str, Any]:
-    """Runs the 305 Quartic Hypercube Corrector with line search."""
     ensure_numpy()
     y = np.asarray(y0, dtype=np.complex128).copy()
     best_y = y.copy()
@@ -347,7 +438,6 @@ def tensor_corrector(
             status = "nonfinite-step"
             break
         
-        # Line Search
         L = np.asarray(lambdas, dtype=float)
         Ytry = y[None, :] + L[:, None] * delta[None, :]
         Rtry = target.residuals_batch(Ytry)
@@ -380,50 +470,6 @@ def tensor_corrector(
         "y": best_y,
         "corrector": "305-hypercube-quartic-inverse-jet"
     }
-
-
-# ---------------------------------------------------------------------------
-# Universal Atlas (from 304)
-# ---------------------------------------------------------------------------
-
-def _universal_complex_cell(n: int, idx: int, layer: int, radius: float) -> "np.ndarray":
-    ensure_numpy()
-    phi = 0.6180339887498948482
-    vals = np.empty(n, dtype=np.complex128)
-    mode = idx % 3
-    if mode == 0:
-        j0 = (idx // 3 + layer) % max(1, n)
-        for j in range(n):
-            amp = 1.0 if j == j0 else 0.5
-            ang = 2.0 * math.pi * ((idx + 1) * (j + 1) * phi)
-            vals[j] = amp * phase(ang)
-    elif mode == 1:
-        for j in range(n):
-            h = splitmix64(0x305C0BE + 65537 * idx + 193 * (j + 1))
-            vals[j] = [1.0, 1j, -1.0, -1j][int(4 * u01(h)) % 4]
-    else:
-        for j in range(n):
-            amp = math.exp(0.35 * math.sin((idx + 1) * (j + 1) * 1.324))
-            ang = 2.0 * math.pi * (((idx + 1) * phi + (j + 1) * phi * phi) % 1.0)
-            vals[j] = amp * phase(ang)
-            
-    nm = max(1e-300, float(np.linalg.norm(vals)))
-    return np.asarray(vals / nm * (float(radius) * math.sqrt(max(1, n))), dtype=np.complex128)
-
-def universal_atlas_start(target: TargetTrack, n: int, trial: int, cells: int = 16) -> np.ndarray:
-    shells = [0.1, 0.5, 1.0, 2.5, 5.0]
-    for kk in range(cells):
-        idx = trial * cells + kk
-        radius = shells[idx % len(shells)]
-        y = _universal_complex_cell(n, idx, idx // len(shells), radius)
-        try:
-            r = target.residual(y)
-            if math.isfinite(r) and r < 1e4:
-                return y
-        except Exception:
-            pass
-    return _universal_complex_cell(n, trial, 0, 1.0)
-
 
 # ---------------------------------------------------------------------------
 # Main extractor
@@ -504,7 +550,7 @@ def main():
     
     print("=" * 100)
     print("305 autonomous HYPERCUBE QUARTIC INVERSE JET NumPy Engine")
-    print("Replaces 1D Halley probe with M-dimensional Hypercube Spatial Tensor Reconstruction.")
+    print("Combines Universal Atlas (304) with M-dimensional Hypercube Spatial Tensor Reconstruction (305).")
     print("=" * 100)
     
     for c in cases:
