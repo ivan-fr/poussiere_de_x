@@ -1,0 +1,330 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs}
+\usepackage{enumitem,xcolor,hyperref}
+\usepackage[nameinlink,capitalise,noabbrev]{cleveref}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{assumption}[definition]{Assumption}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{problem}[definition]{Problem}
+\newtheorem{remark}[definition]{Remark}
+
+\newcommand{\C}{\mathbb C}
+\newcommand{\N}{\mathbb N}
+\newcommand{\PP}{\mathbb P}
+\newcommand{\E}{\mathbb E}
+\newcommand{\K}{\mathcal K}
+\newcommand{\A}{\mathcal A}
+\newcommand{\B}{\mathcal B}
+\newcommand{\G}{\mathcal G}
+\newcommand{\Q}{\mathcal Q}
+\newcommand{\OO}{\mathcal O}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\poly}{\operatorname{poly}}
+\newcommand{\Prob}{\mathbb P}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\rank}{rank}
+
+\title{Universal-Atlas Pandrosion for Smale-17 Stress Systems\\[3pt]
+\large fixed chart geometry, finite-slope cubic correction, and the exact complexity gap remaining after benchmark 304}
+\author{Ivan Besevic\\Independent Mathematical Research}
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper records and formalizes the 304 Pandrosion engine: a fixed universal atlas of complex projective cells followed by strict finite-slope cubic Halley correction.  The point of 304 is different from the previous 301 engine.  In 301 the chart generator is a single Mobius--Riemann--Thales flow whose parameters react to root history.  In 304 the geometric atlas is fixed in advance for each dimension: simplex, hypercube, golden-projective, reciprocal shell, and frozen Mobius/Riemann cells.  The input polynomial system does not choose a scalar best chart; it only activates cells through predicate tests for finite residual, local descent, equal-value separation, and logarithmic scale stability.  This makes 304 a cleaner candidate for a probabilistic basin-access theorem.
+
+We prove the unconditional algebraic pieces: the exact telescopic finite-slope identity, polynomial arithmetic cost per trial when the number of cells/probes/epochs is polynomially bounded, local cubic convergence under a compatible finite-slope basin condition, and the standard implication that inverse-polynomial basin access gives average-polynomial time and high-probability success.  We do not claim the missing global basin-access theorem is proved.  Instead we isolate it precisely as the remaining Smale-17 obstruction for 304.
+
+The large 304 diagnostic benchmark completed $528/528$ runs on Kostlan stress cases, recovered $21940/21952$ requested roots, certified $21666/21940$ roots by alpha-lite tests, produced $17283/21940$ strong roots, and achieved median residual $1.02\cdot10^{-13}$ after a median $0.110$ seconds per root.  Compared with 301 on the same suite, 304 finds the same number of roots but certifies substantially more of them, at about $2.75\times$ median runtime cost.
+\end{abstract}
+
+\paragraph{Proof ledger.}
+The finite-slope identity, local cubic theorem, per-trial arithmetic bound, expected-time theorem, and repetition amplification theorem are proved below.  The global statement that a fixed universal atlas hits compatible approximate-zero basins with inverse-polynomial probability for Kostlan input is stated as \cref{prob:304-basin-access}; it remains the missing theorem, not a hidden consequence of the benchmark.
+
+\section{Smale-17 target and the 304 change}
+
+Let $F=(F_1,\ldots,F_n):\C^n\to\C^n$ be a square dense polynomial system of degree at most $d$.  Write
+\[
+        N=\binom{n+d}{d}
+\]
+for the number of affine monomials per equation.  In the Kostlan model $\K(n,d)$ the coefficients are complex Gaussian with the usual binomial variance normalization.  Smale's seventeenth problem asks for an algorithm that returns an approximate zero of a random input in average time polynomial in the dense input size, comparable here to $nN$.
+
+The 304 engine is intended as a non-homotopy route.  It does not track paths in coefficient space.  A trial performs:
+\begin{enumerate}[label=(\roman*)]
+\item choose a cell from a fixed universal atlas in $\C^n$;
+\item test only predicates using $F$: finite residual, bounded logarithmic scale, local residual descent under fixed probes, and non-negligible equal-value gap;
+\item choose a cyclic admissible representative, not a scalar minimizer;
+\item apply finite local start balancing;
+\item build the exact finite-slope matrix $Q_F(a,b)$ from an endpoint pair $(a,b)$;
+\item solve the strict cubic correction
+\[
+        Q_F(a,b)\delta_1=-F(a),\qquad
+        Q_F(a,b)\delta_2=-\frac12H_F(a;b;\delta_1,\delta_1),
+\]
+where the second defect is estimated by symmetric finite probes;
+\item line-search only along $\delta=\delta_1+\delta_2$ and validate the residual.
+\end{enumerate}
+The raw finite-slope step $\delta_1$ is not accepted as a fallback direction.
+
+\begin{definition}[Fixed universal atlas]
+For fixed $n$, the 304 atlas $\A_n$ is the deterministic countable family of cells generated by the following shell families:
+\begin{enumerate}[label=(\alph*)]
+\item simplex/coordinate cells with one dominant coordinate and balanced tail;
+\item hypercube phase corners with entries in $\{1,i,-1,-i\}$;
+\item golden-projective spiral cells with deterministic amplitudes and phases;
+\item reciprocal or infinity-biased mixed shells with alternating large and small coordinates;
+\item frozen Mobius/Riemann cells whose parameters do not depend on $F$ or the root history.
+\end{enumerate}
+For a finite trial budget, 304 scans a polynomially bounded window of this atlas.  The atlas geometry is input-independent; $F$ only decides whether a tested cell is admissible by predicates.
+\end{definition}
+
+\begin{definition}[304 admissible cell predicates]
+A tested cell representative $y$ is admissible if:
+\begin{enumerate}[label=(\roman*)]
+\item $\norm{F(y)}$ is finite;
+\item the logarithmic scale energy of $y$ is below a prescribed bound;
+\item a fixed local probe set, consisting of radial, phase, and coordinate-simplex probes, contains a point with residual descent by at least a constant factor;
+\item the normalized equal-value gap between $F(y)$ and the probe values is above a prescribed threshold.
+\end{enumerate}
+If multiple cells are admissible, 304 uses a cyclic admissible-cell rule.  It does not choose the globally smallest residual cell.
+\end{definition}
+
+\begin{remark}[Why 304 is cleaner than 301]
+The 301 benchmark already showed strong empirical behavior, but its chart parameters react to duplicate pressure, failure pressure, and progress.  Those reactions may still be analyzable, but they complicate an invariant distributional proof.  304 removes this complication: the atlas is fixed before $F$ is known.  The proof target becomes a geometric measure problem for fixed cells under the Kostlan distribution.
+\end{remark}
+
+\section{Exact finite-slope algebra}
+
+For $\alpha\in\N^n$ write $m_\alpha(z)=z_1^{\alpha_1}\cdots z_n^{\alpha_n}$.  For $m\ge1$ set
+\[
+        S_m(u,v)=\sum_{r=0}^{m-1}v^{m-1-r}u^r,\qquad S_0(u,v)=0.
+\]
+For $a,b\in\C^n$, define
+\[
+        q_{\alpha j}(a,b)=
+        \left(\prod_{k<j}b_k^{\alpha_k}\right)
+        S_{\alpha_j}(a_j,b_j)
+        \left(\prod_{k>j}a_k^{\alpha_k}\right).
+\]
+If $F_i(z)=\sum_\alpha c_{i\alpha}m_\alpha(z)$, put
+\[
+        Q_F(a,b)_{ij}=\sum_\alpha c_{i\alpha}q_{\alpha j}(a,b).
+\]
+
+\begin{theorem}[Exact telescopic finite-slope matrix]\label{thm:telescopic}
+For all $a,b\in\C^n$,
+\[
+        F(b)-F(a)=Q_F(a,b)(b-a).
+\]
+\end{theorem}
+
+\begin{proof}
+For a monomial, change coordinates from $a$ to $b$ one coordinate at a time:
+\[
+\prod_{k=1}^n b_k^{\alpha_k}-\prod_{k=1}^n a_k^{\alpha_k}
+=\sum_{j=1}^n
+\left(\prod_{k<j}b_k^{\alpha_k}\right)
+\left(b_j^{\alpha_j}-a_j^{\alpha_j}\right)
+\left(\prod_{k>j}a_k^{\alpha_k}\right).
+\]
+Since $b_j^m-a_j^m=S_m(a_j,b_j)(b_j-a_j)$, the monomial increment is $\sum_jq_{\alpha j}(a,b)(b_j-a_j)$.  Summing over monomials and equations proves the identity.
+\end{proof}
+
+\begin{remark}
+$Q_F(a,b)$ is not an approximate Jacobian introduced for convenience.  It is an exact polynomial increment factorization.  As $b\to a$, $Q_F(a,b)\to J_F(a)$.
+\end{remark}
+
+\section{Polynomial per-trial cost}
+
+\begin{proposition}[Dense arithmetic cost of one 304 trial]\label{prop:cost}
+Assume the trial uses $C_A$ atlas cells, $C_P$ local cell probes, $C_E$ endpoint probes, $L$ line-search points, and $S$ start-balancing candidates/steps, all bounded by $\poly(n,d,N)$.  Then one 304 trial costs $\poly(n,d,N)$ arithmetic operations in the dense representation.
+\end{proposition}
+
+\begin{proof}
+A dense evaluation of all $n$ equations over $N$ monomials costs $\OO(nN)$ arithmetic operations after monomial powers are organized in the standard dense way, or $\OO(ndN)$ under a direct monomial-power implementation; both are polynomial.  Testing $C_A$ cells with $C_P$ fixed probes costs $\OO(C_AC_P\,ndN)$ up to polynomial bookkeeping.  Start balancing with $S$ candidates costs $\OO(SndN)$.  Building $Q_F(a,b)$ requires, for each equation, variable, and monomial, one telescopic contribution, hence $\OO(n^2dN)$ by direct summation, again polynomial.  Finite endpoint and curvature probes cost $\OO(C_EndN)$.  Solving the $n\times n$ systems for $\delta_1$ and $\delta_2$ costs $\OO(n^3)$ by Gaussian elimination.  Line search costs $\OO(LndN)$.  The sum is polynomial whenever the exposed algorithmic budgets are polynomial.
+\end{proof}
+
+\begin{remark}[Benchmark versus proof budgets]
+The benchmark used concrete constants: pool $8192$, epochs $40$, line-search $14$, endpoint probe candidates $12$, universal cells $16$, universal shells $5$.  These are empirical settings.  The complexity theorem only requires that such budgets be bounded by a polynomial if scaled with $n,d,N$.
+\end{remark}
+
+\section{Local cubic basin theorem}
+
+Let $\zeta$ be a regular zero and $e=a-\zeta$.  A strict 304 local correction is
+\[
+        Q\delta_1=-F(a),\qquad
+        Q\delta_2=-\frac12H_F(a;b;\delta_1,\delta_1),\qquad
+        a^+=a+\delta_1+\delta_2,
+\]
+with $Q=Q_F(a,b)$.
+
+\begin{definition}[Compatible finite-slope basin]\label{def:basin}
+A ball $B(\zeta,r)$ is a compatible finite-slope basin with constants $(M,L_2,L_3,c_b,c_Q,c_H)$ if, for every accepted endpoint pair $(a,b)$ in the ball:
+\begin{enumerate}[label=(\roman*)]
+\item $J_F(\zeta)$ is invertible and $\norm{J_F(z)^{-1}}\le M$ throughout the ball;
+\item $\norm{D^2F(z)}\le L_2$ and $\norm{D^3F(z)}\le L_3$ throughout the ball;
+\item $\norm{b-a}\le c_b\norm{F(a)}$;
+\item $Q_F(a,b)$ is invertible and $\norm{Q_F(a,b)^{-1}}\le2M$;
+\item the finite-slope perturbation is compatible with cubic cancellation:
+\[
+        \norm{(Q_F(a,b)-J_F(a))(a-\zeta)}\le c_Q\norm{a-\zeta}^3;
+\]
+\item the finite second defect satisfies
+\[
+        \norm{H_F(a;b;\delta_1,\delta_1)-D^2F(a)[\delta_1,\delta_1]}
+        \le c_H\norm{a-\zeta}^3.
+\]
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[Local cubic finite-slope convergence]\label{thm:local-cubic}
+Inside a compatible finite-slope basin, the strict 304 update satisfies
+\[
+        \norm{a^+-\zeta}\le C\norm{a-\zeta}^3
+\]
+for all $a$ sufficiently close to $\zeta$, where $C$ depends only on the basin constants.
+\end{theorem}
+
+\begin{proof}
+Taylor expansion at $a$ gives
+\[
+        F(a)=J_F(a)e-\frac12D^2F(a)[e,e]+\OO(\norm e^3).
+\]
+Let $E_Q=Q_F(a,b)-J_F(a)$.  Compatibility gives $E_Qe=\OO(\norm e^3)$, hence $Qe=J_F(a)e+\OO(\norm e^3)$.  Since $Q\delta_1=-F(a)$ and $Q^{-1}$ is bounded,
+\[
+        \delta_1=-e+\frac12Q^{-1}D^2F(a)[e,e]+\OO(\norm e^3).
+\]
+Thus $\delta_1=-e+\OO(\norm e^2)$ and
+\[
+        D^2F(a)[\delta_1,\delta_1]=D^2F(a)[e,e]+\OO(\norm e^3).
+\]
+The second-defect assumption gives
+\[
+        \delta_2=-\frac12Q^{-1}D^2F(a)[e,e]+\OO(\norm e^3).
+\]
+The quadratic term left after $e+\delta_1$ is therefore cancelled by $\delta_2$, leaving $e+\delta_1+\delta_2=\OO(\norm e^3)$.
+\end{proof}
+
+\begin{remark}[Compatibility is essential]
+The weaker statement $Q_F(a,b)=J_F(a)+\OO(\norm e)$ is insufficient.  It can leave an uncancelled quadratic term $J_F(a)^{-1}(Q_F(a,b)-J_F(a))e$.  Either the endpoint rule must force the stronger compatibility above, or the finite second defect must include and cancel this transport error.
+\end{remark}
+
+\section{The exact Smale-17 reduction for 304}
+
+\begin{definition}[304 basin-access probability]\label{def:access}
+304 has polynomial universal-atlas basin access for Kostlan inputs if there exists a polynomial $P(n,d,N)$ such that one independent 304 trial, using polynomially bounded atlas/probe budgets, reaches a compatible finite-slope basin and validates an approximate zero with probability at least
+\[
+        p_{n,d}\ge \frac1{P(n,d,N)}.
+\]
+\end{definition}
+
+\begin{theorem}[Average polynomial time from 304 basin access]\label{thm:expected}
+If 304 has polynomial universal-atlas basin access, then repeated independent 304 trials return an approximate zero in expected polynomial arithmetic time over $F\sim\K(n,d)$.
+\end{theorem}
+
+\begin{proof}
+By \cref{prop:cost}, one trial costs at most a polynomial $C(n,d,N)$.  The number of independent trials until success is geometric with mean $1/p_{n,d}\le P(n,d,N)$.  The expected cost is therefore at most $C(n,d,N)P(n,d,N)$, polynomial.
+\end{proof}
+
+\begin{theorem}[High-probability amplification]\label{thm:amplification}
+Under the same basin-access assumption, $R$ independent trials fail with probability at most $\exp(-R/P(n,d,N))$.  In particular, $R=P(n,d,N)(\lambda+\log 1/\eta)$ gives failure probability at most $e^{-\lambda}\eta$.
+\end{theorem}
+
+\begin{proof}
+The failure probability is $(1-p_{n,d})^R\le\exp(-p_{n,d}R)\le\exp(-R/P(n,d,N))$.
+\end{proof}
+
+\begin{problem}[304 universal-atlas basin-access theorem]\label{prob:304-basin-access}
+Prove that, for $F\sim\K(n,d)$, the fixed 304 universal atlas has inverse-polynomial probability of producing a point in a compatible finite-slope basin of a regular zero, with polynomially bounded predicate and correction budgets.
+Equivalently, prove that the measure of compatible basins, as seen through the fixed atlas cells and predicates, is not exponentially small in the dense input size.
+\end{problem}
+
+\begin{remark}[Status]
+\Cref{prob:304-basin-access} is exactly the remaining mathematical obstruction to calling 304 a Smale-17 solution.  The benchmark supports the conjecture, and the fixed-atlas design removes an adaptivity complication, but empirical success is not a proof of inverse-polynomial basin measure.
+\end{remark}
+
+\section{Benchmark 304}
+
+The large diagnostic benchmark used the cases
+\[
+\begin{gathered}
+(2,2),(2,3),\ldots,(2,15),\quad
+(3,2),\ldots,(3,8),\quad
+(4,2),\ldots,(4,5),\\
+(5,2),(5,3),(5,4),(6,2),(6,3),(7,2),(8,2),(10,2),
+\end{gathered}
+\]
+with seeds $0,\ldots,15$, for $528$ runs total.  Each run requested $\min(d^n,50)$ roots.  The command-level parameters were
+\[
+\texttt{pool}=8192,
+\quad \texttt{epochs}=40,
+\quad \texttt{accept}=10^{-8},
+\quad \texttt{tol}=10^{-12},
+\]
+with line-search $14$, endpoint probe candidates $12$, universal cells $16$, and universal shells $5$.
+
+\begin{table}[h]
+\centering
+\caption{Large 304 universal-atlas diagnostic benchmark.}
+\begin{tabular}{lr}
+\toprule
+Statistic & Value\\
+\midrule
+Completed runs & $528/528$\\
+Requested roots recovered & $21940/21952$\\
+Alpha-lite certified roots & $21666/21940$\\
+Strong roots & $17283/21940$\\
+Median seconds/root & $1.0996\cdot10^{-1}$\\
+P90 seconds/root & $3.8831\cdot10^{-1}$\\
+Median trials/run & $379$\\
+P90 trials/run & $1454$\\
+Median residual & $1.0189\cdot10^{-13}$\\
+P90 run-median residual & $9.2101\cdot10^{-13}$\\
+Median polished residual & $5.2172\cdot10^{-15}$\\
+Median $\cond(J)$ & $4.063$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{301 versus 304 on the same large suite.}
+\begin{tabular}{lrr}
+\toprule
+Statistic & 301 & 304\\
+\midrule
+Completed runs & $528/528$ & $528/528$\\
+Roots recovered & $21940/21952$ & $21940/21952$\\
+Alpha-lite certified & $20549/21940$ & $21666/21940$\\
+Strong roots & $12054/21940$ & $17283/21940$\\
+Median seconds/root & $3.9941\cdot10^{-2}$ & $1.0996\cdot10^{-1}$\\
+P90 seconds/root & $1.3210\cdot10^{-1}$ & $3.8831\cdot10^{-1}$\\
+Median residual & $1.0766\cdot10^{-13}$ & $1.0189\cdot10^{-13}$\\
+Median polished residual & $5.9277\cdot10^{-15}$ & $5.2172\cdot10^{-15}$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The empirical conclusion is precise: 304 does not recover more requested roots than 301 on this suite, but it produces substantially more alpha-lite certifications and strong roots.  Its cost is also substantially higher.  Thus 304 is not the speed winner; it is the cleaner and more certifying geometry candidate.
+
+\section{Conclusion}
+
+The 304 engine reduces the non-homotopy Smale-17 route to a single explicit mathematical problem: prove inverse-polynomial basin access for a fixed universal atlas under the Kostlan distribution.  Everything after such access is standard and proved here: finite-slope algebra is exact, the local compatible correction is cubic, per-trial cost is polynomial under polynomial budgets, and repetition gives expected polynomial time with high-probability amplification.
+
+The correct claim is therefore conditional but sharp.  Benchmark 304 is strong evidence that the fixed atlas sees many useful basins in practice.  A Smale-17 theorem still requires a measure-and-conditioning proof for \cref{prob:304-basin-access}.
+
+\end{document}
