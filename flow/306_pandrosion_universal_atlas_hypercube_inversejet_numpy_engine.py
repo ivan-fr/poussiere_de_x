@@ -2,29 +2,30 @@
 """
 306_pandrosion_universal_atlas_hypercube_inversejet_numpy_engine.py
 
-Autonomous ANCHORED FULL-CUBIC HALLEY Pandrosion root extractor.
+Autonomous NumPy Pandrosion root extractor using the 304 universal atlas and
+the 305/306 hypercube tensor inverse-jet corrector.
 
-301 adapts articles/001, Paper 0 bis: Cubic Pandrosion by Finite-Slope
-Halley Acceleration, to a strict multivariate finite-slope cubic corrector.  It still uses the exact multivariate anchored
-finite-slope matrix Q_G(a,b), but the accepted correction is never the raw
-Steffensen/Pandrosion step.  Each local step is the full cubic Halley-style
-finite-slope direction
+This Python engine does not use Halley as the active corrector.  The 306 path
+samples fixed universal atlas cells, applies StartOpt-style geometric
+improvement, then runs the hypercube least-squares inverse-jet local corrector:
 
-    Q delta1 = -G(a)
-    Q delta2 = -1/2 H_G(delta1,delta1)
-    delta = delta1 + delta2
+    J delta1 = -G(a)
+    J delta2 ~= -1/2 H_G(delta1,delta1)
+    J delta3 ~= -1/6 T_G(delta1,delta1,delta1) - H_G(delta1,delta2)
+    delta = delta1 + delta2 + delta3
 
-with H_G(delta1,delta1) estimated by symmetric finite probes.  Line search is
-performed only along the cubic direction.  No analytic Jacobian, Hessian,
-Newton fallback, Broyden update, homotopy path, SciPy, or imports from previous
-flow scripts are used.
+The local tensor defects are estimated from hypercube finite probes, and line
+search is performed on inverse-jet candidates.  No Halley corrector, anchored-Q
+fallback, analytic Jacobian, analytic Hessian, Newton fallback, Broyden update,
+homotopy path, SciPy, or imports from previous flow scripts are used by the 306
+flow.
 
 No imports from previous Pandrosion scripts.  This file contains its own:
   - Kostlan/dense polynomial generator for ks(n,d)
-  - dense F evaluation engine + vectorized exact telescopic slope Q(a,b)
+  - dense F evaluation engine + hypercube finite-probe tensor estimates
   - single geometric flow: heuristic Riemann/Mobius + unconditional Thales homothety
   - starting point optimization inspired by s0^opt = h(1)
-  - local PURE Pandrosion corrector using vectorized exact monomial telescopic slope Q(a,b)
+  - local 306 hypercube tensor inverse-jet corrector, not a Halley corrector
   - root clustering and JSON export
 
 The goal is not to enumerate all Bezout paths.  It extracts useful complex roots
@@ -38,7 +39,7 @@ Core flow per trial:
       -> startopt radial/geometric improvement
       -> y
       -> z = A y
-      -> full cubic finite-slope Halley correction using Q_G(a,b)
+      -> hypercube tensor inverse-jet correction, with no Halley corrector
       -> validate F(z) and deduplicate
 
 Dependencies: Python stdlib + NumPy.  There is intentionally no dependency on
