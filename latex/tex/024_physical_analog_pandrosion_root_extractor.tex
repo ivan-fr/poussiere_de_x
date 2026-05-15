@@ -15,10 +15,10 @@
 \usetikzlibrary{arrows.meta,calc,positioning,shapes.geometric}
 
 \hypersetup{
-  pdftitle={Physical Analog Pandrosion for Continuous-Time Root Extraction},
+  pdftitle={Physical Analog Pandrosion with Thales-Riemann Normalization},
   pdfauthor={Ivan Besevic},
   pdfsubject={Analog root extraction, translinear computation, Pandrosion, noise stability},
-  pdfkeywords={Pandrosion, analog computation, translinear circuits, root extraction, finite-slope methods}
+  pdfkeywords={Pandrosion, analog computation, Thales scaling, Riemann inversion, translinear circuits, root extraction}
 }
 \setlength{\emergencystretch}{2em}
 
@@ -40,7 +40,7 @@
 \newcommand{\norm}[1]{\left\lVert #1\right\rVert}
 \DeclareMathOperator{\Var}{Var}
 
-\title{Physical Analog Pandrosion for Continuous-Time Root Extraction\\[3pt]
+\title{Physical Analog Pandrosion with Thales--Riemann Normalization\\[3pt]
 \large A corrected circuit-physics version of the legacy analog paper}
 \author{Ivan Besevic\\Independent Mathematical Research}
 \date{May 2026}
@@ -64,11 +64,15 @@ testable: Pandrosion gives a repeated, derivative-free, positive-domain
 target \(y\), and whose physical error can be bounded by the same
 normalization and atlas principles developed in Papers 000--023.
 
-We formulate a dimensionally consistent signal model, a positive-current
-log/translinear implementation, and a voltage-mode macrocell implementation.
-The chart selector from the monomial and atlas papers keeps \(y\ge 1\) and
-\(|\log y|\) small, avoiding sign changes in the numerator and keeping the
-denominator \(yS_p(s)\) away from zero.  For a normalized target satisfying
+We formulate the complete analog architecture, not only the \(h\)-cell.  A
+Thales--Riemann front end compares the physical input \(X\) with a root-scale
+bank \(B^p\), selects the nearest logarithmic scale, forms either the direct
+target \(y_+=X/B^p\) or the reciprocal target \(y_\infty=B^p/X\), and then
+feeds the normalized value \(y\ge1\) into the repeated \(h\)-cell pipeline.
+The final output is de-normalized by \(Z=Bu\) in the direct chart or by
+\(Z=B/u\) in the reciprocal chart.  The selector keeps \(|\log y|\) small,
+avoiding sign changes in the numerator and keeping the denominator \(yS_p(s)\)
+away from zero.  For a normalized target satisfying
 \(1\le y\le q^{p/(2K)}\), the fixed-point multiplier is bounded by
 \[
         \Lambda_{p,q,K}=1-\frac{p}{S_p(q^{1/(2K)})}.
@@ -84,8 +88,9 @@ set by chart normalization, component nonidealities, and settling bandwidth.
 
 \paragraph{One-sentence summary.}
 The improved analog claim is not ``first analog root circuit''; it is
-``a positive-domain, chart-normalized, repeated Pandrosion \(h\)-cell with a
-closed residual multiplier and explicit physical error budget.''
+``an analog Thales--Riemann normalizer followed by a positive-domain repeated
+Pandrosion \(h\)-cell with a closed residual multiplier and explicit physical
+error budget.''
 
 \paragraph{Status ledger.}
 The fixed-point, chart-normalization, and multiplier bounds are mathematical
@@ -250,8 +255,26 @@ Choose a root-scale palette
 \[
         \mathcal B_{q,K}=\{q^{m+j/K}B_0:m\in\mathbb Z,\;j=0,\ldots,K-1\}.
 \]
-The selector chooses a chart and scale such that \(y\ge1\) and \(\log y\) is
-minimal.  The monomial scale-palette theorem gives
+Equivalently, compare \(X\) with the physical scale powers
+\[
+        P_B=B^p,\qquad B\in\mathcal B_{q,K}.
+\]
+The analog selector chooses the nearest logarithmic scale,
+\[
+        B_* \in \arg\min_{B\in\mathcal B_{q,K}}
+        \left|\log X-\log P_B\right|.
+\]
+It then sets
+\[
+        y_*=
+        \begin{cases}
+        X/B_*^p, & X\ge B_*^p \quad\text{direct chart},\\[3pt]
+        B_*^p/X, & X< B_*^p \quad\text{reciprocal chart}.
+        \end{cases}
+\]
+Thus the selector always sends \(y_*\ge1\) to the \(h\)-pipeline and records a
+one-bit chart flag telling the output stage whether to use \(Z=B_*u\) or
+\(Z=B_*/u\).  The monomial scale-palette theorem gives
 \[
         1\le y\le q^{p/(2K)},
         \qquad
@@ -277,6 +300,145 @@ The multiplier formula depends monotonically on
 This theorem is the hardware version of the chart-scaling message: the
 physical cell should not be asked to compute roots over decades of input
 range without first moving the problem into a bounded root-coordinate annulus.
+For the common decade palette \(q=10\), the bound is already small when the
+palette has a few offsets per decade:
+
+\begin{center}
+\small
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+Offsets \(K\) & \(p=2\) & \(p=3\) & \(p=5\) & \(p=8\)\\
+\midrule
+4  & \(0.143\) & \(0.270\) & \(0.482\) & \(0.704\)\\
+8  & \(0.0718\) & \(0.140\) & \(0.265\) & \(0.427\)\\
+12 & \(0.0479\) & \(0.0943\) & \(0.182\) & \(0.302\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The table is the physical design reason for spending components on the
+normalizer.  A denser scale bank reduces both the mathematical residual and the
+gain with which stage offsets are propagated through the pipeline.
+
+\section{Analog Thales--Riemann front end}
+
+The practical analog architecture is an atlas front end followed by a repeated
+Pandrosion core.  The front end has five jobs:
+\begin{enumerate}[leftmargin=2em]
+\item generate or select a finite bank of scale powers \(B_j^p\);
+\item compare \(X\) against that bank in logarithmic coordinates;
+\item choose the nearest scale \(B_*\) with small hysteresis;
+\item form \(y=X/B_*^p\) or \(y=B_*^p/X\), whichever is at least \(1\);
+\item pass the selected \(y\), the scale \(B_*\), and the chart flag to the
+Pandrosion core and the output de-normalizer.
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  block/.style={draw,rounded corners=2pt,minimum height=8mm,minimum width=27mm,align=center,font=\small},
+  small/.style={draw,rounded corners=2pt,minimum height=7mm,minimum width=15mm,align=center,font=\small},
+  >=Latex
+]
+\node[small] (x) {\(X\)};
+\node[block,right=6mm of x] (bank) {scale bank\\\(B_j^p\)};
+\node[block,right=6mm of bank] (cmp) {log compare\\nearest \(B_*\)};
+\node[block,right=6mm of cmp] (quot) {dual quotient\\\(X/B_*^p,\;B_*^p/X\)};
+\node[block,below=13mm of quot] (sel) {chart select\\\(y\ge1\)};
+\node[block,left=6mm of sel] (pipe) {Pandrosion\\\(h\)-pipeline};
+\node[block,left=6mm of pipe] (denorm) {de-normalize\\\(Bu\) or \(B/u\)};
+\node[small,left=6mm of denorm] (z) {\(Z\)};
+\draw[->] (x) -- (bank);
+\draw[->] (bank) -- (cmp);
+\draw[->] (cmp) -- (quot);
+\draw[->] (quot) -- (sel);
+\draw[->] (sel) -- (pipe);
+\draw[->] (pipe) -- (denorm);
+\draw[->] (denorm) -- (z);
+\draw[->] (cmp.south) .. controls +(0,-1.5) and +(0,1.2) .. node[left,font=\scriptsize] {\(B_*,\chi\)} (denorm.north);
+\end{tikzpicture}
+\caption{Complete analog architecture.  The Pandrosion core never sees the raw
+input \(X\); it sees the Thales--Riemann normalized target \(y\approx1\).}
+\label{fig:complete-architecture}
+\end{figure}
+
+\subsection{Log-domain selector}
+
+In a log-domain implementation, the selector is especially simple.  Let
+\[
+        L_X=\log X,\qquad L_j=\log(B_j^p)=p\log B_j.
+\]
+The selected index minimizes \(|L_X-L_j|\).  The normalized target is
+\[
+        y=\exp(|L_X-L_{j_*}|),
+\]
+and the chart flag is the sign of \(L_X-L_{j_*}\).  Direct chart corresponds
+to \(L_X\ge L_{j_*}\); reciprocal chart corresponds to \(L_X<L_{j_*}\).
+This is exactly the Riemann inversion rule of Paper 000 written as an analog
+comparator bank.
+
+\subsection{Voltage/current-mode selector}
+
+Without log amplifiers, the same decision can be implemented by a bank of
+ratio comparators.  For each scale \(P_j=B_j^p\), compute the two positive
+ratios
+\[
+        r_j^+=X/P_j,\qquad r_j^\infty=P_j/X.
+\]
+Exactly one of these ratios is at least \(1\), except at equality.  The
+selector chooses the smallest admissible ratio.  A small Schmitt hysteresis
+band should be used near the midpoints between adjacent scale cells, otherwise
+noise in \(X\) can make the chart flag chatter.
+
+\begin{remark}[Homothety is not only a gain]
+The physical scale \(B\) is not just an output gain.  It changes the normalized
+equation seen by the \(h\)-pipeline:
+\[
+        z^p=X
+        \quad\leadsto\quad
+        u^p=X/B^p
+        \quad\text{or}\quad
+        u^p=B^p/X.
+\]
+This is why the scaling stage reduces mathematical residual and also improves
+physical conditioning of the divider.
+\end{remark}
+
+\subsection{Scale-bank implementation choices}
+
+At board level, \(B_j^p\) can be produced by precision references and analog
+multiplexers, or by a digitally programmed resistor/reference bank while the
+root pipeline itself remains analog.  In a fully analog ASIC, the natural
+implementation is a ratioed current bank:
+\[
+        I_{P_j}=I_0 q^{j/K},
+\]
+with coarse decades selected by current mirrors and fine offsets selected by
+matched ratio cells.  The claim of the paper does not require the selector to
+be mystical or historically geometric; it only requires that the selected
+ratio \(y\) stay close to \(1\).
+
+\subsection{Normalizer error margin}
+
+The front end is itself an analog circuit, so the selected target will not be
+exactly \(y_*\).  A useful model is logarithmic:
+\[
+        \widetilde y=y_*\exp(\eta_{\rm norm}),
+        \qquad |\eta_{\rm norm}|\le E_{\rm norm},
+\]
+where \(E_{\rm norm}\) includes scale-reference error, comparator offset,
+divider gain error, and finite settling in the selector.  The multiplier bound
+then degrades in a controlled way:
+\[
+        \widetilde\Lambda_{p,q,K,E}
+        =
+        1-\frac{p}{S_p\!\left(q^{1/(2K)}\exp(E_{\rm norm}/p)\right)}.
+\]
+Thus the analog front end has a clear design specification: make
+\(E_{\rm norm}\) small compared with the palette half-cell width
+\(p\log(q)/(2K)\).  If this is not satisfied, the selector still works, but the
+\(h\)-pipeline sees a worse normalized target and loses the main advantage of
+Thales--Riemann scaling.
 
 \section{The \(h\)-cell as a physical block}
 
@@ -531,12 +693,16 @@ A defensible physics paper needs experiments in the following order.
 \item \textbf{Behavioral SPICE.}  Implement ideal controlled-source \(h\)-cells
 with finite bandwidth, offset, and noise.  Verify the multiplier-bound error
 budget.
+\item \textbf{Normalizer SPICE.}  Implement the scale bank, direct quotient,
+reciprocal quotient, comparator selection, chart flag, and hysteresis.  Measure
+the effective logarithmic error \(E_{\rm norm}\).
 \item \textbf{Macrocell board.}  Build \(p=2\) and \(p=3\) boards using
 commercial multipliers/dividers or log-ratio blocks.  Measure static transfer,
 settling time, temperature drift, and output noise.
-\item \textbf{Chart selector.}  Test direct and reciprocal normalization over
-multiple decades of \(X\).  Verify that the root-coordinate output stays in the
-predicted annulus.
+\item \textbf{Thales--Riemann sweep.}  Test direct and reciprocal
+normalization over multiple decades of \(X\).  Verify that the selected
+\(y\) stays in the predicted annulus and that the output stage switches
+correctly between \(Z=Bu\) and \(Z=B/u\).
 \item \textbf{Comparison.}  Compare against a direct computational-unit root
 circuit, a Newton-like analog macrocell, and a digital microcontroller baseline
 at equal bandwidth and power.
@@ -554,6 +720,11 @@ claims.
 \item With chart normalization, the measured small-signal residual factor of
 the \(h\)-pipeline tracks the theoretical bound
 \(\Lambda_{p,q,K}\) within the measured component error budget.
+\item The Thales--Riemann front end keeps the measured normalized target within
+\[
+        1\le y\le q^{p/(2K)}\exp(E_{\rm norm})
+\]
+over the specified input range.
 \item Repeating identical \(h\)-cells gives predictable deterministic residual
 reduction until circuit offset or noise dominates.
 \item The positive-domain denominator \(yS_p(s)\) prevents internal divider
@@ -573,10 +744,13 @@ The legacy analog Pandrosion note contained a useful idea but overstated its
 hardware novelty.  This rebuilt version gives the sharper claim.  Pandrosion
 does not invent analog root extraction.  It supplies a derivative-free,
 positive-domain, chart-normalized \(h\)-cell whose residual multiplier is known
-exactly and whose physical errors admit a simple pipeline budget.  The right
-next step is not another operation-count table; it is a measured \(p=2\) or
-\(p=3\) demonstrator with explicit bandwidth, offset, noise, drift, and
-comparison baselines.
+exactly and whose physical errors admit a simple pipeline budget.  The main
+improvement over the legacy circuit is the explicit Thales--Riemann analog
+front end: select \(B\), choose \(X/B^p\) or \(B^p/X\), run Pandrosion only on
+the normalized target \(y\approx1\), then return by \(Z=Bu\) or \(Z=B/u\).
+The right next step is not another operation-count table; it is a measured
+\(p=2\) or \(p=3\) demonstrator with explicit normalizer error, bandwidth,
+offset, noise, drift, and comparison baselines.
 
 \begin{thebibliography}{99}
 
