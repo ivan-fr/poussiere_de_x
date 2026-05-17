@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-309_pandrosion_pure_irp_numpy_engine.py
+310_pandrosion_self_localizing_irp_engine.py
 
-PURE STANDALONE NUMPY ENGINE FOR ITERATED RENORMALIZED PANDROSION (IRP).
+SELF-LOCALIZING STANDALONE NUMPY ENGINE FOR ITERATED RENORMALIZED PANDROSION (IRP).
 
 This file intentionally rebuilds the engine instead of adapting the 304/308
 Halley stack.  It keeps only the minimum geometry needed for a universal dense
@@ -524,10 +524,116 @@ class IRPResult:
     last_lambda: Optional[float]
     last_cond: Optional[float]
     last_delta_norm: Optional[float]
+    collapsed: bool
+    collapse_epoch: Optional[int]
+    collapse_reason: Optional[str]
+    capture_steps: int
+    local_steps: int
+    recoveries: int
     trace: list[float]
 
 
-def pure_irp_corrector(
+def _raw_pandrosion_layer(
+    system: DenseKostlanSystem,
+    z: "np.ndarray",
+    r: float,
+    prev_delta: Optional["np.ndarray"],
+    lambdas: Sequence[float],
+    probe_scale: float,
+    probe_tries: int,
+    trust: float,
+    seed: int,
+    ep: int,
+    layer: int,
+    local_mode: bool,
+) -> tuple[Optional["np.ndarray"], float, Optional["np.ndarray"], dict[str, Any]]:
+    """One raw derivative-free Pandrosion layer.
+
+    This is intentionally still the 000/309 raw geometry: a finite telescopic
+    slope matrix Q_G(a,b) and a solve Q_G delta = -G(a).  No Newton, Halley,
+    Steffensen, Hessian, or analytic Jacobian is used.  The only difference in
+    local_mode is that the probe/line grids are collapsed to a cheaper local
+    variant once the orbit appears self-localized.
+    """
+    ensure_numpy()
+    f = system.eval(z)
+    r0 = finite_norm(f)
+    if not math.isfinite(r0):
+        return None, float("inf"), None, {"status": "nonfinite-residual"}
+
+    best_candidate = None
+    best_candidate_r = float("inf")
+    best_delta = None
+    best_meta: dict[str, Any] = {"status": "no-candidate"}
+
+    attempts = max(1, int(probe_tries))
+    if local_mode:
+        attempts = 1
+    for attempt in range(attempts):
+        b = endpoint_for_layer(z, prev_delta, seed + 104729 * (ep + 1) + 7919 * (layer + 1), probe_scale, attempt)
+        try:
+            Q = system.slope_matrix(z, b)
+            cond = float(np.linalg.cond(Q))
+            delta = np.linalg.solve(Q, -f)
+        except Exception as exc:
+            best_meta = {"status": "solve-failed", "error": str(exc)[:120]}
+            continue
+        if not np.all(np.isfinite(delta)):
+            best_meta = {"status": "nonfinite-delta"}
+            continue
+        zn = max(1.0, float(np.linalg.norm(z)))
+        dn = float(np.linalg.norm(delta))
+        if not math.isfinite(dn) or dn <= 0:
+            best_meta = {"status": "bad-delta-norm"}
+            continue
+
+        # Geometric trust cap.  In local collapsed mode we make the cap tighter:
+        # the orbit is assumed to be in a self-localized cell, so huge jumps are
+        # usually harmful and expensive to line-search.
+        cond_eff = cond if math.isfinite(cond) else 1e12
+        cap = max(1e-14, float(trust) * zn / (1.0 + 0.02 * math.log1p(max(0.0, cond_eff))))
+        if local_mode:
+            cap = min(cap, 0.75 * zn)
+        if dn > cap:
+            delta = delta * (cap / dn)
+            dn = cap
+
+        # Local mode uses the leading part of the line grid.  This is the actual
+        # collapse: after capture, the solver no longer pays for a large family of
+        # candidate charts/line steps every layer.
+        if local_mode:
+            line = list(lambdas[: max(1, min(3, len(lambdas)))])
+            if 1.0 not in line:
+                line = [1.0] + line
+        else:
+            line = list(lambdas)
+        Zcand = np.asarray([z + float(lam) * delta for lam in line], dtype=np.complex128)
+        Rcand = system.residuals_batch(Zcand)
+        if not np.any(np.isfinite(Rcand)):
+            best_meta = {"status": "no-finite-line"}
+            continue
+        idx = int(np.nanargmin(Rcand))
+        rr = float(Rcand[idx])
+        if rr < best_candidate_r:
+            best_candidate_r = rr
+            best_candidate = Zcand[idx].copy()
+            best_delta = best_candidate - z
+            best_meta = {
+                "status": "candidate",
+                "lambda": float(line[idx]),
+                "cond": cond,
+                "delta_norm": float(np.linalg.norm(best_delta)),
+                "raw_delta_norm": dn,
+                "attempt": int(attempt),
+                "line_evals": int(len(line)),
+                "local_mode": bool(local_mode),
+                "residual_before": float(r0),
+                "residual_after": float(rr),
+            }
+    return best_candidate, best_candidate_r, best_delta, best_meta
+
+
+def self_localizing_irp_corrector(
     system: DenseKostlanSystem,
     z0: Sequence[complex],
     epochs: int,
@@ -541,8 +647,32 @@ def pure_irp_corrector(
     probe_tries: int,
     trust: float,
     seed: int,
+    collapse: bool = True,
+    collapse_residual: float = 1e-4,
+    collapse_drop: float = 0.42,
+    collapse_rel_step: float = 0.35,
+    collapse_after: int = 2,
+    local_probe_scale: float = 0.022,
+    local_trust: float = 1.15,
+    recoveries_max: int = 2,
     trace: bool = False,
 ) -> IRPResult:
+    """Self-localizing IRP.
+
+    Phase A (capture): full IRP cascade
+
+        R -> P -> R -> P -> ...
+
+    where R is a scalar geometric renormalization over a small complex scale
+    palette and P is the raw finite-telescopic Pandrosion layer.
+
+    Phase B (collapse): when the orbit looks local, R is frozen to the identity
+    and P is run with a smaller probe and shorter line grid.  Failed local steps
+    can temporarily recover to capture mode.  This implements the 310 idea:
+
+        use geometric renormalization only until the fixed-point geometry becomes
+        self-localizing.
+    """
     ensure_numpy()
     t0 = now()
     deadline = t0 + float(trial_timeout) if trial_timeout and trial_timeout > 0 else None
@@ -557,95 +687,94 @@ def pure_irp_corrector(
     renorm_steps = 0
     raw_steps = 0
     layers_completed = 0
+    capture_steps = 0
+    local_steps = 0
+    recoveries = 0
+    collapsed = False
+    collapse_epoch: Optional[int] = None
+    collapse_reason: Optional[str] = None
+    good_locality_hits = 0
     last_lambda: Optional[float] = None
     last_cond: Optional[float] = None
     last_delta_norm: Optional[float] = None
     hist: list[float] = [float(r)] if trace else []
 
     if math.isfinite(r) and r <= max(float(accept), float(tol)):
-        return IRPResult(z=z, residual=r, best_z=best_z, best_residual=best_r, ok=True, status="converged-initial", epochs=0, layers_completed=0, raw_steps=0, renorm_steps=0, line_evals=0, seconds=now()-t0, last_lambda=None, last_cond=None, last_delta_norm=None, trace=hist)
+        return IRPResult(z=z, residual=r, best_z=best_z, best_residual=best_r, ok=True, status="converged-initial", epochs=0, layers_completed=0, raw_steps=0, renorm_steps=0, line_evals=0, seconds=now()-t0, last_lambda=None, last_cond=None, last_delta_norm=None, collapsed=False, collapse_epoch=None, collapse_reason=None, capture_steps=0, local_steps=0, recoveries=0, trace=hist)
 
-    for ep in range(max(1, int(epochs))):
+    max_epochs = max(1, int(epochs))
+    for ep in range(max_epochs):
         if deadline is not None and now() > deadline:
             status = "timeout"
             break
         improved_epoch = False
-        for layer in range(max(1, int(layers))):
+        layers_this_epoch = 1 if collapsed else max(1, int(layers))
+        for layer in range(layers_this_epoch):
             if deadline is not None and now() > deadline:
                 status = "timeout"
                 break
 
-            # R: geometric renormalization before every raw layer.
-            z, r, rmeta = renormalize(system, z, r, scales)
-            renorm_steps += int(bool(rmeta.get("renorm_changed", False)))
-            if math.isfinite(r) and r < best_r:
-                best_r = r
-                best_z = z.copy()
-                improved_epoch = True
-            if trace:
-                hist.append(float(r))
-            if math.isfinite(r) and r <= max(float(accept), float(tol)):
-                ok = True
-                status = "converged"
+            # R: active only during capture.  In collapsed mode the chart is
+            # frozen; this is the cost-saving locality collapse.
+            if not collapsed:
+                z, r, rmeta = renormalize(system, z, r, scales)
+                renorm_steps += int(bool(rmeta.get("renorm_changed", False)))
+                if math.isfinite(r) and r < best_r:
+                    best_r = r
+                    best_z = z.copy()
+                    improved_epoch = True
+                if trace:
+                    hist.append(float(r))
+                if math.isfinite(r) and r <= max(float(accept), float(tol)):
+                    ok = True
+                    status = "converged"
+                    break
+
+            r_before = float(r)
+            z_before = z.copy()
+            local_mode = bool(collapsed)
+            raw_probe = float(local_probe_scale if local_mode else probe_scale)
+            raw_trust = float(local_trust if local_mode else trust)
+            cand, cand_r, delta, meta = _raw_pandrosion_layer(
+                system=system,
+                z=z,
+                r=r,
+                prev_delta=prev_delta,
+                lambdas=lambdas,
+                probe_scale=raw_probe,
+                probe_tries=probe_tries,
+                trust=raw_trust,
+                seed=seed,
+                ep=ep,
+                layer=layer,
+                local_mode=local_mode,
+            )
+            line_evals += int(meta.get("line_evals", 0))
+            if cand is None:
+                if collapsed and recoveries < max(0, int(recoveries_max)):
+                    # Locality detector was too optimistic.  Reopen the chart.
+                    recoveries += 1
+                    collapsed = False
+                    collapse_reason = (collapse_reason or "") + "; recovered-from-local-failure"
+                    status = "recovered-to-capture"
+                    break
+                status = str(meta.get("status", "raw-solve-failed"))
                 break
 
-            # P: raw anchored Pandrosion solve.  Only a tiny deterministic set of
-            # endpoints is tried; this is not the heavy 304/308 probe scorer.
-            f = system.eval(z)
-            r = finite_norm(f)
-            if not math.isfinite(r):
-                status = "nonfinite-residual"
-                break
-
-            best_candidate = None
-            best_candidate_r = float("inf")
-            best_candidate_meta: dict[str, Any] = {}
-            for attempt in range(max(1, int(probe_tries))):
-                b = endpoint_for_layer(z, prev_delta, seed + 104729 * (ep + 1) + 7919 * (layer + 1), probe_scale, attempt)
-                try:
-                    Q = system.slope_matrix(z, b)
-                    cond = float(np.linalg.cond(Q))
-                    delta = np.linalg.solve(Q, -f)
-                except Exception:
-                    continue
-                if not np.all(np.isfinite(delta)):
-                    continue
-                zn = max(1.0, float(np.linalg.norm(z)))
-                dn = float(np.linalg.norm(delta))
-                if not math.isfinite(dn) or dn <= 0:
-                    continue
-                # Trust region is a geometric cap, not a Newton/Halley correction.
-                cap = max(1e-14, float(trust) * zn / (1.0 + 0.02 * math.log1p(max(0.0, cond if math.isfinite(cond) else 1e12))))
-                if dn > cap:
-                    delta = delta * (cap / dn)
-                    dn = cap
-                Zcand = np.asarray([z + float(lam) * delta for lam in lambdas], dtype=np.complex128)
-                Rcand = system.residuals_batch(Zcand)
-                line_evals += int(len(lambdas))
-                if not np.any(np.isfinite(Rcand)):
-                    continue
-                idx = int(np.nanargmin(Rcand))
-                rr = float(Rcand[idx])
-                if rr < best_candidate_r:
-                    best_candidate_r = rr
-                    best_candidate = Zcand[idx].copy()
-                    best_candidate_meta = {"lambda": float(lambdas[idx]), "cond": cond, "delta_norm": dn, "attempt": attempt}
-
-            if best_candidate is None:
-                status = "raw-solve-failed"
-                break
-
-            # Accept descent.  If the best raw step is not a descent, keep the
-            # current renormalized point and stop this macro epoch.
-            if best_candidate_r <= r * (1.0 - 1e-14) or best_candidate_r < best_r:
-                z = best_candidate
-                r = best_candidate_r
+            # Accept strict descent, or any improvement over the global best.
+            if cand_r <= r_before * (1.0 - 1e-14) or cand_r < best_r:
+                z = cand
+                r = float(cand_r)
                 raw_steps += 1
                 layers_completed += 1
-                prev_delta = z - best_z if best_candidate_r < best_r else best_candidate - z
-                last_lambda = best_candidate_meta.get("lambda")
-                last_cond = best_candidate_meta.get("cond")
-                last_delta_norm = best_candidate_meta.get("delta_norm")
+                if collapsed:
+                    local_steps += 1
+                else:
+                    capture_steps += 1
+                prev_delta = np.asarray(delta, dtype=np.complex128) if delta is not None else (z - z_before)
+                last_lambda = meta.get("lambda")
+                last_cond = meta.get("cond")
+                last_delta_norm = meta.get("delta_norm")
                 if r < best_r:
                     best_r = r
                     best_z = z.copy()
@@ -656,16 +785,48 @@ def pure_irp_corrector(
                     ok = True
                     status = "converged"
                     break
+
+                # Self-locality detector.  It uses only observed geometric data:
+                # residual drop and relative step size.  No derivative order test
+                # and no Halley/Steffensen condition is involved.
+                step_norm = finite_norm(prev_delta)
+                rel_step = step_norm / max(1.0, finite_norm(z_before))
+                drop = r / max(r_before, 1e-300)
+                hit = False
+                reason = None
+                if bool(collapse):
+                    if r <= float(collapse_residual):
+                        hit = True
+                        reason = "residual-threshold"
+                    elif drop <= float(collapse_drop) and rel_step <= float(collapse_rel_step):
+                        good_locality_hits += 1
+                        if good_locality_hits >= max(1, int(collapse_after)):
+                            hit = True
+                            reason = "observed-local-contraction"
+                    else:
+                        good_locality_hits = 0
+                if hit and not collapsed:
+                    collapsed = True
+                    collapse_epoch = ep
+                    collapse_reason = reason
+                    # Shrink the next probe to the recent geometry.
+                    prev_delta = prev_delta / max(1.0, float(np.linalg.norm(prev_delta))) * min(finite_norm(prev_delta), float(local_probe_scale) * max(1.0, finite_norm(z)))
             else:
+                if collapsed and recoveries < max(0, int(recoveries_max)):
+                    recoveries += 1
+                    collapsed = False
+                    good_locality_hits = 0
+                    status = "recovered-to-capture-no-descent"
+                    break
                 status = "no-raw-descent"
                 break
 
-        if ok or status in {"timeout", "nonfinite-residual", "raw-solve-failed"}:
+        if ok or status in {"timeout", "nonfinite-residual", "raw-solve-failed", "solve-failed", "nonfinite-delta", "bad-delta-norm", "no-finite-line", "no-raw-descent"}:
             break
-        if not improved_epoch:
+        if not improved_epoch and status not in {"recovered-to-capture", "recovered-to-capture-no-descent"}:
             status = "stagnated"
             break
-        status = "running"
+        status = "local-collapsed" if collapsed else "capture-running"
 
     final_r = system.residual(z)
     if math.isfinite(final_r) and final_r < best_r:
@@ -681,9 +842,10 @@ def pure_irp_corrector(
         status=status, epochs=ep + 1 if 'ep' in locals() else 0,
         layers_completed=int(layers_completed), raw_steps=int(raw_steps), renorm_steps=int(renorm_steps),
         line_evals=int(line_evals), seconds=now() - t0, last_lambda=last_lambda,
-        last_cond=last_cond, last_delta_norm=last_delta_norm, trace=hist,
+        last_cond=last_cond, last_delta_norm=last_delta_norm, collapsed=bool(collapsed),
+        collapse_epoch=collapse_epoch, collapse_reason=collapse_reason,
+        capture_steps=int(capture_steps), local_steps=int(local_steps), recoveries=int(recoveries), trace=hist,
     )
-
 
 # ---------------------------------------------------------------------------
 # Root handling and case runner
@@ -739,7 +901,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
         r0 = system.residual(z0)
         # Start optimization is a one-shot geometric renormalization of the atlas point.
         z0, r0, smeta = renormalize(system, z0, r0, start_scales)
-        loc = pure_irp_corrector(
+        loc = self_localizing_irp_corrector(
             system=system,
             z0=z0,
             epochs=int(args.epochs),
@@ -753,6 +915,14 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
             probe_tries=int(args.probe_tries),
             trust=float(args.trust),
             seed=system.seed + 131071 * (trial + 1),
+            collapse=bool(args.collapse),
+            collapse_residual=float(args.collapse_residual),
+            collapse_drop=float(args.collapse_drop),
+            collapse_rel_step=float(args.collapse_rel_step),
+            collapse_after=int(args.collapse_after),
+            local_probe_scale=float(args.local_probe_scale),
+            local_trust=float(args.local_trust),
+            recoveries_max=int(args.recoveries),
             trace=bool(args.trace_trials),
         )
         z = np.asarray(loc.best_z if loc.best_residual <= loc.residual else loc.z, dtype=np.complex128)
@@ -773,6 +943,12 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
             "last_lambda": loc.last_lambda,
             "last_cond": loc.last_cond,
             "last_delta_norm": loc.last_delta_norm,
+            "collapsed": bool(loc.collapsed),
+            "collapse_epoch": loc.collapse_epoch,
+            "collapse_reason": loc.collapse_reason,
+            "capture_steps": int(loc.capture_steps),
+            "local_steps": int(loc.local_steps),
+            "recoveries": int(loc.recoveries),
             "start_renorm_changed": bool(smeta.get("renorm_changed", False)),
         }
         if bool(args.trace_trials):
@@ -796,7 +972,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
         rv = realness(z)
         roots.append({
             "id": int(rid),
-            "source": "309-pure-standalone-iterated-renormalized-pandrosion",
+            "source": "310-self-localizing-iterated-renormalized-pandrosion",
             "trial": int(trial),
             "z_complex": z.copy(),
             "residual": float(r),
@@ -811,6 +987,12 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
             "seconds": float(loc.seconds),
             "last_lambda": loc.last_lambda,
             "last_delta_norm": loc.last_delta_norm,
+            "collapsed": bool(loc.collapsed),
+            "collapse_epoch": loc.collapse_epoch,
+            "collapse_reason": loc.collapse_reason,
+            "capture_steps": int(loc.capture_steps),
+            "local_steps": int(loc.local_steps),
+            "recoveries": int(loc.recoveries),
             "halley_enabled": False,
             "steffensen_enabled": False,
             "newton_enabled": False,
@@ -828,10 +1010,10 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
         encoded_roots.append(rr)
 
     result = {
-        "script": "309_pandrosion_pure_irp_numpy_engine.py",
+        "script": "310_pandrosion_self_localizing_irp_engine.py",
         "autonomous": True,
         "dependencies": {"python_scripts": [], "numpy": bool(np is not None)},
-        "mode": "309-pure-standalone-iterated-renormalized-pandrosion-irp",
+        "mode": "310-self-localizing-iterated-renormalized-pandrosion-irp",
         "flow_formula": "atlas start -> geometric start renormalization -> IRP cascade (R∘P)^k: scalar homothety renormalization R, exact finite telescopic Pandrosion slope Q_G(a,b), raw solve Q delta=-G(a), small residual-gated line step; no Halley, no Steffensen, no Newton/Jacobian/Hessian fallback",
         "case": f"{n},{d}",
         "family": "ks",
@@ -854,6 +1036,14 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
             "probe_scale": float(args.probe_scale),
             "probe_tries": int(args.probe_tries),
             "trust": float(args.trust),
+            "collapse": bool(args.collapse),
+            "collapse_residual": float(args.collapse_residual),
+            "collapse_drop": float(args.collapse_drop),
+            "collapse_rel_step": float(args.collapse_rel_step),
+            "collapse_after": int(args.collapse_after),
+            "local_probe_scale": float(args.local_probe_scale),
+            "local_trust": float(args.local_trust),
+            "recoveries": int(args.recoveries),
             "line_search": int(args.line_search),
             "line_grid": lambdas,
             "renorm_gains": gains,
@@ -886,7 +1076,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="309 pure standalone NumPy engine for Iterated Renormalized Pandrosion (IRP).")
+    p = argparse.ArgumentParser(description="310 self-localizing NumPy engine for Iterated Renormalized Pandrosion (IRP).")
     p.add_argument("--cases", default="2,4", help="case n,d; multiple cases separated by ';'")
     p.add_argument("--seed-index", type=int, default=0)
     p.add_argument("--equation-normalize", action="store_true", default=False)
@@ -902,6 +1092,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--probe-scale", type=float, default=0.045)
     p.add_argument("--probe-tries", type=int, default=2)
     p.add_argument("--trust", type=float, default=2.8)
+    p.add_argument("--collapse", action="store_true", default=True, help="enable self-localizing collapse after capture")
+    p.add_argument("--no-collapse", dest="collapse", action="store_false", help="disable collapse and run 309-style IRP")
+    p.add_argument("--collapse-residual", type=float, default=1e-4, help="absolute residual threshold for switching to local mode")
+    p.add_argument("--collapse-drop", type=float, default=0.42, help="observed residual drop ratio needed for locality hit")
+    p.add_argument("--collapse-rel-step", type=float, default=0.35, help="relative step size threshold for locality hit")
+    p.add_argument("--collapse-after", type=int, default=2, help="number of consecutive locality hits before collapse")
+    p.add_argument("--local-probe-scale", type=float, default=0.022, help="probe scale after IRP collapse")
+    p.add_argument("--local-trust", type=float, default=1.15, help="trust cap after IRP collapse")
+    p.add_argument("--recoveries", type=int, default=2, help="number of allowed returns from local mode to capture mode")
     p.add_argument("--line-search", type=int, default=6)
     p.add_argument("--line-grid", default="1,0.65,0.42,0.25,0.15,0.09,0.055")
     p.add_argument("--renorm-gains", default="1,0.76,1.32,0.58,1.72,0.43,2.3")
@@ -912,7 +1111,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--startopt-top", type=int, default=10)
     p.add_argument("--rays", default="0.18,0.32,0.55,0.85,1.25,1.8,2.6,3.8,5.4")
     p.add_argument("--out", default=None)
-    p.add_argument("--outdir", default="/mnt/data/309_pure_irp_out")
+    p.add_argument("--outdir", default="/mnt/data/310_self_localizing_irp_out")
     p.add_argument("--keep-trials", type=int, default=160)
     p.add_argument("--trace-trials", action="store_true", default=False)
     p.add_argument("--self-test", action="store_true", help="run a small ks(2,2) smoke test")
@@ -930,23 +1129,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         args.epochs = min(int(args.epochs), 16)
         args.accept = min(float(args.accept), 1e-8)
         args.keep_trials = min(int(args.keep_trials), 40)
-        args.out = args.out or "/mnt/data/309_pure_irp_out/self_test_309.json"
+        args.out = args.out or "/mnt/data/310_self_localizing_irp_out/self_test_310.json"
     cases = [c.strip() for c in str(args.cases).replace("|", ";").split(";") if c.strip()]
     outputs = [run_case(args, c) for c in cases]
     if len(outputs) == 1:
         final = outputs[0]
     else:
-        final = {"script": "309_pandrosion_pure_irp_numpy_engine.py", "autonomous": True, "mode": "309-pure-standalone-irp-multicase", "cases": outputs}
+        final = {"script": "310_pandrosion_self_localizing_irp_engine.py", "autonomous": True, "mode": "310-self-localizing-irp-multicase", "cases": outputs}
     if args.out:
         out = Path(args.out)
     else:
         first = cases[0].replace(",", "x") if cases else "case"
-        out = Path(args.outdir) / f"309_pure_irp_{first}.json"
+        out = Path(args.outdir) / f"310_self_localizing_irp_{first}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(final, indent=2), encoding="utf-8")
 
     print("=" * 116, flush=True)
-    print("309 PURE STANDALONE ITERATED RENORMALIZED PANDROSION NumPy engine", flush=True)
+    print("310 SELF-LOCALIZING ITERATED RENORMALIZED PANDROSION NumPy engine", flush=True)
     print("IRP cascade only: geometric renormalization -> raw exact telescopic Pandrosion slope solve; no Halley/Steffensen/Newton fallback.", flush=True)
     print("=" * 116, flush=True)
     for r in outputs:
@@ -956,7 +1155,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"seconds: generation={s['generation_seconds']:.3f}, extract={s['extract_seconds']:.3f}, total={s['total_seconds']:.3f}", flush=True)
         if r.get("roots"):
             best = r["roots"][0]
-            print(f"best_root: residual={float(best.get('residual', float('inf'))):.3e}, trial={best.get('trial')}, raw_steps={best.get('raw_steps')}, layers={best.get('layers_completed')}", flush=True)
+            print(f"best_root: residual={float(best.get('residual', float('inf'))):.3e}, trial={best.get('trial')}, raw_steps={best.get('raw_steps')}, layers={best.get('layers_completed')}, collapsed={best.get('collapsed')}", flush=True)
     print(f"out={out}", flush=True)
     return 0
 
