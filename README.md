@@ -1,257 +1,161 @@
 # Universitas Pandrosion
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19757311.svg)](https://doi.org/10.5281/zenodo.19757311)
-[![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Universitas Pandrosion CI](https://github.com/ivan-fr/poussiere_de_x/actions/workflows/ci.yml/badge.svg)](https://github.com/ivan-fr/poussiere_de_x/actions)
 
-Pandrosion is a research repository around derivative-free root-finding,
-Steffensen acceleration, and multivariate polynomial systems.  The repository
-has two distinct parts:
+Universitas Pandrosion is a research repository for finite-slope Pandrosion
+methods: derivative-free root extraction, multivariate polynomial systems,
+dynamic atlases, Riemann-chart normalization, and exploratory extensions toward
+physics and zeta geometry.
 
-- a Lean 4 formalization under [`lean/`](lean/) for the core Pandrosion theory;
-- experimental Python/LaTeX work under [`flow/`](flow/), [`latex/`](latex/),
-  [`articles/`](articles/), and [`figures/`](figures/).
+The repository contains three kinds of work:
 
-The Lean code is the high-rigour part of the repository.  The Python and LaTeX
-material is reproducible research code and exposition, not formal proof unless
-explicitly stated.
+- Lean 4 formalization under [`lean/`](lean/);
+- standalone NumPy engines under [`flow/`](flow/);
+- LaTeX research papers, PDFs, and generated figures under [`latex/`](latex/)
+  and [`scripts/`](scripts/).
 
-## Current Checkout
+Only the Lean artifacts are formal proofs.  The Python engines and LaTeX papers
+are reproducible research code and mathematical exposition unless a result is
+explicitly proved in the relevant source.
 
-This checkout currently contains:
+## Current Contents
 
-- **121 Lean modules** under [`lean/Pandrosion/`](lean/Pandrosion/), using
-  `leanprover/lean4:v4.7.0` and `mathlib4 v4.7.0`;
-- **compiled and source LaTeX papers** for the Pth/Smale/Pandrosion line,
-  including the current papers on engines 113 and 115;
-- **7 active `flow/` Python scripts**, focused on the recent autonomous
-  multivariate Pandrosion engines:
-  - [`112_pandrosion_multifamily_heuristic_thales_engine.py`](flow/112_pandrosion_multifamily_heuristic_thales_engine.py)
-  - [`113_pandrosion_heuristic_thales_engine.py`](flow/113_pandrosion_heuristic_thales_engine.py)
-  - [`113_pandrosion_autonomous_heuristic_thales_engine.py`](flow/113_pandrosion_autonomous_heuristic_thales_engine.py)
-  - [`115_pandrosion_vectorized_pure_pandrosion.py`](flow/115_pandrosion_vectorized_pure_pandrosion.py)
-  - [`115_pandrosion_vectorized_pure_thales_engine.py`](flow/115_pandrosion_vectorized_pure_thales_engine.py)
-  - [`116_pandrosion_multifamily_vectorized_pure_pandrosion.py`](flow/116_pandrosion_multifamily_vectorized_pure_pandrosion.py)
-  - [`117_pandrosion_solver_benchmark.py`](flow/117_pandrosion_solver_benchmark.py)
-- generated figures for engines 115 and 116 in [`figures/`](figures/).
+### Research papers
 
-Older README versions described a much larger historical `flow/` corpus.  This
-README describes the files present in this checkout.
+The current paper series is stored in [`latex/tex/`](latex/tex/) with compiled
+PDFs in [`latex/pdf/`](latex/pdf/).  It includes papers `000` through `028`.
 
-## Research Status
+Main lines:
 
-### Formal core
+- `000`: monomial Pandrosion, contraction, Thales scaling, Riemann inversion,
+  and Steffensen acceleration;
+- `001` to `019`: finite-slope Halley, anchored Pandrosion, dynamic atlases,
+  tensor/inverse-jet geometry, geodesic probe flows, and discrete convergence;
+- `020` to `023`: Smale 17 style Pandrosion atlas programs;
+- `024`: analog Pandrosion root extraction with Thales-Riemann normalization;
+- `025` and `026`: Pandrosion prime atlases, completed zeta, and phase
+  destruction programs;
+- `027`: Pandrosion relativity as finite-slope causal probes and dynamic
+  atlases;
+- `028`: numerical Pandrosion relativity benchmarks: Minkowski, Newtonian
+  shadow, and horizon-safe atlas switching.
 
-The Lean project is in [`lean/`](lean/).  The strict check script performs a
-clean build, scans for `sorry`, `admit`, and raw `axiom`, and audits theorem
-dependencies against the classical whitelist
-`{propext, Classical.choice, Quot.sound}`.
+Rebuild a paper with the local Tectonic binary:
 
-Run the authoritative check with Docker:
+```bash
+./tectonic latex/tex/028_pandrosion_relativity_benchmarks.tex
+```
+
+Copy a rebuilt PDF into the PDF folder when needed:
+
+```bash
+cp latex/tex/028_pandrosion_relativity_benchmarks.pdf \
+   latex/pdf/028_pandrosion_relativity_benchmarks.pdf
+```
+
+### Python engines
+
+The active standalone engines are in [`flow/`](flow/):
+
+- `118` to `120`: probe-aware Thales/Pandrosion engines and equal-value/tensor
+  aware NumPy variants;
+- `200`, `201`, `215`: backbone, log-stable, and shared core engine work;
+- `300` to `304`: atlas, geodesic, basin, universal-atlas, and full-cubic
+  Halley NumPy engines;
+- `306`: universal atlas plus hypercube inverse-jet correction;
+- `307`: full Schwarzschild Pandrosion geodesic solver.
+
+Example: run the 304 autonomous universal-atlas engine:
+
+```bash
+.venv/bin/python flow/304_pandrosion_universal_atlas_full_cubic_halley_numpy_engine.py \
+  --self-test
+```
+
+Example: run the 307 Schwarzschild geodesic solver:
+
+```bash
+.venv/bin/python flow/307_full_schwarzschild_pandrosion_geodesic_solver.py \
+  --scenario all \
+  --out /private/tmp/307_all.json
+```
+
+The 307 solver is standalone NumPy code.  It uses Painleve-Gullstrand
+coordinates for horizon-safe evolution, dynamic Schwarzschild/PG chart
+diagnostics, Hamiltonian-shell projection, finite-slope geodesic defects, and
+JSON reporting.
+
+### Figure and benchmark scripts
+
+Recent figure scripts are under [`scripts/`](scripts/):
+
+```bash
+.venv/bin/python scripts/025_generate_prime_atlas_figures.py
+.venv/bin/python scripts/026_generate_completed_prime_atlas_figures.py
+.venv/bin/python scripts/027_generate_pandrosion_relativity_figures.py
+.venv/bin/python scripts/028_generate_pandrosion_relativity_benchmarks.py
+```
+
+The generated files are written under [`latex/figures/`](latex/figures/).
+
+### Lean formalization
+
+The Lean project lives in [`lean/`](lean/) and uses the pinned toolchain in
+[`lean/lean-toolchain`](lean/lean-toolchain).
+
+Run the strict Docker check:
 
 ```bash
 docker compose run --rm lean-check
 ```
 
-For faster iteration, use the incremental build:
+Run the faster incremental Lean build:
 
 ```bash
 docker compose run --rm lean-incremental
 ```
 
-The Lean package can also be entered interactively:
-
-```bash
-docker compose run --rm lean
-```
-
-### Experimental engines
-
-The recent Python engines study direct multistart extraction of complex roots
-of square polynomial systems.
-
-- **113** uses the Thales/Riemann/Mobius geometric start layer with a local
-  heuristic corrector.
-- **115** replaces the local Jacobian-style corrector with an exact finite
-  Pandrosion slope matrix `Q(a,b)` built by a monomial telescopic identity and
-  vectorized as a dense `C @ T` product.
-- **116** reuses the 115 flow and corrector, but expands the input generators
-  to many multivariate families: dense Kostlan, sparse Kostlan, IID dense and
-  sparse, fewnomial, degree-shell, mixed-degree, real, phase-only, structured
-  diagonal/chain/cyclic, and ill-scaled systems.
-- **117** is a benchmark harness.  It runs `pandrosion116`, runs a budgeted
-  local `scipy.optimize.root` multistart baseline, and exports the same systems
-  to Bertini, PHCpack, and Julia HomotopyContinuation.jl formats.  External
-  solvers are only run when their commands are installed; otherwise they are
-  reported as `skipped`.
-
-The current local results show that 116 performs well on the tested
-multifamily benchmarks and beats the budgeted SciPy multistart baseline on
-coverage for `ks(3,4) --families all`.  This is **not** yet a claim of
-superiority over Bertini, PHCpack, HomotopyContinuation.jl, or Lairez-style
-homotopy algorithms.  Script 117 exists to make those comparisons explicit.
+The strict check script audits for `sorry`, `admit`, and raw `axiom`, and
+checks theorem dependencies against the local whitelist.
 
 ## Repository Layout
 
 ```text
 .
-|-- articles/       # distributable PDFs
-|-- figures/        # generated figures for papers and engine summaries
-|-- flow/           # current Python experiment and benchmark scripts
-|-- latex/          # LaTeX sources and compiled local PDFs
+|-- articles/       # distributable historical PDFs
+|-- benchmarks/     # benchmark outputs and local experiment data
+|-- flow/           # standalone Python/NumPy Pandrosion engines
+|-- latex/
+|   |-- figures/    # generated PDF/PNG figures
+|   |-- pdf/        # compiled research papers
+|   `-- tex/        # LaTeX sources
 |-- lean/           # Lean 4 formalization
-|-- scripts/        # utility scripts for figures and Lean iteration
+|-- scripts/        # figure and utility scripts
 |-- Dockerfile
 |-- docker-compose.yml
+|-- LICENSE
 |-- README.md
-`-- tectonic        # local Tectonic binary for LaTeX builds
+`-- tectonic        # local Tectonic binary
 ```
-
-## Build The Papers
-
-The repository includes a local `tectonic` binary.  To rebuild the current
-paper on engine 115:
-
-```bash
-./tectonic latex/paper_115_pandrosion_pure_vectorized.tex
-```
-
-To copy the rebuilt PDF into `articles/`:
-
-```bash
-cp latex/paper_115_pandrosion_pure_vectorized.pdf \
-   articles/paper_115_pandrosion_pure_vectorized.pdf
-```
-
-The current engine-115 paper is:
-
-- source: [`latex/paper_115_pandrosion_pure_vectorized.tex`](latex/paper_115_pandrosion_pure_vectorized.tex)
-- PDF: [`articles/paper_115_pandrosion_pure_vectorized.pdf`](articles/paper_115_pandrosion_pure_vectorized.pdf)
-
-## Run The Recent Experiments
-
-Use the repository virtual environment when available:
-
-```bash
-.venv/bin/python --version
-```
-
-### Engine 113
-
-```bash
-.venv/bin/python flow/113_pandrosion_heuristic_thales_engine.py \
-  --cases 2,10 \
-  --outdir verification/113_heuristic_out
-```
-
-### Engine 115
-
-```bash
-.venv/bin/python flow/115_pandrosion_vectorized_pure_pandrosion.py \
-  --cases 2,10 \
-  --outdir verification/115_vectorized_pure_out
-```
-
-### Engine 116: multifamily generator layer
-
-List available families:
-
-```bash
-.venv/bin/python flow/116_pandrosion_multifamily_vectorized_pure_pandrosion.py \
-  --list-families
-```
-
-Run all families on a multivariate case:
-
-```bash
-.venv/bin/python flow/116_pandrosion_multifamily_vectorized_pure_pandrosion.py \
-  --cases 3,4 \
-  --families all \
-  --count 4 \
-  --pool 512 \
-  --outdir verification/116_multifamily_out
-```
-
-### Engine 117: benchmark harness
-
-List solver adapters:
-
-```bash
-.venv/bin/python flow/117_pandrosion_solver_benchmark.py --list-solvers
-```
-
-Run the local comparison between `pandrosion116` and budgeted SciPy:
-
-```bash
-.venv/bin/python flow/117_pandrosion_solver_benchmark.py \
-  --cases 3,4 \
-  --families all \
-  --count 4 \
-  --pool 512 \
-  --solvers local \
-  --scipy-starts 128 \
-  --outdir verification/117_solver_benchmark
-```
-
-The SciPy baseline is budgeted.  By default, `--scipy-eval-budget 0` means
-"use `--pool` as the global number of residual evaluations per case/family."
-Use `--scipy-eval-budget -1` only when you intentionally want an unbounded
-baseline.
-
-Run all adapters, including external solver exports:
-
-```bash
-.venv/bin/python flow/117_pandrosion_solver_benchmark.py \
-  --cases 3,4 \
-  --families all \
-  --count 4 \
-  --pool 512 \
-  --solvers all \
-  --outdir verification/117_solver_benchmark
-```
-
-If `bertini`, `phc`, or `julia` are not in `PATH`, script 117 still writes the
-input files and marks those solvers as `skipped`.
-
-## Generate Figures
-
-The figure scripts use Matplotlib and the local virtual environment.
-
-```bash
-.venv/bin/python scripts/make_115_pandrosion_figure.py
-.venv/bin/python scripts/make_116_multifamily_multivariate_figure.py
-```
-
-Generated outputs:
-
-- [`figures/115_pandrosion_vectorized_pure_pandrosion.png`](figures/115_pandrosion_vectorized_pure_pandrosion.png)
-- [`figures/115_pandrosion_vectorized_pure_pandrosion.pdf`](figures/115_pandrosion_vectorized_pure_pandrosion.pdf)
-- [`figures/116_multifamily_multivariate_all.png`](figures/116_multifamily_multivariate_all.png)
-- [`figures/116_multifamily_multivariate_all.pdf`](figures/116_multifamily_multivariate_all.pdf)
 
 ## Scope And Non-Claims
 
-This repository contains several kinds of evidence:
+This repository deliberately mixes proof work, research exposition, and
+experimental code.  They do not have the same evidential status.
 
-- Lean theorem proofs, checked by the Lean compiler and strict audit script;
-- mathematical exposition in LaTeX;
-- numerical experiments in Python;
-- generated figures and benchmark reports.
+- Lean files are compiler-checked formal artifacts.
+- LaTeX papers may contain proved statements, conjectures, and research
+  programs; check each paper's status paragraph.
+- Python scripts are reproducible numerical experiments and solver prototypes.
+- Zeta, Smale 17, and physics-facing papers are research programs unless a
+  theorem is explicitly proved.
 
-Only the Lean artifacts are formal proofs.  The Python scripts are
-reproducible numerical experiments and benchmark harnesses.  The repository
-does not claim to resolve classical open problems unless a statement is
-explicitly formalized or otherwise proved in the relevant paper.
-
-For the recent multivariate engines specifically:
-
-- `115` establishes and implements the vectorized exact telescopic slope
-  corrector;
-- `116` shows that the method is robust across many tested polynomial
-  families, with `ill_scaled` deliberately acting as a stress test;
-- `117` prepares honest comparisons against standard solvers, but external
-  homotopy solvers must actually be installed and run before making any
-  publication-level performance claim against them.
+The project does not claim to solve classical open problems or replace standard
+physics.  The intended claim is narrower: Pandrosion supplies a finite-slope
+geometric calculus with chart scaling, reciprocal/inversion logic, dynamic
+atlases, and reproducible numerical experiments.
 
 ## Citation
 
@@ -266,5 +170,4 @@ DOI landing page: <https://doi.org/10.5281/zenodo.19757311>
 
 ## License
 
-See [`LICENSE`](LICENSE).  The repository badge advertises CC BY-SA 4.0; check
-the license file for the authoritative terms included with this checkout.
+This repository is released under the MIT License.  See [`LICENSE`](LICENSE).
