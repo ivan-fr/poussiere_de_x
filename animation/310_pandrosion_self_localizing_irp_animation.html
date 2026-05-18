@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pandrosion 310 — Self-Localizing IRP</title>
+<style>
+  :root{
+    --bg0:#02040a;
+    --bg1:#07111d;
+    --cyan:#62e8ff;
+    --blue:#79a8ff;
+    --green:#8cffb1;
+    --gold:#ffd36e;
+    --pink:#ff67d6;
+    --red:#ff6f86;
+    --violet:#a681ff;
+    --text:#f6f8ff;
+    --muted:#b5bdd8;
+    --glass:rgba(7,13,28,.68);
+    --stroke:rgba(255,255,255,.14);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;overflow:hidden;background:var(--bg0);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}
+  canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+  .hud{position:fixed;inset:20px;pointer-events:none;display:grid;grid-template-columns:minmax(320px,440px) 1fr minmax(290px,390px);grid-template-rows:auto 1fr auto;gap:16px}
+  .panel{position:relative;overflow:hidden;pointer-events:auto;background:linear-gradient(135deg,rgba(12,23,47,.78),rgba(5,9,20,.54));border:1px solid var(--stroke);box-shadow:0 22px 80px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(16px);border-radius:8px;padding:16px}
+  .panel:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,rgba(98,232,255,.075),transparent 30%,transparent 72%,rgba(255,211,110,.055));mix-blend-mode:screen}
+  .title{grid-column:1 / span 2;max-width:790px}
+  h1{font-size:22px;line-height:1.08;margin:0 0 8px;font-weight:760;letter-spacing:0}
+  .subtitle{font-size:13px;color:var(--muted);line-height:1.45;max-width:740px}
+  .badge{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(98,232,255,.34);background:linear-gradient(90deg,rgba(98,232,255,.13),rgba(140,255,177,.08));color:#c5fbff;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;letter-spacing:.24px;text-transform:uppercase;margin-bottom:12px}
+  .badge:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 16px var(--green)}
+  .right{grid-column:3;grid-row:1 / span 2;align-self:start}
+  .bottom{grid-column:1 / span 3;grid-row:3;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end}
+  .formula{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:12px;line-height:1.58;color:#e4eaff;background:rgba(0,0,0,.23);border-radius:8px;padding:12px;border:1px solid rgba(255,255,255,.08);white-space:pre-wrap}
+  .formula b{color:var(--gold);font-weight:700}.formula .cyan{color:var(--cyan)}.formula .green{color:var(--green)}.formula .pink{color:var(--pink)}.formula .red{color:var(--red)}
+  .metric{display:grid;grid-template-columns:100px 1fr 58px;gap:10px;align-items:center;margin:12px 0}
+  .metric label{font-size:12px;color:var(--muted)}
+  .bar{height:8px;border-radius:999px;background:rgba(255,255,255,.078);overflow:hidden;box-shadow:inset 0 0 10px rgba(0,0,0,.38),0 0 0 1px rgba(255,255,255,.04)}
+  .fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--gold));width:30%;box-shadow:0 0 20px rgba(98,232,255,.42);transition:width .16s ease-out}
+  .num{font-size:12px;color:#eef;text-align:right;font-variant-numeric:tabular-nums}
+  .stage{font-size:13px;line-height:1.48;color:#ecf1ff;margin-top:14px;padding:12px;border-radius:8px;background:rgba(255,255,255,.052);border:1px solid rgba(255,255,255,.08)}
+  .stage strong{color:var(--gold)}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .item{display:flex;gap:8px;align-items:center;font-size:11px;color:#d2daf8}.sw{width:11px;height:11px;border-radius:50%;box-shadow:0 0 14px currentColor}.sw.c1{color:var(--cyan);background:var(--cyan)}.sw.c2{color:var(--gold);background:var(--gold)}.sw.c3{color:var(--pink);background:var(--pink)}.sw.c4{color:var(--green);background:var(--green)}.sw.c5{color:var(--violet);background:var(--violet)}.sw.c6{color:var(--red);background:var(--red)}
+  .controls{display:flex;align-items:center;gap:12px;pointer-events:auto}
+  button{appearance:none;border:1px solid rgba(98,232,255,.34);background:linear-gradient(180deg,rgba(98,232,255,.18),rgba(121,168,255,.09));color:#eaffff;border-radius:8px;padding:11px 14px;font-weight:720;letter-spacing:.2px;box-shadow:0 8px 30px rgba(0,0,0,.28);cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+  button:hover{border-color:rgba(255,211,110,.54);box-shadow:0 12px 38px rgba(0,0,0,.34),0 0 22px rgba(98,232,255,.13);transform:translateY(-1px)}
+  .slider{display:flex;align-items:center;gap:9px;background:rgba(7,13,28,.62);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;backdrop-filter:blur(12px)}
+  .slider span{font-size:12px;color:var(--muted)}
+  input[type=range]{accent-color:#62e8ff;width:160px}
+  .caption{pointer-events:auto;align-self:end;justify-self:end;max-width:560px;font-size:12px;color:#c1c9e8;line-height:1.45;text-align:right;text-shadow:0 1px 0 rgba(0,0,0,.4)}
+  .chiprow{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.chip{font-size:11px;color:#dce4ff;border:1px solid rgba(255,255,255,.11);border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.045)}
+  .ghost{opacity:.75}.small{font-size:11px;color:var(--muted);line-height:1.42;margin-top:10px}
+  @media (max-width:920px){.hud{grid-template-columns:1fr;grid-template-rows:auto auto 1fr auto;inset:12px}.title,.right,.bottom{grid-column:1}.right{grid-row:2}.bottom{grid-template-columns:1fr}.caption{text-align:left;justify-self:start}.legend{grid-template-columns:1fr}h1{font-size:19px}.panel{padding:14px}.formula{font-size:11px}.controls{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div class="hud">
+  <section class="panel title">
+    <div class="badge">310 self-localizing / IRP pur</div>
+    <h1>Animation géométrique du moteur Pandrosion 310</h1>
+    <div class="subtitle">Le 310 remplace l’empilement Halley par une cascade IRP autonome : départ atlas, renormalisation géométrique <b>R</b>, couche raw Pandrosion <b>P</b>, détection de localité, puis collapse en mode local avec petit probe et grille de line-search courte.</div>
+    <div class="chiprow"><span class="chip">atlas shells</span><span class="chip">R∘P cascade</span><span class="chip">finite telescopic slope</span><span class="chip">self-locality detector</span><span class="chip">collapsed local mode</span></div>
+  </section>
+
+  <aside class="panel right">
+    <div class="formula"><b>Pipeline 310</b>
+z₀ = atlas_start(shell, phase)
+z ← <span class="cyan">argminₛ ||G(sz)||</span>
+
+Q<sub>G</sub>(a,b) δ = −G(a)
+z⁺ = z + λδ
+
+<span class="green">detector</span>:
+drop ≤ 0.42 and rel_step ≤ 0.35
+
+<span class="pink">collapse</span>:
+R = Id, probe ↓, line grid ↓
+no Jacobian / Hessian / Newton fallback</div>
+    <div class="metric"><label>résidu</label><div class="bar"><div class="fill" id="resFill"></div></div><div class="num" id="resNum">1.000</div></div>
+    <div class="metric"><label>localité</label><div class="bar"><div class="fill" id="locFill"></div></div><div class="num" id="locNum">0/2</div></div>
+    <div class="metric"><label>collapse</label><div class="bar"><div class="fill" id="colFill"></div></div><div class="num" id="colNum">off</div></div>
+    <div class="stage" id="stage"><strong>Initialisation.</strong> L’atlas place un départ sur une coque complexe déterministe.</div>
+    <div class="legend">
+      <div class="item"><span class="sw c1"></span>coques atlas</div>
+      <div class="item"><span class="sw c2"></span>palette R</div>
+      <div class="item"><span class="sw c3"></span>probe b et Q</div>
+      <div class="item"><span class="sw c4"></span>raw step δ</div>
+      <div class="item"><span class="sw c5"></span>line grid λ</div>
+      <div class="item"><span class="sw c6"></span>root cluster</div>
+    </div>
+    <div class="small">Souris : rotation. Molette : zoom. Le fichier est autonome et n’utilise aucune librairie externe.</div>
+  </aside>
+
+  <footer class="bottom">
+    <div class="controls">
+      <button id="playBtn">Pause</button>
+      <button id="resetBtn">Reset</button>
+      <div class="slider"><span>vitesse</span><input id="speed" type="range" min="0.2" max="2.8" value="1.0" step="0.05"><span id="speedVal">1.00×</span></div>
+      <div class="slider"><span>lumière</span><input id="glow" type="range" min="0.3" max="1.8" value="1.05" step="0.05"><span id="glowVal">1.05</span></div>
+    </div>
+    <div class="caption">Lecture : la renormalisation est active pendant la capture. Dès que deux contractions locales consécutives sont observées, le système se self-localise : il gèle la carte, réduit le probe et dépense moins d’évaluations par couche.</div>
+  </footer>
+</div>
+<script>
+(() => {
+'use strict';
+
+const canvas = document.getElementById('scene');
+const ctx = canvas.getContext('2d');
+const DPR = Math.min(2, window.devicePixelRatio || 1);
+let W = 0, H = 0;
+function resize(){
+  W = innerWidth; H = innerHeight;
+  canvas.width = Math.floor(W * DPR); canvas.height = Math.floor(H * DPR);
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', resize); resize();
+
+const V = {
+  add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],
+  sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+  mul:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],
+  dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],
+  len:a=>Math.hypot(a[0],a[1],a[2]),
+  norm:a=>{const l=Math.hypot(a[0],a[1],a[2]) || 1; return [a[0]/l,a[1]/l,a[2]/l];},
+  lerp:(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]
+};
+const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
+const smooth = t => t*t*(3-2*t);
+const ease = t => 1 - Math.pow(1-t, 3);
+
+const C = {
+  cyan:'#62e8ff', blue:'#79a8ff', green:'#8cffb1', gold:'#ffd36e',
+  pink:'#ff67d6', red:'#ff6f86', violet:'#a681ff', white:'#ffffff'
+};
+function rgba(hex, a){
+  const h = hex.replace('#','');
+  return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`;
+}
+
+const camera = { yaw:-0.58, pitch:0.48, dist:8.0, auto:true };
+let dragging = false, lastX = 0, lastY = 0;
+canvas.addEventListener('pointerdown', e => {dragging=true; camera.auto=false; lastX=e.clientX; lastY=e.clientY; canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointermove', e => {
+  if(!dragging) return;
+  const dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY;
+  camera.yaw += dx*.006; camera.pitch = clamp(camera.pitch + dy*.005, -1.18, 1.18);
+});
+canvas.addEventListener('pointerup', e => {dragging=false; try{canvas.releasePointerCapture(e.pointerId)}catch(_){}});
+canvas.addEventListener('wheel', e => {camera.dist = clamp(camera.dist + e.deltaY*.006, 4.4, 14.0); e.preventDefault();}, {passive:false});
+
+function rotatePoint(p){
+  let [x,y,z] = p;
+  const cy=Math.cos(camera.yaw), sy=Math.sin(camera.yaw);
+  const x1=cy*x + sy*z, z1=-sy*x + cy*z;
+  const cp=Math.cos(camera.pitch), sp=Math.sin(camera.pitch);
+  return [x1, cp*y - sp*z1, sp*y + cp*z1];
+}
+function project(p){
+  const r = rotatePoint(p);
+  const z = r[2] + camera.dist;
+  const s = Math.min(W,H) * .53 / Math.max(.18,z);
+  return {x:W/2 + r[0]*s, y:H/2 - r[1]*s, z, s};
+}
+function depth(p){ return rotatePoint(p)[2]; }
+
+let glow = 1.05;
+function drawLine(a,b,color=C.cyan,alpha=1,width=1,dash=null){
+  const A=project(a), B=project(b); if(A.z<.05 || B.z<.05) return;
+  ctx.save();
+  if(dash) ctx.setLineDash(dash);
+  ctx.strokeStyle = rgba(color, alpha); ctx.lineWidth = width; ctx.lineCap='round';
+  ctx.shadowColor = rgba(color, alpha*.86); ctx.shadowBlur = 10*glow*alpha;
+  ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke();
+  ctx.restore();
+}
+function drawPolyline(points,color=C.cyan,alpha=1,width=1){
+  if(points.length < 2) return;
+  ctx.save();
+  ctx.strokeStyle=rgba(color,alpha); ctx.lineWidth=width; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.shadowColor=rgba(color,alpha); ctx.shadowBlur=12*glow*alpha;
+  ctx.beginPath();
+  let first=true;
+  for(const p of points){
+    const q=project(p); if(q.z<.05) continue;
+    if(first){ctx.moveTo(q.x,q.y); first=false;} else ctx.lineTo(q.x,q.y);
+  }
+  ctx.stroke(); ctx.restore();
+}
+function drawSoftPolyline(points,color=C.cyan,alpha=1,width=1){
+  drawPolyline(points,color,alpha*.15,width*3.8);
+  drawPolyline(points,color,alpha*.32,width*2.0);
+  drawPolyline(points,color,alpha,width);
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+}
+function drawLabel(p,text,color=C.white,alpha=1){
+  const q=project(p); if(q.z<.05) return;
+  ctx.save(); ctx.font='600 12px Inter, system-ui, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  const w=ctx.measureText(text).width+12;
+  ctx.fillStyle='rgba(5,9,22,.60)'; ctx.strokeStyle=rgba(color,alpha*.35); ctx.lineWidth=1;
+  roundRect(ctx,q.x-w/2,q.y-12,w,24,7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=rgba(color,alpha); ctx.shadowColor=rgba(color,alpha); ctx.shadowBlur=8*glow*alpha; ctx.fillText(text,q.x,q.y+.5);
+  ctx.restore();
+}
+function drawSphere(p,r,color=C.cyan,alpha=1,label=null){
+  const q=project(p); if(q.z<.05) return;
+  const rr=Math.max(1.5, r*q.s);
+  const g=ctx.createRadialGradient(q.x-rr*.35,q.y-rr*.35,0,q.x,q.y,rr*1.22);
+  g.addColorStop(0,rgba('#ffffff',alpha*.92)); g.addColorStop(.22,rgba(color,alpha)); g.addColorStop(1,rgba(color,0));
+  ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.fillStyle=g; ctx.beginPath(); ctx.arc(q.x,q.y,rr*1.25,0,Math.PI*2); ctx.fill(); ctx.restore();
+  ctx.save(); ctx.fillStyle=rgba(color,alpha); ctx.shadowColor=rgba(color,alpha); ctx.shadowBlur=18*glow*alpha; ctx.beginPath(); ctx.arc(q.x,q.y,rr*.45,0,Math.PI*2); ctx.fill(); ctx.restore();
+  if(label) drawLabel(p,label,color,alpha);
+}
+function drawRing(center,r,axis,color,alpha,width=1){
+  const pts=[]; const n=112;
+  for(let i=0;i<=n;i++){
+    const t=2*Math.PI*i/n;
+    if(axis==='z') pts.push([center[0]+r*Math.cos(t),center[1]+r*Math.sin(t),center[2]]);
+    else if(axis==='x') pts.push([center[0],center[1]+r*Math.cos(t),center[2]+r*Math.sin(t)]);
+    else pts.push([center[0]+r*Math.cos(t),center[1],center[2]+r*Math.sin(t)]);
+  }
+  drawPolyline(pts,color,alpha,width);
+}
+function drawArrow(a,b,color,alpha=1,width=2,label=null){
+  drawLine(a,b,color,alpha,width);
+  const dir=V.norm(V.sub(b,a)); const side=V.norm(V.cross(dir,[0,1,0])); const side2=V.norm(V.cross(dir,side));
+  const len=.14+.03*width; const base=V.sub(b,V.mul(dir,len));
+  drawLine(b,V.add(base,V.mul(side,len*.55)),color,alpha,width*.8);
+  drawLine(b,V.sub(base,V.mul(side,len*.55)),color,alpha,width*.8);
+  drawLine(b,V.add(base,V.mul(side2,len*.43)),color,alpha*.72,width*.55);
+  if(label) drawLabel(V.lerp(a,b,.62),label,color,alpha);
+}
+function drawPolygon(pts,color,alpha){
+  const pp=pts.map(project).filter(p=>p.z>.05); if(pp.length<3) return;
+  ctx.save(); ctx.beginPath(); ctx.moveTo(pp[0].x,pp[0].y); for(let i=1;i<pp.length;i++) ctx.lineTo(pp[i].x,pp[i].y); ctx.closePath();
+  ctx.fillStyle=rgba(color,alpha); ctx.strokeStyle=rgba(color,alpha*.35); ctx.lineWidth=1; ctx.fill(); ctx.stroke(); ctx.restore();
+}
+
+let randSeed = 0x31051f1;
+function rnd(){ randSeed = (1664525 * randSeed + 1013904223) >>> 0; return randSeed / 4294967296; }
+const stars = Array.from({length:220},()=>({x:rnd()*W,y:rnd()*H,r:.35+rnd()*1.55,a:.10+rnd()*.42,s:.10+rnd()*.75,tw:.7+rnd()*1.8,o:rnd()*Math.PI*2}));
+const dust = Array.from({length:94},()=>({u:rnd(),speed:.34+rnd()*.95,amp:.03+rnd()*.11,phase:rnd()*Math.PI*2,color:rnd()<.40?C.cyan:rnd()<.70?C.gold:C.green,r:.006+rnd()*.012}));
+
+const root = [-.34,.34,-.23];
+const axis = V.norm([.25,.78,.42]);
+function buildSteps(){
+  const steps=[]; let z=[2.55,-1.28,1.36]; let hits=0; let collapsed=false;
+  const targetDrops=[.54,.39,.36,.28,.18,.075,.022,.006,.0018];
+  for(let k=0;k<9;k++){
+    const diff=V.sub(root,z);
+    const local=collapsed;
+    const drop=targetDrops[k];
+    const scaleRadius=local ? .25 : (.72-.05*k);
+    const renormScale = local ? [1,0,0] : [Math.cos(k*.58)*.42, Math.sin(k*.71)*.42, .18*Math.sin(k*.5)];
+    const zRenorm = local ? z : V.add(z, V.mul(renormScale,.35));
+    const rawBase=V.mul(diff, local ? .82 : (.46+.04*k));
+    const swirl=V.mul(V.norm(V.cross(diff,axis)), (local ? .07 : .22)*Math.exp(-k*.20));
+    const delta=V.add(rawBase,swirl);
+    const endpoint=V.add(zRenorm,V.mul(V.norm(V.add(delta,[.34*Math.sin(k),-.22*Math.cos(k*.7),.18])), (local ? .16 : .58)*Math.exp(-k*.05)));
+    const probeTry = local ? 1 : 3;
+    const line = (local ? [1,.65,.42] : [1,.65,.42,.25,.15,.09,.055,.033]).map(l=>V.add(zRenorm,V.mul(delta,l)));
+    const next=V.lerp(V.add(zRenorm,V.mul(delta, local ? .95 : .65)),root,local ? .16 : .06);
+    const rawRelStep=V.len(V.sub(next,zRenorm))/Math.max(1,V.len(zRenorm));
+    const relStep=!local && k>=2 ? Math.min(rawRelStep,.30-.015*Math.min(k,4)) : rawRelStep;
+    const hit = !local && (drop<=.42 && relStep<=.35);
+    if(hit) hits++;
+    const willCollapse = !collapsed && hits>=2;
+    steps.push({z, zRenorm, endpoint, delta, line, next, residual:Math.pow(10,-.45*k)*(local ? .12 : 1), drop, relStep, hit, hits, collapsed:local, willCollapse, scaleRadius, probeTry});
+    z=V.lerp(next,root,.05);
+    if(willCollapse) collapsed=true;
+  }
+  return steps;
+}
+const steps = buildSteps();
+const initialRes = steps[0].residual || 1;
+
+const atlasCells=[];
+for(let i=0;i<18;i++){
+  const a=i*Math.PI*2/18; const r=2.95+.22*Math.sin(i*1.9); const zc=-.9+1.8*((i%6)/5);
+  const c=[r*Math.cos(a),r*Math.sin(a),zc]; const t=V.norm([-Math.sin(a),Math.cos(a),0]); const up=[0,0,1]; const sz=.18+.07*(i%3);
+  atlasCells.push([
+    V.add(c,V.add(V.mul(t,sz),V.mul(up,sz*.78))),
+    V.add(c,V.add(V.mul(t,-sz),V.mul(up,sz*.78))),
+    V.add(c,V.add(V.mul(t,-sz),V.mul(up,-sz*.78))),
+    V.add(c,V.add(V.mul(t,sz),V.mul(up,-sz*.78)))
+  ]);
+}
+
+function pathSample(points,u){
+  if(points.length<2) return {p:points[0] || [0,0,0], tangent:[1,0,0]};
+  const lens=[]; let total=0;
+  for(let i=0;i<points.length-1;i++){const L=Math.max(1e-6,V.len(V.sub(points[i+1],points[i]))); lens.push(L); total+=L;}
+  let target=clamp(u,0,1)*total;
+  for(let i=0;i<lens.length;i++){
+    if(target<=lens[i] || i===lens.length-1){
+      const t=clamp(target/lens[i],0,1);
+      return {p:V.lerp(points[i],points[i+1],t), tangent:V.norm(V.sub(points[i+1],points[i]))};
+    }
+    target-=lens[i];
+  }
+  return {p:points[points.length-1], tangent:V.norm(V.sub(points[points.length-1],points[points.length-2]))};
+}
+
+function drawBackground(dt,time){
+  const grad=ctx.createRadialGradient(W*.20,H*.10,0,W*.55,H*.55,Math.max(W,H)*.80);
+  grad.addColorStop(0,'#15305a'); grad.addColorStop(.34,'#071424'); grad.addColorStop(.74,'#02050d'); grad.addColorStop(1,'#000006');
+  ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+  ctx.save(); ctx.globalCompositeOperation='screen';
+  for(let band=0; band<8; band++){
+    const y0=H*(.14+.082*band), amp=14+band*2.2, phase=time*(.16+.018*band)+band*.81;
+    ctx.beginPath();
+    for(let x=-30;x<=W+30;x+=18){
+      const y=y0+Math.sin(x*.007+phase)*amp+Math.sin(x*.017-phase*1.6)*amp*.32;
+      if(x<=-30) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle=band%3===0?`rgba(98,232,255,.022)`:band%3===1?`rgba(140,255,177,.018)`:`rgba(255,211,110,.017)`;
+    ctx.lineWidth=1.2; ctx.stroke();
+  }
+  ctx.restore();
+  ctx.save(); ctx.globalCompositeOperation='lighter';
+  for(const s of stars){
+    s.y += s.s*dt*8; if(s.y>H+4){s.y=-4;s.x=rnd()*W;}
+    const tw=.58+.42*Math.sin(time*s.tw+s.o);
+    ctx.fillStyle=`rgba(196,222,255,${s.a*tw})`; ctx.beginPath(); ctx.arc(s.x,s.y,s.r*(.76+.34*tw),0,Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+  const vg=ctx.createRadialGradient(W*.5,H*.48,Math.min(W,H)*.22,W*.5,H*.5,Math.max(W,H)*.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(.62,'rgba(0,0,0,.05)'); vg.addColorStop(1,'rgba(0,0,0,.58)');
+  ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
+}
+function drawAtlas(alpha,active){
+  const sorted=atlasCells.map((p,i)=>({p,i,z:p.reduce((a,b)=>a+depth(b),0)/p.length})).sort((a,b)=>a.z-b.z);
+  for(const item of sorted){
+    const on=item.i===active; const color=item.i%2?C.cyan:C.violet;
+    drawPolygon(item.p,color,alpha*(on ? .20 : .065));
+    if(on) drawSoftPolyline([...item.p,item.p[0]],C.gold,.46,1.1);
+  }
+}
+function drawShells(time,alpha,collapsed){
+  for(let i=0;i<6;i++){
+    const rr=.55+i*.42+.03*Math.sin(time*2+i);
+    const a=collapsed && i>1 ? alpha*.035 : alpha*(.16-i*.015);
+    drawRing([0,0,-1.2+i*.18],rr,'z',i%2?C.cyan:C.violet,a,1.1);
+  }
+}
+function drawComplexFrame(time){
+  const R=2.55;
+  for(let lat=-60; lat<=60; lat+=20){
+    const phi=lat*Math.PI/180, pts=[];
+    for(let i=0;i<=112;i++){const th=i*Math.PI*2/112; pts.push([R*Math.cos(phi)*Math.cos(th),R*Math.cos(phi)*Math.sin(th),R*Math.sin(phi)]);}
+    drawPolyline(pts,C.blue,.08+.018*Math.sin(time*1.3+lat),1);
+  }
+  for(let lon=0; lon<180; lon+=18){
+    const th=lon*Math.PI/180, pts=[];
+    for(let i=-56;i<=56;i++){const phi=i*Math.PI/112; pts.push([R*Math.cos(phi)*Math.cos(th),R*Math.cos(phi)*Math.sin(th),R*Math.sin(phi)]);}
+    drawPolyline(pts,C.cyan,.075,1);
+  }
+  drawRing([0,0,0],R,'z',C.violet,.13,1.2);
+  drawSphere([0,0,R],.045,C.gold,.8,'∞');
+  drawSphere([0,0,-R],.045,C.cyan,.65,'0');
+}
+function drawQBadge(pos,alpha,local){
+  const base=pos, ex=[.34,0,0], ey=[0,.24,.06];
+  for(let i=0;i<4;i++) drawLine(V.add(base,V.mul(ey,i/3)),V.add(V.add(base,ex),V.mul(ey,i/3)),local?C.green:C.gold,alpha*.45,1);
+  for(let i=0;i<4;i++) drawLine(V.add(base,V.mul(ex,i/3)),V.add(V.add(base,ey),V.mul(ex,i/3)),local?C.green:C.gold,alpha*.45,1);
+  drawLabel(V.add(base,[.18,.15,.08]),local?'local Q':'Q_G(a,b)',local?C.green:C.gold,alpha);
+}
+function drawDustOnPath(points,alpha,time){
+  if(points.length<2) return;
+  for(const d of dust){
+    const u=(d.u+time*.032*d.speed)%1;
+    const s=pathSample(points,u);
+    const side=V.norm(V.cross(s.tangent,axis)), lift=V.norm(V.cross(s.tangent,side));
+    const wob=time*2.1*d.speed+d.phase;
+    const p=V.add(s.p,V.add(V.mul(side,Math.sin(wob)*d.amp),V.mul(lift,Math.cos(wob*.73)*d.amp*.55)));
+    drawSphere(p,d.r,d.color,alpha*(.18+.42*Math.sin(wob)*Math.sin(wob)+.12*u));
+  }
+}
+function drawLocalDetector(step,alpha){
+  const base=[-2.15,1.78,.85];
+  drawLabel(base,'locality detector',C.green,alpha);
+  const w=.58, h=.12;
+  const drop=clamp((.42-step.drop)/.42,0,1);
+  const rel=clamp((.35-step.relStep)/.35,0,1);
+  for(let i=0;i<2;i++){
+    const y=base[1]-.34-.22*i, x=base[0]-.38;
+    drawLine([x,y,base[2]],[x+w,y,base[2]],C.blue,alpha*.42,1.2);
+    drawLine([x,y,base[2]],[x+w*(i?rel:drop),y,base[2]],i?C.green:C.gold,alpha,3);
+  }
+  drawSphere([base[0]+.52,base[1]-.73,base[2]],.035,step.hit?C.green:C.blue,alpha,step.hit?'hit':'test');
+}
+function drawResidualPulse(center,time,alpha,collapsed){
+  for(let i=0;i<4;i++){
+    const p=(time*.23+i*.25)%1; const a=alpha*(1-p)*(.27+.08*i);
+    const r=(collapsed ? .12 : .18)+p*(collapsed ? .42 : .75);
+    drawRing(center,r,'z',collapsed?C.green:C.red,a,1.2);
+    drawRing(center,r*.64,'x',C.gold,a*.45,1);
+  }
+}
+function phaseInfo(step,p){
+  if(step.collapsed){
+    if(p<.20) return ['Mode local gelé','La carte R est figée à l’identité : le moteur considère que la cellule est self-localisée.'];
+    if(p<.44) return ['Petit probe','Le endpoint b reste près de a ; Q_G(a,b) devient une pente télescopique locale bon marché.'];
+    if(p<.66) return ['Raw Pandrosion local','Une seule couche P produit δ par Q_G(a,b)δ = −G(a), sans Jacobien analytique.'];
+    if(p<.84) return ['Line grid courte','Le line-search ne garde que les premiers λ : 1, .65, .42.'];
+    return ['Cluster racine','Le résidu tombe vite ; les candidats voisins sont dédupliqués dans le root cluster.'];
+  }
+  if(p<.18) return ['Atlas start','Départ sur une coque complexe déterministe, avec twist de phase façon Thales/Riemann.'];
+  if(p<.36) return ['Renormalisation R','La palette de scales compare ||G(sz)|| et choisit la carte la moins distordue.'];
+  if(p<.56) return ['Raw finite slope','Le probe b construit Q_G(a,b), pente télescopique exacte entre a et b.'];
+  if(p<.73) return ['Line-search résiduel','Les candidats z+λδ sont testés ; seul le meilleur résidu est accepté.'];
+  if(p<.90) return ['Détecteur local','Le moteur mesure drop et rel_step. Deux hits consécutifs déclenchent le collapse.'];
+  return step.willCollapse ? ['Collapse self-localizing','R est désactivé pour les prochaines couches ; probe et trust deviennent locaux.'] : ['Capture continue','Le système reste en capture : R∘P sera rejoué à la couche suivante.'];
+}
+
+let time=0, last=performance.now(), paused=false, speed=1.0;
+const stageEl=document.getElementById('stage');
+const resFill=document.getElementById('resFill'), resNum=document.getElementById('resNum');
+const locFill=document.getElementById('locFill'), locNum=document.getElementById('locNum');
+const colFill=document.getElementById('colFill'), colNum=document.getElementById('colNum');
+document.getElementById('playBtn').onclick=()=>{paused=!paused; document.getElementById('playBtn').textContent=paused?'Play':'Pause';};
+document.getElementById('resetBtn').onclick=()=>{time=0; camera.auto=true; camera.yaw=-.58; camera.pitch=.48; camera.dist=8.0;};
+document.getElementById('speed').oninput=e=>{const v=parseFloat(e.target.value); speed=Number.isFinite(v)?clamp(v,.2,2.8):1; document.getElementById('speedVal').textContent=speed.toFixed(2)+'×';};
+document.getElementById('glow').oninput=e=>{const v=parseFloat(e.target.value); glow=Number.isFinite(v)?clamp(v,.3,1.8):1.05; document.getElementById('glowVal').textContent=glow.toFixed(2);};
+
+function updateHud(step,p,idx){
+  const rn=Math.max(1e-5, step.residual/initialRes*Math.pow(.70,p));
+  resFill.style.width = clamp((1-rn)*100,3,100)+'%';
+  resNum.textContent = rn < .001 ? rn.toExponential(1) : rn.toFixed(3);
+  const hits=step.collapsed ? 2 : step.hits;
+  locFill.style.width = clamp(hits/2*100,0,100)+'%';
+  locNum.textContent = `${hits}/2`;
+  const c = step.collapsed || step.willCollapse ? 1 : 0;
+  colFill.style.width = (c?100:8)+'%';
+  colNum.textContent = step.collapsed ? 'on' : (step.willCollapse ? 'trigger' : 'off');
+  const [title,body]=phaseInfo(step,p);
+  const grid=step.collapsed?'λ = 1, .65, .42':'λ = 1, .65, .42, .25, .15, .09, .055, .033';
+  stageEl.innerHTML = `<strong>${title}.</strong> ${body}<br><span class="ghost">epoch ${idx+1}/${steps.length} · drop=${step.drop.toFixed(3)} · rel_step=${step.relStep.toFixed(3)} · ${grid}</span>`;
+}
+
+function render(ts){
+  const rawDt=(Number.isFinite(ts)&&Number.isFinite(last))?(ts-last)/1000:.016;
+  const dt=Number.isFinite(rawDt)?clamp(rawDt,0,.05):.016;
+  last=Number.isFinite(ts)?ts:performance.now();
+  if(!paused) time += dt*speed;
+  if(camera.auto) camera.yaw += dt*.075;
+  drawBackground(dt,time);
+  const cycle=steps.length;
+  const raw=(time*.42)%cycle;
+  const idx=clamp(Math.floor(raw),0,cycle-1);
+  const p=clamp(raw-idx,0,1);
+  const step=steps[idx];
+  updateHud(step,p,idx);
+
+  drawComplexFrame(time);
+  drawAtlas(.9,idx%atlasCells.length);
+  drawShells(time,.9,step.collapsed);
+  drawLine([-3.2,0,0],[3.2,0,0],C.blue,.12,1);
+  drawLine([0,-3.2,0],[0,3.2,0],C.blue,.12,1);
+  drawLine([0,0,-3.2],[0,0,3.2],C.blue,.12,1);
+  drawLabel([3.35,0,0],'Re z',C.blue,.58);
+  drawLabel([0,3.35,0],'Im z',C.blue,.58);
+
+  const past=[];
+  for(let i=0;i<idx;i++) past.push(steps[i].z);
+  past.push(V.lerp(step.z,step.next,smooth(clamp((p-.74)/.22,0,1))));
+  drawSoftPolyline(past,C.green,.62,2.25);
+  drawDustOnPath(past,.65,time);
+  for(let i=0;i<idx;i++) drawSphere(steps[i].z,.022+(i>=5 ? .006 : 0),steps[i].collapsed?C.green:C.cyan,.35);
+
+  const shellP=[2.25*Math.cos(time*.68+idx),2.25*Math.sin(time*.68+idx*.4),.88*Math.sin(time*.5+idx*.31)];
+  drawSphere(shellP,.037,C.cyan,.78,'atlas');
+  drawSoftPolyline([shellP,V.lerp(shellP,step.z,.44),step.z],C.cyan,.30,1.3);
+  drawSphere(step.z,.052,step.collapsed?C.green:C.cyan,.92,'a');
+  drawSphere(root,.072,C.red,.98,'root');
+  drawResidualPulse(root,time,.82,step.collapsed);
+
+  const rAlpha=step.collapsed ? .18 : smooth(clamp((p-.12)/.24,0,1));
+  if(rAlpha>0){
+    for(let i=0;i<7;i++){
+      const ang=i*Math.PI*2/7 + .22*idx;
+      const cand=V.add(step.z,[Math.cos(ang)*step.scaleRadius,Math.sin(ang)*step.scaleRadius,.15*Math.sin(ang*2)]);
+      const on=i===2;
+      drawSphere(cand,on ? .035 : .025,on?C.gold:C.violet,rAlpha*(on ? .95 : .36),on?'best s':null);
+      drawLine(step.z,cand,on?C.gold:C.violet,rAlpha*(on ? .38 : .16),on?1.6:1,[4,5]);
+    }
+    drawArrow(step.z,step.zRenorm,C.gold,rAlpha*.72,1.9,'R');
+  }
+
+  const probeAlpha=smooth(clamp((p-.30)/.22,0,1));
+  if(probeAlpha>0){
+    const b=V.lerp(step.zRenorm,step.endpoint,probeAlpha);
+    drawLine(step.zRenorm,b,step.collapsed?C.green:C.gold,.65*probeAlpha,1.5,[6,5]);
+    drawSphere(b,.045,step.collapsed?C.green:C.gold,.9*probeAlpha,'b');
+    drawQBadge(V.lerp(step.zRenorm,b,.52),probeAlpha,step.collapsed);
+    if(!step.collapsed){
+      for(let j=1;j<step.probeTry;j++){
+        const off=V.add(step.zRenorm,[.26*Math.sin(j+idx),.18*Math.cos(j*2),.12*j]);
+        drawSphere(off,.024,C.gold,.28*probeAlpha);
+      }
+    }
+  }
+
+  const dAlpha=smooth(clamp((p-.46)/.22,0,1));
+  if(dAlpha>0){
+    drawArrow(step.zRenorm,V.add(step.zRenorm,V.mul(step.delta,dAlpha)),C.pink,.88*dAlpha,2.4,'δ');
+  }
+
+  const lAlpha=smooth(clamp((p-.62)/.22,0,1));
+  if(lAlpha>0){
+    const limit=step.collapsed?3:step.line.length;
+    for(let i=0;i<limit;i++){
+      const q=step.line[i], a=lAlpha*(.18+.62*(1-i/Math.max(1,limit)));
+      drawSphere(q,.024+.007*(limit-i)/limit,C.violet,a);
+      if(i>0) drawLine(step.line[i-1],q,C.violet,a*.36,1);
+    }
+    drawSoftPolyline(step.line.slice(0,limit),C.violet,.23*lAlpha,1.1);
+    drawSphere(step.next,.052,step.collapsed?C.green:C.gold,lAlpha,'best λ');
+  }
+
+  const detAlpha=smooth(clamp((p-.76)/.18,0,1));
+  if(detAlpha>0) drawLocalDetector(step,detAlpha);
+  if(step.willCollapse){
+    const ca=smooth(clamp((p-.86)/.14,0,1));
+    drawRing(step.next,.40+.07*Math.sin(time*5),'z',C.green,.55*ca,2);
+    drawRing(step.next,.26,'x',C.green,.35*ca,1.4);
+    drawLabel(V.add(step.next,[.25,.35,.18]),'collapse: R = Id',C.green,ca);
+  }
+  if(step.collapsed){
+    drawRing(step.z,.22+.035*Math.sin(time*5),'z',C.green,.48,1.7);
+    drawLabel(V.add(step.z,[.28,.20,.12]),'self-local cell',C.green,.72);
+  }
+  for(let k=0;k<5;k++){
+    const angle=time*.85+k*Math.PI*2/5; const rp=.34+.035*Math.sin(time*2+k);
+    drawSphere([root[0]+rp*Math.cos(angle),root[1]+rp*Math.sin(angle)*.42,root[2]+rp*Math.sin(angle)*.58],.017,C.red,.32);
+  }
+
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
