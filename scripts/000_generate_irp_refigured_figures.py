@@ -111,7 +111,7 @@ def irp2_model_errors(y: float, p: int, n: int = 5) -> tuple[np.ndarray, np.ndar
     xs = []
     errs = []
     for k in range(n + 1):
-        xs.append(float(2 * k))
+        xs.append(float(k))
         errs.append(max(1e-18, np.expm1(e)))
         e = coeff * e**4
     return np.asarray(xs), np.asarray(errs)
