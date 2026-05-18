@@ -181,6 +181,13 @@ and $2$:
 \]
 The solution is $m_1=\cbrt{2}$ and $m_2=\cbrt{4}$.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.62\linewidth]{../figures/fig1_pandrosion_construction.png}
+  \caption{Proportional-means construction, with lengths not drawn to scale.  The dashed parallels encode the Thales-type step, and the shaded triangles indicate the repeated similarity condition $1:m_1=m_1:m_2=m_2:x$.}
+  \label{fig:pandrosion-construction}
+\end{figure}
+
 \begin{remark}[Historical caution]
 The name ``Pandrosion'' is used here as historical motivation for a family of
 proportional-mean constructions.  The surviving evidence is indirect and passes
@@ -188,14 +195,6 @@ through later sources such as Pappus~\cite{pappus,mactutor_pandrosion}.  None of
 rests on the historical attribution; they rest only on the explicit map
 \eqref{eq:cube-s} and its generalization.
 \end{remark}
-
-
-\begin{figure}[tbp]
-  \centering
-  \includegraphics[width=0.86\linewidth]{figures/fig1_pandrosion_construction.png}
-  \caption{Proportional-means construction, with lengths not drawn to scale.  The dashed parallels encode the Thales-type step, and the shaded triangles indicate the repeated similarity condition $1:m_1=m_1:m_2=m_2:x$.}
-  \label{fig:pandrosion-construction}
-\end{figure}
 
 Pandrosion's geometric procedure does not produce the exact value in finitely
 many steps.  It produces a sequence of approximations.  This is the key modern
@@ -500,7 +499,7 @@ formed.
 
 \begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.86\linewidth]{figures/fig2_lambda_profile.png}
+  \includegraphics[width=0.86\linewidth]{../figures/fig2_lambda_profile.png}
   \caption{The residual fingerprint $\lambda_{p,y}$ as a function of the normalized logarithmic distance $\log y$.  The curves are monotone on the admissible branch $y\ge1$, and their initial slope is $(p-1)/(2p)$.}
   \label{fig:lambda-profile}
 \end{figure}
@@ -746,7 +745,7 @@ small in the usual affine chart becomes the large target $1/x$ in the reciprocal
 chart.
 \begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.78\linewidth]{figures/fig6_riemann_inversion.png}
+  \includegraphics[width=0.78\linewidth]{../figures/fig6_riemann_inversion.png}
   \caption{Direct and reciprocal logarithmic charts.  The affine chart uses $\log y_+(B)=\log x-p\log B$, while the reciprocal chart uses $\log y_\infty(B)=-\log x-p\log B$.  Chart selection chooses the line whose normalized logarithmic target lies closest to $0$.}
   \label{fig:riemann-inversion}
 \end{figure}
@@ -1189,7 +1188,7 @@ $1.25$ & $5$ & $0.390766$ & $0.209870$ & $0.108350$ & $0.054994$ \\
 
 \begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.92\linewidth]{figures/fig3_scale_lattice.png}
+  \includegraphics[width=0.92\linewidth]{../figures/fig3_scale_lattice.png}
   \caption{The scale-lattice theorem in one picture.  For a logarithmic period $h=p\log q$, equally spaced $K$-phase palettes have covering radius $h/(2K)$, and no $K$-point palette can do better.}
   \label{fig:scale-lattice}
 \end{figure}
@@ -1407,7 +1406,7 @@ $5$ & $5\cdot10^{-6}$ & recip.+scale & $10$ & $2$ & $0.256508225$ & $19$ & $3$ &
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.86\linewidth]{figures/fig4_convergence_comparison.png}
+  \includegraphics[width=0.86\linewidth]{../figures/fig4_convergence_comparison.png}
   \caption{Iteration histories on the normalized problem $u^3=4$.  Raw Pandrosion is linear, IRP-2 collapses the residual by repeated renormalized raw layers, and Newton provides the standard quadratic baseline; the accelerated curves are truncated once they reach the plotted precision floor.}
   \label{fig:convergence-comparison}
 \end{figure}
@@ -1557,7 +1556,7 @@ These are the cyclotomic anchors of the complex Pandrosion map.
 
 \begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.58\linewidth]{figures/fig5_cyclotomic_anchors.png}
+  \includegraphics[width=0.58\linewidth]{../figures/fig5_cyclotomic_anchors.png}
   \caption{Cyclotomic anchors for the complex monomial problem.  The poles are the non-trivial roots of unity; small disks around anchors provide local seeding regions for the accelerated map.}
   \label{fig:cyclotomic-anchors}
 \end{figure}
@@ -1622,7 +1621,7 @@ A target selector chooses which anchor should receive a starting point.  The
 simplest selector is the nearest-anchor rule:
 \begin{figure}[tbp]
   \centering
-  \includegraphics[width=0.58\linewidth]{figures/fig7_anchor_voronoi.png}
+  \includegraphics[width=0.58\linewidth]{../figures/fig7_anchor_voronoi.png}
   \caption{The nearest-anchor selector partitions the complex plane into Voronoi cells.  The selector is simple and locally stable away from the cell boundaries.}
   \label{fig:anchor-voronoi}
 \end{figure}
