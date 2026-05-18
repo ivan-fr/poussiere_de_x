@@ -1,0 +1,266 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{array}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=blue!55!black,
+  urlcolor=blue!55!black
+}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\IRP}{\operatorname{IRP}}
+\newcommand{\Sp}{S_p}
+
+\title{Iterated Renormalized Pandrosion:\\ Higher-Order Convergence by Continuous Geometric Renormalization}
+\author{Ivan Besevic\\Independent Mathematical Research\\\texttt{github.com/ivan-fr/poussiere\_de\_x}}
+\date{Draft research note, May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Pandrosion gives a first-order fixed-point geometry for monomial root extraction.  Its raw map is not competitive with Newton as a production method, but its multiplier has a special feature: after logarithmic chart scaling, the multiplier is proportional to the normalized logarithmic distance from the ideal target.  This note turns that observation into an acceleration mechanism.  \emph{Iterated Renormalized Pandrosion} (IRP) alternates a geometric renormalizer $\cR$ with one raw Pandrosion layer $\cP$, giving a cascade
+\[
+  (\cR\circ\cP)^k.
+\]
+In the ideal monomial model, one renormalized raw layer maps the logarithmic root error to a quadratic error.  Repeating the layer therefore gives dyadic order amplification: one layer has order $2$, two layers have order $4$, three layers have order $8$, and so on.  The mechanism is not Halley, Steffensen, Newton, or Householder cancellation; the higher order comes from repeated geometric re-localization of a first-order fixed-point map.  A self-localizing NumPy prototype, script 310, implements the same principle for polynomial systems with finite telescopic Pandrosion slopes and an adaptive collapse from global IRP capture to cheap local raw flow.  Preliminary benchmark rows against the previous full-cubic Halley engine show the mechanism is viable and often faster, while remaining experimental.
+\end{abstract}
+
+\paragraph{One-sentence summary.}
+IRP seeks higher-order convergence by repeatedly choosing the chart in which raw Pandrosion is local, applying one raw layer, and renormalizing again before the next layer.
+
+\section{Motivation}
+The monomial Pandrosion scheme begins with the finite geometric sum
+\[
+  \Sp(s)=1+s+\cdots+s^{p-1}
+\]
+and the fixed-point map
+\begin{equation}
+  h_{p,x}(s)=1-\frac{x-1}{x\Sp(s)}. \label{eq:h}
+\end{equation}
+For $x>1$, the fixed point is $s_*=x^{-1/p}$ and the desired root is recovered by the readout $x s_*^{p-1}=x^{1/p}$.  The central organizing formula of the monomial paper is the exact multiplier
+\begin{equation}
+  \lambda_{p,x}=1-\frac{p}{\Sp(\alpha)},\qquad \alpha=x^{1/p}. \label{eq:multiplier}
+\end{equation}
+Near the normalized target $x=1$, writing $x=e^\delta$, this gives
+\begin{equation}
+  \lambda_{p,e^\delta}=\frac{p-1}{2p}\delta+O(\delta^2). \label{eq:lambda-local}
+\end{equation}
+Thus raw Pandrosion is linearly convergent in a fixed chart, but its linear multiplier becomes small exactly when the chart-scaled logarithmic target is small.
+
+The earlier chart-scaling principle used this fact as a preconditioner: choose a homothety and, if useful, a reciprocal chart so that $|\log y|$ is small before iteration begins.  IRP pushes the same idea further.  Instead of scaling once and then iterating inside a fixed chart, it scales again after each raw layer.  The map is no longer simply $h\circ h\circ\cdots$ in one chart.  It is a cascade
+\[
+  \cR\circ\cP\circ\cR\circ\cP\circ\cdots,
+\]
+where $\cR$ is a geometric renormalizer and $\cP$ is one raw Pandrosion layer.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.98\textwidth]{irp_cascade_benchmark.pdf}
+\caption{Left: the IRP mechanism.  The solver alternates a geometric renormalizer $\cR$ and a raw Pandrosion layer $\cP$.  The renormalizer chooses a chart and scale so that the raw layer always acts on a local target $y=e^\delta$ with $|\delta|\leq \Delta$.  Right: preliminary NumPy timings for script 310 against the earlier script 304.  The benchmark is illustrative rather than definitive; each row is a single seed-index run on the same container.}
+\label{fig:irp}
+\end{figure}
+
+\section{The ideal monomial IRP model}
+Let $r=x^{1/p}$ be the positive root and let
+\[
+  \ell=\log\frac{z}{r}
+\]
+be the current logarithmic root error.  A direct chart is natural when $z<r$, while the reciprocal chart is natural when $z>r$.  In either case the normalized target is written as
+\[
+  y=e^\delta,
+\]
+with $\delta\geq 0$ and, locally, $\delta=p|\ell|$.
+
+\begin{definition}[One raw normalized Pandrosion layer]
+For a normalized monomial target $y=e^\delta$, define
+\[
+  s_0=1,\qquad s_1=h_{p,y}(s_0),\qquad u_1=y s_1^{p-1}.
+\]
+The value $u_1$ is the one-layer raw Pandrosion readout in the normalized root coordinate.
+\end{definition}
+
+The next proposition shows why renormalization changes the order.  The raw map itself is only first order in a fixed problem.  But once the problem is re-centered so that the target is $e^\delta$ with $\delta$ of the same size as the current error, the effective multiplier is also of error size.
+
+\begin{proposition}[One renormalized layer is quadratic]
+Let $p\geq 2$.  In the ideal monomial model, one chart-renormalized raw Pandrosion layer sends the logarithmic root error $\ell$ to
+\begin{equation}
+  \ell_+=-\operatorname{sgn}(\ell)\,\frac{(p-1)^2}{2}\ell^2+O(|\ell|^3). \label{eq:one-layer}
+\end{equation}
+In particular, $|\ell_+|=O(|\ell|^2)$.
+\end{proposition}
+
+\begin{proof}
+It is enough to consider $z<r$, so that $\ell<0$ and $\delta=-p\ell>0$.  The reciprocal case has the same magnitude and the opposite orientation.  The normalized root is
+\[
+  u_*=e^{\delta/p},\qquad s_*=u_*^{-1}=e^{-\delta/p}.
+\]
+From \eqref{eq:h}, starting at $s_0=1$ gives
+\[
+  s_1=1-\frac{e^\delta-1}{p e^\delta}
+      =1-\frac{\delta}{p}+\frac{\delta^2}{2p}+O(\delta^3).
+\]
+Meanwhile
+\[
+  s_*=e^{-\delta/p}=1-\frac{\delta}{p}+\frac{\delta^2}{2p^2}+O(\delta^3).
+\]
+Therefore
+\[
+  s_1-s_* = \frac{p-1}{2p^2}\delta^2+O(\delta^3).
+\]
+The normalized readout is $u_1=e^\delta s_1^{p-1}$, while the exact normalized root is $u_*=e^{\delta/p}=e^\delta s_*^{p-1}$.  Hence
+\[
+  \log\frac{u_1}{u_*}=(p-1)\log\frac{s_1}{s_*}
+  =\frac{(p-1)^2}{2p^2}\delta^2+O(\delta^3).
+\]
+Since $\delta=-p\ell$, this gives $\ell_+=((p-1)^2/2)\ell^2+O(|\ell|^3)$ in the direct case.  The reciprocal chart flips the sign.  This is \eqref{eq:one-layer}.
+\end{proof}
+
+\begin{theorem}[Dyadic order amplification]
+Let $C_p=(p-1)^2/2$.  Suppose that after each raw layer the problem is renormalized again into the same local logarithmic regime.  Then the $k$-layer ideal IRP cascade satisfies
+\begin{equation}
+  |\ell^{(k)}| = C_p^{2^k-1}|\ell|^{2^k}+O(|\ell|^{2^k+1}). \label{eq:dyadic}
+\end{equation}
+Consequently the ideal orders are
+\[
+  k=1:2,\\qquad k=2:4,\\qquad k=3:8,
+\]
+and, in general, $k$ renormalized raw layers give local order $2^k$.
+\end{theorem}
+
+\begin{proof}
+The previous proposition gives a local map of the form
+\[
+  \ell\mapsto \pm C_p\ell^2+O(|\ell|^3).
+\]
+Because the renormalizer is applied again before the next raw layer, each layer sees a fresh local coordinate with the same quadratic normal form.  Iterating this normal form gives
+\[
+  C_p\bigl(C_p\ell^2\bigr)^2=C_p^3\ell^4
+\]
+for two layers, and induction gives the exponent $1+2+\cdots+2^{k-1}=2^k-1$ on $C_p$ and order $2^k$ in $\ell$.
+\end{proof}
+
+\section{From local amplification to global renormalization}
+The local theorem explains the order mechanism, but it does not by itself give a global method.  The global component is a scale selector.  Fix a root-scale palette
+\[
+  B_{q,K}=\{q^{m+j/K}:m\in\mathbb Z,
+  \ j=0,\ldots,K-1\}.
+\]
+A logarithmic selector chooses a chart and an admissible scale so that the normalized target lies in a small cell
+\begin{equation}
+  1\leq y\leq \exp(\Delta),\qquad \Delta=\frac{p\log q}{2K}. \label{eq:cell}
+\end{equation}
+The monomial chart-scaling theorem from the preceding paper says exactly that such palette rules are sharp in the finite-scale model.  For IRP the selector is not a one-time preconditioner: it is applied dynamically after each raw layer.
+
+\begin{remark}[Why this is not Halley or Steffensen]
+Halley and Householder methods raise order by derivative cancellation in a rational correction formula.  Steffensen raises order by Aitken's $\Delta^2$ extrapolation of a fixed map.  IRP does neither.  The raw Pandrosion layer remains first-order in a fixed chart.  The order increase comes from changing charts so that the linear multiplier is itself proportional to the current error.
+\end{remark}
+
+\section{Self-localizing IRP}
+Pure global IRP can be wasteful: once the orbit is clearly in a local basin, repeatedly scanning charts and phases costs more than it helps.  Script 310 therefore uses a self-localizing variant:
+\[
+  \text{IRP capture}\quad\longrightarrow\quad
+  \text{locality detection}\quad\longrightarrow\quad
+  \text{collapse}\quad\longrightarrow\quad
+  \text{cheap local raw flow}.
+\]
+The collapse test is empirical.  It looks for small residuals, observed contraction, and small relative steps.  Once collapse occurs, the engine freezes the expensive global renormalization layer and continues with a lighter local raw flow.  This is the practical meaning of \emph{self-localizing}: geometric renormalization is used only until the fixed-point geometry becomes local enough to carry itself.
+
+\section{Finite telescopic slopes for polynomial systems}
+The implemented 310 engine is not restricted to the scalar monomial map \eqref{eq:h}.  For a polynomial system
+\[
+  G(z)=0,
+\]
+it uses a finite telescopic divided-difference matrix $Q_G(a,b)$ satisfying
+\begin{equation}
+  G(b)-G(a)=Q_G(a,b)(b-a). \label{eq:telescope}
+\end{equation}
+The raw Pandrosion step solves
+\begin{equation}
+  Q_G(a,b)\Delta=-G(a),\qquad a_+=a+\lambda\Delta, \label{eq:raw-system}
+\end{equation}
+with a small residual-gated line grid.  This is a finite-slope construction, not an analytic Jacobian formula.  The IRP layer chooses homothetic and phase renormalizations to make the finite-slope probe local before the raw solve is formed.  Thus the multivariate engine keeps the same conceptual structure as the monomial theory:
+\[
+  \boxed{\text{renormalize }\cR\quad\rightarrow\quad\text{raw finite-slope Pandrosion }\cP.}
+\]
+
+\section{Preliminary benchmark}
+The table below compares the previous script 304, a full-cubic finite-slope Halley engine, with script 310, the self-localizing IRP engine.  Both engines were run on the same seed-index for each row.  The requested number of roots was $8$, the pool size was $2048$, and all rows found $8$ distinct roots.  The cases use the script notation \texttt{KS(n,d)}.  These numbers are not a final performance claim; they are a sanity check that removing Halley and replacing it with self-localizing IRP can remain competitive.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrrrrr}
+\toprule
+Case & 304 sec. & 310 sec. & speed & 304 evals & 310 evals & 304 slopes & 310 slopes\\
+\midrule
+KS(2,4)  & 0.580 & 0.137 & 4.22 & 12991 & 3946 & 1340 & 382\\
+KS(2,8)  & 0.573 & 0.113 & 5.05 & 13880 & 3259 & 1564 & 335\\
+KS(4,16) & 1.622 & 1.697 & 0.96 & 7295  & 8271 & 966  & 846\\
+KS(4,32) & 26.149 & 10.264 & 2.55 & 6853 & 3238 & 1068 & 361\\
+\bottomrule
+\end{tabular}
+\caption{Preliminary benchmark of script 304 versus script 310.  The speed column is $t_{304}/t_{310}$, so values larger than $1$ favor IRP.  The $KS(4,16)$ row shows that IRP is not uniformly faster in the current prototype, while the $KS(4,32)$ row shows the benefit of self-localizing collapse on a heavier instance.}
+\label{tab:bench}
+\end{table}
+
+The important observation is not that 310 dominates 304.  It does not yet.  The more interesting point is that the IRP mechanism can reproduce the root-finding capability of the full-cubic finite-slope Halley engine while using a different source of higher-order behavior.  In the largest row shown, the self-localizing IRP prototype reduces total time from about $26.1$ seconds to about $10.3$ seconds on the same instance.
+
+\section{Limitations}
+The present note is intentionally narrow.
+\begin{enumerate}[leftmargin=*]
+  \item The dyadic theorem is proved for the ideal scalar monomial model.  The multivariate polynomial engine is inspired by the same normal form but is not yet covered by a global convergence theorem.
+  \item Palette-based globality is a geometric preconditioning statement.  If one allows arbitrary continuous logarithms and exponentials, scalar root extraction can become trivial; the relevant model is a finite or otherwise admissible scale family.
+  \item The benchmark is preliminary and should be read as an implementation sanity check.  Full benchmarking should include multiple seeds, wall-clock repetitions, memory behavior, GPU/SIMD variants, failure modes, and comparisons with standard Newton, secant, Broyden, and certified homotopy methods.
+  \item The constant $C_p=(p-1)^2/2$ grows with degree.  High local order does not automatically mean a large basin.  The renormalizer is essential at high degree.
+\end{enumerate}
+
+\section{Conclusion}
+Iterated Renormalized Pandrosion reframes acceleration as a geometric phenomenon.  A raw Pandrosion map is first-order in a fixed chart, but after chart normalization its multiplier is proportional to the current logarithmic error.  A renormalized raw layer is therefore quadratic in the ideal monomial model.  Repeating the renormalize-then-raw layer gives dyadic order amplification, while self-localizing collapse prevents the practical engine from paying the global renormalization cost after capture.
+
+This makes IRP conceptually distinct from Halley, Steffensen, Newton, and Householder families.  Its central claim is not immediate numerical dominance.  Its claim is that higher-order behavior can emerge from repeated geometric renormalization of a first-order fixed-point geometry.
+
+\begin{thebibliography}{9}
+
+\bibitem{besevic000}
+I. Besevic, \emph{A Monomial Pandrosion Scheme: Contraction, Chart Scaling, and Steffensen Acceleration for $z^p=x$}, manuscript, 2026.
+
+\bibitem{besevic001}
+I. Besevic, \emph{Chart-Scaled Cubic Pandrosion by Finite-Slope Halley Acceleration}, manuscript, 2026.
+
+\bibitem{aitken}
+A. C. Aitken, ``On Bernoulli's numerical solution of algebraic equations,'' \emph{Proceedings of the Royal Society of Edinburgh} 46 (1926), 289--305.
+
+\bibitem{steffensen}
+J. F. Steffensen, ``Remarks on iteration,'' \emph{Skandinavisk Aktuarietidskrift} 16 (1933), 64--72.
+
+\bibitem{traub}
+J. F. Traub, \emph{Iterative Methods for the Solution of Equations}, Prentice-Hall, 1964.
+
+\bibitem{householder}
+A. S. Householder, \emph{The Numerical Treatment of a Single Nonlinear Equation}, McGraw-Hill, 1970.
+
+\end{thebibliography}
+
+\end{document}
