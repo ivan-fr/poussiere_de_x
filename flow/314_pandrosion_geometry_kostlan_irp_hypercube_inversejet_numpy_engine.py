@@ -1,0 +1,3703 @@
+#!/usr/bin/env python3
+"""
+314_pandrosion_geometry_kostlan_irp_hypercube_inversejet_numpy_engine.py
+
+Autonomous NumPy Pandrosion root extractor using the 304 universal atlas, the
+305/306 hypercube tensor inverse-jet corrector, and a 314 projective geometry
+Kostlan backend for large ks(n,d) cases.
+
+This Python engine does not use Halley as the active corrector.  The 312 path
+samples fixed universal atlas cells, applies StartOpt-style geometric
+improvement, then first tries the 306 hypercube inverse-jet corrector in the
+current chart.  A 310-style IRP chart loop is activated only when the direct
+chart stagnates, contracts too weakly, or appears badly conditioned.  Its local
+engine is still the 306 hypercube least-squares inverse-jet corrector:
+
+    J delta1 = -G(a)
+    J delta2 ~= -1/2 H_G(delta1,delta1)
+    J delta3 ~= -1/6 T_G(delta1,delta1,delta1) - H_G(delta1,delta2)
+    delta = delta1 + delta2 + delta3
+
+The local tensor defects are estimated from hypercube finite probes, and line
+search is performed on inverse-jet candidates.  No Halley corrector, anchored-Q
+fallback, analytic Jacobian, analytic Hessian, Newton fallback, Broyden update,
+homotopy path, SciPy, or imports from previous flow scripts are used by the 311
+flow.
+
+No imports from previous Pandrosion scripts.  This file contains its own:
+  - Kostlan/dense polynomial generator for ks(n,d)
+  - lazy random-feature Kostlan stream for huge ks(n,d), e.g. ks(100,100)
+  - projective geometry-kernel Kostlan oracle for huge ks(n,d)
+  - dense F evaluation engine + hypercube finite-probe tensor estimates
+  - single geometric flow: heuristic Riemann/Mobius + unconditional Thales homothety
+  - starting point optimization inspired by s0^opt = h(1)
+  - local 306 hypercube tensor inverse-jet corrector, not a Halley corrector
+  - 312 lazy IRP scalar homothety / coordinatewise reciprocal chart wrapper
+  - root clustering and JSON export
+
+The dense backend is exact for manageable cases.  The lazy backend is a
+standalone NumPy random-feature approximation to the Kostlan covariance kernel:
+it samples multinomial degree-d features deterministically from the case seed
+and evaluates them in stable projective blocks.  This makes the memory footprint
+O(n * lazy_features) instead of O(n * binomial(n+d,d)).
+
+The 314 geometry backend is the intended large-KS mode.  It samples projective
+anchors a_l and evaluates the normalized Kostlan kernel
+
+    K_d(z,a) = ((1 + z . conj(a)) / sqrt((1+||z||^2)(1+||a||^2)))^d
+
+as a finite NumPy oracle.  Multiplicative row normalization is nonzero away from
+the zero kernel row, so it changes residual scale but not the zero set of the
+finite anchor span.  Pandrosion/IRP then uses the same eval/eval_batch interface.
+
+The goal is not to enumerate all Bezout paths.  It extracts useful complex roots
+from high-degree systems using direct geometric starts.
+
+Core flow per trial:
+
+    u
+      -> Riemann/Mobius chart with angle theta and pole p
+      -> unconditional homothety Lambda
+      -> startopt radial/geometric improvement
+      -> y
+      -> z = A y
+      -> 306 hypercube tensor inverse-jet burst in the current chart
+      -> if needed: lazy IRP chart selection by homothety/reciprocal chart
+      -> 306 hypercube tensor inverse-jet burst inside the selected IRP chart
+      -> return to base coordinate, validate F(z), and deduplicate
+
+Dependencies: Python stdlib + NumPy.  There is intentionally no dependency on
+any other .py file.
+"""
+from __future__ import annotations
+
+import argparse
+import cmath
+import dataclasses
+import itertools
+import json
+import math
+import os
+import sys
+import time
+from pathlib import Path
+from typing import Any, Iterable, List, Optional, Sequence, Tuple
+
+def _bootstrap_numpy_path() -> None:
+    """Make NumPy visible even when launched with python -S.
+
+    This remains autonomous: it does not import any previous Pandrosion script; it
+    only exposes normal site-packages directories that python -S hides.
+    """
+    import glob as _glob
+    candidates = []
+    for pat in (
+        "/mnt/data/venv/lib/python*/site-packages",
+        "/usr/local/lib/python*/site-packages",
+        "/usr/lib/python*/dist-packages",
+        "/usr/lib/python*/site-packages",
+    ):
+        candidates.extend(_glob.glob(pat))
+    for path in candidates:
+        if path not in sys.path:
+            sys.path.append(path)
+
+try:
+    import numpy as np
+except Exception as exc:  # pragma: no cover
+    _bootstrap_numpy_path()
+    try:
+        import numpy as np
+    except Exception as exc2:  # pragma: no cover
+        np = None
+        _NUMPY_IMPORT_ERROR = exc2
+    else:
+        _NUMPY_IMPORT_ERROR = None
+else:
+    _NUMPY_IMPORT_ERROR = None
+
+
+# ---------------------------------------------------------------------------
+# Generic helpers
+# ---------------------------------------------------------------------------
+
+def now() -> float:
+    return time.time()
+
+
+def cjson(z: complex) -> list[float]:
+    return [float(complex(z).real), float(complex(z).imag)]
+
+
+def root_to_json(z: Sequence[complex]) -> list[list[float]]:
+    return [cjson(v) for v in z]
+
+
+def parse_case(raw: str) -> tuple[int, int]:
+    s = str(raw).strip().lower().replace("x", ",").replace(":", ",")
+    parts = [p.strip() for p in s.split(",") if p.strip()]
+    if len(parts) != 2:
+        raise ValueError(f"case must be n,d, got {raw!r}")
+    n, d = int(parts[0]), int(parts[1])
+    if n <= 0 or d <= 0:
+        raise ValueError("n,d must be positive")
+    return n, d
+
+
+def parse_float_list(raw: Optional[str], default: Sequence[float], positive: bool = False) -> list[float]:
+    if raw is None or str(raw).strip() == "":
+        return list(default)
+    vals: list[float] = []
+    for part in str(raw).replace(";", ",").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            x = float(part)
+            if math.isfinite(x) and ((not positive) or x > 0):
+                vals.append(x)
+        except Exception:
+            pass
+    return vals or list(default)
+
+
+def splitmix64(x: int) -> int:
+    x = (int(x) + 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
+    x = ((x ^ (x >> 30)) * 0xBF58476D1CE4E5B9) & 0xFFFFFFFFFFFFFFFF
+    x = ((x ^ (x >> 27)) * 0x94D049BB133111EB) & 0xFFFFFFFFFFFFFFFF
+    return (x ^ (x >> 31)) & 0xFFFFFFFFFFFFFFFF
+
+
+def u01(x: int) -> float:
+    return ((splitmix64(x) >> 11) & ((1 << 53) - 1)) / float(1 << 53)
+
+
+def phase(theta: float) -> complex:
+    return complex(math.cos(theta), math.sin(theta))
+
+
+def norm2(v: Sequence[complex]) -> float:
+    return math.sqrt(sum(abs(complex(x)) ** 2 for x in v))
+
+
+def ensure_numpy() -> None:
+    if np is None:
+        raise RuntimeError(
+            "NumPy is required by this autonomous high-degree extractor. "
+            f"Import error: {_NUMPY_IMPORT_ERROR!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Polynomial system generation/evaluation
+# ---------------------------------------------------------------------------
+
+def compositions_leq(d: int, n: int) -> "np.ndarray":
+    """All alpha in N^n with |alpha| <= d, shape (M,n), lexicographic-ish."""
+    ensure_numpy()
+    out: list[tuple[int, ...]] = []
+
+    def rec(pos: int, remaining: int, cur: list[int]) -> None:
+        if pos == n - 1:
+            for k in range(remaining + 1):
+                out.append(tuple(cur + [k]))
+            return
+        for k in range(remaining + 1):
+            cur.append(k)
+            rec(pos + 1, remaining - k, cur)
+            cur.pop()
+
+    rec(0, d, [])
+    return np.asarray(out, dtype=np.int16 if d < 32767 else np.int32)
+
+
+def multinomial_kostlan_weights(exps: "np.ndarray", d: int) -> "np.ndarray":
+    """sqrt(d! / ((d-|a|)! prod a_j!)) for total degree <= d."""
+    ensure_numpy()
+    totals = np.sum(exps, axis=1).astype(np.int64)
+    logfac = np.zeros(d + 1, dtype=np.float64)
+    acc = 0.0
+    for k in range(1, d + 1):
+        acc += math.log(k)
+        logfac[k] = acc
+    logs = logfac[d] - logfac[d - totals]
+    for j in range(exps.shape[1]):
+        logs -= logfac[exps[:, j].astype(np.int64)]
+    return np.exp(0.5 * logs)
+
+
+def stable_seed(n: int, d: int, seed_index: int = 0, salt: int = 0) -> int:
+    return int(splitmix64(0x50414E44524F5349 + 1000003 * n + 9176 * d + 97 * seed_index + salt) & 0x7FFFFFFF)
+
+
+def exact_kostlan_terms(n: int, d: int) -> int:
+    return int(math.comb(int(n) + int(d), int(d)))
+
+
+def auto_lazy_feature_count(n: int, d: int, cap: int) -> int:
+    """Conservative default for the 314 random-feature backend."""
+    base = int(32 * math.sqrt(max(1, (int(n) + 1) * (int(d) + 1))))
+    return int(max(int(n) + 8, min(max(1, int(cap)), max(512, base))))
+
+
+def auto_geometry_anchor_count(n: int, d: int, cap: int) -> int:
+    """Default anchor budget for the 314 projective geometry backend."""
+    base = int(24 * math.sqrt(max(1, (int(n) + 1) * (int(d) + 1))))
+    return int(max(int(n) + 16, min(max(1, int(cap)), max(512, base))))
+
+
+@dataclasses.dataclass
+class DenseKostlanSystem:
+    n: int
+    d: int
+    seed: int
+    exps: Any
+    coeff: Any
+    weights: Any
+    equation_normalize: bool = True
+    eval_count: int = 0
+    slope_count: int = 0
+    seconds_eval: float = 0.0
+    seconds_slope: float = 0.0
+
+    @classmethod
+    def make(cls, n: int, d: int, seed_index: int = 0, equation_normalize: bool = True) -> "DenseKostlanSystem":
+        ensure_numpy()
+        t0 = now()
+        exps = compositions_leq(d, n)
+        weights = multinomial_kostlan_weights(exps, d)
+        seed = stable_seed(n, d, seed_index)
+        rng = np.random.default_rng(seed)
+        # Complex Gaussian Kostlan coefficients, normalized by sqrt(2) so E|a|^2=1 before weights.
+        coeff = (rng.standard_normal((n, exps.shape[0])) + 1j * rng.standard_normal((n, exps.shape[0]))) / math.sqrt(2.0)
+        coeff = coeff * weights[None, :]
+        if equation_normalize:
+            row_norm = np.linalg.norm(coeff, axis=1)
+            row_norm = np.where(row_norm > 0, row_norm, 1.0)
+            coeff = coeff / row_norm[:, None]
+        obj = cls(n=n, d=d, seed=seed, exps=exps, coeff=coeff.astype(np.complex128), weights=weights, equation_normalize=equation_normalize)
+        obj._generation_seconds = now() - t0
+        return obj
+
+    @property
+    def terms_per_poly(self) -> int:
+        return int(self.exps.shape[0])
+
+    @property
+    def total_terms(self) -> int:
+        return int(self.n * self.terms_per_poly)
+
+    @property
+    def bezout(self) -> int:
+        return int(self.d ** self.n)
+
+    @property
+    def generation_seconds(self) -> float:
+        return float(getattr(self, "_generation_seconds", 0.0))
+
+    def _powers(self, z: "np.ndarray") -> list[Any]:
+        # pow_tables[j][k] = z_j^k, k=0..d
+        tables = []
+        for zj in z:
+            p = np.empty(self.d + 1, dtype=np.complex128)
+            p[0] = 1.0 + 0.0j
+            if self.d > 0:
+                p[1] = zj
+                for k in range(2, self.d + 1):
+                    p[k] = p[k-1] * zj
+            tables.append(p)
+        return tables
+
+    def monomials(self, z: Sequence[complex]) -> "np.ndarray":
+        ensure_numpy()
+        zz = np.asarray(z, dtype=np.complex128)
+        pows = self._powers(zz)
+        mon = np.ones(self.terms_per_poly, dtype=np.complex128)
+        for j in range(self.n):
+            mon *= pows[j][self.exps[:, j]]
+        return mon
+
+    def eval(self, z: Sequence[complex]) -> "np.ndarray":
+        ensure_numpy()
+        t0 = now()
+        mon = self.monomials(z)
+        f = self.coeff @ mon
+        self.eval_count += 1
+        self.seconds_eval += now() - t0
+        return f
+
+    def monomials_batch(self, Z: "np.ndarray") -> "np.ndarray":
+        """Batched monomial table for row-vector points.
+
+        Z has shape (B,n).  The return has shape (B,M), where M is the number
+        of monomials.  This is used only to score geometric probes and
+        line-search candidates; it does not change the finite-slope corrector.
+        """
+        ensure_numpy()
+        ZZ = np.asarray(Z, dtype=np.complex128)
+        if ZZ.ndim == 1:
+            return self.monomials(ZZ)[None, :]
+        B = int(ZZ.shape[0])
+        M = self.terms_per_poly
+        mon = np.ones((B, M), dtype=np.complex128)
+        for j in range(self.n):
+            p = np.empty((B, self.d + 1), dtype=np.complex128)
+            p[:, 0] = 1.0 + 0.0j
+            if self.d > 0:
+                p[:, 1] = ZZ[:, j]
+                for k in range(2, self.d + 1):
+                    p[:, k] = p[:, k - 1] * ZZ[:, j]
+            mon *= p[:, self.exps[:, j]]
+        return mon
+
+    def eval_batch(self, Z: "np.ndarray") -> "np.ndarray":
+        """Evaluate many points in one BLAS-backed block."""
+        ensure_numpy()
+        t0 = now()
+        ZZ = np.asarray(Z, dtype=np.complex128)
+        if ZZ.ndim == 1:
+            return self.eval(ZZ)[None, :]
+        mon = self.monomials_batch(ZZ)
+        F = mon @ self.coeff.T
+        self.eval_count += int(ZZ.shape[0])
+        self.seconds_eval += now() - t0
+        return F
+
+    def _slope_power_table(self, aj: complex, bj: complex, pows_a_j: "np.ndarray", pows_b_j: "np.ndarray") -> "np.ndarray":
+        """Vectorized pure Pandrosion power-slope table.
+
+        slope[m] = sum_{r=0}^{m-1} bj^(m-1-r) aj^r, with slope[0]=0.
+
+        This is the exact finite Thales/Pandrosion factor for z^m between
+        aj and bj.  It uses the O(d) polynomial recurrence
+
+            S_0 = 0,   S_m = bj^(m-1) + aj*S_(m-1)
+
+        so it is not a derivative, not a divided-difference shortcut, and not
+        a fallback algorithm.
+        """
+        slope = np.empty(self.d + 1, dtype=np.complex128)
+        slope[0] = 0.0 + 0.0j
+        acc = 0.0 + 0.0j
+        ajc = complex(aj)
+        for m in range(1, self.d + 1):
+            acc = pows_b_j[m - 1] + ajc * acc
+            slope[m] = acc
+        return slope
+
+    def slope_matrix(self, a: Sequence[complex], b: Sequence[complex]) -> "np.ndarray":
+        """Vectorized exact derivative-free Pandrosion slope matrix Q(a,b).
+
+        For every polynomial row F_i and two points a,b, this constructs Q so
+        that
+
+            F(b) - F(a) = Q(a,b) @ (b-a)
+
+        using the telescopic monomial identity.  No Jacobian is formed and no
+        derivative formula is called.
+
+        Vectorization in 120:
+          * index all monomial factors a_k^alpha_k and b_k^alpha_k once;
+          * build prefix_b[j] = prod_{k<j} b_k^alpha_k as whole vectors;
+          * build suffix_a[j] = prod_{k>=j} a_k^alpha_k as whole vectors;
+          * build the coordinate slope table S_j[m] by the pure finite-sum
+            recurrence, then index it as S_j[alpha_j];
+          * compute every Q column as one BLAS-backed coeff @ term product.
+
+        This preserves 115's pure Pandrosion formula while removing the slow
+        Python loops over exponent masks and finite sums.  It is generic in n;
+        there is no bivariate specialization.
+        """
+        ensure_numpy()
+        t0 = now()
+        aa = np.asarray(a, dtype=np.complex128)
+        bb = np.asarray(b, dtype=np.complex128)
+        pows_a = self._powers(aa)
+        pows_b = self._powers(bb)
+        M = self.terms_per_poly
+        n = self.n
+
+        pa_cols = [pows_a[j][self.exps[:, j]] for j in range(n)]
+        pb_cols = [pows_b[j][self.exps[:, j]] for j in range(n)]
+
+        prefix_b = [None] * (n + 1)
+        suffix_a = [None] * (n + 1)
+        prefix_b[0] = np.ones(M, dtype=np.complex128)
+        for j in range(n):
+            prefix_b[j + 1] = prefix_b[j] * pb_cols[j]
+        suffix_a[n] = np.ones(M, dtype=np.complex128)
+        for j in range(n - 1, -1, -1):
+            suffix_a[j] = suffix_a[j + 1] * pa_cols[j]
+
+        # Materialize all Q-column monomial factors as one (M,n) block, then
+        # use a single BLAS GEMM: Q = coeff @ terms.  This is faster than n
+        # separate matrix-vector products and remains fully general in n.
+        terms = np.empty((M, n), dtype=np.complex128)
+        for j in range(n):
+            slope_table = self._slope_power_table(aa[j], bb[j], pows_a[j], pows_b[j])
+            terms[:, j] = prefix_b[j] * suffix_a[j + 1] * slope_table[self.exps[:, j]]
+        Q = self.coeff @ terms
+
+        self.slope_count = int(getattr(self, "slope_count", 0)) + 1
+        self.seconds_slope = float(getattr(self, "seconds_slope", 0.0)) + (now() - t0)
+        return Q
+
+    def stats(self) -> dict[str, Any]:
+        return {
+            "eval_count": int(self.eval_count),
+            "slope_count": int(getattr(self, "slope_count", 0)),
+            "seconds_eval": float(self.seconds_eval),
+            "seconds_slope": float(getattr(self, "seconds_slope", 0.0)),
+            "terms_per_poly": self.terms_per_poly,
+            "total_terms": self.total_terms,
+        }
+
+
+@dataclasses.dataclass
+class LazyFeatureKostlanSystem:
+    """314 large-case Kostlan evaluator.
+
+    The dense ks(n,d) polynomial has binomial(n+d,d) monomials.  For cases such
+    as ks(100,100), exact materialization is not a computational object on a
+    workstation.  This class keeps the same root-extractor interface but uses a
+    deterministic NumPy random-feature approximation to the Kostlan covariance
+    kernel.  Features are sampled from an importance distribution over total
+    degree, then evaluated in stable pointwise-normalized blocks.
+    """
+
+    n: int
+    d: int
+    seed: int
+    feature_exps: Any
+    feature_exps_t: Any
+    feature_log_scales: Any
+    coeff: Any
+    lazy_features: int
+    projective_normalize: bool = True
+    dynamic_normalize: bool = True
+    equation_normalize: bool = True
+    eval_block: int = 128
+    eval_count: int = 0
+    slope_count: int = 0
+    seconds_eval: float = 0.0
+    seconds_slope: float = 0.0
+
+    @classmethod
+    def make(
+        cls,
+        n: int,
+        d: int,
+        seed_index: int = 0,
+        equation_normalize: bool = True,
+        lazy_features: int = 0,
+        lazy_feature_cap: int = 8192,
+        projective_normalize: bool = True,
+        dynamic_normalize: bool = True,
+        eval_block: int = 128,
+    ) -> "LazyFeatureKostlanSystem":
+        ensure_numpy()
+        t0 = now()
+        n = int(n)
+        d = int(d)
+        m = int(lazy_features) if int(lazy_features) > 0 else auto_lazy_feature_count(n, d, int(lazy_feature_cap))
+        m = max(n + 1, int(m))
+        seed = stable_seed(n, d, seed_index, salt=0x314314)
+        rng = np.random.default_rng(seed)
+        dtype = np.int16 if d < 32767 else np.int32
+        exps = np.zeros((m, n), dtype=dtype)
+        degrees = np.zeros(m, dtype=np.int64)
+
+        # Anchor the constant and linear coordinates so the feature system does
+        # not acquire an artificial root at zero when the random stream happens
+        # to miss low-degree terms.
+        idx = 0
+        degrees[idx] = 0
+        idx += 1
+        for j in range(n):
+            if idx >= m:
+                break
+            exps[idx, j] = 1 if d >= 1 else 0
+            degrees[idx] = 1 if d >= 1 else 0
+            idx += 1
+
+        probs = np.full(n, 1.0 / max(1, n), dtype=float)
+        while idx < m:
+            # Stratify total degrees but keep the coordinate composition random.
+            q = (idx - (n + 1) + 0.5) / max(1, m - (n + 1))
+            k = int(min(d, max(0, math.floor(q * (d + 1)))))
+            if d > 0 and (idx % 7 == 0):
+                k = int(rng.integers(0, d + 1))
+            if k > 0 and n > 0:
+                exps[idx, :] = rng.multinomial(k, probs).astype(dtype)
+            degrees[idx] = int(k)
+            idx += 1
+
+        log_m = math.log(max(1, m))
+        log_deg = math.log(max(1, d + 1))
+        log_n = math.log(max(1, n))
+        log_scales = np.empty(m, dtype=np.float64)
+        for i, k_raw in enumerate(degrees):
+            k = int(k_raw)
+            log_comb = math.lgamma(d + 1) - math.lgamma(k + 1) - math.lgamma(d - k + 1)
+            log_scales[i] = 0.5 * (log_comb + log_deg + k * log_n - log_m)
+
+        coeff = (rng.standard_normal((n, m)) + 1j * rng.standard_normal((n, m))) / math.sqrt(2.0)
+        if equation_normalize:
+            row_norm = np.linalg.norm(coeff, axis=1)
+            row_norm = np.where(row_norm > 0, row_norm, 1.0)
+            coeff = coeff / row_norm[:, None] * math.sqrt(float(m))
+
+        obj = cls(
+            n=n,
+            d=d,
+            seed=seed,
+            feature_exps=exps,
+            feature_exps_t=exps.astype(np.float64).T,
+            feature_log_scales=log_scales,
+            coeff=coeff.astype(np.complex128),
+            lazy_features=m,
+            projective_normalize=bool(projective_normalize),
+            dynamic_normalize=bool(dynamic_normalize),
+            equation_normalize=bool(equation_normalize),
+            eval_block=max(1, int(eval_block)),
+        )
+        obj._generation_seconds = now() - t0
+        return obj
+
+    @property
+    def terms_per_poly(self) -> int:
+        return exact_kostlan_terms(self.n, self.d)
+
+    @property
+    def total_terms(self) -> int:
+        return int(self.n * self.terms_per_poly)
+
+    @property
+    def bezout(self) -> int:
+        return int(self.d ** self.n)
+
+    @property
+    def generation_seconds(self) -> float:
+        return float(getattr(self, "_generation_seconds", 0.0))
+
+    def _eval_block(self, ZZ: "np.ndarray") -> "np.ndarray":
+        ZZ = np.asarray(ZZ, dtype=np.complex128)
+        if ZZ.ndim == 1:
+            ZZ = ZZ[None, :]
+        abs_z = np.abs(ZZ)
+        log_abs = np.log(np.maximum(abs_z, 1e-300))
+        arg_z = np.angle(ZZ)
+        log_amp = log_abs @ self.feature_exps_t
+        phase_arg = arg_z @ self.feature_exps_t
+        log_amp = log_amp + self.feature_log_scales[None, :]
+        if bool(self.projective_normalize):
+            norm2 = np.sum(abs_z * abs_z, axis=1)
+            log_amp = log_amp - (0.5 * float(self.d) * np.log1p(norm2))[:, None]
+        if bool(self.dynamic_normalize):
+            finite_log = np.where(np.isfinite(log_amp), log_amp, -np.inf)
+            shift = np.max(finite_log, axis=1)
+            shift = np.where(np.isfinite(shift), shift, 0.0)
+            log_amp = log_amp - shift[:, None]
+            log_amp = np.clip(log_amp, -745.0, 0.0)
+        else:
+            log_amp = np.clip(log_amp, -745.0, 700.0)
+        Phi = np.exp(log_amp) * np.exp(1j * phase_arg)
+        F = Phi @ self.coeff.T
+        F[~np.isfinite(F)] = complex(1e300, 0.0)
+        return F
+
+    def eval(self, z: Sequence[complex]) -> "np.ndarray":
+        ensure_numpy()
+        t0 = now()
+        out = self._eval_block(np.asarray(z, dtype=np.complex128))[0]
+        self.eval_count += 1
+        self.seconds_eval += now() - t0
+        return out
+
+    def eval_batch(self, Z: "np.ndarray") -> "np.ndarray":
+        ensure_numpy()
+        t0 = now()
+        ZZ = np.asarray(Z, dtype=np.complex128)
+        if ZZ.ndim == 1:
+            return self.eval(ZZ)[None, :]
+        chunks = []
+        block = max(1, int(self.eval_block))
+        for start in range(0, int(ZZ.shape[0]), block):
+            chunks.append(self._eval_block(ZZ[start:start + block]))
+        out = np.vstack(chunks) if chunks else np.empty((0, self.n), dtype=np.complex128)
+        self.eval_count += int(ZZ.shape[0])
+        self.seconds_eval += now() - t0
+        return out
+
+    def slope_matrix(self, a: Sequence[complex], b: Sequence[complex]) -> "np.ndarray":
+        """Derivative-free coordinate telescope for optional condition scoring."""
+        ensure_numpy()
+        t0 = now()
+        aa = np.asarray(a, dtype=np.complex128)
+        bb = np.asarray(b, dtype=np.complex128)
+        cur = aa.copy()
+        f_prev = self.eval(cur)
+        Q = np.zeros((self.n, self.n), dtype=np.complex128)
+        for j in range(self.n):
+            old = cur[j]
+            cur[j] = bb[j]
+            f_next = self.eval(cur)
+            dz = bb[j] - old
+            if abs(dz) > 1e-300:
+                Q[:, j] = (f_next - f_prev) / dz
+            else:
+                h = 1e-6 * max(1.0, abs(old))
+                plus = cur.copy()
+                minus = cur.copy()
+                plus[j] = old + h
+                minus[j] = old - h
+                Q[:, j] = (self.eval(plus) - self.eval(minus)) / (2.0 * h)
+            f_prev = f_next
+        self.slope_count += 1
+        self.seconds_slope += now() - t0
+        return Q
+
+    def stats(self) -> dict[str, Any]:
+        return {
+            "eval_count": int(self.eval_count),
+            "slope_count": int(self.slope_count),
+            "seconds_eval": float(self.seconds_eval),
+            "seconds_slope": float(self.seconds_slope),
+            "terms_per_poly": self.terms_per_poly,
+            "total_terms": self.total_terms,
+            "lazy_features": int(self.lazy_features),
+            "projective_normalize": bool(self.projective_normalize),
+            "dynamic_normalize": bool(self.dynamic_normalize),
+        }
+
+
+@dataclasses.dataclass
+class GeometryKernelKostlanSystem:
+    """314 projective geometry oracle for large Kostlan systems.
+
+    This backend represents the supplied KS(n,d) by a finite deterministic
+    projective-anchor span of the normalized Kostlan kernel.  It avoids dense
+    monomial enumeration while keeping the geometry seen by Pandrosion/IRP tied
+    to the Kostlan covariance rather than to a sampled exponent table.
+    """
+
+    n: int
+    d: int
+    seed: int
+    anchors: Any
+    anchor_conj_t: Any
+    anchor_den: Any
+    coeff: Any
+    geometry_anchors: int
+    anchor_scales: list[float]
+    dynamic_normalize: bool = True
+    self_normalize: bool = True
+    equation_normalize: bool = True
+    eval_block: int = 128
+    eval_count: int = 0
+    slope_count: int = 0
+    seconds_eval: float = 0.0
+    seconds_slope: float = 0.0
+
+    @classmethod
+    def make(
+        cls,
+        n: int,
+        d: int,
+        seed_index: int = 0,
+        equation_normalize: bool = True,
+        geometry_anchors: int = 0,
+        geometry_anchor_cap: int = 4096,
+        geometry_anchor_scales: Optional[Sequence[float]] = None,
+        dynamic_normalize: bool = True,
+        self_normalize: bool = True,
+        eval_block: int = 128,
+    ) -> "GeometryKernelKostlanSystem":
+        ensure_numpy()
+        t0 = now()
+        n = int(n)
+        d = int(d)
+        m = int(geometry_anchors) if int(geometry_anchors) > 0 else auto_geometry_anchor_count(n, d, int(geometry_anchor_cap))
+        m = max(n + 2, int(m))
+        seed = stable_seed(n, d, seed_index, salt=0x314C0DE)
+        rng = np.random.default_rng(seed)
+        scales = [float(x) for x in (geometry_anchor_scales or []) if math.isfinite(float(x)) and float(x) > 0]
+        if not scales:
+            scales = [0.25, 0.5, 1.0, 2.0, 4.0]
+
+        anchors = np.zeros((m, n), dtype=np.complex128)
+        idx = 1  # anchor 0 is the affine origin and supplies the constant geometry.
+        axis_scale = scales[min(2, len(scales) - 1)]
+        for j in range(n):
+            if idx >= m:
+                break
+            anchors[idx, j] = complex(axis_scale)
+            idx += 1
+
+        sqrt_n = math.sqrt(max(1, n))
+        while idx < m:
+            shell = scales[(idx - 1 - n) % len(scales)]
+            v = rng.standard_normal(n) + 1j * rng.standard_normal(n)
+            nm = float(np.linalg.norm(v))
+            if nm <= 1e-300:
+                v[0] = 1.0 + 0.0j
+                nm = 1.0
+            anchors[idx, :] = np.asarray(v / nm * (shell * sqrt_n), dtype=np.complex128)
+            idx += 1
+
+        coeff = (rng.standard_normal((n, m)) + 1j * rng.standard_normal((n, m))) / math.sqrt(2.0 * max(1, m))
+        if equation_normalize:
+            row_norm = np.linalg.norm(coeff, axis=1)
+            row_norm = np.where(row_norm > 0, row_norm, 1.0)
+            coeff = coeff / row_norm[:, None]
+
+        anchor_norm2 = np.sum(np.abs(anchors) ** 2, axis=1)
+        obj = cls(
+            n=n,
+            d=d,
+            seed=seed,
+            anchors=anchors,
+            anchor_conj_t=np.conjugate(anchors).T,
+            anchor_den=np.sqrt(1.0 + anchor_norm2),
+            coeff=coeff.astype(np.complex128),
+            geometry_anchors=m,
+            anchor_scales=[float(x) for x in scales],
+            dynamic_normalize=bool(dynamic_normalize),
+            self_normalize=bool(self_normalize),
+            equation_normalize=bool(equation_normalize),
+            eval_block=max(1, int(eval_block)),
+        )
+        obj._generation_seconds = now() - t0
+        return obj
+
+    @property
+    def terms_per_poly(self) -> int:
+        return exact_kostlan_terms(self.n, self.d)
+
+    @property
+    def total_terms(self) -> int:
+        return int(self.n * self.terms_per_poly)
+
+    @property
+    def bezout(self) -> int:
+        return int(self.d ** self.n)
+
+    @property
+    def generation_seconds(self) -> float:
+        return float(getattr(self, "_generation_seconds", 0.0))
+
+    def _kernel_block(self, ZZ: "np.ndarray") -> "np.ndarray":
+        ZZ = np.asarray(ZZ, dtype=np.complex128)
+        if ZZ.ndim == 1:
+            ZZ = ZZ[None, :]
+        dot = ZZ @ self.anchor_conj_t
+        zn = np.sqrt(1.0 + np.sum(np.abs(ZZ) ** 2, axis=1))
+        base = (1.0 + dot) / np.maximum(1e-300, zn[:, None] * self.anchor_den[None, :])
+        mag = np.abs(base)
+        # Cauchy gives |base| <= 1 in exact arithmetic.  This clamp removes only
+        # floating-point overshoot and keeps the projective phase.
+        over = mag > 1.0
+        if np.any(over):
+            base = np.where(over, base / np.maximum(mag, 1e-300), base)
+            mag = np.minimum(mag, 1.0)
+        log_amp = float(self.d) * np.log(np.maximum(mag, 1e-300))
+        phase_arg = float(self.d) * np.angle(base)
+        if bool(self.dynamic_normalize):
+            finite_log = np.where(np.isfinite(log_amp), log_amp, -np.inf)
+            shift = np.max(finite_log, axis=1)
+            shift = np.where(np.isfinite(shift), shift, 0.0)
+            log_amp = log_amp - shift[:, None]
+        log_amp = np.clip(log_amp, -745.0, 0.0)
+        K = np.exp(log_amp) * np.exp(1j * phase_arg)
+        if bool(self.self_normalize):
+            row = np.sqrt(np.mean(np.abs(K) ** 2, axis=1))
+            K = K / np.maximum(row[:, None], 1e-300)
+        return K
+
+    def eval(self, z: Sequence[complex]) -> "np.ndarray":
+        ensure_numpy()
+        t0 = now()
+        K = self._kernel_block(np.asarray(z, dtype=np.complex128))
+        out = (K @ self.coeff.T)[0]
+        out[~np.isfinite(out)] = complex(1e300, 0.0)
+        self.eval_count += 1
+        self.seconds_eval += now() - t0
+        return out
+
+    def eval_batch(self, Z: "np.ndarray") -> "np.ndarray":
+        ensure_numpy()
+        t0 = now()
+        ZZ = np.asarray(Z, dtype=np.complex128)
+        if ZZ.ndim == 1:
+            return self.eval(ZZ)[None, :]
+        chunks = []
+        block = max(1, int(self.eval_block))
+        for start in range(0, int(ZZ.shape[0]), block):
+            K = self._kernel_block(ZZ[start:start + block])
+            F = K @ self.coeff.T
+            F[~np.isfinite(F)] = complex(1e300, 0.0)
+            chunks.append(F)
+        out = np.vstack(chunks) if chunks else np.empty((0, self.n), dtype=np.complex128)
+        self.eval_count += int(ZZ.shape[0])
+        self.seconds_eval += now() - t0
+        return out
+
+    def slope_matrix(self, a: Sequence[complex], b: Sequence[complex]) -> "np.ndarray":
+        """Derivative-free coordinate telescope for optional condition scoring."""
+        ensure_numpy()
+        t0 = now()
+        aa = np.asarray(a, dtype=np.complex128)
+        bb = np.asarray(b, dtype=np.complex128)
+        cur = aa.copy()
+        f_prev = self.eval(cur)
+        Q = np.zeros((self.n, self.n), dtype=np.complex128)
+        for j in range(self.n):
+            old = cur[j]
+            cur[j] = bb[j]
+            f_next = self.eval(cur)
+            dz = bb[j] - old
+            if abs(dz) > 1e-300:
+                Q[:, j] = (f_next - f_prev) / dz
+            else:
+                h = 1e-6 * max(1.0, abs(old))
+                plus = cur.copy()
+                minus = cur.copy()
+                plus[j] = old + h
+                minus[j] = old - h
+                Q[:, j] = (self.eval(plus) - self.eval(minus)) / (2.0 * h)
+            f_prev = f_next
+        self.slope_count += 1
+        self.seconds_slope += now() - t0
+        return Q
+
+    def stats(self) -> dict[str, Any]:
+        return {
+            "eval_count": int(self.eval_count),
+            "slope_count": int(self.slope_count),
+            "seconds_eval": float(self.seconds_eval),
+            "seconds_slope": float(self.seconds_slope),
+            "terms_per_poly": self.terms_per_poly,
+            "total_terms": self.total_terms,
+            "geometry_anchors": int(self.geometry_anchors),
+            "geometry_anchor_scales": [float(x) for x in self.anchor_scales],
+            "geometry_dynamic_normalize": bool(self.dynamic_normalize),
+            "geometry_self_normalize": bool(self.self_normalize),
+        }
+
+
+def make_kostlan_system(args: argparse.Namespace, n: int, d: int) -> Any:
+    mode = str(getattr(args, "system_mode", "auto")).strip().lower().replace("_", "-")
+    dense_terms = exact_kostlan_terms(n, d)
+    dense_max = int(getattr(args, "dense_max_terms", 250000))
+    if mode == "dense" or (mode == "auto" and dense_terms <= dense_max):
+        return DenseKostlanSystem.make(n, d, seed_index=int(args.seed_index), equation_normalize=bool(args.equation_normalize))
+    if mode in {"auto", "geometry", "geometry-kernel", "kernel", "projective-kernel"}:
+        return GeometryKernelKostlanSystem.make(
+            n,
+            d,
+            seed_index=int(args.seed_index),
+            equation_normalize=bool(args.equation_normalize),
+            geometry_anchors=int(getattr(args, "geometry_anchors", 0)),
+            geometry_anchor_cap=int(getattr(args, "geometry_anchor_cap", 4096)),
+            geometry_anchor_scales=parse_float_list(getattr(args, "geometry_anchor_scales", None), [0.25, 0.5, 1.0, 2.0, 4.0], positive=True),
+            dynamic_normalize=bool(getattr(args, "geometry_dynamic_normalize", True)),
+            self_normalize=bool(getattr(args, "geometry_self_normalize", True)),
+            eval_block=int(getattr(args, "geometry_eval_block", 128)),
+        )
+    if mode not in {"lazy", "lazy-feature", "feature", "stream"}:
+        raise ValueError(f"unknown system mode {mode!r}; use auto, dense, lazy-feature, or geometry-kernel")
+    return LazyFeatureKostlanSystem.make(
+        n,
+        d,
+        seed_index=int(args.seed_index),
+        equation_normalize=bool(args.equation_normalize),
+        lazy_features=int(getattr(args, "lazy_features", 0)),
+        lazy_feature_cap=int(getattr(args, "lazy_feature_cap", 8192)),
+        projective_normalize=bool(getattr(args, "lazy_projective_normalize", True)),
+        dynamic_normalize=bool(getattr(args, "lazy_dynamic_normalize", True)),
+        eval_block=int(getattr(args, "lazy_eval_block", 128)),
+    )
+
+
+@dataclasses.dataclass
+class LinearChart:
+    A: Any
+    Ainv: Any
+
+    @classmethod
+    def identity(cls, n: int, scale: float = 1.0) -> "LinearChart":
+        ensure_numpy()
+        A = np.eye(n, dtype=np.complex128) * complex(scale)
+        Ainv = np.eye(n, dtype=np.complex128) / complex(scale)
+        return cls(A=A, Ainv=Ainv)
+
+    def z_from_y(self, y: Sequence[complex]) -> "np.ndarray":
+        return self.A @ np.asarray(y, dtype=np.complex128)
+
+    def y_from_z(self, z: Sequence[complex]) -> "np.ndarray":
+        return self.Ainv @ np.asarray(z, dtype=np.complex128)
+
+
+@dataclasses.dataclass
+class TargetTrack:
+    system: Any
+    chart: LinearChart
+
+    def eval(self, y: Sequence[complex]) -> "np.ndarray":
+        z = self.chart.z_from_y(y)
+        return self.system.eval(z)
+
+    def eval_batch(self, Y: "np.ndarray") -> "np.ndarray":
+        YY = np.asarray(Y, dtype=np.complex128)
+        if YY.ndim == 1:
+            return self.eval(YY)[None, :]
+        # z = A @ y for column-vector y; for row batches this is Y @ A.T.
+        Z = YY @ np.asarray(self.chart.A, dtype=np.complex128).T
+        return self.system.eval_batch(Z)
+
+    def slope_matrix(self, a_y: Sequence[complex], b_y: Sequence[complex]) -> "np.ndarray":
+        a_z = self.chart.z_from_y(a_y)
+        b_z = self.chart.z_from_y(b_y)
+        return self.system.slope_matrix(a_z, b_z) @ self.chart.A
+
+    def residual(self, y: Sequence[complex]) -> float:
+        try:
+            return float(np.linalg.norm(self.eval(y)))
+        except Exception:
+            return float("inf")
+
+    def residuals_batch(self, Y: "np.ndarray") -> "np.ndarray":
+        try:
+            F = self.eval_batch(Y)
+            rr = np.linalg.norm(F, axis=1)
+            rr = np.asarray(rr, dtype=float)
+            rr[~np.isfinite(rr)] = np.inf
+            return rr
+        except Exception:
+            YY = np.asarray(Y, dtype=np.complex128)
+            if YY.ndim == 1:
+                return np.asarray([float("inf")], dtype=float)
+            return np.full(int(YY.shape[0]), float("inf"), dtype=float)
+
+
+# ---------------------------------------------------------------------------
+# Geometric single flow: Mobius/Riemann + unconditional homothety + startopt
+# ---------------------------------------------------------------------------
+
+DEFAULT_POWERS = (
+    [2.0 ** k for k in range(-20, 25)] +
+    [3.0 * (2.0 ** k) for k in range(-16, 22)] +
+    [5.0 * (2.0 ** k) for k in range(-14, 20)] +
+    [10.0 ** k for k in range(-6, 7)]
+)
+DEFAULT_ANGLES_DEG = [0, 6, 12, 18, 24, 32, 40, 48, 56, 64, 72, 80, 86, 89, 90, 91, 94, 100, 108, 116, 128, 140, 152, 164, 172]
+DEFAULT_RADII = [0.025, 0.04, 0.06, 0.08, 0.12, 0.18, 0.27, 0.40, 0.60, 0.85, 1.15, 1.55, 2.05, 2.75, 3.60, 4.80, 6.40]
+DEFAULT_GAINS = [0.035, 0.055, 0.085, 0.12, 0.18, 0.27, 0.40, 0.58, 0.78, 1.0, 1.28, 1.65, 2.2, 3.0, 4.2, 6.0, 8.5, 12.0]
+
+
+def raw_direction(n: int, trial: int, seed: int, normalize: bool = True) -> "np.ndarray":
+    ensure_numpy()
+    vals = []
+    for j in range(n):
+        h1 = splitmix64(seed + 0xD1A5E + 0x1000003 * trial + 0x9E37 * (j + 1))
+        h2 = splitmix64(seed + 0xBADC0DE + 0x1000033 * trial + 0xC2B2 * (j + 1))
+        ang = 2.0 * math.pi * u01(h1)
+        amp = math.exp(0.45 * (2.0 * u01(h2) - 1.0))
+        vals.append(amp * phase(ang))
+    v = np.asarray(vals, dtype=np.complex128)
+    if normalize:
+        nm = float(np.linalg.norm(v))
+        if nm > 0:
+            v = v / nm * math.sqrt(n)
+    return v
+
+
+def mobius_homothety_start(
+    n: int,
+    trial: int,
+    seed: int,
+    powers: Sequence[float],
+    angles: Sequence[float],
+    radii: Sequence[float],
+    cap: float,
+    roots_found: int = 0,
+    duplicates: int = 0,
+    failures: int = 0,
+    target_count: int = 1,
+) -> tuple[Any, dict[str, Any]]:
+    """Single universal Riemann/Mobius + Thales homothety start.
+
+    This is the lightweight heuristic engine.  It is still one formula and one
+    flow: the heuristic only changes the parameters (Lambda, theta, radius) of
+    the same Mobius/homothety map.  No policy switch and no solver fallback.
+
+    Formula per coordinate:
+        y_j = Lambda * pole_j * (cos(theta_j)*(u_j/pole_j)+sin(theta_j))
+                           / (-sin(theta_j)*(u_j/pole_j)+cos(theta_j))
+
+    Heuristic idea:
+      - Lambda is always drawn from a very wide Thales-power ladder.
+      - When duplicates accumulate, Lambda is pushed upward to escape known
+        basins; this is a formula-level amplification, not a separate branch.
+      - theta is rotated through affine, Riemann, and near-infinity charts.
+    """
+    ensure_numpy()
+    powers2 = sorted(set(min(max(float(x), 1e-300), float(cap)) for x in powers if float(x) > 0))
+    if not powers2:
+        powers2 = [1.0]
+    Lp, La, Lr = len(powers2), max(1, len(angles)), max(1, len(radii))
+    # Low-discrepancy permutation across the power ladder, with unconditional
+    # high-power thrust.  This is intentionally not a fallback or multi-policy:
+    # it is one parameter formula for Lambda.
+    phi = 0.6180339887498948482
+    q = (trial * phi + 0.071 * roots_found + 0.013 * duplicates) % 1.0
+    power_index = (int(q * Lp) + 37 * trial + 11 * (trial // 7) + 5 * roots_found) % Lp
+    base_power = powers2[power_index]
+    dup_pressure = (duplicates + 1.0) / (roots_found + 1.0)
+    fail_pressure = (failures + 1.0) / (trial + 1.0)
+    progress = min(1.0, max(0.0, roots_found / max(1.0, float(target_count))))
+    thrust_ladder = [1.0, 1.6, 2.5, 4.0, 6.5, 10.0, 16.0, 25.0, 40.0, 64.0, 100.0, 160.0, 256.0]
+    thrust = thrust_ladder[(trial * 17 + roots_found * 3 + duplicates) % len(thrust_ladder)]
+    # More roots found -> explore outer charts more; more duplicates -> stronger
+    # homothety; more failures -> soften slightly but keep the same flow.
+    amp = (thrust ** (0.18 + 0.82 * progress)) * ((1.0 + dup_pressure) ** 0.42) / ((1.0 + 0.25 * fail_pressure) ** 0.15)
+    pwr = min(float(cap), max(1e-300, base_power * amp))
+
+    theta0 = angles[(trial * 19 + roots_found * 7 + duplicates * 3) % La]
+    theta_jitter = math.radians(4.0) * math.sin(1.324717957244746 * (trial + 1) + 0.31 * roots_found)
+    radius0 = radii[(trial * 13 + failures * 5 + roots_found * 2) % Lr]
+    radius = max(1e-300, float(radius0) * math.exp(0.22 * math.sin(0.754877666 * (trial + 1) + 0.17 * duplicates)))
+
+    d = raw_direction(n, trial, seed, True)
+    u = radius * d
+    out = np.empty(n, dtype=np.complex128)
+    poles = []
+    theta_values = []
+    for j in range(n):
+        # Coordinate phase and tiny theta offsets are generic in n; no bivariate
+        # special case is used anywhere.
+        hj = splitmix64(seed + 0xA11CE + 982451653 * trial + 1009 * (j + 1))
+        pole = phase(2.0 * math.pi * u01(hj))
+        poles.append(pole)
+        tj = theta0 + theta_jitter * math.cos(0.5 + j) + math.radians(2.0) * math.sin((j + 1) * (trial + 1) * 0.38196601125)
+        theta_values.append(tj)
+        c, s = math.cos(tj), math.sin(tj)
+        w = u[j] / pole
+        denom = (-s * w + c)
+        if abs(denom) < 1e-12:
+            # This is a deterministic chart regularization, not a fallback to a
+            # different algorithm.  It keeps the same projective formula finite.
+            denom += 1e-12 * phase(0.37 + j)
+        out[j] = pwr * pole * ((c * w + s) / denom)
+    meta = {
+        "homothety": float(pwr),
+        "base_homothety": float(base_power),
+        "thales_thrust": float(thrust),
+        "theta_deg": float(math.degrees(theta0)),
+        "theta_jitter_deg": float(math.degrees(theta_jitter)),
+        "theta_mean_deg": float(sum(math.degrees(t) for t in theta_values) / max(1, len(theta_values))),
+        "base_radius": float(radius),
+        "dup_pressure": float(dup_pressure),
+        "fail_pressure": float(fail_pressure),
+        "progress": float(progress),
+        "chart": "single-flow/pure-mobius-riemann-thales",
+    }
+    return out, meta
+
+def finite_residual(target: TargetTrack, y: Sequence[complex]) -> float:
+    r = target.residual(y)
+    return r if math.isfinite(r) else float("inf")
+
+
+def _universal_complex_cell(n: int, idx: int, layer: int, radius: float) -> "np.ndarray":
+    """Fixed universal atlas cell in C^n, independent of F.
+
+    Geometry mix:
+      - simplex/coordinate vertices for axis visibility;
+      - hypercube sign/phase corners for broad coverage;
+      - golden projective spiral for generic directions;
+      - shell radius supplied by a fixed radius ladder.
+    """
+    ensure_numpy()
+    phi = 0.6180339887498948482
+    vals = np.empty(n, dtype=np.complex128)
+    mode = idx % 4
+    if mode == 0:
+        # simplex-like: one dominant coordinate plus a small balanced tail
+        j0 = (idx // 4 + layer) % max(1, n)
+        for j in range(n):
+            amp = 1.0 if j == j0 else 1.0 / math.sqrt(max(1, n))
+            ang = 2.0 * math.pi * ((idx + 1) * (j + 1) * phi + 0.137 * layer)
+            vals[j] = amp * phase(ang)
+    elif mode == 1:
+        # hypercube phases: fixed low-discrepancy corners in complex signs
+        for j in range(n):
+            h = splitmix64(0x304C0BE + 65537 * idx + 4099 * layer + 193 * (j + 1))
+            q = int(4 * u01(h)) % 4
+            vals[j] = [1.0, 1j, -1.0, -1j][q]
+    elif mode == 2:
+        # projective golden spiral
+        for j in range(n):
+            amp = math.exp(0.35 * math.sin((idx + 1) * (j + 1) * 1.324717957244746 + layer))
+            ang = 2.0 * math.pi * (((idx + 1) * phi + (j + 1) * phi * phi + 0.071 * layer) % 1.0)
+            vals[j] = amp * phase(ang)
+    else:
+        # reciprocal/infinity-biased mixed shell: alternating large/small coordinates
+        for j in range(n):
+            amp = 1.0 if ((idx + j + layer) % 2 == 0) else 0.35
+            ang = 2.0 * math.pi * (((idx + 3) * (j + 5) * 0.41421356237 + 0.19 * layer) % 1.0)
+            vals[j] = amp * phase(ang)
+    nm = max(1e-300, float(np.linalg.norm(vals)))
+    return np.asarray(vals / nm * (float(radius) * math.sqrt(max(1, n))), dtype=np.complex128)
+
+
+def universal_atlas_start(
+    target: TargetTrack,
+    n: int,
+    trial: int,
+    seed: int,
+    powers: Sequence[float],
+    angles: Sequence[float],
+    radii: Sequence[float],
+    cap: float,
+    roots_found: int,
+    duplicates: int,
+    failures: int,
+    target_count: int,
+    universal_cells: int = 16,
+    universal_shells: int = 5,
+    cell_probe_radius: float = 0.14,
+    cell_descent_min: float = 1.02,
+    cell_equal_gap_min: float = 1e-10,
+    cell_log_max: float = 80.0,
+    universal_cycle: bool = True,
+) -> tuple[Any, dict[str, Any]]:
+    """304 fixed universal atlas.
+
+    The atlas geometry is fixed for dimension n: shells times deterministic
+    simplex/hypercube/projective cells.  It is not adapted to F and does not use
+    a scalar score.  F only activates/deactivates cells by predicate tests.
+    """
+    ensure_numpy()
+    # Fixed shell ladder: combine user radii/powers into bounded projective
+    # scales.  The sequence is deterministic and independent of F.
+    base_shells = [0.05, 0.12, 0.27, 0.60, 1.0, 1.7, 3.0, 5.5, 10.0, 18.0]
+    shell_count = max(1, int(universal_shells))
+    cell_count = max(1, int(universal_cells))
+    admissible = []
+    tested = 0
+    for kk in range(cell_count):
+        # Cycle deterministically through the universal atlas so each trial sees
+        # a different window, but the atlas itself is fixed.
+        atlas_idx = trial * cell_count + kk
+        layer = atlas_idx // max(1, cell_count)
+        radius = base_shells[layer % len(base_shells)]
+        # Add a fixed homothety shell from DEFAULT_POWERS without using F.
+        if powers:
+            radius *= min(float(cap), max(1e-300, float(powers[(atlas_idx + 7 * layer) % len(powers)]))) ** 0.15
+
+        cell_candidates: list[tuple[str, Any, dict[str, Any]]] = []
+        cell_candidates.append((
+            "native-simplex-hypercube-projective",
+            _universal_complex_cell(n, atlas_idx, layer, radius),
+            {"radius": float(radius), "theta_deg": None, "base_radius": float(radius)},
+        ))
+        # Fixed Mobius/Riemann cell: same universal formula as 301, but with
+        # pressures frozen to zero so the geometry is not adapted to F or to the
+        # root history.  This adds projective/infinity coverage that plain
+        # hypercube cells miss.
+        try:
+            my, mm = mobius_homothety_start(
+                n, atlas_idx, seed + 0x304F1C + 65537 * kk,
+                powers, angles, radii, cap,
+                roots_found=0, duplicates=0, failures=0, target_count=max(1, target_count),
+            )
+            cell_candidates.append(("fixed-mobius-riemann", np.asarray(my, dtype=np.complex128), dict(mm)))
+        except Exception:
+            pass
+
+        for geom_name, y, cmeta in cell_candidates:
+            y = np.asarray(y, dtype=np.complex128)
+            tested += 1
+            try:
+                f0 = target.eval(y)
+                r0 = float(np.linalg.norm(f0))
+            except Exception:
+                continue
+            if not math.isfinite(r0):
+                continue
+            log0 = _log_stability_energy_201(y)
+            if not math.isfinite(log0) or log0 > float(cell_log_max):
+                continue
+            ynorm = max(1.0, float(np.linalg.norm(y)))
+            # Fixed local cell probes: radial in/out, phase rotation, coordinate simplex.
+            probes = [0.92 * y, 1.08 * y, y * phase(float(cell_probe_radius))]
+            ej = np.zeros(n, dtype=np.complex128)
+            ej[(atlas_idx + layer) % max(1, n)] = 1.0
+            probes.append(y + float(cell_probe_radius) * ynorm * ej)
+            probes.append(y - float(cell_probe_radius) * ynorm * ej)
+            P = np.asarray(probes, dtype=np.complex128)
+            try:
+                FP = target.eval_batch(P)
+                RP = np.linalg.norm(FP, axis=1)
+            except Exception:
+                continue
+            if not np.any(np.isfinite(RP)):
+                continue
+            min_r = float(np.nanmin(RP))
+            descent = (r0 / min_r) if math.isfinite(min_r) and min_r > 0 else 0.0
+            Fdiff = np.linalg.norm(FP - f0[None, :], axis=1)
+            gap = Fdiff / (RP + r0 + 1e-300)
+            finite_gap = gap[np.isfinite(gap)]
+            min_gap = float(np.nanmin(finite_gap)) if finite_gap.size else 0.0
+            if descent >= float(cell_descent_min) and min_gap >= float(cell_equal_gap_min):
+                # Predicate representative: first decreasing probe, not best probe.
+                rep = y.copy()
+                for ii, rr in enumerate(RP):
+                    if math.isfinite(float(rr)) and float(rr) < r0 / float(cell_descent_min):
+                        rep = P[int(ii)].copy()
+                        break
+                admissible.append({
+                    "atlas_idx": int(atlas_idx), "layer": int(layer), "radius": float(cmeta.get("homothety", cmeta.get("radius", radius))),
+                    "geometry_cell": str(geom_name), "cell_meta": cmeta,
+                    "y": rep, "residual": float(r0), "log_energy": float(log0),
+                    "descent_ratio": float(descent), "equal_gap_min": float(min_gap),
+                    "representative_changed": bool(not np.allclose(rep, y)),
+                })
+
+    if admissible:
+        pick = (trial + roots_found + 2 * duplicates + 3 * failures) % len(admissible) if bool(universal_cycle) else 0
+        rec = admissible[int(pick)]
+        meta = {
+            "homothety": float(rec["radius"]),
+            "base_homothety": float(rec["radius"]),
+            "thales_thrust": 1.0,
+            "theta_deg": None,
+            "theta_jitter_deg": 0.0,
+            "theta_mean_deg": None,
+            "base_radius": float(rec["radius"]),
+            "dup_pressure": float((duplicates + 1.0) / (roots_found + 1.0)),
+            "fail_pressure": float((failures + 1.0) / (trial + 1.0)),
+            "progress": float(min(1.0, max(0.0, roots_found / max(1.0, float(target_count))))),
+            "chart": "304-universal-fixed-atlas/" + str(rec.get("geometry_cell", "hybrid")),
+            "atlas_mode": "304-universal-fixed-atlas-no-score",
+            "atlas_geometry": "hybrid-simplex+hypercube+projective+fixed-mobius-shells",
+            "atlas_selected_geometry_cell": str(rec.get("geometry_cell", "unknown")),
+            "atlas_cells_tested": int(tested),
+            "atlas_admissible_cells": int(len(admissible)),
+            "atlas_selected_index": int(rec["atlas_idx"]),
+            "atlas_selected_layer": int(rec["layer"]),
+            "atlas_selection_rule": "cyclic-admissible-cell" if bool(universal_cycle) else "first-admissible-cell",
+            "atlas_cell_residual": float(rec["residual"]),
+            "atlas_cell_log_energy": float(rec["log_energy"]),
+            "atlas_cell_descent_ratio": float(rec["descent_ratio"]),
+            "atlas_cell_equal_gap_min": float(rec["equal_gap_min"]),
+            "atlas_representative_changed": bool(rec["representative_changed"]),
+        }
+        return np.asarray(rec["y"], dtype=np.complex128).copy(), meta
+
+    # Deterministic fixed-cell fallback if no cell passed predicates.  Not a
+    # score winner; just the next universal cell.
+    y = _universal_complex_cell(n, trial, trial // max(1, cell_count), 1.0)
+    meta = {
+        "homothety": 1.0, "base_homothety": 1.0, "thales_thrust": 1.0,
+        "theta_deg": None, "theta_jitter_deg": 0.0, "theta_mean_deg": None,
+        "base_radius": 1.0, "dup_pressure": float((duplicates + 1.0) / (roots_found + 1.0)),
+        "fail_pressure": float((failures + 1.0) / (trial + 1.0)),
+        "progress": float(min(1.0, max(0.0, roots_found / max(1.0, float(target_count))))),
+        "chart": "304-universal-fixed-atlas/default-cell",
+        "atlas_mode": "304-universal-fixed-atlas-no-score",
+        "atlas_geometry": "hybrid-simplex+hypercube+projective+fixed-mobius-shells",
+        "atlas_selected_geometry_cell": "default-cell",
+        "atlas_cells_tested": int(tested), "atlas_admissible_cells": 0,
+        "atlas_selected_index": None, "atlas_selection_rule": "default-universal-cell-after-no-admissible-cell",
+    }
+    return y, meta
+
+
+def startopt(target: TargetTrack, y0: Any, trial: int, seed: int, steps: int, candidates: int, gains: Sequence[float], micro_epochs: int) -> tuple[Any, dict[str, Any]]:
+    """Batched start optimization in the same Thales chart.
+
+    118 scored start candidates one-by-one.  120 keeps the same geometric pool
+    but evaluates it as a NumPy batch, which is both faster and less biased by
+    early candidate order.
+    """
+    ensure_numpy()
+    best = np.asarray(y0, dtype=np.complex128).copy()
+    best_r = finite_residual(target, best)
+    initial = best_r
+    evals = 1
+    micro_total = 0
+    chosen_gain = 1.0
+    for step in range(max(0, steps)):
+        base = best.copy()
+        pool: list[tuple[float, Any]] = [(1.0, base)]
+        for c in range(max(0, candidates - 1)):
+            gain = float(gains[(trial + 3 * step + c) % len(gains)])
+            cand = gain * base
+            if c % 3 == 1:
+                pert = []
+                for j, val in enumerate(cand):
+                    h1 = splitmix64(seed + 0x5157A47 + 65537 * trial + 4099 * c + 193 * (j + 1))
+                    h2 = splitmix64(seed + 0x7150F7 + 104729 * trial + 8191 * c + 389 * (j + 1))
+                    ph = 0.23 * (2.0 * u01(h1) - 1.0)
+                    amp = math.exp(0.28 * (2.0 * u01(h2) - 1.0))
+                    pert.append(val * amp * phase(ph))
+                cand = np.asarray(pert, dtype=np.complex128)
+            elif c % 3 == 2:
+                fresh = raw_direction(len(base), trial + 31 * (step + 1) + c, seed, True)
+                nm = max(1e-300, float(np.linalg.norm(base)))
+                cand = 0.70 * cand + 0.30 * gain * nm * fresh / max(1e-300, float(np.linalg.norm(fresh)))
+            pool.append((gain, np.asarray(cand, dtype=np.complex128)))
+
+        Y = np.asarray([cand for _, cand in pool], dtype=np.complex128)
+        R = target.residuals_batch(Y)
+        evals += int(len(pool))
+        scores = np.asarray([math.log1p(max(0.0, float(r))) + 1e-15 * math.log1p(float(np.linalg.norm(Y[idx]))) if math.isfinite(float(r)) else float("inf") for idx, r in enumerate(R)], dtype=float)
+        idx_best = int(np.nanargmin(scores)) if np.any(np.isfinite(scores)) else 0
+        cand_best = Y[idx_best].copy()
+        r_best = float(R[idx_best]) if idx_best < len(R) else float("inf")
+        if micro_epochs > 0:
+            # Optional micro-corrector remains pure Pandrosion and is only run
+            # on the best batched start candidate to keep 120 lightweight.
+            loc = hypercube_inversejet_corrector(target, cand_best, max_epochs=micro_epochs, tol=1e-12, accept=0.0, trial_timeout=0.0, line_search=6, direction_seed=seed + 7919 * trial)
+            micro_total += int(loc.get("epochs", 0))
+            if float(loc.get("residual", float("inf"))) < r_best:
+                cand_best = np.asarray(loc["y"], dtype=np.complex128)
+                r_best = float(loc["residual"])
+        old_score = math.log1p(max(0.0, best_r)) + 1e-15 * math.log1p(float(np.linalg.norm(best))) if math.isfinite(best_r) else float("inf")
+        new_score = math.log1p(max(0.0, r_best)) + 1e-15 * math.log1p(float(np.linalg.norm(cand_best))) if math.isfinite(r_best) else float("inf")
+        if new_score < old_score:
+            best = cand_best
+            best_r = float(r_best)
+            chosen_gain = float(pool[idx_best][0])
+    return best, {
+        "startopt_enabled": bool(steps > 0),
+        "startopt_r0": float(initial),
+        "startopt_r1": float(best_r),
+        "startopt_ratio": (float(best_r / initial) if math.isfinite(best_r) and math.isfinite(initial) and initial > 0 else None),
+        "startopt_steps": int(max(0, steps)),
+        "startopt_evals": int(evals),
+        "startopt_micro_epochs": int(micro_total),
+        "startopt_gain": float(chosen_gain),
+        "startopt_batch_numpy": True,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Corrector and root handling
+# ---------------------------------------------------------------------------
+
+
+def _log_stability_energy_201(y: Any, eps: float = 1e-12) -> float:
+    """Projective/logarithmic scale energy inspired by Paper 0.
+
+    This is not a solver and not a derivative. It is a scalar diagnostic:
+        L(y) = || log(1 + |y_j|) ||_2.
+    It penalizes probes that create unnecessary scale distortion.
+    """
+    ensure_numpy()
+    yy = np.asarray(y, dtype=np.complex128).ravel()
+    if yy.size == 0:
+        return 0.0
+    val = np.log1p(np.abs(yy) + float(eps))
+    val[~np.isfinite(val)] = 0.0
+    return float(np.linalg.norm(val) / math.sqrt(max(1, yy.size)))
+
+
+def _log_stability_batch_201(Y: Any, eps: float = 1e-12) -> "np.ndarray":
+    ensure_numpy()
+    YY = np.asarray(Y, dtype=np.complex128)
+    if YY.ndim == 1:
+        YY = YY[None, :]
+    vals = np.log1p(np.abs(YY) + float(eps))
+    vals[~np.isfinite(vals)] = 0.0
+    return np.linalg.norm(vals, axis=1) / math.sqrt(max(1, YY.shape[1]))
+
+
+def _probe_endpoint_candidates(
+    target: TargetTrack,
+    y: "np.ndarray",
+    f: "np.ndarray",
+    residual: float,
+    prev_delta: Optional["np.ndarray"],
+    ep: int,
+    direction_seed: int,
+    probe_scale: float,
+    probe_candidates: int,
+    probe_radii: Sequence[float],
+    include_self_probe: bool,
+    condition_top: int = 2,
+    condition_weight: float = 0.0025,
+    axis_probes: bool = True,
+    equal_value_weight: float = 0.015,
+    equal_value_eps: float = 1e-12,
+    curvature_top: int = 2,
+    curvature_weight: float = 0.003,
+    curvature_mid: float = 0.5,
+    probe_log_weight: float = 0.0005,
+    probe_log_delta_weight: float = 0.0015,
+) -> tuple[Any, dict[str, Any]]:
+    """Choose the finite-slope endpoint b by batched residual scoring.
+
+    120 keeps the 118/120 theorem-guided principle b_* = argmin ||G(b)||, but uses
+    a NumPy batch to score all probes at once.  Among the top residual probes it
+    optionally adds penalties for the condition number of the exact finite-slope
+    matrix Q_G(a,b), for near equal-value poles F(b)≈F(a), and for large
+    finite-slope curvature measured by slope variation between a midpoint and b.
+    This is not a Newton fallback: Q_G is the same telescopic Pandrosion slope
+    used for the accepted step.
+    """
+    ensure_numpy()
+    n = len(y)
+    ynorm = max(1.0, float(np.linalg.norm(y)))
+    radii = [float(r) for r in probe_radii if float(r) >= 0]
+    if not radii:
+        radii = [1.0]
+    budget = max(1, int(probe_candidates))
+    candidates: list[tuple[str, Any]] = []
+    if include_self_probe:
+        candidates.append(("self", y.copy()))
+
+    if prev_delta is not None and np.all(np.isfinite(prev_delta)):
+        pdn = max(1e-300, float(np.linalg.norm(prev_delta)))
+        base = prev_delta / pdn * min(max(pdn, float(probe_scale) * ynorm), 2.5 * ynorm)
+        candidates.append(("inertial", y + base))
+
+    if axis_probes and budget > len(candidates):
+        # Coordinate Thales probes help multivariate finite slopes see each
+        # coordinate separately before generic spiral probes are used.
+        rad0 = float(probe_scale) * ynorm * (radii[min(1, len(radii)-1)] if radii else 1.0)
+        for j in range(n):
+            if len(candidates) >= budget:
+                break
+            ej = np.zeros(n, dtype=np.complex128)
+            ej[j] = 1.0 + 0.0j
+            ph = phase(0.173 + 0.6180339887498948 * (ep + 1) + 1.41421356237 * (j + 1))
+            candidates.append((f"axis-{j}", y + rad0 * ph * ej))
+
+    k = 0
+    while len(candidates) < budget:
+        rad = float(probe_scale) * ynorm * radii[k % len(radii)]
+        qdir = raw_direction(n, direction_seed + 104729 * (ep + 1) + 7919 * (k + 1), direction_seed ^ (0x120120 + 17 * k), True)
+        qnorm = max(1e-300, float(np.linalg.norm(qdir)))
+        qdir = qdir / qnorm * math.sqrt(max(1, n))
+        ph = phase(0.6180339887498948 * (ep + 1) + 2.399963229728653 * (k + 1))
+        step = rad * ph * qdir
+        if float(np.linalg.norm(y)) > 0:
+            step = step + (0.12 * rad) * y / ynorm * phase(0.38196601125 * (k + 1))
+        tiny = 1e-12 * ynorm
+        for j in range(n):
+            if abs(step[j]) < tiny:
+                step[j] += tiny * phase(0.17 + j + ep + k)
+        candidates.append((f"geom-{k}", y + step))
+        k += 1
+
+    cand_slice = candidates[:budget]
+    names = [name for name, _ in cand_slice]
+    B = np.asarray([np.asarray(b, dtype=np.complex128) for _, b in cand_slice], dtype=np.complex128)
+    FB = target.eval_batch(B)
+    R = np.linalg.norm(FB, axis=1)
+    D = np.linalg.norm(B - y[None, :], axis=1)
+    scores = np.asarray([math.log1p(max(0.0, float(R[i]))) + 1e-14 * math.log1p(float(D[i])) if math.isfinite(float(R[i])) else float("inf") for i in range(len(cand_slice))], dtype=float)
+
+    # 301 logarithmic/projective stability: probes that violently change
+    # the logarithmic scale are penalized. This is the algorithmic version of
+    # the Paper-0 rule "make |log y| small before correcting".
+    log_y = _log_stability_energy_201(y)
+    log_B = _log_stability_batch_201(B)
+    log_delta = np.abs(log_B - log_y)
+    if float(probe_log_weight) > 0:
+        scores = scores + float(probe_log_weight) * np.log1p(log_B)
+    if float(probe_log_delta_weight) > 0:
+        scores = scores + float(probe_log_delta_weight) * np.log1p(log_delta)
+
+    # Equal-value pole avoidance.  In the anchored map the poles satisfy
+    # F(b)=F(a).  The self point b=a is a removable limit, so it is excluded
+    # from the penalty; all other near-equal-value probes are discouraged.
+    Fy_norm = float(np.linalg.norm(f))
+    Fdiff = np.linalg.norm(FB - np.asarray(f, dtype=np.complex128)[None, :], axis=1)
+    Fscale = R + Fy_norm + 1e-300
+    equal_gap = Fdiff / Fscale
+    nonself = D > (1e-12 * ynorm)
+    pole_penalty = np.zeros_like(scores)
+    if float(equal_value_weight) > 0:
+        safe_gap = np.maximum(equal_gap, float(equal_value_eps))
+        pole_penalty = np.where(nonself, float(equal_value_weight) * np.log1p(1.0 / safe_gap), 0.0)
+        scores = scores + pole_penalty
+
+    cond_best = None
+    cond_scored = 0
+    curvature_best = None
+    curvature_scored = 0
+    if int(condition_top) > 0 and len(cand_slice) > 0 and np.any(np.isfinite(scores)):
+        order = np.argsort(scores)
+        for idx in order[: max(0, min(int(condition_top), len(order)))]:
+            try:
+                Q = target.slope_matrix(y, B[int(idx)])
+                cnd = float(np.linalg.cond(Q))
+            except Exception:
+                cnd = float("inf")
+            cond_scored += 1
+            if math.isfinite(cnd):
+                scores[int(idx)] += float(condition_weight) * math.log1p(max(0.0, cnd))
+            else:
+                scores[int(idx)] = float("inf")
+
+    # Tensor/curvature proxy using only finite slopes: compare Q(a,b) with
+    # Q(a, a + mid*(b-a)).  Large variation means the averaged Jacobian is
+    # changing rapidly along the probe segment, which is the multidimensional
+    # analogue of a large curvature term.
+    if int(curvature_top) > 0 and float(curvature_weight) > 0 and len(cand_slice) > 0 and np.any(np.isfinite(scores)):
+        order = np.argsort(scores)
+        curv_vals = []
+        for idx in order[: max(0, min(int(curvature_top), len(order)))]:
+            ii = int(idx)
+            if not bool(nonself[ii]):
+                continue
+            try:
+                bvec = B[ii]
+                mid = y + float(curvature_mid) * (bvec - y)
+                Q_full = target.slope_matrix(y, bvec)
+                Q_mid = target.slope_matrix(y, mid)
+                curv = float(np.linalg.norm(Q_full - Q_mid) / max(1e-300, np.linalg.norm(Q_full)))
+            except Exception:
+                curv = float("inf")
+            curvature_scored += 1
+            if math.isfinite(curv):
+                scores[ii] += float(curvature_weight) * math.log1p(max(0.0, curv))
+                curv_vals.append(curv)
+            else:
+                scores[ii] = float("inf")
+        if curv_vals:
+            curvature_best = float(min(curv_vals))
+
+    if not np.any(np.isfinite(scores)):
+        raise RuntimeError("no-finite-probe")
+    best_idx = int(np.nanargmin(scores))
+    best_name = names[best_idx]
+    best_b = B[best_idx].copy()
+    best_res = float(R[best_idx])
+    best_distance = float(D[best_idx])
+    if int(condition_top) > 0:
+        try:
+            cond_best = float(np.linalg.cond(target.slope_matrix(y, best_b)))
+        except Exception:
+            cond_best = None
+
+    return best_b, {
+        "probe_mode": "120-equal-value-pole-and-tensor-aware-batched-probe",
+        "probe_name": best_name,
+        "probe_candidates": int(len(cand_slice)),
+        "probe_evals": int(len(cand_slice)),
+        "probe_residual": float(best_res),
+        "probe_distance": float(best_distance),
+        "probe_improvement_proxy": (float(residual / best_res) if math.isfinite(best_res) and best_res > 0 and math.isfinite(residual) else None),
+        "probe_self_enabled": bool(include_self_probe),
+        "probe_axis_enabled": bool(axis_probes),
+        "probe_condition_top": int(condition_top),
+        "probe_condition_scored": int(cond_scored),
+        "probe_condition_best": cond_best,
+        "probe_equal_value_weight": float(equal_value_weight),
+        "probe_equal_value_gap": float(equal_gap[best_idx]) if len(equal_gap) else None,
+        "probe_equal_value_gap_min": float(np.nanmin(equal_gap)) if len(equal_gap) else None,
+        "probe_equal_value_penalty": float(pole_penalty[best_idx]) if len(pole_penalty) else 0.0,
+        "probe_curvature_top": int(curvature_top),
+        "probe_curvature_scored": int(curvature_scored),
+        "probe_curvature_best": curvature_best,
+        "probe_log_energy_current": float(log_y),
+        "probe_log_energy_best": float(log_B[best_idx]) if len(log_B) else None,
+        "probe_log_delta_best": float(log_delta[best_idx]) if len(log_delta) else None,
+        "probe_log_weight": float(probe_log_weight),
+        "probe_log_delta_weight": float(probe_log_delta_weight),
+        "probe_batch_numpy": True,
+    }
+
+
+def _line_lambdas(line_search: int, line_grid: Optional[Sequence[float]] = None) -> list[float]:
+    vals: list[float] = []
+    if line_grid is not None:
+        for x in line_grid:
+            try:
+                xx = float(x)
+                if math.isfinite(xx) and xx > 0:
+                    vals.append(xx)
+            except Exception:
+                pass
+    if not vals:
+        vals = [1.0, 0.75, 0.5, 0.35, 0.25, 0.18, 0.125, 0.09, 0.0625, 0.045, 0.03125, 0.02]
+    k = 0
+    while len(vals) < max(1, int(line_search)):
+        vals.append(1.0 / (2.0 ** k))
+        k += 1
+    # keep order but remove near-duplicates
+    out: list[float] = []
+    for v in vals:
+        vv = min(max(float(v), 1e-15), 4.0)
+        if all(abs(vv - u) > 1e-15 for u in out):
+            out.append(vv)
+        if len(out) >= max(1, int(line_search)):
+            break
+    return out or [1.0]
+
+
+
+def _halley_gate_201(residual: float, cond: Optional[float], gate_residual: float, cond_weight: float, min_gate: float, log_energy: float = 0.0, log_weight: float = 0.0, log_scale: float = 1.0) -> float:
+    """Continuous gate for the cubic finite-slope Halley layer.
+
+    Far from a root, this returns nearly zero and the engine behaves like 120/118.
+    Near a root with an acceptable finite-slope condition, the gate approaches one.
+    """
+    try:
+        r = max(0.0, float(residual))
+    except Exception:
+        r = 1e300
+    gr = max(1e-300, float(gate_residual))
+    rg = 1.0 / (1.0 + (r / gr) ** 2)
+    if cond is None or not math.isfinite(float(cond)):
+        cg = 0.0
+    else:
+        cg = 1.0 / (1.0 + float(cond_weight) * math.log1p(max(0.0, float(cond))))
+    try:
+        le = max(0.0, float(log_energy))
+    except Exception:
+        le = 0.0
+    lg = 1.0 / (1.0 + float(log_weight) * le / max(1e-12, float(log_scale)))
+    g = max(0.0, min(1.0, rg * cg * lg))
+    return float(g if g >= float(min_gate) else 0.0)
+
+
+def _gated_tensor_halley_delta_201(
+    target: TargetTrack,
+    y: "np.ndarray",
+    f: "np.ndarray",
+    Q: "np.ndarray",
+    delta_raw: "np.ndarray",
+    residual: float,
+    cond: Optional[float],
+    gate_residual: float = 0.25,
+    probe_fraction: float = 0.50,
+    cond_weight: float = 0.025,
+    min_gate: float = 0.04,
+    max_correction: float = 1.25,
+    log_energy: float = 0.0,
+    halley_log_weight: float = 0.03,
+    halley_log_scale: float = 1.0,
+    tensor_extra_directions: int = 0,
+) -> tuple["np.ndarray", dict[str, Any]]:
+    """Directional multivariate finite-slope Halley correction.
+
+    Scalar 0-bis:
+        H3 = a - 2 f D1 / (2 D1^2 - f D2)
+
+    Vector form used here:
+        Q1 delta1 = -F(a)
+        Q1 delta2 = -1/2 H(delta1,delta1)
+        delta_H = delta1 + delta2
+
+    Q1 is the exact Pandrosion finite-slope matrix already used by 118/120.
+    H(delta1,delta1) is estimated by a symmetric finite-slope probe along delta1.
+    No analytic Jacobian or Hessian is formed.
+    """
+    ensure_numpy()
+    gate = _halley_gate_201(residual, cond, gate_residual, cond_weight, min_gate, log_energy=log_energy, log_weight=halley_log_weight, log_scale=halley_log_scale)
+    meta: dict[str, Any] = {
+        "halley_gate": float(gate),
+        "halley_used": False,
+        "halley_probe_fraction": float(probe_fraction),
+        "halley_delta2_norm": None,
+        "halley_raw_norm": float(np.linalg.norm(delta_raw)),
+        "halley_log_energy": float(log_energy),
+        "halley_tensor_extra_directions": int(tensor_extra_directions),
+    }
+    if gate <= 0.0:
+        return delta_raw, meta
+
+    dnorm = float(np.linalg.norm(delta_raw))
+    ynorm = max(1.0, float(np.linalg.norm(y)))
+    if (not math.isfinite(dnorm)) or dnorm <= 1e-300:
+        return delta_raw, meta
+
+    frac = max(1e-6, min(1.0, float(probe_fraction)))
+    hvec = frac * delta_raw
+
+    try:
+        # Direction 1: raw Pandrosion step.
+        fp = target.eval(y + hvec)
+        fm = target.eval(y - hvec)
+        sec2_terms = [(fp - 2.0 * f + fm) / (frac * frac)]
+
+        # 301 tensorial enrichment: add a small number of deterministic
+        # transverse directions. They are cheap and only active when the gate is
+        # already local, so they do not dominate the global search.
+        extra = max(0, int(tensor_extra_directions))
+        if extra > 0:
+            dn = max(1e-300, float(np.linalg.norm(delta_raw)))
+            for kk in range(extra):
+                qdir = raw_direction(len(y), 0x201000 + 7919 * (kk + 1), 0x201777 + kk, True)
+                qdir = np.asarray(qdir, dtype=np.complex128)
+                qdir = qdir / max(1e-300, float(np.linalg.norm(qdir))) * dn
+                if kk == 0:
+                    qdir = 1j * delta_raw
+                hvec2 = frac * qdir
+                try:
+                    fp2 = target.eval(y + hvec2)
+                    fm2 = target.eval(y - hvec2)
+                    sec2_terms.append((fp2 - 2.0 * f + fm2) / (frac * frac))
+                except Exception:
+                    pass
+        sec2 = np.mean(np.asarray(sec2_terms, dtype=np.complex128), axis=0)
+        delta2 = np.linalg.solve(Q, -0.5 * sec2)
+        if not np.all(np.isfinite(delta2)):
+            return delta_raw, meta
+
+        d2norm = float(np.linalg.norm(delta2))
+        max_d2 = float(max_correction) * max(dnorm, 1e-300)
+        if d2norm > max_d2:
+            delta2 = delta2 * (max_d2 / max(d2norm, 1e-300))
+            d2norm = float(np.linalg.norm(delta2))
+
+        if dnorm + d2norm > 20.0 * ynorm:
+            scale = (20.0 * ynorm) / max(dnorm + d2norm, 1e-300)
+            delta2 = delta2 * scale
+            d2norm = float(np.linalg.norm(delta2))
+
+        delta_halley = delta_raw + delta2
+        delta_mix = (1.0 - gate) * delta_raw + gate * delta_halley
+        meta.update({
+            "halley_used": True,
+            "halley_delta2_norm": float(d2norm),
+            "halley_sec2_norm": float(np.linalg.norm(sec2)),
+            "halley_tensor_terms": int(len(sec2_terms)),
+            "halley_mix_norm": float(np.linalg.norm(delta_mix)),
+        })
+        return delta_mix, meta
+    except Exception as exc:
+        meta.update({"halley_error": type(exc).__name__})
+        return delta_raw, meta
+
+
+def _full_cubic_halley_delta_301(
+    target: TargetTrack,
+    y: "np.ndarray",
+    f: "np.ndarray",
+    Q: "np.ndarray",
+    delta1: "np.ndarray",
+    probe_fraction: float = 0.50,
+    max_correction: float = 1.25,
+    tensor_extra_directions: int = 0,
+) -> tuple["np.ndarray", dict[str, Any]]:
+    """Full cubic finite-slope Halley direction, no raw-step fallback.
+
+    Articles/001 (Paper 0 bis) supplies the scalar finite-slope Halley formula.
+    Multivariately, Q_G(a,b) is the exact finite-slope analogue of D1/J, and
+    the symmetric second finite probe supplies the D2/Hessian defect.
+    The cubic layer adds a symmetric finite-probe second defect and solves
+
+        Q delta1 = -F(a),
+        Q delta2 = -1/2 H(delta1, delta1),
+        delta = delta1 + delta2.
+
+    The returned delta is the cubic candidate itself.  If the tensor probe fails,
+    the caller treats the epoch as a cubic failure rather than accepting delta1.
+    """
+    ensure_numpy()
+    meta: dict[str, Any] = {
+        "cubic_used": False,
+        "cubic_probe_fraction": float(probe_fraction),
+        "cubic_delta1_norm": float(np.linalg.norm(delta1)),
+        "cubic_delta2_norm": None,
+        "tensor_extra_directions": int(tensor_extra_directions),
+    }
+    dnorm = float(np.linalg.norm(delta1))
+    ynorm = max(1.0, float(np.linalg.norm(y)))
+    if (not math.isfinite(dnorm)) or dnorm <= 1e-300:
+        raise RuntimeError("degenerate-cubic-delta1")
+    frac = max(1e-6, min(1.0, float(probe_fraction)))
+    sec2_terms = []
+    hvec = frac * delta1
+    fp = target.eval(y + hvec)
+    fm = target.eval(y - hvec)
+    sec2_terms.append((fp - 2.0 * f + fm) / (frac * frac))
+
+    extra = max(0, int(tensor_extra_directions))
+    if extra > 0:
+        dn = max(1e-300, dnorm)
+        for kk in range(extra):
+            if kk == 0:
+                qdir = 1j * delta1
+            else:
+                qdir = raw_direction(len(y), 0x301000 + 7919 * (kk + 1), 0x301777 + kk, True)
+                qdir = np.asarray(qdir, dtype=np.complex128)
+                qdir = qdir / max(1e-300, float(np.linalg.norm(qdir))) * dn
+            hvec2 = frac * qdir
+            fp2 = target.eval(y + hvec2)
+            fm2 = target.eval(y - hvec2)
+            sec2_terms.append((fp2 - 2.0 * f + fm2) / (frac * frac))
+
+    sec2 = np.mean(np.asarray(sec2_terms, dtype=np.complex128), axis=0)
+    delta2 = np.linalg.solve(Q, -0.5 * sec2)
+    if not np.all(np.isfinite(delta2)):
+        raise RuntimeError("nonfinite-cubic-delta2")
+
+    d2norm = float(np.linalg.norm(delta2))
+    max_d2 = float(max_correction) * max(dnorm, 1e-300)
+    if d2norm > max_d2:
+        delta2 = delta2 * (max_d2 / max(d2norm, 1e-300))
+        d2norm = float(np.linalg.norm(delta2))
+    if dnorm + d2norm > 20.0 * ynorm:
+        scale = (20.0 * ynorm) / max(dnorm + d2norm, 1e-300)
+        delta2 = delta2 * scale
+        d2norm = float(np.linalg.norm(delta2))
+    delta = delta1 + delta2
+    if not np.all(np.isfinite(delta)):
+        raise RuntimeError("nonfinite-cubic-delta")
+    meta.update({
+        "cubic_used": True,
+        "cubic_delta2_norm": float(d2norm),
+        "cubic_sec2_norm": float(np.linalg.norm(sec2)),
+        "cubic_tensor_terms": int(len(sec2_terms)),
+        "cubic_norm": float(np.linalg.norm(delta)),
+    })
+    return delta, meta
+
+
+def pandrosion_corrector(
+    target: TargetTrack,
+    y0: Sequence[complex],
+    max_epochs: int,
+    tol: float,
+    accept: float,
+    trial_timeout: float,
+    line_search: int = 12,
+    probe_scale: float = 0.035,
+    direction_seed: int = 0,
+    probe_candidates: int = 8,
+    probe_radii: Sequence[float] = (0.0, 0.5, 1.0, 2.0, 4.0),
+    include_self_probe: bool = True,
+    probe_condition_top: int = 2,
+    probe_condition_weight: float = 0.0025,
+    probe_axis: bool = True,
+    probe_equal_value_weight: float = 0.015,
+    probe_equal_value_eps: float = 1e-12,
+    probe_curvature_top: int = 2,
+    probe_curvature_weight: float = 0.003,
+    probe_curvature_mid: float = 0.5,
+    trust_cond_weight: float = 0.06,
+    trust_cond_min: float = 4.0,
+    line_grid: Optional[Sequence[float]] = None,
+    halley_enabled: bool = True,
+    halley_gate_residual: float = 0.25,
+    halley_probe_fraction: float = 0.50,
+    halley_cond_weight: float = 0.025,
+    halley_min_gate: float = 0.04,
+    halley_max_correction: float = 1.25,
+    probe_log_weight: float = 0.0005,
+    probe_log_delta_weight: float = 0.0015,
+    halley_log_weight: float = 0.03,
+    halley_log_scale: float = 1.0,
+    tensor_extra_directions: int = 0,
+) -> dict[str, Any]:
+    """301 corrector: anchored divided-difference full cubic Halley only.
+
+    The raw anchored finite-slope solve Q delta1=-G(a) is used only as the
+    first ingredient of the cubic Halley formula.  The line search never tests
+    or accepts the raw delta1 direction; it only tests delta1+delta2.
+    """
+    ensure_numpy()
+    y = np.asarray(y0, dtype=np.complex128).copy()
+    t0 = now()
+    deadline = t0 + trial_timeout if trial_timeout and trial_timeout > 0 else None
+    best_y = y.copy()
+    best_r = finite_residual(target, y)
+    ok = False
+    status = "started"
+    epochs = 0
+    prev_delta = None
+    last_cond = None
+    last_probe_meta: dict[str, Any] = {}
+    last_cubic_meta: dict[str, Any] = {}
+    total_probe_evals = 0
+    total_line_evals = 0
+    total_cubic_evals = 0
+    cubic_used_count = 0
+    lambdas = _line_lambdas(line_search, line_grid)
+
+    for ep in range(max(1, int(max_epochs))):
+        if deadline is not None and now() > deadline:
+            status = "timeout"
+            break
+        try:
+            f = target.eval(y)
+            r = float(np.linalg.norm(f))
+        except Exception as exc:
+            status = f"eval-error:{type(exc).__name__}"
+            break
+        if math.isfinite(r) and r < best_r:
+            best_r = r
+            best_y = y.copy()
+        if r <= max(float(tol), float(accept)) and (accept <= 0 or r < accept):
+            ok = True
+            status = "converged"
+            break
+
+        try:
+            b, pmeta = _probe_endpoint_candidates(
+                target=target, y=y, f=f, residual=r, prev_delta=prev_delta, ep=ep,
+                direction_seed=direction_seed, probe_scale=float(probe_scale),
+                probe_candidates=int(probe_candidates), probe_radii=probe_radii,
+                include_self_probe=bool(include_self_probe), condition_top=int(probe_condition_top),
+                condition_weight=float(probe_condition_weight), axis_probes=bool(probe_axis),
+                equal_value_weight=float(probe_equal_value_weight), equal_value_eps=float(probe_equal_value_eps),
+                curvature_top=int(probe_curvature_top), curvature_weight=float(probe_curvature_weight),
+                curvature_mid=float(probe_curvature_mid), probe_log_weight=float(probe_log_weight),
+                probe_log_delta_weight=float(probe_log_delta_weight),
+            )
+            last_probe_meta = pmeta
+            total_probe_evals += int(pmeta.get("probe_evals", 0))
+        except Exception as exc:
+            status = f"probe-error:{type(exc).__name__}"
+            break
+
+        try:
+            Q = target.slope_matrix(y, b)
+            last_cond = float(np.linalg.cond(Q))
+            delta1 = np.linalg.solve(Q, -f)
+        except Exception as exc:
+            status = f"anchored-slope-solve-error:{type(exc).__name__}"
+            break
+        if not np.all(np.isfinite(delta1)):
+            status = "nonfinite-cubic-delta1"
+            break
+
+        ynorm = max(1.0, float(np.linalg.norm(y)))
+        dnorm = float(np.linalg.norm(delta1))
+        cap_factor = 18.0
+        if float(trust_cond_weight) > 0 and last_cond is not None and math.isfinite(float(last_cond)):
+            cap_factor = max(float(trust_cond_min), 18.0 / (1.0 + float(trust_cond_weight) * math.log1p(max(0.0, float(last_cond)))))
+        if dnorm > cap_factor * ynorm:
+            delta1 = delta1 * ((cap_factor * ynorm) / max(dnorm, 1e-300))
+
+        try:
+            delta, cmeta = _full_cubic_halley_delta_301(
+                target=target, y=y, f=f, Q=Q, delta1=delta1,
+                probe_fraction=float(halley_probe_fraction),
+                max_correction=float(halley_max_correction),
+                tensor_extra_directions=int(tensor_extra_directions),
+            )
+            last_cubic_meta = cmeta
+            total_cubic_evals += 2 * int(cmeta.get("cubic_tensor_terms", 1))
+            cubic_used_count += 1
+        except Exception as exc:
+            status = f"cubic-error:{type(exc).__name__}"
+            break
+
+        L = np.asarray(lambdas, dtype=float)
+        Ytry = y[None, :] + L[:, None] * delta[None, :]
+        Rtry = target.residuals_batch(Ytry)
+        total_line_evals += int(len(Ytry))
+        finite = np.isfinite(Rtry)
+        better = finite & ((Rtry < r) | (Rtry < best_r))
+        if not np.any(better):
+            status = "no-cubic-decrease"
+            break
+        scores = np.where(better, Rtry * (1.0 + 1e-15 / np.maximum(L, 1e-15)), np.inf)
+        idx = int(np.nanargmin(scores))
+        lam = float(L[idx])
+        rr = float(Rtry[idx])
+        yy = Ytry[idx].copy()
+        prev_delta = lam * delta
+        y = yy
+        if rr < best_r:
+            best_y = yy.copy()
+            best_r = rr
+        epochs = ep + 1
+        last_cubic_meta["cubic_chosen_lambda"] = lam
+    else:
+        status = "max-epochs"
+
+    final_r = finite_residual(target, best_y)
+    if final_r <= max(float(tol), float(accept)) and (accept <= 0 or final_r < accept):
+        ok = True
+        status = "converged"
+
+    return {
+        "accepted": bool(ok if accept <= 0 else (math.isfinite(final_r) and final_r < accept)),
+        "ok": bool(ok),
+        "status": status,
+        "epochs": int(epochs),
+        "residual": float(final_r),
+        "y": best_y,
+        "seconds": float(now() - t0),
+        "slope_cond": last_cond,
+        "corrector": "301-anchored-divided-difference-full-cubic-halley",
+        "raw_pandrosion_step_accepted": False,
+        "probe_total_evals": int(total_probe_evals),
+        "line_search_batch_numpy": True,
+        "line_search_evals": int(total_line_evals),
+        "line_lambdas": [float(x) for x in lambdas],
+        "trust_cond_weight": float(trust_cond_weight),
+        "trust_cond_min": float(trust_cond_min),
+        "halley_enabled": True,
+        "halley_total_evals": int(total_cubic_evals),
+        "halley_used_count": int(cubic_used_count),
+        "halley_probe_fraction": float(halley_probe_fraction),
+        "halley_max_correction": float(halley_max_correction),
+        "tensor_extra_directions": int(tensor_extra_directions),
+        **last_probe_meta,
+        **last_cubic_meta,
+    }
+
+
+
+# ---------------------------------------------------------------------------
+# 306: 304 universal atlas + 305 hypercube tensor inverse-jet corrector
+# ---------------------------------------------------------------------------
+
+def _hypercube_inversejet_delta_306(
+    target: TargetTrack,
+    y: "np.ndarray",
+    f: "np.ndarray",
+    ep: int,
+    seed: int,
+    cloud_nodes: int = 0,
+) -> tuple["np.ndarray", dict[str, Any]]:
+    """305-style local tensor inverse-jet correction.
+
+    A small deterministic hypercube cloud reconstructs the Jacobian by least
+    squares.  Symmetric finite probes along the primary correction reconstruct
+    the quadratic/cubic directional defects, giving delta1+delta2+delta3.
+    This is intentionally independent of 301/304's anchored Q and Halley layer.
+    """
+    ensure_numpy()
+    n = len(y)
+    M = max(int(cloud_nodes), 2 * n + 4, 16)
+    ynorm = max(1.0, float(np.linalg.norm(y)))
+    h_cloud = 1e-5 * ynorm
+
+    rng = np.random.default_rng(int(seed) + int(ep) * 1337)
+    signs = rng.choice([-1.0, 1.0], size=(M, n))
+    Y = y[None, :] + h_cloud * signs
+    F = target.eval_batch(Y)
+    dY = h_cloud * signs
+    dF = F - f[None, :]
+    A, _, _, _ = np.linalg.lstsq(dY, dF, rcond=None)
+    A = A.T
+    if not np.all(np.isfinite(A)):
+        return np.zeros_like(y), {"hypercube_error": "nonfinite_jacobian", "hypercube_order": 0}
+
+    try:
+        delta1 = np.linalg.solve(A, -f)
+    except Exception:
+        return np.zeros_like(y), {"hypercube_error": "singular_jacobian", "hypercube_order": 0}
+
+    d1 = float(np.linalg.norm(delta1))
+    if (not math.isfinite(d1)) or d1 < 1e-14 or d1 > 1e4 * ynorm:
+        return delta1, {"hypercube_order": 1, "hypercube_delta1_norm": d1, "hypercube_nodes": M}
+
+    h = max(1e-5, min(1e-2, 0.05 * ynorm / d1))
+    p1 = target.eval(y + h * delta1)
+    m1 = target.eval(y - h * delta1)
+    p2 = target.eval(y + 2.0 * h * delta1)
+    m2 = target.eval(y - 2.0 * h * delta1)
+    D2 = (-p2 + 16.0 * p1 - 30.0 * f + 16.0 * m1 - m2) / (12.0 * h**2)
+    D3 = (p2 - 2.0 * p1 + 2.0 * m1 - m2) / (2.0 * h**3)
+
+    try:
+        delta2 = np.linalg.solve(A, -0.5 * D2)
+    except Exception:
+        return delta1, {"hypercube_order": 1, "hypercube_error": "singular_delta2", "hypercube_delta1_norm": d1, "hypercube_nodes": M}
+    d2 = float(np.linalg.norm(delta2))
+    if (not math.isfinite(d2)) or d2 > 2.0 * max(d1, ynorm):
+        return delta1, {"hypercube_order": 1, "hypercube_error": "delta2_rejected", "hypercube_delta1_norm": d1, "hypercube_delta2_norm": d2, "hypercube_nodes": M}
+
+    f_d2 = target.eval(y + h * delta2)
+    f_d1_d2 = target.eval(y + h * delta1 + h * delta2)
+    G2_cross = (f_d1_d2 - p1 - f_d2 + f) / (h**2)
+    try:
+        delta3 = np.linalg.solve(A, -(G2_cross + (1.0 / 6.0) * D3))
+    except Exception:
+        return delta1 + delta2, {"hypercube_order": 2, "hypercube_error": "singular_delta3", "hypercube_delta1_norm": d1, "hypercube_delta2_norm": d2, "hypercube_nodes": M}
+    d3 = float(np.linalg.norm(delta3))
+    if (not math.isfinite(d3)) or d3 > 2.0 * max(d1, ynorm):
+        return delta1 + delta2, {"hypercube_order": 2, "hypercube_error": "delta3_rejected", "hypercube_delta1_norm": d1, "hypercube_delta2_norm": d2, "hypercube_delta3_norm": d3, "hypercube_nodes": M}
+
+    delta = delta1 + delta2 + delta3
+    return delta, {
+        "hypercube_order": 4,
+        "hypercube_nodes": M,
+        "hypercube_delta1_norm": d1,
+        "hypercube_delta2_norm": d2,
+        "hypercube_delta3_norm": d3,
+        "hypercube_step_norm": float(np.linalg.norm(delta)),
+    }
+
+
+def hypercube_inversejet_corrector(
+    target: TargetTrack,
+    y0: Sequence[complex],
+    max_epochs: int,
+    tol: float,
+    accept: float,
+    trial_timeout: float,
+    line_search: int = 12,
+    line_grid: Optional[Sequence[float]] = None,
+    direction_seed: int = 0,
+    cloud_nodes: int = 0,
+) -> dict[str, Any]:
+    """306 local corrector: hypercube inverse-jet only, no Halley/Q fallback."""
+    ensure_numpy()
+    y = np.asarray(y0, dtype=np.complex128).copy()
+    t0 = now()
+    deadline = t0 + trial_timeout if trial_timeout and trial_timeout > 0 else None
+    best_y = y.copy()
+    best_r = finite_residual(target, y)
+    ok = False
+    status = "started"
+    epochs = 0
+    total_line_evals = 0
+    total_hypercube_evals = 0
+    used_count = 0
+    last_meta: dict[str, Any] = {}
+    lambdas = _line_lambdas(line_search, line_grid)
+
+    for ep in range(max(1, int(max_epochs))):
+        if deadline is not None and now() > deadline:
+            status = "timeout"
+            break
+        try:
+            f = target.eval(y)
+            r = float(np.linalg.norm(f))
+        except Exception as exc:
+            status = f"eval-error:{type(exc).__name__}"
+            break
+        if math.isfinite(r) and r < best_r:
+            best_r = r
+            best_y = y.copy()
+        if r <= max(float(tol), float(accept)) and (accept <= 0 or r < accept):
+            ok = True
+            status = "converged"
+            break
+
+        delta, meta = _hypercube_inversejet_delta_306(target, y, f, ep, int(direction_seed), int(cloud_nodes))
+        last_meta = meta
+        total_hypercube_evals += int(meta.get("hypercube_nodes", max(2 * len(y) + 4, 16))) + 7
+        used_count += 1
+        if not np.all(np.isfinite(delta)):
+            status = "nonfinite-hypercube-step"
+            break
+
+        L = np.asarray(lambdas, dtype=float)
+        Ytry = y[None, :] + L[:, None] * delta[None, :]
+        Rtry = target.residuals_batch(Ytry)
+        total_line_evals += int(len(Ytry))
+        finite = np.isfinite(Rtry)
+        better = finite & ((Rtry < r) | (Rtry < best_r))
+        if not np.any(better):
+            status = "no-hypercube-decrease"
+            break
+        scores = np.where(better, Rtry * (1.0 + 1e-15 / np.maximum(L, 1e-15)), np.inf)
+        idx = int(np.nanargmin(scores))
+        lam = float(L[idx])
+        rr = float(Rtry[idx])
+        yy = Ytry[idx].copy()
+        y = yy
+        if rr < best_r:
+            best_y = yy.copy()
+            best_r = rr
+        epochs = ep + 1
+        last_meta["hypercube_chosen_lambda"] = lam
+    else:
+        status = "max-epochs"
+
+    final_r = finite_residual(target, best_y)
+    if final_r <= max(float(tol), float(accept)) and (accept <= 0 or final_r < accept):
+        ok = True
+        status = "converged"
+
+    return {
+        "accepted": bool(ok if accept <= 0 else (math.isfinite(final_r) and final_r < accept)),
+        "ok": bool(ok),
+        "status": status,
+        "epochs": int(epochs),
+        "residual": float(final_r),
+        "y": best_y,
+        "seconds": float(now() - t0),
+        "slope_cond": None,
+        "corrector": "306-hypercube-tensor-inversejet-no-halley",
+        "raw_pandrosion_step_accepted": False,
+        "probe_total_evals": 0,
+        "line_search_batch_numpy": True,
+        "line_search_evals": int(total_line_evals),
+        "line_lambdas": [float(x) for x in lambdas],
+        "halley_enabled": False,
+        "halley_total_evals": 0,
+        "halley_used_count": 0,
+        "hypercube_total_evals": int(total_hypercube_evals),
+        "hypercube_used_count": int(used_count),
+        **last_meta,
+    }
+
+
+# ---------------------------------------------------------------------------
+# 311: IRP chart layer wrapped around the 306 hypercube inverse-jet corrector
+# ---------------------------------------------------------------------------
+
+
+def _311_complex_scale_palette(gains: Sequence[float], phases: Sequence[float], top: int) -> list[complex]:
+    """Finite complex homothety palette for 311 IRP.
+
+    The identity scale is always present.  The palette is small on purpose: the
+    hypercube inverse-jet remains the local solver; IRP only changes the chart in
+    which that local solver sees the current point.
+    """
+    out: list[complex] = [1.0 + 0.0j]
+    for g in gains:
+        try:
+            gg = float(g)
+        except Exception:
+            continue
+        if not (math.isfinite(gg) and gg > 0):
+            continue
+        for ph in phases:
+            try:
+                pp = float(ph)
+            except Exception:
+                continue
+            if not math.isfinite(pp):
+                continue
+            z = complex(gg * phase(pp))
+            if all(abs(z - w) > 1e-14 for w in out):
+                out.append(z)
+            if len(out) >= max(1, int(top)):
+                return out
+    return out[: max(1, int(top))]
+
+
+def _311_log_energy(y: Sequence[complex]) -> float:
+    """Projective logarithmic size of a chart coordinate.
+
+    This is the multivariate analogue of keeping |log y| small in the monomial
+    paper: coordinates near the unit hypercube have small energy, while both
+    very small and very large coordinates are penalized.
+    """
+    ensure_numpy()
+    yy = np.asarray(y, dtype=np.complex128)
+    if yy.size == 0:
+        return 0.0
+    r = np.abs(yy)
+    vals = np.log1p(r) + np.log1p(1.0 / np.maximum(r, 1e-300))
+    e = float(np.mean(vals))
+    return e if math.isfinite(e) else float("inf")
+
+
+@dataclasses.dataclass
+class IRPChartTarget311:
+    """Local chart for 311.
+
+    The base coordinate is the 306 y-coordinate.  A local IRP coordinate u is
+    mapped back by either
+
+        direct:      y = c u
+        reciprocal: y = 1/(c u)  coordinatewise.
+
+    The reciprocal chart is evaluated as a rational chart of the same system.
+    The local solver is still the 306 hypercube inverse-jet corrector: it only
+    asks for eval/eval_batch/residuals_batch, so this wrapper remains NumPy-only
+    and derivative-free.
+    """
+    base: TargetTrack
+    kind: str
+    scale: complex
+
+    def _safe_recip(self, w: Any) -> Any:
+        ww = np.asarray(w, dtype=np.complex128)
+        tiny = 1e-300
+        return np.where(np.abs(ww) > tiny, 1.0 / ww, complex(1e300, 0.0))
+
+    def to_base(self, u: Sequence[complex]) -> "np.ndarray":
+        uu = np.asarray(u, dtype=np.complex128)
+        if self.kind == "direct":
+            return complex(self.scale) * uu
+        if self.kind == "reciprocal":
+            return self._safe_recip(complex(self.scale) * uu)
+        raise ValueError(f"unknown 311 chart kind {self.kind!r}")
+
+    def from_base(self, y: Sequence[complex]) -> "np.ndarray":
+        yy = np.asarray(y, dtype=np.complex128)
+        if self.kind == "direct":
+            return yy / complex(self.scale)
+        if self.kind == "reciprocal":
+            return self._safe_recip(complex(self.scale) * yy)
+        raise ValueError(f"unknown 311 chart kind {self.kind!r}")
+
+    def to_base_batch(self, U: "np.ndarray") -> "np.ndarray":
+        UU = np.asarray(U, dtype=np.complex128)
+        if UU.ndim == 1:
+            return self.to_base(UU)[None, :]
+        if self.kind == "direct":
+            return complex(self.scale) * UU
+        if self.kind == "reciprocal":
+            return self._safe_recip(complex(self.scale) * UU)
+        raise ValueError(f"unknown 311 chart kind {self.kind!r}")
+
+    def eval(self, u: Sequence[complex]) -> "np.ndarray":
+        return self.base.eval(self.to_base(u))
+
+    def eval_batch(self, U: "np.ndarray") -> "np.ndarray":
+        return self.base.eval_batch(self.to_base_batch(U))
+
+    def residual(self, u: Sequence[complex]) -> float:
+        try:
+            return float(np.linalg.norm(self.eval(u)))
+        except Exception:
+            return float("inf")
+
+    def residuals_batch(self, U: "np.ndarray") -> "np.ndarray":
+        try:
+            F = self.eval_batch(U)
+            R = np.linalg.norm(F, axis=1)
+            R = np.asarray(R, dtype=float)
+            R[~np.isfinite(R)] = np.inf
+            return R
+        except Exception:
+            UU = np.asarray(U, dtype=np.complex128)
+            nrow = 1 if UU.ndim == 1 else int(UU.shape[0])
+            return np.full(nrow, float("inf"), dtype=float)
+
+
+def _311_chart_candidates(
+    base_target: TargetTrack,
+    y: Sequence[complex],
+    scales: Sequence[complex],
+    allow_inversion: bool,
+    top: int,
+) -> list[dict[str, Any]]:
+    """Rank local charts without changing the represented base point."""
+    yy = np.asarray(y, dtype=np.complex128)
+    candidates: list[dict[str, Any]] = []
+    for c in scales:
+        cc = complex(c)
+        if abs(cc) < 1e-300:
+            continue
+        for kind in (["direct", "reciprocal"] if allow_inversion else ["direct"]):
+            chart = IRPChartTarget311(base=base_target, kind=kind, scale=cc)
+            try:
+                u0 = chart.from_base(yy)
+            except Exception:
+                continue
+            if not np.all(np.isfinite(u0)):
+                continue
+            # Direct and reciprocal charts are compared by the normalized local
+            # coordinate size.  A small penalty prevents needless oscillation into
+            # reciprocal charts when direct charts are equally good.
+            energy = _311_log_energy(u0)
+            if not math.isfinite(energy):
+                continue
+            mag = max(abs(cc), 1e-300)
+            scale_penalty = 0.002 * abs(math.log(mag))
+            inv_penalty = 0.08 if kind == "reciprocal" else 0.0
+            score = float(energy + scale_penalty + inv_penalty)
+            candidates.append({
+                "chart": chart,
+                "u0": u0,
+                "kind": kind,
+                "scale": cc,
+                "score": score,
+                "log_energy": float(energy),
+            })
+    candidates.sort(key=lambda r: (float(r["score"]), 0 if r["kind"] == "direct" else 1, abs(complex(r["scale"]) - 1.0)))
+    return candidates[: max(1, int(top))]
+
+
+def irp_hypercube_inversejet_corrector_311(
+    base_target: TargetTrack,
+    y0: Sequence[complex],
+    max_epochs: int,
+    tol: float,
+    accept: float,
+    trial_timeout: float,
+    line_search: int = 12,
+    line_grid: Optional[Sequence[float]] = None,
+    direction_seed: int = 0,
+    cloud_nodes: int = 0,
+    irp_layers: int = 2,
+    irp_inner_epochs: int = 2,
+    irp_scales: Optional[Sequence[complex]] = None,
+    irp_chart_top: int = 2,
+    irp_inversion: bool = True,
+    collapse: bool = True,
+    collapse_residual: float = 1e-4,
+    collapse_drop: float = 0.42,
+    collapse_rel_step: float = 0.35,
+    collapse_after: int = 2,
+    local_inner_epochs: int = 3,
+) -> dict[str, Any]:
+    """311 corrector: IRP chart cascade + 306 hypercube inverse-jet core.
+
+    Each IRP layer chooses a local chart, runs a short 306 hypercube inverse-jet
+    correction in that chart, returns to the base coordinate, and repeats.  Once
+    the observed residual/step geometry is local, the solver collapses to the
+    identity direct chart and keeps using the 306 hypercube corrector.
+    """
+    ensure_numpy()
+    t0 = now()
+    deadline = t0 + float(trial_timeout) if trial_timeout and trial_timeout > 0 else None
+    scales = list(irp_scales) if irp_scales else [1.0 + 0.0j]
+    y = np.asarray(y0, dtype=np.complex128).copy()
+    r = finite_residual(base_target, y)
+    best_y = y.copy()
+    best_r = float(r)
+    status = "started"
+    ok = False
+    epochs_done = 0
+    layers_done = 0
+    total_line_evals = 0
+    total_hypercube_evals = 0
+    hypercube_used = 0
+    chart_switches = 0
+    reciprocal_uses = 0
+    direct_uses = 0
+    local_steps = 0
+    capture_steps = 0
+    collapsed = False
+    collapse_epoch: Optional[int] = None
+    collapse_reason: Optional[str] = None
+    locality_hits = 0
+    last_loc: dict[str, Any] = {}
+    last_chart: dict[str, Any] = {}
+
+    if math.isfinite(r) and r <= max(float(tol), float(accept)) and (accept <= 0 or r < accept):
+        return {
+            "accepted": True, "ok": True, "status": "converged-initial", "epochs": 0,
+            "residual": float(r), "y": y, "seconds": float(now() - t0),
+            "corrector": "311-irp-chart-plus-306-hypercube-inversejet", "slope_cond": None,
+            "line_search_evals": 0, "hypercube_total_evals": 0, "hypercube_used_count": 0,
+            "irp_layers_completed": 0, "irp_chart_switches": 0, "irp_collapsed": False,
+            "irp_reciprocal_uses": 0, "irp_direct_uses": 0,
+            "halley_enabled": False, "halley_total_evals": 0, "halley_used_count": 0,
+        }
+
+    for ep in range(max(1, int(max_epochs))):
+        if deadline is not None and now() > deadline:
+            status = "timeout"
+            break
+        epoch_improved = False
+        layers_this = 1 if collapsed else max(1, int(irp_layers))
+        for layer in range(layers_this):
+            if deadline is not None and now() > deadline:
+                status = "timeout"
+                break
+            y_before = y.copy()
+            r_before = finite_residual(base_target, y_before)
+            if not math.isfinite(r_before):
+                status = "nonfinite-residual"
+                break
+
+            if collapsed:
+                chart = IRPChartTarget311(base=base_target, kind="direct", scale=1.0 + 0.0j)
+                chart_records = [{"chart": chart, "u0": y_before.copy(), "kind": "direct", "scale": 1.0 + 0.0j, "score": 0.0, "log_energy": _311_log_energy(y_before)}]
+                inner_epochs = max(1, int(local_inner_epochs))
+            else:
+                chart_records = _311_chart_candidates(base_target, y_before, scales, bool(irp_inversion), int(irp_chart_top))
+                inner_epochs = max(1, int(irp_inner_epochs))
+            if not chart_records:
+                status = "no-admissible-irp-chart"
+                break
+
+            best_candidate_y = None
+            best_candidate_r = float("inf")
+            best_candidate_loc: dict[str, Any] = {}
+            best_candidate_chart: dict[str, Any] = {}
+            for ci, rec in enumerate(chart_records):
+                chart = rec["chart"]
+                u0 = rec["u0"]
+                loc = hypercube_inversejet_corrector(
+                    chart, u0,
+                    max_epochs=inner_epochs,
+                    tol=float(tol),
+                    accept=float(accept),
+                    trial_timeout=0.0 if deadline is None else max(0.0, deadline - now()),
+                    line_search=int(line_search),
+                    line_grid=line_grid,
+                    direction_seed=int(direction_seed) + 1000003 * ep + 65537 * layer + 7919 * ci,
+                    cloud_nodes=int(cloud_nodes),
+                )
+                total_line_evals += int(loc.get("line_search_evals", 0))
+                total_hypercube_evals += int(loc.get("hypercube_total_evals", 0))
+                hypercube_used += int(loc.get("hypercube_used_count", 0))
+                try:
+                    cand_y = chart.to_base(loc.get("y", u0))
+                    cand_r = finite_residual(base_target, cand_y)
+                except Exception:
+                    cand_y = None
+                    cand_r = float("inf")
+                if math.isfinite(cand_r) and cand_r < best_candidate_r:
+                    best_candidate_y = np.asarray(cand_y, dtype=np.complex128).copy()
+                    best_candidate_r = float(cand_r)
+                    best_candidate_loc = dict(loc)
+                    best_candidate_chart = dict(rec)
+                    best_candidate_chart.pop("chart", None)
+                    best_candidate_chart.pop("u0", None)
+
+            if best_candidate_y is None or not math.isfinite(best_candidate_r):
+                status = "no-finite-irp-candidate"
+                break
+
+            step_norm = float(np.linalg.norm(best_candidate_y - y_before))
+            rel_step = step_norm / max(1.0, float(np.linalg.norm(y_before)))
+            drop = best_candidate_r / max(r_before, 1e-300)
+            strict = best_candidate_r <= r_before * (1.0 - 1e-14)
+            if strict or best_candidate_r < best_r:
+                y = best_candidate_y.copy()
+                r = float(best_candidate_r)
+                layers_done += 1
+                epochs_done = ep + 1
+                epoch_improved = True
+                last_loc = best_candidate_loc
+                last_chart = best_candidate_chart
+                if best_candidate_chart.get("kind") == "reciprocal":
+                    reciprocal_uses += 1
+                else:
+                    direct_uses += 1
+                if not collapsed:
+                    chart_switches += 1
+                    capture_steps += 1
+                else:
+                    local_steps += 1
+                if r < best_r:
+                    best_r = r
+                    best_y = y.copy()
+                if r <= max(float(tol), float(accept)) and (accept <= 0 or r < accept):
+                    ok = True
+                    status = "converged"
+                    break
+
+                if bool(collapse) and not collapsed:
+                    hit = False
+                    reason = None
+                    if r <= float(collapse_residual):
+                        hit = True
+                        reason = "residual-threshold"
+                    elif drop <= float(collapse_drop) and rel_step <= float(collapse_rel_step):
+                        locality_hits += 1
+                        if locality_hits >= max(1, int(collapse_after)):
+                            hit = True
+                            reason = "observed-local-contraction"
+                    else:
+                        locality_hits = 0
+                    if hit:
+                        collapsed = True
+                        collapse_epoch = ep
+                        collapse_reason = reason
+                status = "local-collapsed" if collapsed else "capture-running"
+            else:
+                status = "no-irp-hypercube-decrease"
+                break
+
+        if ok or status in {"timeout", "nonfinite-residual", "no-admissible-irp-chart", "no-finite-irp-candidate", "no-irp-hypercube-decrease"}:
+            break
+        if not epoch_improved:
+            status = "stagnated"
+            break
+
+    final_r = finite_residual(base_target, best_y)
+    if math.isfinite(final_r) and final_r < best_r:
+        best_r = final_r
+        y = best_y.copy()
+    if math.isfinite(best_r) and best_r <= max(float(tol), float(accept)) and (accept <= 0 or best_r < accept):
+        ok = True
+        status = "converged"
+        y = best_y.copy()
+
+    out = {
+        "accepted": bool(ok if accept <= 0 else (math.isfinite(best_r) and best_r < accept)),
+        "ok": bool(ok),
+        "status": status,
+        "epochs": int(epochs_done),
+        "residual": float(best_r),
+        "y": best_y.copy(),
+        "seconds": float(now() - t0),
+        "slope_cond": last_loc.get("slope_cond"),
+        "corrector": "311-irp-chart-plus-306-hypercube-inversejet",
+        "raw_pandrosion_step_accepted": False,
+        "probe_total_evals": int(last_loc.get("probe_total_evals", 0)),
+        "line_search_batch_numpy": True,
+        "line_search_evals": int(total_line_evals),
+        "line_lambdas": last_loc.get("line_lambdas"),
+        "halley_enabled": False,
+        "halley_total_evals": 0,
+        "halley_used_count": 0,
+        "hypercube_total_evals": int(total_hypercube_evals),
+        "hypercube_used_count": int(hypercube_used),
+        "irp_layers_completed": int(layers_done),
+        "irp_chart_switches": int(chart_switches),
+        "irp_collapsed": bool(collapsed),
+        "irp_collapse_epoch": collapse_epoch,
+        "irp_collapse_reason": collapse_reason,
+        "irp_reciprocal_uses": int(reciprocal_uses),
+        "irp_direct_uses": int(direct_uses),
+        "irp_capture_steps": int(capture_steps),
+        "irp_local_steps": int(local_steps),
+        "irp_last_chart_kind": last_chart.get("kind"),
+        "irp_last_chart_scale": cjson(last_chart.get("scale", 1.0 + 0.0j)),
+        "irp_last_chart_score": last_chart.get("score"),
+        "irp_last_chart_log_energy": last_chart.get("log_energy"),
+    }
+    for k, v in last_loc.items():
+        if k not in out and k != "y":
+            out[k] = v
+    return out
+
+
+# ---------------------------------------------------------------------------
+# 312: lazy/collapse-triggered IRP around the 306 hypercube inverse-jet corrector
+# ---------------------------------------------------------------------------
+
+def lazy_irp_hypercube_inversejet_corrector_312(
+    base_target: TargetTrack,
+    y0: Sequence[complex],
+    max_epochs: int,
+    tol: float,
+    accept: float,
+    trial_timeout: float,
+    line_search: int = 12,
+    line_grid: Optional[Sequence[float]] = None,
+    direction_seed: int = 0,
+    cloud_nodes: int = 0,
+    irp_layers: int = 2,
+    irp_inner_epochs: int = 2,
+    irp_scales: Optional[Sequence[complex]] = None,
+    irp_chart_top: int = 2,
+    irp_inversion: bool = True,
+    collapse: bool = True,
+    collapse_residual: float = 1e-4,
+    collapse_drop: float = 0.42,
+    collapse_rel_step: float = 0.35,
+    collapse_after: int = 2,
+    local_inner_epochs: int = 3,
+    lazy_direct_epochs: int = 1,
+    lazy_trigger_drop: float = 0.82,
+    lazy_trigger_after: int = 1,
+    lazy_bad_cond: float = 1e10,
+    lazy_log_energy: float = 8.0,
+    eager_irp: bool = False,
+    rescue_collapsed: bool = False,
+) -> dict[str, Any]:
+    """312 corrector: 306 first, IRP only when the geometry asks for it.
+
+    The 311 engine wrapped almost every capture epoch in an IRP chart cascade.
+    That improves coverage on difficult systems, but it is expensive on easy or
+    already-local charts.  The 312 policy separates the roles:
+
+      1. try the 306 hypercube inverse-jet corrector directly in the current
+         atlas chart;
+      2. keep the direct step when it gives a strong contraction;
+      3. activate IRP chart search only after stagnation, weak contraction,
+         excessive local condition, or large projective/logarithmic chart size;
+      4. after observed locality, collapse to direct 306 and optionally keep IRP
+         as a rescue mode only.
+
+    This is still standalone NumPy and derivative-free in the same sense as 306
+    and 311: no analytic Jacobian, Newton fallback, Broyden update, JFNK, SciPy,
+    homotopy continuation, or imports from previous scripts.
+    """
+    ensure_numpy()
+    t0 = now()
+    deadline = t0 + float(trial_timeout) if trial_timeout and trial_timeout > 0 else None
+    scales = list(irp_scales) if irp_scales else [1.0 + 0.0j]
+    y = np.asarray(y0, dtype=np.complex128).copy()
+    r0 = finite_residual(base_target, y)
+    best_y = y.copy()
+    best_r = float(r0)
+    status = "started"
+    ok = False
+    epochs_done = 0
+
+    total_line_evals = 0
+    total_hypercube_evals = 0
+    hypercube_used = 0
+    layers_done = 0
+    chart_switches = 0
+    reciprocal_uses = 0
+    direct_uses = 0
+    local_steps = 0
+    capture_steps = 0
+    lazy_direct_steps = 0
+    lazy_direct_good = 0
+    lazy_direct_weak = 0
+    lazy_triggers = 0
+    lazy_rescues = 0
+    lazy_skipped_irp = 0
+    collapsed = False
+    collapse_epoch: Optional[int] = None
+    collapse_reason: Optional[str] = None
+    locality_hits = 0
+    stagnation_hits = 0
+    last_loc: dict[str, Any] = {}
+    last_chart: dict[str, Any] = {"kind": "direct", "scale": 1.0 + 0.0j, "score": 0.0, "log_energy": _311_log_energy(y)}
+
+    def _absorb(loc: dict[str, Any]) -> None:
+        nonlocal total_line_evals, total_hypercube_evals, hypercube_used
+        total_line_evals += int(loc.get("line_search_evals", 0) or 0)
+        total_hypercube_evals += int(loc.get("hypercube_total_evals", 0) or 0)
+        hypercube_used += int(loc.get("hypercube_used_count", 0) or 0)
+
+    def _maybe_collapse(r_before: float, r_after: float, y_before: "np.ndarray", y_after: "np.ndarray", ep: int) -> None:
+        nonlocal collapsed, collapse_epoch, collapse_reason, locality_hits
+        if (not bool(collapse)) or collapsed:
+            return
+        if not (math.isfinite(r_before) and math.isfinite(r_after)):
+            locality_hits = 0
+            return
+        step_norm = float(np.linalg.norm(y_after - y_before))
+        rel_step = step_norm / max(1.0, float(np.linalg.norm(y_before)))
+        drop = r_after / max(r_before, 1e-300)
+        hit = False
+        reason = None
+        if r_after <= float(collapse_residual):
+            hit = True
+            reason = "residual-threshold"
+        elif drop <= float(collapse_drop) and rel_step <= float(collapse_rel_step):
+            locality_hits += 1
+            if locality_hits >= max(1, int(collapse_after)):
+                hit = True
+                reason = "observed-local-contraction"
+        else:
+            locality_hits = 0
+        if hit:
+            collapsed = True
+            collapse_epoch = ep
+            collapse_reason = reason
+
+    if math.isfinite(r0) and r0 <= max(float(tol), float(accept)) and (accept <= 0 or r0 < accept):
+        return {
+            "accepted": True, "ok": True, "status": "converged-initial", "epochs": 0,
+            "residual": float(r0), "y": y, "seconds": float(now() - t0),
+            "corrector": "312-lazy-irp-plus-306-hypercube-inversejet", "slope_cond": None,
+            "line_search_evals": 0, "hypercube_total_evals": 0, "hypercube_used_count": 0,
+            "irp_layers_completed": 0, "irp_chart_switches": 0, "irp_collapsed": False,
+            "irp_reciprocal_uses": 0, "irp_direct_uses": 0,
+            "irp_lazy_triggers": 0, "irp_lazy_direct_steps": 0, "irp_lazy_skipped": 0,
+            "halley_enabled": False, "halley_total_evals": 0, "halley_used_count": 0,
+        }
+
+    for ep in range(max(1, int(max_epochs))):
+        if deadline is not None and now() > deadline:
+            status = "timeout"
+            break
+        y_before = y.copy()
+        r_before = finite_residual(base_target, y_before)
+        if not math.isfinite(r_before):
+            status = "nonfinite-residual"
+            break
+        if r_before < best_r:
+            best_r = r_before
+            best_y = y_before.copy()
+        if r_before <= max(float(tol), float(accept)) and (accept <= 0 or r_before < accept):
+            ok = True
+            status = "converged"
+            break
+
+        # 1) Always try the cheap/direct 306 core first.
+        direct_epochs = max(1, int(local_inner_epochs if collapsed else lazy_direct_epochs))
+        loc_direct = hypercube_inversejet_corrector(
+            base_target, y_before,
+            max_epochs=direct_epochs,
+            tol=float(tol),
+            accept=float(accept),
+            trial_timeout=0.0 if deadline is None else max(0.0, deadline - now()),
+            line_search=int(line_search),
+            line_grid=line_grid,
+            direction_seed=int(direction_seed) + 1000003 * ep + 17,
+            cloud_nodes=int(cloud_nodes),
+        )
+        _absorb(loc_direct)
+        last_loc = dict(loc_direct)
+        try:
+            direct_y = np.asarray(loc_direct.get("y", y_before), dtype=np.complex128).copy()
+            direct_r = finite_residual(base_target, direct_y)
+        except Exception:
+            direct_y = y_before.copy()
+            direct_r = float("inf")
+
+        direct_improved = math.isfinite(direct_r) and direct_r <= r_before * (1.0 - 1e-14)
+        direct_better_than_best = math.isfinite(direct_r) and direct_r < best_r
+        direct_drop = direct_r / max(r_before, 1e-300) if math.isfinite(direct_r) else float("inf")
+        direct_step_norm = float(np.linalg.norm(direct_y - y_before)) if np.all(np.isfinite(direct_y)) else float("inf")
+        direct_rel_step = direct_step_norm / max(1.0, float(np.linalg.norm(y_before)))
+        cond = loc_direct.get("slope_cond")
+        try:
+            cond_float = float(cond) if cond is not None else float("nan")
+        except Exception:
+            cond_float = float("nan")
+        cond_bad = math.isfinite(cond_float) and cond_float > float(lazy_bad_cond)
+        log_bad = _311_log_energy(direct_y if direct_improved else y_before) > float(lazy_log_energy)
+
+        if direct_improved or direct_better_than_best:
+            lazy_direct_steps += 1
+            stagnation_hits = 0
+        else:
+            stagnation_hits += 1
+
+        strong_direct = bool(direct_improved and (direct_drop <= float(lazy_trigger_drop)) and (not cond_bad) and (not log_bad))
+        trigger_irp = False
+        trigger_reason = None
+        if bool(eager_irp) and not collapsed:
+            trigger_irp = True
+            trigger_reason = "eager"
+        elif (not collapsed) or bool(rescue_collapsed):
+            if not direct_improved and stagnation_hits >= max(1, int(lazy_trigger_after)):
+                trigger_irp = True
+                trigger_reason = "direct-stagnation"
+            elif direct_improved and not strong_direct:
+                trigger_irp = True
+                trigger_reason = "weak-direct-contraction"
+            elif cond_bad:
+                trigger_irp = True
+                trigger_reason = "bad-condition"
+            elif log_bad:
+                trigger_irp = True
+                trigger_reason = "large-log-chart"
+
+        if collapsed and not bool(rescue_collapsed):
+            trigger_irp = False
+            trigger_reason = None
+
+        # 2) If the direct step is good, keep it and skip IRP entirely.
+        if not trigger_irp:
+            if direct_improved or direct_better_than_best:
+                y = direct_y.copy()
+                r = float(direct_r)
+                epochs_done = ep + 1
+                lazy_direct_good += 1 if strong_direct else 0
+                if not strong_direct:
+                    lazy_direct_weak += 1
+                direct_uses += 1
+                if collapsed:
+                    local_steps += 1
+                else:
+                    capture_steps += 1
+                    lazy_skipped_irp += 1
+                if r < best_r:
+                    best_r = r
+                    best_y = y.copy()
+                _maybe_collapse(r_before, r, y_before, y, ep)
+                status = "local-collapsed" if collapsed else "direct-306-running"
+                if r <= max(float(tol), float(accept)) and (accept <= 0 or r < accept):
+                    ok = True
+                    status = "converged"
+                    break
+                continue
+            status = "no-lazy-direct-decrease"
+            break
+
+        # 3) IRP rescue / weak-contraction improvement.  If the direct step did
+        # improve, use it as the starting point for the chart rescue; otherwise
+        # rescue from the pre-direct point.
+        lazy_triggers += 1
+        if trigger_reason in {"direct-stagnation", "bad-condition", "large-log-chart"}:
+            lazy_rescues += 1
+        base_candidate_y = direct_y.copy() if direct_improved else y_before.copy()
+        base_candidate_r = float(direct_r) if direct_improved else float(r_before)
+        if direct_improved and direct_r < best_r:
+            best_r = float(direct_r)
+            best_y = direct_y.copy()
+        irp_y = base_candidate_y.copy()
+        irp_r = float(base_candidate_r)
+        irp_any = False
+        irp_last_chart: dict[str, Any] = {}
+        irp_last_loc: dict[str, Any] = {}
+        layers_this = max(1, int(irp_layers))
+        for layer in range(layers_this):
+            if deadline is not None and now() > deadline:
+                status = "timeout"
+                break
+            chart_records = _311_chart_candidates(base_target, irp_y, scales, bool(irp_inversion), int(irp_chart_top))
+            if not chart_records:
+                status = "no-admissible-lazy-irp-chart"
+                break
+            best_candidate_y = None
+            best_candidate_r = float("inf")
+            best_candidate_loc: dict[str, Any] = {}
+            best_candidate_chart: dict[str, Any] = {}
+            for ci, rec in enumerate(chart_records):
+                chart = rec["chart"]
+                u0 = rec["u0"]
+                loc = hypercube_inversejet_corrector(
+                    chart, u0,
+                    max_epochs=max(1, int(irp_inner_epochs)),
+                    tol=float(tol),
+                    accept=float(accept),
+                    trial_timeout=0.0 if deadline is None else max(0.0, deadline - now()),
+                    line_search=int(line_search),
+                    line_grid=line_grid,
+                    direction_seed=int(direction_seed) + 1000003 * ep + 65537 * layer + 7919 * ci + 312,
+                    cloud_nodes=int(cloud_nodes),
+                )
+                _absorb(loc)
+                try:
+                    cand_y = chart.to_base(loc.get("y", u0))
+                    cand_r = finite_residual(base_target, cand_y)
+                except Exception:
+                    cand_y = None
+                    cand_r = float("inf")
+                if math.isfinite(cand_r) and cand_r < best_candidate_r:
+                    best_candidate_y = np.asarray(cand_y, dtype=np.complex128).copy()
+                    best_candidate_r = float(cand_r)
+                    best_candidate_loc = dict(loc)
+                    best_candidate_chart = dict(rec)
+                    best_candidate_chart.pop("chart", None)
+                    best_candidate_chart.pop("u0", None)
+            if best_candidate_y is None or not math.isfinite(best_candidate_r):
+                status = "no-finite-lazy-irp-candidate"
+                break
+            if best_candidate_r <= irp_r * (1.0 - 1e-14) or best_candidate_r < best_r:
+                irp_y = best_candidate_y.copy()
+                irp_r = float(best_candidate_r)
+                irp_any = True
+                layers_done += 1
+                chart_switches += 1
+                irp_last_loc = best_candidate_loc
+                irp_last_chart = best_candidate_chart
+                if best_candidate_chart.get("kind") == "reciprocal":
+                    reciprocal_uses += 1
+                else:
+                    direct_uses += 1
+                if irp_r < best_r:
+                    best_r = irp_r
+                    best_y = irp_y.copy()
+                if irp_r <= max(float(tol), float(accept)) and (accept <= 0 or irp_r < accept):
+                    ok = True
+                    status = "converged"
+                    break
+            else:
+                status = "lazy-irp-no-extra-decrease"
+                break
+        if status == "timeout" or ok:
+            y = irp_y.copy() if irp_any or direct_improved else y_before.copy()
+            break
+
+        # 4) Commit the best available candidate: IRP if it improved beyond the
+        # direct candidate, otherwise the direct candidate if direct was still a
+        # real decrease.
+        committed = False
+        if irp_any and math.isfinite(irp_r) and (irp_r <= base_candidate_r * (1.0 - 1e-14) or irp_r < best_r):
+            y = irp_y.copy()
+            r = float(irp_r)
+            last_loc = irp_last_loc or last_loc
+            last_chart = irp_last_chart or last_chart
+            committed = True
+            capture_steps += 1
+        elif direct_improved or direct_better_than_best:
+            y = direct_y.copy()
+            r = float(direct_r)
+            last_chart = {"kind": "direct", "scale": 1.0 + 0.0j, "score": 0.0, "log_energy": _311_log_energy(y)}
+            committed = True
+            direct_uses += 1
+            capture_steps += 1
+            if not strong_direct:
+                lazy_direct_weak += 1
+        if not committed:
+            status = status if status not in {"started", "lazy-irp-no-extra-decrease"} else "no-lazy-irp-or-direct-decrease"
+            break
+
+        epochs_done = ep + 1
+        if r < best_r:
+            best_r = r
+            best_y = y.copy()
+        _maybe_collapse(r_before, r, y_before, y, ep)
+        if r <= max(float(tol), float(accept)) and (accept <= 0 or r < accept):
+            ok = True
+            status = "converged"
+            break
+        if collapsed:
+            status = "local-collapsed"
+        elif irp_any:
+            status = "lazy-irp-running"
+        else:
+            status = "direct-306-running"
+    else:
+        status = "max-epochs"
+
+    final_r = finite_residual(base_target, best_y)
+    if math.isfinite(final_r) and final_r < best_r:
+        best_r = final_r
+        y = best_y.copy()
+    if math.isfinite(best_r) and best_r <= max(float(tol), float(accept)) and (accept <= 0 or best_r < accept):
+        ok = True
+        status = "converged"
+        y = best_y.copy()
+
+    out = {
+        "accepted": bool(ok if accept <= 0 else (math.isfinite(best_r) and best_r < accept)),
+        "ok": bool(ok),
+        "status": status,
+        "epochs": int(epochs_done),
+        "residual": float(best_r),
+        "y": best_y.copy(),
+        "seconds": float(now() - t0),
+        "slope_cond": last_loc.get("slope_cond"),
+        "corrector": "312-lazy-irp-plus-306-hypercube-inversejet",
+        "raw_pandrosion_step_accepted": False,
+        "probe_total_evals": int(last_loc.get("probe_total_evals", 0) or 0),
+        "line_search_batch_numpy": True,
+        "line_search_evals": int(total_line_evals),
+        "line_lambdas": last_loc.get("line_lambdas"),
+        "halley_enabled": False,
+        "halley_total_evals": 0,
+        "halley_used_count": 0,
+        "hypercube_total_evals": int(total_hypercube_evals),
+        "hypercube_used_count": int(hypercube_used),
+        "irp_layers_completed": int(layers_done),
+        "irp_chart_switches": int(chart_switches),
+        "irp_collapsed": bool(collapsed),
+        "irp_collapse_epoch": collapse_epoch,
+        "irp_collapse_reason": collapse_reason,
+        "irp_reciprocal_uses": int(reciprocal_uses),
+        "irp_direct_uses": int(direct_uses),
+        "irp_capture_steps": int(capture_steps),
+        "irp_local_steps": int(local_steps),
+        "irp_last_chart_kind": last_chart.get("kind"),
+        "irp_last_chart_scale": cjson(last_chart.get("scale", 1.0 + 0.0j)),
+        "irp_last_chart_score": last_chart.get("score"),
+        "irp_last_chart_log_energy": last_chart.get("log_energy"),
+        "irp_lazy_triggers": int(lazy_triggers),
+        "irp_lazy_rescues": int(lazy_rescues),
+        "irp_lazy_direct_steps": int(lazy_direct_steps),
+        "irp_lazy_direct_good": int(lazy_direct_good),
+        "irp_lazy_direct_weak": int(lazy_direct_weak),
+        "irp_lazy_skipped": int(lazy_skipped_irp),
+        "irp_lazy_stagnation_hits": int(stagnation_hits),
+        "irp_lazy_policy": {
+            "lazy_direct_epochs": int(lazy_direct_epochs),
+            "lazy_trigger_drop": float(lazy_trigger_drop),
+            "lazy_trigger_after": int(lazy_trigger_after),
+            "lazy_bad_cond": float(lazy_bad_cond),
+            "lazy_log_energy": float(lazy_log_energy),
+            "eager_irp": bool(eager_irp),
+            "rescue_collapsed": bool(rescue_collapsed),
+        },
+    }
+    for k, v in last_loc.items():
+        if k not in out and k != "y":
+            out[k] = v
+    return out
+
+def cluster_index(roots: list[dict[str, Any]], z: Any, sep: float) -> Optional[int]:
+    zz = np.asarray(z, dtype=np.complex128)
+    zn = max(1.0, float(np.linalg.norm(zz)))
+    for i, r in enumerate(roots):
+        rz = np.asarray(r["z_complex"], dtype=np.complex128)
+        dist = float(np.linalg.norm(zz - rz)) / max(zn, float(np.linalg.norm(rz)), 1.0)
+        if dist <= sep:
+            return i
+    return None
+
+
+def realness(z: Any) -> float:
+    zz = np.asarray(z, dtype=np.complex128)
+    return float(np.linalg.norm(zz.imag) / max(1e-300, np.linalg.norm(zz)))
+
+
+def slope_condition_from_corrector(loc: dict[str, Any]) -> Optional[float]:
+    c = loc.get("slope_cond")
+    try:
+        return float(c) if c is not None and math.isfinite(float(c)) else None
+    except Exception:
+        return None
+
+
+def score_root(residual: float, realness_value: float, cond: Optional[float]) -> float:
+    c = float(cond) if cond is not None and math.isfinite(float(cond)) else 1e300
+    return float(math.log1p(max(0.0, residual)) + 0.01 * math.log1p(max(0.0, realness_value)) + 0.001 * math.log1p(max(0.0, c)))
+
+
+def origin_affine_start_314(target: TargetTrack, n: int, h: float, max_norm: float) -> tuple[Optional[Any], dict[str, Any]]:
+    """Finite-difference affine seed for the 314 lazy large-KS backend.
+
+    This does not replace the local 306/312 corrector.  It gives the first
+    large-dimensional trial a scale-aware point obtained from the finite
+    coordinate telescope at the origin, then the normal inverse-jet flow takes
+    over.
+    """
+    ensure_numpy()
+    h0 = max(1e-12, float(h))
+    z0 = np.zeros(int(n), dtype=np.complex128)
+    try:
+        f0 = target.eval(z0)
+        P = np.zeros((int(n), int(n)), dtype=np.complex128)
+        for j in range(int(n)):
+            P[j, j] = h0
+        FP = target.eval_batch(P)
+        J = ((FP - f0[None, :]) / h0).T
+        try:
+            y = np.linalg.solve(J, -f0)
+            method = "solve"
+        except Exception:
+            y, _, _, _ = np.linalg.lstsq(J, -f0, rcond=None)
+            method = "lstsq"
+        if not np.all(np.isfinite(y)):
+            return None, {"origin_seed_enabled": True, "origin_seed_status": "nonfinite"}
+        yn = float(np.linalg.norm(y))
+        cap = float(max_norm)
+        if math.isfinite(cap) and cap > 0 and yn > cap:
+            y = y * (cap / max(yn, 1e-300))
+            yn = float(np.linalg.norm(y))
+        r0 = float(np.linalg.norm(f0))
+        r1 = finite_residual(target, y)
+        return y, {
+            "origin_seed_enabled": True,
+            "origin_seed_status": "ok",
+            "origin_seed_method": method,
+            "origin_seed_h": float(h0),
+            "origin_seed_r0": float(r0),
+            "origin_seed_r1": float(r1),
+            "origin_seed_norm": float(yn),
+            "origin_seed_max_norm": float(cap),
+        }
+    except Exception as exc:
+        return None, {"origin_seed_enabled": True, "origin_seed_status": f"error:{type(exc).__name__}", "origin_seed_h": float(h0)}
+
+
+# ---------------------------------------------------------------------------
+# Main extractor
+# ---------------------------------------------------------------------------
+
+def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
+    ensure_numpy()
+    t_case = now()
+    n, d = parse_case(case_raw)
+    system = make_kostlan_system(args, n, d)
+    if isinstance(system, GeometryKernelKostlanSystem):
+        system_backend = "geometry-kernel"
+    elif isinstance(system, LazyFeatureKostlanSystem):
+        system_backend = "lazy-feature"
+    else:
+        system_backend = "dense"
+    # Projective/homothetic flow remains the global geometry.
+    chart = LinearChart.identity(n, scale=float(args.linear_scale))
+    target = TargetTrack(system, chart)
+
+    powers = sorted(set(round(float(x), 16) for x in parse_float_list(args.powers, DEFAULT_POWERS, positive=True)))
+    powers = [min(max(x, 1e-300), float(args.power_cap)) for x in powers]
+    angles = [math.radians(x) for x in parse_float_list(args.angles, DEFAULT_ANGLES_DEG)]
+    angles_deg = [math.degrees(x) for x in angles]
+    radii = parse_float_list(args.rays, DEFAULT_RADII, positive=True)
+    gains = parse_float_list(args.startopt_gains, DEFAULT_GAINS, positive=True)
+    probe_radii = parse_float_list(args.probe_radii, [0.0, 0.35, 0.7, 1.0, 1.6, 2.6, 4.2], positive=False)
+    probe_radii = [r for r in probe_radii if r >= 0] or [0.0, 1.0]
+
+    roots: list[dict[str, Any]] = []
+    trials: list[dict[str, Any]] = []
+    duplicates = 0
+    failures = 0
+    t_extract = now()
+
+    for trial in range(int(args.pool)):
+        if len(roots) >= int(args.count):
+            break
+        y_raw = None
+        geom: dict[str, Any] = {}
+        origin_period = int(args.origin_seed_period)
+        origin_due = bool(args.origin_seed) and system_backend in {"lazy-feature", "geometry-kernel"} and (trial == 0 if origin_period <= 0 else trial % max(1, origin_period) == 0)
+        if origin_due:
+            cap = float(args.origin_seed_max_norm)
+            if not (math.isfinite(cap) and cap > 0):
+                cap = 2.0 * math.sqrt(max(1, n))
+            y_origin, ometa = origin_affine_start_314(target, n, float(args.origin_seed_h), cap)
+            if y_origin is not None:
+                y_raw = np.asarray(y_origin, dtype=np.complex128)
+                geom = {
+                    "homothety": 1.0,
+                    "base_homothety": 1.0,
+                    "thales_thrust": 1.0,
+                    "theta_deg": None,
+                    "theta_jitter_deg": 0.0,
+                    "theta_mean_deg": None,
+                    "base_radius": float(np.linalg.norm(y_raw) / max(1.0, math.sqrt(max(1, n)))),
+                    "dup_pressure": float((duplicates + 1.0) / (len(roots) + 1.0)),
+                    "fail_pressure": float((failures + 1.0) / (trial + 1.0)),
+                    "progress": float(min(1.0, max(0.0, len(roots) / max(1.0, float(args.count))))),
+                    "chart": "314-origin-affine-finite-difference-seed",
+                    "atlas_mode": "314-origin-affine-seed",
+                    "atlas_geometry": "finite-coordinate-telescope-at-origin",
+                    "atlas_selected_geometry_cell": "origin-affine",
+                    "atlas_cells_tested": 0,
+                    "atlas_admissible_cells": 1,
+                    "atlas_selected_index": 0,
+                    "atlas_selection_rule": "first-large-geometry-origin-seed",
+                    **ometa,
+                }
+        if y_raw is None:
+            y_raw, geom = universal_atlas_start(
+                target, n, trial, system.seed + 0x113000, powers, angles, radii, float(args.power_cap),
+                roots_found=len(roots), duplicates=duplicates, failures=failures, target_count=int(args.count),
+                universal_cells=int(args.universal_cells), universal_shells=int(args.universal_shells),
+                cell_probe_radius=float(args.cell_probe_radius), cell_descent_min=float(args.cell_descent_min),
+                cell_equal_gap_min=float(args.cell_equal_gap_min), cell_log_max=float(args.cell_log_max),
+                universal_cycle=bool(args.universal_cycle)
+            )
+        y0, smeta = startopt(target, y_raw, trial, system.seed + 0x112555, int(args.startopt_steps), int(args.startopt_candidates), gains, int(args.startopt_micro_epochs))
+        loc = lazy_irp_hypercube_inversejet_corrector_312(
+            target, y0,
+            max_epochs=int(args.epochs),
+            tol=float(args.tol),
+            accept=float(args.accept),
+            trial_timeout=float(args.trial_timeout),
+            line_search=int(args.line_search),
+            line_grid=parse_float_list(args.line_grid, []),
+            direction_seed=system.seed + 7919 * trial,
+            cloud_nodes=int(getattr(args, "hypercube_nodes", 0)),
+            irp_layers=int(args.irp_layers),
+            irp_inner_epochs=int(args.irp_inner_epochs),
+            irp_scales=_311_complex_scale_palette(
+                parse_float_list(args.irp_gains, [1.0, 0.5, 2.0, 0.25, 4.0, 0.125, 8.0], positive=True),
+                parse_float_list(args.irp_phases, [0.0, 0.08, -0.08, 0.19, -0.19]),
+                int(args.irp_top),
+            ),
+            irp_chart_top=int(args.irp_chart_top),
+            irp_inversion=bool(args.irp_inversion),
+            collapse=bool(args.collapse),
+            collapse_residual=float(args.collapse_residual),
+            collapse_drop=float(args.collapse_drop),
+            collapse_rel_step=float(args.collapse_rel_step),
+            collapse_after=int(args.collapse_after),
+            local_inner_epochs=int(args.local_inner_epochs),
+            lazy_direct_epochs=int(args.lazy_direct_epochs),
+            lazy_trigger_drop=float(args.lazy_trigger_drop),
+            lazy_trigger_after=int(args.lazy_trigger_after),
+            lazy_bad_cond=float(args.lazy_bad_cond),
+            lazy_log_energy=float(args.lazy_log_energy),
+            eager_irp=bool(args.eager_irp),
+            rescue_collapsed=bool(args.rescue_collapsed),
+        )
+        z = chart.z_from_y(loc["y"])
+        r_orig = float(np.linalg.norm(system.eval(z)))
+        accepted = bool(math.isfinite(r_orig) and r_orig < float(args.accept))
+        rec = {
+            "trial": int(trial),
+            "accepted": accepted,
+            "status": loc.get("status"),
+            "r1": r_orig,
+            "epochs": int(loc.get("epochs", 0)),
+            "seconds": float(loc.get("seconds", 0.0)),
+            "corrector": loc.get("corrector", "batch-probe-aware-pure-pandrosion-conditioned-exact-slope"),
+            "slope_cond": loc.get("slope_cond"),
+            "probe_mode": loc.get("probe_mode"),
+            "probe_name": loc.get("probe_name"),
+            "probe_candidates": loc.get("probe_candidates"),
+            "probe_total_evals": loc.get("probe_total_evals"),
+            "line_search_evals": loc.get("line_search_evals"),
+            "irp_layers_completed": loc.get("irp_layers_completed"),
+            "irp_chart_switches": loc.get("irp_chart_switches"),
+            "irp_collapsed": loc.get("irp_collapsed"),
+            "irp_collapse_epoch": loc.get("irp_collapse_epoch"),
+            "irp_collapse_reason": loc.get("irp_collapse_reason"),
+            "irp_reciprocal_uses": loc.get("irp_reciprocal_uses"),
+            "irp_direct_uses": loc.get("irp_direct_uses"),
+            "irp_lazy_triggers": loc.get("irp_lazy_triggers"),
+            "irp_lazy_rescues": loc.get("irp_lazy_rescues"),
+            "irp_lazy_direct_steps": loc.get("irp_lazy_direct_steps"),
+            "irp_lazy_direct_good": loc.get("irp_lazy_direct_good"),
+            "irp_lazy_direct_weak": loc.get("irp_lazy_direct_weak"),
+            "irp_lazy_skipped": loc.get("irp_lazy_skipped"),
+            "irp_last_chart_kind": loc.get("irp_last_chart_kind"),
+            "probe_condition_best": loc.get("probe_condition_best"),
+            "probe_condition_scored": loc.get("probe_condition_scored"),
+            "probe_equal_value_gap": loc.get("probe_equal_value_gap"),
+            "probe_equal_value_gap_min": loc.get("probe_equal_value_gap_min"),
+            "probe_equal_value_penalty": loc.get("probe_equal_value_penalty"),
+            "probe_curvature_best": loc.get("probe_curvature_best"),
+            "probe_curvature_scored": loc.get("probe_curvature_scored"),
+            "probe_axis_enabled": loc.get("probe_axis_enabled"),
+            "probe_residual": loc.get("probe_residual"),
+            "probe_distance": loc.get("probe_distance"),
+                        "probe_improvement_proxy": loc.get("probe_improvement_proxy"),
+            "halley_enabled": loc.get("halley_enabled"),
+            "halley_gate": loc.get("halley_gate"),
+            "halley_used": loc.get("halley_used"),
+            "halley_used_count": loc.get("halley_used_count"),
+            "halley_chosen_direction": loc.get("halley_chosen_direction"),
+            "halley_delta2_norm": loc.get("halley_delta2_norm"),
+            "halley_total_evals": loc.get("halley_total_evals"),
+            **geom,
+            **smeta,
+        }
+        if bool(args.verbose_trials):
+            rec["z"] = root_to_json(z)
+            rec["y0"] = root_to_json(y0)
+        if not accepted:
+            failures += 1
+            trials.append(rec)
+            continue
+        dup = cluster_index(roots, z, float(args.cluster_sep))
+        if dup is not None:
+            duplicates += 1
+            rec["status"] = "duplicate"
+            rec["cluster"] = int(dup)
+            trials.append(rec)
+            continue
+        rid = len(roots)
+        cond = slope_condition_from_corrector(loc)
+        realv = realness(z)
+        roots.append({
+            "id": rid,
+            "source": "314-geometry-kostlan-plus-312-lazy-irp-hypercube-inversejet",
+            "trial": int(trial),
+            "z_complex": np.asarray(z, dtype=np.complex128).copy(),
+            "y_complex": np.asarray(loc["y"], dtype=np.complex128).copy(),
+            "residual": float(r_orig),
+            "realness": float(realv),
+            "cond": cond,
+            "score": score_root(float(r_orig), realv, cond),
+            "epochs": int(loc.get("epochs", 0)),
+            "seconds": float(loc.get("seconds", 0.0)),
+            "corrector": loc.get("corrector", "batch-probe-aware-pure-pandrosion-conditioned-exact-slope"),
+            "slope_cond": loc.get("slope_cond"),
+            "probe_mode": loc.get("probe_mode"),
+            "probe_name": loc.get("probe_name"),
+            "probe_candidates": loc.get("probe_candidates"),
+            "probe_total_evals": loc.get("probe_total_evals"),
+            "line_search_evals": loc.get("line_search_evals"),
+            "irp_layers_completed": loc.get("irp_layers_completed"),
+            "irp_chart_switches": loc.get("irp_chart_switches"),
+            "irp_collapsed": loc.get("irp_collapsed"),
+            "irp_collapse_epoch": loc.get("irp_collapse_epoch"),
+            "irp_collapse_reason": loc.get("irp_collapse_reason"),
+            "irp_reciprocal_uses": loc.get("irp_reciprocal_uses"),
+            "irp_direct_uses": loc.get("irp_direct_uses"),
+            "irp_lazy_triggers": loc.get("irp_lazy_triggers"),
+            "irp_lazy_rescues": loc.get("irp_lazy_rescues"),
+            "irp_lazy_direct_steps": loc.get("irp_lazy_direct_steps"),
+            "irp_lazy_direct_good": loc.get("irp_lazy_direct_good"),
+            "irp_lazy_direct_weak": loc.get("irp_lazy_direct_weak"),
+            "irp_lazy_skipped": loc.get("irp_lazy_skipped"),
+            "irp_last_chart_kind": loc.get("irp_last_chart_kind"),
+            "probe_condition_best": loc.get("probe_condition_best"),
+            "probe_condition_scored": loc.get("probe_condition_scored"),
+            "probe_equal_value_gap": loc.get("probe_equal_value_gap"),
+            "probe_equal_value_gap_min": loc.get("probe_equal_value_gap_min"),
+            "probe_equal_value_penalty": loc.get("probe_equal_value_penalty"),
+            "probe_curvature_best": loc.get("probe_curvature_best"),
+            "probe_curvature_scored": loc.get("probe_curvature_scored"),
+            "probe_axis_enabled": loc.get("probe_axis_enabled"),
+            "probe_residual": loc.get("probe_residual"),
+            "probe_distance": loc.get("probe_distance"),
+                        "probe_improvement_proxy": loc.get("probe_improvement_proxy"),
+            "halley_enabled": loc.get("halley_enabled"),
+            "halley_gate": loc.get("halley_gate"),
+            "halley_used": loc.get("halley_used"),
+            "halley_used_count": loc.get("halley_used_count"),
+            "halley_chosen_direction": loc.get("halley_chosen_direction"),
+            "halley_delta2_norm": loc.get("halley_delta2_norm"),
+            "halley_total_evals": loc.get("halley_total_evals"),
+            **geom,
+            **smeta,
+        })
+        rec["status"] = "new-root"
+        rec["root_id"] = rid
+        trials.append(rec)
+
+    encoded_roots = []
+    for r in sorted(roots, key=lambda q: (float(q.get("score", float("inf"))), int(q.get("id", 0)))):
+        rr = dict(r)
+        zc = rr.pop("z_complex")
+        yc = rr.pop("y_complex")
+        rr["z"] = root_to_json(zc)
+        rr["y"] = root_to_json(yc)
+        encoded_roots.append(rr)
+
+    result = {
+        "script": "314_pandrosion_geometry_kostlan_irp_hypercube_inversejet_numpy_engine.py",
+        "autonomous": True,
+        "dependencies": {"python_scripts": [], "numpy": bool(np is not None)},
+        "mode": "314-geometry-kostlan-plus-312-lazy-irp-hypercube-inversejet",
+        "flow_formula": "314 system backend (dense exact, geometry-kernel Kostlan oracle, or lazy feature stream) -> 304 universal atlas -> StartOpt(y) -> 312 lazy policy: direct 306 hypercube inverse-jet first; activate IRP chart cascade only on stagnation/weak contraction/bad condition; return chart; no Halley, no anchored Q, no Newton fallback",
+        "case": f"{n},{d}",
+        "family": "ks",
+        "system_backend": system_backend,
+        "seed_index": int(args.seed_index),
+        "seed": int(system.seed),
+        "n": int(n),
+        "degree": int(d),
+        "terms_per_poly": system.terms_per_poly,
+        "terms": system.total_terms,
+        "bezout": system.bezout,
+        "equation_normalize": bool(args.equation_normalize),
+        "linear_A": [[cjson(chart.A[i, j]) for j in range(n)] for i in range(n)],
+        "parameters": {
+            "count": int(args.count),
+            "pool": int(args.pool),
+            "system_mode": str(args.system_mode),
+            "dense_max_terms": int(args.dense_max_terms),
+            "lazy_features": int(getattr(system, "lazy_features", 0) or 0),
+            "lazy_feature_cap": int(args.lazy_feature_cap),
+            "lazy_projective_normalize": bool(args.lazy_projective_normalize),
+            "lazy_dynamic_normalize": bool(args.lazy_dynamic_normalize),
+            "lazy_eval_block": int(args.lazy_eval_block),
+            "geometry_anchors": int(getattr(system, "geometry_anchors", 0) or 0),
+            "geometry_anchor_cap": int(args.geometry_anchor_cap),
+            "geometry_anchor_scales": parse_float_list(args.geometry_anchor_scales, [0.25, 0.5, 1.0, 2.0, 4.0], positive=True),
+            "geometry_dynamic_normalize": bool(args.geometry_dynamic_normalize),
+            "geometry_self_normalize": bool(args.geometry_self_normalize),
+            "geometry_eval_block": int(args.geometry_eval_block),
+            "origin_seed": bool(args.origin_seed),
+            "origin_seed_h": float(args.origin_seed_h),
+            "origin_seed_max_norm": float(args.origin_seed_max_norm),
+            "origin_seed_period": int(args.origin_seed_period),
+            "accept": float(args.accept),
+            "tol": float(args.tol),
+            "cluster_sep": float(args.cluster_sep),
+            "epochs": int(args.epochs),
+            "trial_timeout": float(args.trial_timeout),
+            "line_search": int(args.line_search),
+            "irp_layers": int(args.irp_layers),
+            "irp_inner_epochs": int(args.irp_inner_epochs),
+            "local_inner_epochs": int(args.local_inner_epochs),
+            "lazy_direct_epochs": int(args.lazy_direct_epochs),
+            "lazy_trigger_drop": float(args.lazy_trigger_drop),
+            "lazy_trigger_after": int(args.lazy_trigger_after),
+            "lazy_bad_cond": float(args.lazy_bad_cond),
+            "lazy_log_energy": float(args.lazy_log_energy),
+            "eager_irp": bool(args.eager_irp),
+            "rescue_collapsed": bool(args.rescue_collapsed),
+            "irp_chart_top": int(args.irp_chart_top),
+            "irp_gains": parse_float_list(args.irp_gains, [1.0, 0.5, 2.0, 0.25, 4.0, 0.125, 8.0], positive=True),
+            "irp_phases": parse_float_list(args.irp_phases, [0.0, 0.08, -0.08, 0.19, -0.19]),
+            "irp_top": int(args.irp_top),
+            "irp_inversion": bool(args.irp_inversion),
+            "collapse": bool(args.collapse),
+            "collapse_residual": float(args.collapse_residual),
+            "collapse_drop": float(args.collapse_drop),
+            "collapse_rel_step": float(args.collapse_rel_step),
+            "collapse_after": int(args.collapse_after),
+            "probe_scale": float(args.probe_scale),
+            "probe_candidates": int(args.probe_candidates),
+            "probe_radii": probe_radii,
+            "probe_self": bool(args.probe_self),
+            "probe_axis": bool(args.probe_axis),
+            "probe_condition_top": int(args.probe_condition_top),
+            "probe_condition_weight": float(args.probe_condition_weight),
+            "probe_equal_value_weight": float(args.probe_equal_value_weight),
+            "probe_equal_value_eps": float(args.probe_equal_value_eps),
+            "probe_curvature_top": int(args.probe_curvature_top),
+            "probe_curvature_weight": float(args.probe_curvature_weight),
+            "probe_curvature_mid": float(args.probe_curvature_mid),
+            "trust_cond_weight": float(args.trust_cond_weight),
+            "trust_cond_min": float(args.trust_cond_min),
+            "line_grid": parse_float_list(args.line_grid, []),
+            "halley": bool(args.halley),
+            "halley_gate_residual": float(args.halley_gate_residual),
+            "halley_probe_fraction": float(args.halley_probe_fraction),
+            "halley_cond_weight": float(args.halley_cond_weight),
+            "halley_min_gate": float(args.halley_min_gate),
+            "halley_max_correction": float(args.halley_max_correction),
+            "probe_log_weight": float(args.probe_log_weight),
+            "probe_log_delta_weight": float(args.probe_log_delta_weight),
+            "halley_log_weight": float(args.halley_log_weight),
+            "halley_log_scale": float(args.halley_log_scale),
+            "tensor_extra_directions": int(args.tensor_extra_directions),
+            "powers": powers,
+            "power_cap": float(args.power_cap),
+            "angles_deg": angles_deg,
+            "base_rays": radii,
+            "startopt_steps": int(args.startopt_steps),
+            "startopt_candidates": int(args.startopt_candidates),
+            "startopt_gains": gains,
+            "startopt_micro_epochs": int(args.startopt_micro_epochs),
+            "universal_cells": int(args.universal_cells),
+            "universal_shells": int(args.universal_shells),
+            "cell_probe_radius": float(args.cell_probe_radius),
+            "cell_descent_min": float(args.cell_descent_min),
+            "cell_equal_gap_min": float(args.cell_equal_gap_min),
+            "cell_log_max": float(args.cell_log_max),
+            "universal_cycle": bool(args.universal_cycle),
+        },
+        "roots": encoded_roots,
+        "trials": trials if bool(args.verbose_trials) else trials[: min(len(trials), int(args.keep_trials))],
+        "summary": {
+            "requested_roots": int(args.count),
+            "unique_roots": len(roots),
+            "success": bool(len(roots) >= int(args.count)),
+            "trials_used": len(trials),
+            "duplicates": int(duplicates),
+            "failures": int(failures),
+            "generation_seconds": system.generation_seconds,
+            "extract_seconds": float(now() - t_extract),
+            "total_seconds": float(now() - t_case),
+            "eval_stats": system.stats(),
+        },
+    }
+    return result
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(description="314 standalone NumPy Pandrosion engine: dense ks for small cases, projective geometry-kernel Kostlan oracle for huge cases, plus 312 lazy IRP and 306 hypercube inverse-jet core.")
+    p.add_argument("--cases", default="2,4", help="comma-separated case n,d; multiple cases can be separated by ';'")
+    p.add_argument("--seed-index", type=int, default=0)
+    p.add_argument("--equation-normalize", action="store_true", default=False)
+    p.add_argument("--no-equation-normalize", dest="equation_normalize", action="store_false")
+    p.add_argument("--system-mode", choices=["auto", "dense", "geometry-kernel", "geometry", "kernel", "projective-kernel", "lazy-feature", "lazy", "feature", "stream"], default="auto", help="314 system backend; auto uses dense below --dense-max-terms and geometry-kernel above it")
+    p.add_argument("--dense-max-terms", type=int, default=250000, help="314 auto backend threshold for exact dense monomial materialization")
+    p.add_argument("--geometry-anchors", type=int, default=0, help="314 geometry-kernel anchor count; 0 chooses a dimension/degree-based default")
+    p.add_argument("--geometry-anchor-cap", type=int, default=4096, help="314 cap for automatic geometry-kernel anchor count")
+    p.add_argument("--geometry-anchor-scales", default="0.25,0.5,1,2,4", help="314 affine projective anchor shell scales")
+    p.add_argument("--geometry-dynamic-normalize", action="store_true", default=True, help="314 pointwise kernel scaling for overflow/underflow-safe geometry evaluation")
+    p.add_argument("--no-geometry-dynamic-normalize", dest="geometry_dynamic_normalize", action="store_false")
+    p.add_argument("--geometry-self-normalize", action="store_true", default=True, help="314 normalize each kernel row to unit RMS before residual evaluation")
+    p.add_argument("--no-geometry-self-normalize", dest="geometry_self_normalize", action="store_false")
+    p.add_argument("--geometry-eval-block", type=int, default=128, help="314 max eval rows per geometry-kernel NumPy block")
+    p.add_argument("--lazy-features", type=int, default=0, help="314 lazy-feature count; 0 chooses a dimension/degree-based default")
+    p.add_argument("--lazy-feature-cap", type=int, default=8192, help="314 cap for automatic lazy-feature count")
+    p.add_argument("--lazy-projective-normalize", action="store_true", default=True, help="314 scale lazy evaluations by the Kostlan projective norm; zeros are unchanged")
+    p.add_argument("--no-lazy-projective-normalize", dest="lazy_projective_normalize", action="store_false")
+    p.add_argument("--lazy-dynamic-normalize", action="store_true", default=True, help="314 pointwise dynamic feature scaling for overflow-safe lazy evaluation; zeros are unchanged")
+    p.add_argument("--no-lazy-dynamic-normalize", dest="lazy_dynamic_normalize", action="store_false")
+    p.add_argument("--lazy-eval-block", type=int, default=128, help="314 max eval rows per lazy NumPy feature block")
+    p.add_argument("--origin-seed", action="store_true", default=True, help="314 use a finite-difference affine seed at the origin for large geometry/lazy cases")
+    p.add_argument("--no-origin-seed", dest="origin_seed", action="store_false")
+    p.add_argument("--origin-seed-h", type=float, default=1e-5, help="314 finite coordinate step for the origin affine seed")
+    p.add_argument("--origin-seed-max-norm", type=float, default=0.0, help="314 cap for origin affine seed norm; 0 uses 2*sqrt(n)")
+    p.add_argument("--origin-seed-period", type=int, default=0, help="314 origin seed trial period for geometry/lazy cases; 0 means trial 0 only")
+    p.add_argument("--linear-scale", type=float, default=1.0)
+    p.add_argument("--count", "--thales-count", "--useful-count", type=int, default=8)
+    p.add_argument("--pool", "--thales-pool", "--useful-pool", type=int, default=4096)
+    p.add_argument("--epochs", "--thales-epochs", "--useful-epochs", type=int, default=24)
+    p.add_argument("--tol", type=float, default=1e-12)
+    p.add_argument("--accept", "--residual-accept", type=float, default=1e-8)
+    p.add_argument("--cluster-sep", type=float, default=1e-8)
+    p.add_argument("--trial-timeout", "--thales-trial-timeout", "--useful-trial-timeout", type=float, default=0.0)
+    p.add_argument("--line-search", type=int, default=12)
+    p.add_argument("--hypercube-nodes", type=int, default=0, help="306: hypercube cloud nodes; 0 uses max(2n+4,16)")
+    p.add_argument("--irp-layers", type=int, default=2, help="312: number of IRP chart layers when rescue is triggered")
+    p.add_argument("--irp-inner-epochs", type=int, default=2, help="312: 306 hypercube epochs inside each triggered IRP chart layer")
+    p.add_argument("--local-inner-epochs", type=int, default=3, help="312: inner 306 epochs after locality collapse")
+    p.add_argument("--lazy-direct-epochs", type=int, default=1, help="312: direct 306 epochs before considering IRP rescue")
+    p.add_argument("--lazy-trigger-drop", type=float, default=0.82, help="312: if direct residual drop is weaker than this ratio, try IRP")
+    p.add_argument("--lazy-trigger-after", type=int, default=1, help="312: direct stagnations before IRP rescue")
+    p.add_argument("--lazy-bad-cond", type=float, default=1e10, help="312: condition threshold that triggers IRP")
+    p.add_argument("--lazy-log-energy", type=float, default=8.0, help="312: projective log-energy threshold that triggers IRP")
+    p.add_argument("--eager-irp", action="store_true", default=False, help="312: recover 311-like eager IRP behavior")
+    p.add_argument("--rescue-collapsed", action="store_true", default=False, help="312: allow IRP rescue even after collapse")
+    p.add_argument("--irp-chart-top", type=int, default=2, help="312: number of ranked charts tested per triggered IRP layer")
+    p.add_argument("--irp-gains", default="1,0.5,2,0.25,4,0.125,8", help="312: homothety gains for the IRP chart palette")
+    p.add_argument("--irp-phases", default="0,0.08,-0.08,0.19,-0.19", help="312: phase offsets in radians for complex homothety charts")
+    p.add_argument("--irp-top", type=int, default=14, help="312: maximum number of complex chart scales")
+    p.add_argument("--irp-inversion", action="store_true", default=True, help="312: include coordinatewise reciprocal charts y=1/(c u)")
+    p.add_argument("--no-irp-inversion", dest="irp_inversion", action="store_false")
+    p.add_argument("--collapse", action="store_true", default=True, help="312: freeze to local direct chart after observed localization")
+    p.add_argument("--no-collapse", dest="collapse", action="store_false")
+    p.add_argument("--collapse-residual", type=float, default=1e-4)
+    p.add_argument("--collapse-drop", type=float, default=0.42)
+    p.add_argument("--collapse-rel-step", type=float, default=0.35)
+    p.add_argument("--collapse-after", type=int, default=2)
+    p.add_argument("--probe-scale", type=float, default=0.035, help="base scale for finite-slope endpoint probes")
+    p.add_argument("--probe-candidates", type=int, default=8, help="number of theorem-guided b-probes scored by ||F(b)|| per epoch")
+    p.add_argument("--probe-radii", default="0,0.35,0.7,1,1.6,2.6,4.2", help="nonnegative multipliers for theorem-guided b-probes")
+    p.add_argument("--probe-self", action="store_true", default=True, help="include b=a self-probe; Q is still computed by finite telescopic sums, not a Jacobian formula")
+    p.add_argument("--no-probe-self", dest="probe_self", action="store_false")
+    p.add_argument("--probe-axis", action="store_true", default=True, help="include coordinate-axis Thales probes in the finite-slope b-probe pool")
+    p.add_argument("--no-probe-axis", dest="probe_axis", action="store_false")
+    p.add_argument("--probe-condition-top", type=int, default=2, help="condition-number score for this many best residual b-probes; 0 disables")
+    p.add_argument("--probe-condition-weight", type=float, default=0.0025, help="small log-cond penalty in b-probe scoring")
+    p.add_argument("--probe-equal-value-weight", type=float, default=0.015, help="penalty for non-self probes with F(b) close to F(a), i.e. near equal-value poles")
+    p.add_argument("--probe-equal-value-eps", type=float, default=1e-12, help="floor for equal-value pole gap")
+    p.add_argument("--probe-curvature-top", type=int, default=2, help="score finite-slope curvature proxy on this many best probes; 0 disables")
+    p.add_argument("--probe-curvature-weight", type=float, default=0.003, help="small penalty for finite-slope curvature variation along probe segment")
+    p.add_argument("--probe-curvature-mid", type=float, default=0.5, help="midpoint fraction used in finite-slope curvature proxy")
+    p.add_argument("--trust-cond-weight", type=float, default=0.06, help="condition-aware trust-region shrinkage; 0 disables")
+    p.add_argument("--trust-cond-min", type=float, default=4.0, help="minimum trust-region factor in units of max(1,||y||)")
+    p.add_argument("--line-grid", default="1,0.75,0.5,0.35,0.25,0.18,0.125,0.09,0.0625,0.045,0.03125,0.02", help="comma-separated lambdas for batched line search")
+    p.add_argument("--halley", action="store_true", default=True, help="301: kept for CLI compatibility; full cubic Halley is always on")
+    p.add_argument("--no-halley", dest="halley", action="store_false", help="301: ignored; raw Pandrosion fallback is intentionally not used")
+    p.add_argument("--halley-gate-residual", type=float, default=0.25, help="301: kept for CLI compatibility; no gate is used")
+    p.add_argument("--halley-probe-fraction", type=float, default=0.50, help="301: symmetric second-slope probe fraction along cubic delta1")
+    p.add_argument("--halley-cond-weight", type=float, default=0.025, help="301: kept for CLI compatibility; no gate is used")
+    p.add_argument("--halley-min-gate", type=float, default=0.04, help="301: kept for CLI compatibility; no gate is used")
+    p.add_argument("--halley-max-correction", type=float, default=1.25, help="301: cap ||delta2|| relative to ||delta1||")
+    p.add_argument("--probe-log-weight", type=float, default=0.0005, help="301: penalty for absolute logarithmic/projective scale energy of probes")
+    p.add_argument("--probe-log-delta-weight", type=float, default=0.0015, help="301: penalty for probes that distort the current logarithmic scale")
+    p.add_argument("--halley-log-weight", type=float, default=0.03, help="301: logarithmic stability penalty in the Halley gate")
+    p.add_argument("--halley-log-scale", type=float, default=1.0, help="301: scale for logarithmic stability gate")
+    p.add_argument("--tensor-extra-directions", type=int, default=0, help="301: extra symmetric finite-slope tensor directions near a root")
+    p.add_argument("--self-test", action="store_true", help="run a small ks(2,2) smoke test and exit")
+
+    p.add_argument("--powers", "--thales-powers", default=None)
+    p.add_argument("--power-cap", "--thales-power-cap", type=float, default=1048576.0)
+    p.add_argument("--angles", "--thales-angles", default=None, help="degrees, comma-separated")
+    p.add_argument("--rays", "--thales-rays", default=None)
+    p.add_argument("--startopt-steps", type=int, default=1)
+    p.add_argument("--startopt-candidates", type=int, default=12)
+    p.add_argument("--startopt-gains", default=None)
+    p.add_argument("--startopt-micro-epochs", type=int, default=0)
+    p.add_argument("--universal-cells", type=int, default=16, help="304: fixed universal atlas cells tested per trial")
+    p.add_argument("--universal-shells", type=int, default=5, help="304: fixed shell layers for simplex/hypercube/projective atlas")
+    p.add_argument("--cell-probe-radius", type=float, default=0.14, help="304: fixed local cell probe radius")
+    p.add_argument("--cell-descent-min", type=float, default=1.02, help="304: required local descent ratio for admissible fixed cell")
+    p.add_argument("--cell-equal-gap-min", type=float, default=1e-10, help="304: minimum equal-value gap for admissible fixed cell")
+    p.add_argument("--cell-log-max", type=float, default=80.0, help="304: maximum log-scale energy for admissible fixed cell")
+    p.add_argument("--universal-cycle", action="store_true", default=True, help="304: cycle through admissible universal cells")
+    p.add_argument("--no-universal-cycle", dest="universal_cycle", action="store_false")
+    p.add_argument("--out", "--thales-out", "--useful-out", default=None)
+    p.add_argument("--outdir", default="/mnt/data/314_geometry_kostlan_out")
+    p.add_argument("--keep-trials", type=int, default=160)
+    p.add_argument("--verbose-trials", action="store_true")
+    return p
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    ensure_numpy()
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if bool(getattr(args, "self_test", False)):
+        args.cases = "2,2"
+        args.count = 4
+        args.pool = min(int(args.pool), 512)
+        args.epochs = min(int(args.epochs), 16)
+        args.accept = min(float(args.accept), 1e-8)
+        args.keep_trials = min(int(args.keep_trials), 20)
+        args.out = args.out or "/mnt/data/314_geometry_kostlan_out/self_test_314.json"
+    cases = [c.strip() for c in str(args.cases).replace("|", ";").split(";") if c.strip()]
+    outputs = [run_case(args, c) for c in cases]
+    final: dict[str, Any]
+    if len(outputs) == 1:
+        final = outputs[0]
+    else:
+        final = {"script": "314_pandrosion_geometry_kostlan_irp_hypercube_inversejet_numpy_engine.py", "autonomous": True, "cases": outputs}
+    if args.out:
+        out = Path(args.out)
+    else:
+        first = cases[0].replace(",", "x") if cases else "case"
+        out = Path(args.outdir) / f"314_geometry_kostlan_{first}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(final, indent=2), encoding="utf-8")
+
+    print("=" * 120, flush=True)
+    print("314 autonomous GEOMETRY KOSTLAN + LAZY IRP + UNIVERSAL HYPERCUBE INVERSE-JET NumPy Pandrosion", flush=True)
+    print("No dependency on previous Python scripts; exact dense ks for small cases, 314 projective geometry-kernel Kostlan oracle for huge cases, optional lazy feature stream, 304/306 universal atlas + hypercube tensor inverse-jet core wrapped in 312 lazy/collapse-triggered IRP chart homothety/reciprocal renormalization; no Halley/anchored-Q/Newton fallback path.", flush=True)
+    print("=" * 120, flush=True)
+    for r in outputs:
+        s = r["summary"]
+        backend = r.get("system_backend", "dense")
+        lazy = r.get("parameters", {}).get("lazy_features", 0)
+        geom = r.get("parameters", {}).get("geometry_anchors", 0)
+        backend_note = f", geometry_anchors={geom}" if geom else (f", lazy_features={lazy}" if lazy else "")
+        print(f"case=ks({r['n']},{r['degree']}), backend={backend}{backend_note}, seed={r['seed']}, terms={r['terms']}, Bezout={r['bezout']}", flush=True)
+        print(f"roots={s['unique_roots']}/{s['requested_roots']} success={s['success']} trials={s['trials_used']} duplicates={s['duplicates']} failures={s['failures']}", flush=True)
+        print(f"seconds: generation={s['generation_seconds']:.2f}, extract={s['extract_seconds']:.2f}, total={s['total_seconds']:.2f}", flush=True)
+        if r.get("roots"):
+            best = r["roots"][0]
+            print(f"best_root: residual={float(best.get('residual', float('inf'))):.3e}, trial={best.get('trial')}, Lambda={best.get('homothety')}, theta={best.get('theta_deg')}, startopt_ratio={best.get('startopt_ratio')}", flush=True)
+    print(f"out={out}", flush=True)
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    finally:
+        try:
+            sys.stdout.flush(); sys.stderr.flush()
+        except Exception:
+            pass
