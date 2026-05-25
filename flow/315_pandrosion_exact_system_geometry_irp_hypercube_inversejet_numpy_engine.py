@@ -2,65 +2,65 @@
 """
 315_pandrosion_exact_system_geometry_irp_hypercube_inversejet_numpy_engine.py
 
-But du fichier
---------------
-315 est une couche d'orchestration compacte autour du moteur numerique 314.
-Le point important est la separation stricte entre:
+Purpose
+-------
+315 is a compact orchestration layer around the 314 numerical engine.  Its main
+design point is the strict separation between:
 
-  1. le systeme exact a resoudre;
-  2. une geometrie optionnelle qui sert seulement a choisir de meilleurs
-     points de depart;
-  3. le correcteur Pandrosion/IRP, qui valide toujours avec le systeme exact.
+  1. the exact system that must be solved;
+  2. an optional geometry guide used only to select better starting points;
+  3. the Pandrosion/IRP corrector, which always validates against the exact
+     system.
 
-Pourquoi ce fichier existe
---------------------------
-Dans 314, `--system-mode geometry-kernel` construit un systeme geometrique
-Kostlan. C'est utile pour les tres grands `KS(n,d)`, mais ce n'est pas le meme
-probleme qu'un polynome donne explicitement par l'utilisateur.
+Why this file exists
+--------------------
+In 314, `--system-mode geometry-kernel` builds a geometric Kostlan system.  That
+is useful for very large `KS(n,d)` cases, but it is not the same problem as a
+polynomial supplied explicitly by the user.
 
-Dans 315, un polynome utilisateur reste le polynome exact:
+In 315, a user polynomial remains the exact polynomial:
 
     --system-source polynomial --polys "x^2 - 3*x - 10"
 
-Si on active la geometrie:
+When geometry is enabled with:
 
     --geometry-mode kernel
 
-ou, par compatibilite:
+or, for CLI compatibility:
 
     --system-mode geometry-kernel
 
-la geometrie est ajustee autour des valeurs exactes F(anchor). Elle peut guider
-les starts, mais elle ne remplace jamais F. Les residus exportes, les racines
-acceptees et les doublons sont calcules avec le systeme exact.
+the geometry is fitted to exact values F(anchor).  It may guide start selection,
+but it never replaces F.  Exported residuals, accepted roots, and duplicate
+checks are all computed from the exact system.
 
-Ce qui est reutilise
---------------------
-Le moteur lourd 304/306/312/314 reste dans:
+Reused engine
+-------------
+The heavy 304/306/312/314 engine remains in:
 
     flow/314_pandrosion_geometry_kostlan_irp_hypercube_inversejet_numpy_engine.py
 
-315 importe ce moteur localement par chemin de fichier et ne recopie pas les
-milliers de lignes de correcteurs:
+315 imports that local engine by file path instead of copying thousands of
+corrector lines:
 
-  - atlas universel 304;
-  - hypercube inverse-jet 306;
-  - IRP direct/lazy 312;
-  - backends KS dense/lazy/geometrie de 314;
-  - helpers NumPy, JSON, clustering et parametrage.
+  - 304 universal atlas;
+  - 306 hypercube inverse-jet;
+  - 312 direct/lazy IRP;
+  - 314 dense/lazy/geometric KS backends;
+  - NumPy, JSON, clustering, and CLI helpers.
 
-Ce fichier ajoute seulement:
+This file adds only:
 
-  - un parseur d'expressions polynomiales volontairement petit et sans eval;
-  - un systeme polynomial exact `ExpressionPolynomialSystem`;
-  - une geometrie ajustee `FittedGeometryKernelSystem`;
-  - un wrapper `GeometryWrappedSystem` qui expose F exact au correcteur;
-  - un polissage local fini-difference, optionnel et valide sur F exact;
-  - une CLI 315 qui combine ces pieces.
+  - a deliberately small polynomial-expression parser without Python eval;
+  - the exact polynomial system `ExpressionPolynomialSystem`;
+  - the fitted guide `FittedGeometryKernelSystem`;
+  - the `GeometryWrappedSystem` wrapper, exposing exact F to the corrector;
+  - an optional finite-difference polishing step validated on exact F;
+  - the 315 CLI that combines these pieces.
 
-Exemple de verification simple
-------------------------------
-La commande suivante active la geometrie, mais valide sur le vrai polynome:
+Simple verification example
+---------------------------
+The following command enables geometry, but validates on the true polynomial:
 
     python3 flow/315_pandrosion_exact_system_geometry_irp_hypercube_inversejet_numpy_engine.py \
       --system-source polynomial \
@@ -71,13 +71,13 @@ La commande suivante active la geometrie, mais valide sur le vrai polynome:
       --count 2 \
       --startopt-steps 0
 
-Les racines attendues sont `-2` et `5`. Une partie imaginaire de l'ordre de
-1e-18 est seulement du bruit flottant.
+The expected roots are `-2` and `5`.  An imaginary part around 1e-18 is only
+floating-point noise.
 
-Dependances
------------
-Python standard library + NumPy, plus le fichier 314 local. Aucune dependance
-SciPy, sympy, homotopy, Newton analytique ou solveur externe n'est ajoutee.
+Dependencies
+------------
+Python standard library + NumPy, plus the local 314 file.  No SciPy, sympy,
+homotopy, analytic Newton, or external solver dependency is added.
 """
 from __future__ import annotations
 
