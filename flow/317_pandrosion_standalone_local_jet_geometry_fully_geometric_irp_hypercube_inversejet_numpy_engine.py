@@ -941,6 +941,26 @@ class TargetTrack:
 
 DEFAULT_POWERS = [2.0 ** k for k in range(-20, 21)] + [3.0 * (2.0 ** k) for k in range(-12, 18)] + [10.0 ** k for k in range(-6, 7)]
 DEFAULT_ANGLES_DEG = [0, 6, 12, 18, 24, 32, 40, 48, 56, 64, 72, 80, 86, 89, 90, 91, 94, 100, 108, 116, 128, 140, 152, 164, 172]
+
+
+def monomial_scale_ladder(subdivisions: int, octaves: int, base: float = 2.0) -> list[float]:
+    """The 'complete logarithmic ladder': equally spaced logarithmic scale offsets.
+
+    Between consecutive powers ``base**m`` the ladder inserts the ``subdivisions - 1`` geometric
+    (proportional) means ``base**(m + k/subdivisions)``, k = 1..subdivisions-1.  For base 2 and
+    subdivisions 3 those means are the cube-root proportional means 2**(1/3), 2**(2/3) -- exactly
+    the x**(1/p), x**(2/p), ... ladder of the Pandrosion construction (the diagram that yields
+    cbrt(2) yields cbrt(4) = cbrt(2)**2 in the same figure).
+
+    The monomial scale-palette theorem proves that equally spaced logarithmic offsets minimise the
+    worst-case raw residual multiplier 1 - p/S_p(q**(1/(2K))).  Using the ladder as the multi-start
+    homothety palette (and as the IRP chart palette) therefore makes |log y| uniformly small before
+    iteration, so a start is more likely to land inside a convergence basin.
+    """
+    p = max(1, int(subdivisions))
+    m = max(1, int(octaves))
+    b = float(base) if float(base) > 1.0 else 2.0
+    return [b ** (j / p) for j in range(-m * p, m * p + 1)]
 DEFAULT_RADII = [0.025, 0.04, 0.06, 0.08, 0.12, 0.18, 0.27, 0.4, 0.6, 0.85, 1.15, 1.55, 2.05, 2.75, 3.6, 4.8, 6.4]
 DEFAULT_GAINS = [0.035, 0.055, 0.085, 0.12, 0.18, 0.27, 0.4, 0.58, 0.78, 1.0, 1.28, 1.65, 2.2, 3.0, 4.2, 6.0, 8.5, 12.0]
 
@@ -1387,7 +1407,11 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
     chart = LinearChart.identity(n, float(args.linear_scale))
     target = TargetTrack(geometry, chart)  # the WHOLE pandrosion stack runs on the geometry
     starts = parse_start_points(args.starts, n)
-    powers = sorted(set(round(float(x), 16) for x in parse_float_list(args.powers, DEFAULT_POWERS, positive=True)))
+    # The 'complete logarithmic ladder' (proportional-means / x^{k/p} ladder) optionally replaces
+    # the ad-hoc dyadic+decadic scale sets, giving even log coverage so a start lands in an easy basin.
+    ladder_on = bool(args.scale_ladder)
+    default_powers = monomial_scale_ladder(int(args.ladder_subdiv), int(args.ladder_octaves), float(args.ladder_base)) if ladder_on else DEFAULT_POWERS
+    powers = sorted(set(round(float(x), 16) for x in parse_float_list(args.powers, default_powers, positive=True)))
     powers = [min(max(x, 1e-300), float(args.power_cap)) for x in powers]
     angles = [math.radians(x) for x in parse_float_list(args.angles, DEFAULT_ANGLES_DEG)]
     radii = parse_float_list(args.rays, DEFAULT_RADII, positive=True)
@@ -1415,7 +1439,11 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
             if y_raw is None:
                 y_raw, geom = universal_atlas_start(target, n, trial, geometry.seed + 0x113000, powers, angles, radii, float(args.power_cap), len(roots), duplicates, failures, int(args.count), int(args.universal_cells), int(args.universal_shells), cell_probe_radius=float(args.cell_probe_radius), cell_descent_min=float(args.cell_descent_min), cell_equal_gap_min=float(args.cell_equal_gap_min), cell_log_max=float(args.cell_log_max), universal_cycle=bool(args.universal_cycle))
         y0, smeta = startopt(target, y_raw, trial, geometry.seed + 0x112555, int(args.startopt_steps), int(args.startopt_candidates), gains, int(args.startopt_micro_epochs))
-        loc = lazy_irp_hypercube_inversejet_corrector_312(target, y0, int(args.epochs), float(args.tol), float(args.accept), float(args.trial_timeout), int(args.line_search), parse_float_list(args.line_grid, []), geometry.seed + 7919 * trial, int(args.hypercube_nodes), int(args.irp_layers), int(args.irp_inner_epochs), complex_scale_palette(parse_float_list(args.irp_gains, [1.0, 0.5, 2.0, 0.25, 4.0, 0.125, 8.0], positive=True), parse_float_list(args.irp_phases, [0.0, 0.08, -0.08, 0.19, -0.19]), int(args.irp_top)), int(args.irp_chart_top), bool(args.irp_inversion), bool(args.collapse), float(args.collapse_residual), float(args.collapse_drop), float(args.collapse_rel_step), int(args.collapse_after), int(args.local_inner_epochs), int(args.lazy_direct_epochs), float(args.lazy_trigger_drop), int(args.lazy_trigger_after), float(args.lazy_bad_cond), float(args.lazy_log_energy), bool(args.eager_irp), bool(args.rescue_collapsed), float(args.lm_damping), float(args.trust_radius))
+        # IRP chart palette: a tighter proportional-means ladder around 1, ordered by |log s| so the
+        # near-basin scales are tried first within --irp-top, else the legacy dyadic palette.
+        default_irp_gains = sorted(monomial_scale_ladder(int(args.ladder_subdiv), min(3, max(1, int(args.ladder_octaves))), float(args.ladder_base)), key=lambda g: abs(math.log(g))) if ladder_on else [1.0, 0.5, 2.0, 0.25, 4.0, 0.125, 8.0]
+        irp_scales = complex_scale_palette(parse_float_list(args.irp_gains, default_irp_gains, positive=True), parse_float_list(args.irp_phases, [0.0, 0.08, -0.08, 0.19, -0.19]), int(args.irp_top))
+        loc = lazy_irp_hypercube_inversejet_corrector_312(target, y0, int(args.epochs), float(args.tol), float(args.accept), float(args.trial_timeout), int(args.line_search), parse_float_list(args.line_grid, []), geometry.seed + 7919 * trial, int(args.hypercube_nodes), int(args.irp_layers), int(args.irp_inner_epochs), irp_scales, int(args.irp_chart_top), bool(args.irp_inversion), bool(args.collapse), float(args.collapse_residual), float(args.collapse_drop), float(args.collapse_rel_step), int(args.collapse_after), int(args.local_inner_epochs), int(args.lazy_direct_epochs), float(args.lazy_trigger_drop), int(args.lazy_trigger_after), float(args.lazy_bad_cond), float(args.lazy_log_energy), bool(args.eager_irp), bool(args.rescue_collapsed), float(args.lm_damping), float(args.trust_radius))
         # Optional jet-Newton polish, still entirely on the local-jet geometry.
         z, y_final, geo_residual, polish_meta = polish_geometric_root(geometry, chart, loc["y"], float(args.accept), int(args.geometric_polish_steps))
         # The jet residual is sampled from the TRUE oracle, so it IS the faithful residual.
@@ -1461,7 +1489,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
         "equation_normalize": bool(args.equation_normalize),
         "linear_A": [[cjson(chart.A[i, j]) for j in range(n)] for i in range(n)],
         "geometry": {"kind": "local-jet-field", "use_quadratic": bool(args.jet_quadratic), "jet_radius": float(args.jet_radius), "jet_cache": bool(args.jet_cache), "samples_per_jet": int(geometry.samples_per_jet), "jets_built": int(gstats.get("jets_built", 0)), "jet_cache_hits": int(gstats.get("jet_cache_hits", 0)), "oracle_samples_total": int(geometry.oracle_samples), "construction_complexity": "O(1) (no global precompute); O(n) oracle samples per correction step = O(log) of comb(n+d,d)"},
-        "parameters": {"system_source": str(args.system_source), "polys": str(args.polys or ""), "variables": str(args.variables or ""), "jet_quadratic": bool(args.jet_quadratic), "jet_radius": float(args.jet_radius), "jet_cache": bool(args.jet_cache), "geometric_polish_steps": int(args.geometric_polish_steps), "starts": str(args.starts or ""), "system_mode": str(args.system_mode), "count": int(args.count), "pool": int(args.pool), "accept": float(args.accept), "tol": float(args.tol), "epochs": int(args.epochs), "cluster_sep": float(args.cluster_sep), "line_search": int(args.line_search), "hypercube_nodes": int(args.hypercube_nodes), "startopt_steps": int(args.startopt_steps), "startopt_candidates": int(args.startopt_candidates)},
+        "parameters": {"system_source": str(args.system_source), "polys": str(args.polys or ""), "variables": str(args.variables or ""), "jet_quadratic": bool(args.jet_quadratic), "jet_radius": float(args.jet_radius), "jet_cache": bool(args.jet_cache), "geometric_polish_steps": int(args.geometric_polish_steps), "starts": str(args.starts or ""), "system_mode": str(args.system_mode), "count": int(args.count), "pool": int(args.pool), "accept": float(args.accept), "tol": float(args.tol), "epochs": int(args.epochs), "cluster_sep": float(args.cluster_sep), "line_search": int(args.line_search), "hypercube_nodes": int(args.hypercube_nodes), "startopt_steps": int(args.startopt_steps), "startopt_candidates": int(args.startopt_candidates), "scale_ladder": bool(args.scale_ladder), "ladder_subdiv": int(args.ladder_subdiv), "ladder_octaves": int(args.ladder_octaves), "ladder_base": float(args.ladder_base), "powers_count": len(powers)},
         "roots": encoded_roots,
         "trials": trials if bool(args.verbose_trials) else trials[: min(len(trials), int(args.keep_trials))],
         "summary": {"requested_roots": int(args.count), "unique_roots": len(roots), "success": bool(len(roots) >= int(args.count)), "trials_used": len(trials), "duplicates": int(duplicates), "failures": int(failures), "generation_seconds": float(geometry.generation_seconds), "extract_seconds": extract_seconds, "total_seconds": float(now() - t_case), "oracle_samples_total": int(geometry.oracle_samples), "oracle_samples_per_trial": samples_per_trial, "eval_stats": gstats},
@@ -1545,6 +1573,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--line-grid", default="1,0.75,0.5,0.35,0.25,0.18,0.125,0.09,0.0625,0.045,0.03125,0.02")
     p.add_argument("--powers", default=None)
     p.add_argument("--power-cap", type=float, default=1048576.0)
+    # The 'complete logarithmic ladder' (Pandrosion proportional-means x^{k/p} scaling).
+    p.add_argument("--scale-ladder", action="store_true", default=False, help="Use an equally-spaced logarithmic (proportional-means) ladder for the start homothety palette and IRP charts.")
+    p.add_argument("--ladder-subdiv", type=int, default=3, help="Geometric means per octave (p): 3 inserts the cube-root means base^{k/3}; the x^{k/p} ladder.")
+    p.add_argument("--ladder-octaves", type=int, default=12, help="Half-span of the start ladder in octaves of --ladder-base.")
+    p.add_argument("--ladder-base", type=float, default=2.0, help="Octave base of the logarithmic ladder (>1).")
     p.add_argument("--angles", default=None)
     p.add_argument("--rays", default=None)
     p.add_argument("--startopt-steps", type=int, default=1)
