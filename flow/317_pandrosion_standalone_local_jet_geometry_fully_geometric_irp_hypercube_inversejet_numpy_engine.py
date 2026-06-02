@@ -975,12 +975,40 @@ def raw_direction(n: int, trial: int, seed: int) -> Any:
     return v / max(1e-300, float(np.linalg.norm(v))) * math.sqrt(max(1, int(n)))
 
 
-def universal_atlas_start(target: TargetTrack, n: int, trial: int, seed: int, powers: Sequence[float], angles: Sequence[float], radii: Sequence[float], cap: float, roots_found: int, duplicates: int, failures: int, target_count: int, universal_cells: int = 16, universal_shells: int = 5, **_: Any) -> tuple[Any, dict[str, Any]]:
+def universal_atlas_start(target: TargetTrack, n: int, trial: int, seed: int, powers: Sequence[float], angles: Sequence[float], radii: Sequence[float], cap: float, roots_found: int, duplicates: int, failures: int, target_count: int, universal_cells: int = 16, universal_shells: int = 5, atlas_selection: str = "diverse-shell", **_: Any) -> tuple[Any, dict[str, Any]]:
     cells = max(1, int(universal_cells))
     shells = max(1, int(universal_shells))
+    pows = [min(max(float(x), 1e-300), float(cap)) for x in powers if float(x) > 0] or [1.0]
+    mode = str(atlas_selection or "diverse-shell").strip().lower().replace("_", "-")
+    if mode in {"diverse", "diverse-shell", "shell", "raw-shell"}:
+        rr = [float(x) for x in radii if math.isfinite(float(x)) and float(x) > 0] or DEFAULT_RADII
+        idx = int(trial)
+        rad = rr[(idx + 3 * roots_found + failures) % len(rr)]
+        y = float(rad) * raw_direction(n, idx, seed + 65537 * idx + 104729 * duplicates)
+        r0 = target.residual(y)
+        meta = {
+            "chart": "317-standalone-universal-diverse-shell-atlas",
+            "atlas_mode": "317-diverse-shell",
+            "atlas_selection": mode,
+            "atlas_startopt_bypass_recommended": True,
+            "atlas_cells_tested": 1,
+            "atlas_admissible_cells": int(math.isfinite(r0)),
+            "atlas_cell_residual": float(r0),
+            "atlas_selected_index": int(idx),
+            "atlas_selected_layer": int(idx % shells),
+            "homothety": float(rad),
+            "base_homothety": 1.0,
+            "thales_thrust": 1.0,
+            "theta_deg": None,
+            "base_radius": float(rad),
+            "dup_pressure": float((duplicates + 1.0) / (roots_found + 1.0)),
+            "fail_pressure": float((failures + 1.0) / (trial + 1.0)),
+            "progress": float(min(1.0, roots_found / max(1.0, float(target_count)))),
+        }
+        return np.asarray(y, dtype=np.complex128).copy(), meta
+
     candidates = []
     metas = []
-    pows = [min(max(float(x), 1e-300), float(cap)) for x in powers if float(x) > 0] or [1.0]
     for k in range(cells):
         idx = trial * cells + k
         layer = (idx // cells) % shells
@@ -1003,7 +1031,7 @@ def universal_atlas_start(target: TargetTrack, n: int, trial: int, seed: int, po
     R = target.residuals_batch(Y)
     idx_best = int(np.nanargmin(R)) if np.any(np.isfinite(R)) else 0
     meta = dict(metas[idx_best])
-    meta.update({"chart": "317-standalone-universal-mobius-kernel-atlas", "atlas_mode": "317-compact-batched-score", "atlas_cells_tested": int(cells), "atlas_admissible_cells": int(np.sum(np.isfinite(R))), "atlas_cell_residual": float(R[idx_best]) if idx_best < len(R) else float("inf"), "dup_pressure": float((duplicates + 1.0) / (roots_found + 1.0)), "fail_pressure": float((failures + 1.0) / (trial + 1.0)), "progress": float(min(1.0, roots_found / max(1.0, float(target_count))))})
+    meta.update({"chart": "317-standalone-universal-mobius-kernel-atlas", "atlas_mode": "317-compact-batched-score", "atlas_selection": mode, "atlas_startopt_bypass_recommended": False, "atlas_cells_tested": int(cells), "atlas_admissible_cells": int(np.sum(np.isfinite(R))), "atlas_cell_residual": float(R[idx_best]) if idx_best < len(R) else float("inf"), "dup_pressure": float((duplicates + 1.0) / (roots_found + 1.0)), "fail_pressure": float((failures + 1.0) / (trial + 1.0)), "progress": float(min(1.0, roots_found / max(1.0, float(target_count))))})
     return Y[idx_best].copy(), meta
 
 
@@ -1427,6 +1455,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
     roots: list[dict[str, Any]] = []
     trials: list[dict[str, Any]] = []
     failures = duplicates = 0
+    atlas_calls = 0
     t_extract = now()
     for trial in range(int(args.pool)):
         if len(roots) >= int(args.count):
@@ -1445,8 +1474,15 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
                     y_raw = y_origin
                     geom = {"chart": "317-origin-affine-finite-difference-seed", "atlas_mode": "origin-affine-seed", "homothety": 1.0, "theta_deg": None, **ometa}
             if y_raw is None:
-                y_raw, geom = universal_atlas_start(target, n, trial, geometry.seed + 0x113000, powers, angles, radii, float(args.power_cap), len(roots), duplicates, failures, int(args.count), int(args.universal_cells), int(args.universal_shells), cell_probe_radius=float(args.cell_probe_radius), cell_descent_min=float(args.cell_descent_min), cell_equal_gap_min=float(args.cell_equal_gap_min), cell_log_max=float(args.cell_log_max), universal_cycle=bool(args.universal_cycle))
-        y0, smeta = startopt(target, y_raw, trial, geometry.seed + 0x112555, int(args.startopt_steps), int(args.startopt_candidates), gains, int(args.startopt_micro_epochs))
+                y_raw, geom = universal_atlas_start(target, n, atlas_calls, geometry.seed + 0x113000, powers, angles, radii, float(args.power_cap), len(roots), duplicates, failures, int(args.count), int(args.universal_cells), int(args.universal_shells), atlas_selection=str(args.atlas_selection), cell_probe_radius=float(args.cell_probe_radius), cell_descent_min=float(args.cell_descent_min), cell_equal_gap_min=float(args.cell_equal_gap_min), cell_log_max=float(args.cell_log_max), universal_cycle=bool(args.universal_cycle))
+                atlas_calls += 1
+        bypass_startopt = bool(args.atlas_bypass_startopt) and bool(geom.get("atlas_startopt_bypass_recommended")) and args.startopt_gains in (None, "")
+        if bypass_startopt:
+            y0 = np.asarray(y_raw, dtype=np.complex128).copy()
+            r0 = target.residual(y0)
+            smeta = {"startopt_enabled": False, "startopt_skipped": "atlas-diversity", "startopt_r0": float(r0), "startopt_r1": float(r0), "startopt_ratio": 1.0 if math.isfinite(r0) and r0 > 0 else None, "startopt_steps": 0, "startopt_evals": 1, "startopt_micro_epochs": 0, "startopt_gain": 1.0, "startopt_batch_numpy": False}
+        else:
+            y0, smeta = startopt(target, y_raw, trial, geometry.seed + 0x112555, int(args.startopt_steps), int(args.startopt_candidates), gains, int(args.startopt_micro_epochs))
         loc = lazy_irp_hypercube_inversejet_corrector_312(target, y0, int(args.epochs), float(args.tol), float(args.accept), float(args.trial_timeout), int(args.line_search), parse_float_list(args.line_grid, []), geometry.seed + 7919 * trial, int(args.hypercube_nodes), int(args.irp_layers), int(args.irp_inner_epochs), irp_scales, int(args.irp_chart_top), bool(args.irp_inversion), bool(args.collapse), float(args.collapse_residual), float(args.collapse_drop), float(args.collapse_rel_step), int(args.collapse_after), int(args.local_inner_epochs), int(args.lazy_direct_epochs), float(args.lazy_trigger_drop), int(args.lazy_trigger_after), float(args.lazy_bad_cond), float(args.lazy_log_energy), bool(args.eager_irp), bool(args.rescue_collapsed), float(args.lm_damping), float(args.trust_radius))
         # Optional jet-Newton polish, still entirely on the local-jet geometry.
         z, y_final, geo_residual, polish_meta = polish_geometric_root(geometry, chart, loc["y"], float(args.accept), int(args.geometric_polish_steps))
@@ -1493,7 +1529,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
         "equation_normalize": bool(args.equation_normalize),
         "linear_A": [[cjson(chart.A[i, j]) for j in range(n)] for i in range(n)],
         "geometry": {"kind": "local-jet-field", "use_quadratic": bool(args.jet_quadratic), "jet_radius": float(args.jet_radius), "jet_cache": bool(args.jet_cache), "samples_per_jet": int(geometry.samples_per_jet), "jets_built": int(gstats.get("jets_built", 0)), "jet_cache_hits": int(gstats.get("jet_cache_hits", 0)), "oracle_samples_total": int(geometry.oracle_samples), "construction_complexity": "O(1) (no global precompute); O(n) oracle samples per correction step = O(log) of comb(n+d,d)"},
-        "parameters": {"system_source": str(args.system_source), "polys": str(args.polys or ""), "variables": str(args.variables or ""), "jet_quadratic": bool(args.jet_quadratic), "jet_radius": float(args.jet_radius), "jet_cache": bool(args.jet_cache), "geometric_polish_steps": int(args.geometric_polish_steps), "starts": str(args.starts or ""), "system_mode": str(args.system_mode), "count": int(args.count), "pool": int(args.pool), "accept": float(args.accept), "tol": float(args.tol), "epochs": int(args.epochs), "cluster_sep": float(args.cluster_sep), "line_search": int(args.line_search), "hypercube_nodes": int(args.hypercube_nodes), "startopt_steps": int(args.startopt_steps), "startopt_candidates": int(args.startopt_candidates), "startopt_gains_source": startopt_gains_source, "startopt_gains_count": len(gains), "scale_ladder": bool(args.scale_ladder), "ladder_subdiv": int(args.ladder_subdiv), "ladder_octaves": int(args.ladder_octaves), "ladder_base": float(args.ladder_base), "powers_count": len(powers), "irp_gains_source": irp_gains_source, "irp_gains_count": len(irp_gain_values), "irp_scales_count": len(irp_scales)},
+        "parameters": {"system_source": str(args.system_source), "polys": str(args.polys or ""), "variables": str(args.variables or ""), "jet_quadratic": bool(args.jet_quadratic), "jet_radius": float(args.jet_radius), "jet_cache": bool(args.jet_cache), "geometric_polish_steps": int(args.geometric_polish_steps), "starts": str(args.starts or ""), "system_mode": str(args.system_mode), "count": int(args.count), "pool": int(args.pool), "accept": float(args.accept), "tol": float(args.tol), "epochs": int(args.epochs), "cluster_sep": float(args.cluster_sep), "line_search": int(args.line_search), "hypercube_nodes": int(args.hypercube_nodes), "atlas_selection": str(args.atlas_selection), "atlas_bypass_startopt": bool(args.atlas_bypass_startopt), "atlas_calls": int(atlas_calls), "startopt_steps": int(args.startopt_steps), "startopt_candidates": int(args.startopt_candidates), "startopt_gains_source": startopt_gains_source, "startopt_gains_count": len(gains), "scale_ladder": bool(args.scale_ladder), "ladder_subdiv": int(args.ladder_subdiv), "ladder_octaves": int(args.ladder_octaves), "ladder_base": float(args.ladder_base), "powers_count": len(powers), "irp_gains_source": irp_gains_source, "irp_gains_count": len(irp_gain_values), "irp_scales_count": len(irp_scales)},
         "roots": encoded_roots,
         "trials": trials if bool(args.verbose_trials) else trials[: min(len(trials), int(args.keep_trials))],
         "summary": {"requested_roots": int(args.count), "unique_roots": len(roots), "success": bool(len(roots) >= int(args.count)), "trials_used": len(trials), "duplicates": int(duplicates), "failures": int(failures), "generation_seconds": float(geometry.generation_seconds), "extract_seconds": extract_seconds, "total_seconds": float(now() - t_case), "oracle_samples_total": int(geometry.oracle_samples), "oracle_samples_per_trial": samples_per_trial, "eval_stats": gstats},
@@ -1591,6 +1627,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--startopt-micro-epochs", type=int, default=0)
     p.add_argument("--universal-cells", type=int, default=16)
     p.add_argument("--universal-shells", type=int, default=5)
+    p.add_argument("--atlas-selection", choices=["diverse-shell", "compact-score"], default="diverse-shell", help="Automatic start selection. diverse-shell cycles deterministic logarithmic shells; compact-score keeps the older residual-min atlas cell selection.")
+    p.add_argument("--atlas-bypass-startopt", action="store_true", default=True, help="Do not run StartOpt on diverse-shell atlas starts, preserving basin diversity for all-root extraction.")
+    p.add_argument("--no-atlas-bypass-startopt", dest="atlas_bypass_startopt", action="store_false")
     p.add_argument("--cell-probe-radius", type=float, default=0.14)
     p.add_argument("--cell-descent-min", type=float, default=1.02)
     p.add_argument("--cell-equal-gap-min", type=float, default=1e-10)
