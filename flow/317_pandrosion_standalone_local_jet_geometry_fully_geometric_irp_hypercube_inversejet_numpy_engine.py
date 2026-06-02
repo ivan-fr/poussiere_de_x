@@ -1407,15 +1407,23 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
     chart = LinearChart.identity(n, float(args.linear_scale))
     target = TargetTrack(geometry, chart)  # the WHOLE pandrosion stack runs on the geometry
     starts = parse_start_points(args.starts, n)
-    # The 'complete logarithmic ladder' (proportional-means / x^{k/p} ladder) optionally replaces
-    # the ad-hoc dyadic+decadic scale sets, giving even log coverage so a start lands in an easy basin.
+    # The 'complete logarithmic ladder' (proportional-means / x^{k/p} ladder) is the default
+    # scale geometry for 317. It gives even log coverage so a start lands in an easy basin.
     ladder_on = bool(args.scale_ladder)
     default_powers = monomial_scale_ladder(int(args.ladder_subdiv), int(args.ladder_octaves), float(args.ladder_base)) if ladder_on else DEFAULT_POWERS
     powers = sorted(set(round(float(x), 16) for x in parse_float_list(args.powers, default_powers, positive=True)))
     powers = [min(max(x, 1e-300), float(args.power_cap)) for x in powers]
     angles = [math.radians(x) for x in parse_float_list(args.angles, DEFAULT_ANGLES_DEG)]
     radii = parse_float_list(args.rays, DEFAULT_RADII, positive=True)
-    gains = parse_float_list(args.startopt_gains, DEFAULT_GAINS, positive=True)
+    default_startopt_gains = sorted(monomial_scale_ladder(int(args.ladder_subdiv), min(3, max(1, int(args.ladder_octaves))), float(args.ladder_base)), key=lambda g: abs(math.log(g))) if ladder_on else DEFAULT_GAINS
+    gains = parse_float_list(args.startopt_gains, default_startopt_gains, positive=True)
+    startopt_gains_source = "user" if args.startopt_gains not in (None, "") else ("pandrosion-ladder" if ladder_on else "legacy")
+    # IRP chart palette: a tighter proportional-means ladder around 1, ordered by |log s| so the
+    # near-basin scales are tried first within --irp-top, else the legacy dyadic palette.
+    default_irp_gains = sorted(monomial_scale_ladder(int(args.ladder_subdiv), min(3, max(1, int(args.ladder_octaves))), float(args.ladder_base)), key=lambda g: abs(math.log(g))) if ladder_on else [1.0, 0.5, 2.0, 0.25, 4.0, 0.125, 8.0]
+    irp_gain_values = parse_float_list(args.irp_gains, default_irp_gains, positive=True)
+    irp_gains_source = "user" if args.irp_gains not in (None, "") else ("pandrosion-ladder" if ladder_on else "legacy")
+    irp_scales = complex_scale_palette(irp_gain_values, parse_float_list(args.irp_phases, [0.0, 0.08, -0.08, 0.19, -0.19]), int(args.irp_top))
     roots: list[dict[str, Any]] = []
     trials: list[dict[str, Any]] = []
     failures = duplicates = 0
@@ -1439,10 +1447,6 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
             if y_raw is None:
                 y_raw, geom = universal_atlas_start(target, n, trial, geometry.seed + 0x113000, powers, angles, radii, float(args.power_cap), len(roots), duplicates, failures, int(args.count), int(args.universal_cells), int(args.universal_shells), cell_probe_radius=float(args.cell_probe_radius), cell_descent_min=float(args.cell_descent_min), cell_equal_gap_min=float(args.cell_equal_gap_min), cell_log_max=float(args.cell_log_max), universal_cycle=bool(args.universal_cycle))
         y0, smeta = startopt(target, y_raw, trial, geometry.seed + 0x112555, int(args.startopt_steps), int(args.startopt_candidates), gains, int(args.startopt_micro_epochs))
-        # IRP chart palette: a tighter proportional-means ladder around 1, ordered by |log s| so the
-        # near-basin scales are tried first within --irp-top, else the legacy dyadic palette.
-        default_irp_gains = sorted(monomial_scale_ladder(int(args.ladder_subdiv), min(3, max(1, int(args.ladder_octaves))), float(args.ladder_base)), key=lambda g: abs(math.log(g))) if ladder_on else [1.0, 0.5, 2.0, 0.25, 4.0, 0.125, 8.0]
-        irp_scales = complex_scale_palette(parse_float_list(args.irp_gains, default_irp_gains, positive=True), parse_float_list(args.irp_phases, [0.0, 0.08, -0.08, 0.19, -0.19]), int(args.irp_top))
         loc = lazy_irp_hypercube_inversejet_corrector_312(target, y0, int(args.epochs), float(args.tol), float(args.accept), float(args.trial_timeout), int(args.line_search), parse_float_list(args.line_grid, []), geometry.seed + 7919 * trial, int(args.hypercube_nodes), int(args.irp_layers), int(args.irp_inner_epochs), irp_scales, int(args.irp_chart_top), bool(args.irp_inversion), bool(args.collapse), float(args.collapse_residual), float(args.collapse_drop), float(args.collapse_rel_step), int(args.collapse_after), int(args.local_inner_epochs), int(args.lazy_direct_epochs), float(args.lazy_trigger_drop), int(args.lazy_trigger_after), float(args.lazy_bad_cond), float(args.lazy_log_energy), bool(args.eager_irp), bool(args.rescue_collapsed), float(args.lm_damping), float(args.trust_radius))
         # Optional jet-Newton polish, still entirely on the local-jet geometry.
         z, y_final, geo_residual, polish_meta = polish_geometric_root(geometry, chart, loc["y"], float(args.accept), int(args.geometric_polish_steps))
@@ -1489,7 +1493,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
         "equation_normalize": bool(args.equation_normalize),
         "linear_A": [[cjson(chart.A[i, j]) for j in range(n)] for i in range(n)],
         "geometry": {"kind": "local-jet-field", "use_quadratic": bool(args.jet_quadratic), "jet_radius": float(args.jet_radius), "jet_cache": bool(args.jet_cache), "samples_per_jet": int(geometry.samples_per_jet), "jets_built": int(gstats.get("jets_built", 0)), "jet_cache_hits": int(gstats.get("jet_cache_hits", 0)), "oracle_samples_total": int(geometry.oracle_samples), "construction_complexity": "O(1) (no global precompute); O(n) oracle samples per correction step = O(log) of comb(n+d,d)"},
-        "parameters": {"system_source": str(args.system_source), "polys": str(args.polys or ""), "variables": str(args.variables or ""), "jet_quadratic": bool(args.jet_quadratic), "jet_radius": float(args.jet_radius), "jet_cache": bool(args.jet_cache), "geometric_polish_steps": int(args.geometric_polish_steps), "starts": str(args.starts or ""), "system_mode": str(args.system_mode), "count": int(args.count), "pool": int(args.pool), "accept": float(args.accept), "tol": float(args.tol), "epochs": int(args.epochs), "cluster_sep": float(args.cluster_sep), "line_search": int(args.line_search), "hypercube_nodes": int(args.hypercube_nodes), "startopt_steps": int(args.startopt_steps), "startopt_candidates": int(args.startopt_candidates), "scale_ladder": bool(args.scale_ladder), "ladder_subdiv": int(args.ladder_subdiv), "ladder_octaves": int(args.ladder_octaves), "ladder_base": float(args.ladder_base), "powers_count": len(powers)},
+        "parameters": {"system_source": str(args.system_source), "polys": str(args.polys or ""), "variables": str(args.variables or ""), "jet_quadratic": bool(args.jet_quadratic), "jet_radius": float(args.jet_radius), "jet_cache": bool(args.jet_cache), "geometric_polish_steps": int(args.geometric_polish_steps), "starts": str(args.starts or ""), "system_mode": str(args.system_mode), "count": int(args.count), "pool": int(args.pool), "accept": float(args.accept), "tol": float(args.tol), "epochs": int(args.epochs), "cluster_sep": float(args.cluster_sep), "line_search": int(args.line_search), "hypercube_nodes": int(args.hypercube_nodes), "startopt_steps": int(args.startopt_steps), "startopt_candidates": int(args.startopt_candidates), "startopt_gains_source": startopt_gains_source, "startopt_gains_count": len(gains), "scale_ladder": bool(args.scale_ladder), "ladder_subdiv": int(args.ladder_subdiv), "ladder_octaves": int(args.ladder_octaves), "ladder_base": float(args.ladder_base), "powers_count": len(powers), "irp_gains_source": irp_gains_source, "irp_gains_count": len(irp_gain_values), "irp_scales_count": len(irp_scales)},
         "roots": encoded_roots,
         "trials": trials if bool(args.verbose_trials) else trials[: min(len(trials), int(args.keep_trials))],
         "summary": {"requested_roots": int(args.count), "unique_roots": len(roots), "success": bool(len(roots) >= int(args.count)), "trials_used": len(trials), "duplicates": int(duplicates), "failures": int(failures), "generation_seconds": float(geometry.generation_seconds), "extract_seconds": extract_seconds, "total_seconds": float(now() - t_case), "oracle_samples_total": int(geometry.oracle_samples), "oracle_samples_per_trial": samples_per_trial, "eval_stats": gstats},
@@ -1559,7 +1563,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--trust-radius", type=float, default=0.0, help="Cap the inverse-jet step to trust_radius*||y|| (0 = off, try 1.0).")
     p.add_argument("--trust-region", action="store_true", default=False, help="Convenience: enable LM damping + trust radius with sensible defaults.")
     p.add_argument("--irp-chart-top", type=int, default=2)
-    p.add_argument("--irp-gains", default="1,0.5,2,0.25,4,0.125,8")
+    p.add_argument("--irp-gains", default=None, help="Homothety gains for the IRP chart palette. Defaults to the Pandrosion ladder when --scale-ladder is enabled, otherwise legacy dyadic gains.")
     p.add_argument("--irp-phases", default="0,0.08,-0.08,0.19,-0.19")
     p.add_argument("--irp-top", type=int, default=14)
     p.add_argument("--irp-inversion", action="store_true", default=True)
@@ -1574,7 +1578,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--powers", default=None)
     p.add_argument("--power-cap", type=float, default=1048576.0)
     # The 'complete logarithmic ladder' (Pandrosion proportional-means x^{k/p} scaling).
-    p.add_argument("--scale-ladder", action="store_true", default=False, help="Use an equally-spaced logarithmic (proportional-means) ladder for the start homothety palette and IRP charts.")
+    p.add_argument("--scale-ladder", dest="scale_ladder", action="store_true", default=True, help="Use an equally-spaced logarithmic (proportional-means) ladder for the start homothety palette and IRP charts.")
+    p.add_argument("--no-scale-ladder", dest="scale_ladder", action="store_false", help="Use the legacy dyadic/decadic start palette and dyadic IRP chart gains.")
     p.add_argument("--ladder-subdiv", type=int, default=3, help="Geometric means per octave (p): 3 inserts the cube-root means base^{k/3}; the x^{k/p} ladder.")
     p.add_argument("--ladder-octaves", type=int, default=12, help="Half-span of the start ladder in octaves of --ladder-base.")
     p.add_argument("--ladder-base", type=float, default=2.0, help="Octave base of the logarithmic ladder (>1).")
