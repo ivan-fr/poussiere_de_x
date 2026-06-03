@@ -24,6 +24,15 @@ step sampled from the target oracle.  That is the honest tradeoff: favorable
 systems stop early in q/k; dense or unstructured systems are solved by the full
 IRP stage instead of pretending that small q was enough.
 
+422.1 honesty/perf note: a Target may now expose an optional ``jvp(y, D)`` method
+returning the exact Jacobian action ``J(y) @ D``.  When present, ``estimate_jd``
+uses it instead of finite differences -- no step size h, no truncation error, and
+O(matvec) cost for structured operators.  This does NOT read any hidden root; it
+only uses the operator's action, exactly like a matrix-free Krylov solver.  A
+plain dense, unstructured operator gains accuracy but not asymptotic speed: you
+cannot beat a dense BLAS GEMM at a dense GEMM.  See 423 for where structure makes
+an honest, same-result win against torch.matmul possible.
+
 Dependencies: Python stdlib + NumPy only.  No local flow imports.
 """
 from __future__ import annotations
@@ -276,6 +285,16 @@ def solve_reduced(jd: np.ndarray, rhs: np.ndarray, cfg: Config) -> tuple[np.ndar
 
 def estimate_jd(target: Target, y: np.ndarray, f: np.ndarray, dmat: np.ndarray, cfg: Config) -> tuple[np.ndarray, int, str]:
     dirs = np.asarray(dmat, dtype=np.complex128).T
+    # Honest improvement (422.1): if the target can supply an exact Jacobian-vector
+    # product, use it.  This returns J(y) @ dmat directly with no finite-difference
+    # step h, so it is both more accurate (no truncation/round-off in (f(y+h)-f)/h)
+    # and far cheaper for structured operators that implement a fast matvec.  No
+    # peeking at any root: jvp only uses the operator's action, like a real solver.
+    jvp = getattr(target, "jvp", None)
+    if callable(jvp):
+        jd = np.asarray(jvp(y, np.asarray(dmat, dtype=np.complex128)), dtype=np.complex128)
+        if jd.shape == (int(dmat.shape[0]), int(dmat.shape[1])):
+            return jd, 0, "jvp-exact"
     yn = max(1.0, finite_norm(y))
     h = float(cfg.h) * yn
     if bool(cfg.central):
