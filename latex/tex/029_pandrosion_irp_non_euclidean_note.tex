@@ -1,0 +1,515 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\Urlmuskip=0mu plus 1mu\relax
+
+\geometry{margin=1.6cm}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=blue!55!black,
+  urlcolor=blue!55!black,
+  pdftitle={Non-Euclidean Pandrosion IRP},
+  pdfauthor={Ivan Besevic}
+}
+
+\setlist[itemize]{leftmargin=1.8em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.8em,itemsep=0.25em,topsep=0.35em}
+\setlength{\emergencystretch}{2em}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\Exp}{\operatorname{Exp}}
+\newcommand{\Log}{\operatorname{Log}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\Sp}{S_p}
+\newcommand{\IRP}{\mathcal I}
+\newcommand{\cB}{\mathcal B}
+\newcommand{\cL}{\mathcal L}
+\newcommand{\cU}{\mathcal U}
+\newcommand{\Id}{\operatorname{Id}}
+\newcommand{\Mob}{\operatorname{Mob}}
+
+\newenvironment{takeaway}{%
+  \begin{center}\begin{minipage}{0.92\linewidth}\small\itshape\color{blue!45!black}%
+}{%
+  \end{minipage}\end{center}%
+}
+
+\title{\bfseries Non-Euclidean Pandrosion IRP\\[-0.1em]
+\large Geodesic Logarithms, Hadamard Charts, and Curvature Terms}
+\author{Ivan \textsc{Besevic}\\[-0.2em]
+\small Independent Mathematical Research\\[-0.2em]
+\small \texttt{github.com/ivan-fr/poussiere\_de\_x}}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The monomial Pandrosion paper shows that the raw map
+\[
+  h_{p,y}(s)=1-\frac{y-1}{y(1+s+\cdots+s^{p-1})}
+\]
+has fixed point $y^{-1/p}$ and exact multiplier
+\[
+  \lambda_{p,y}=1-\frac{p}{S_p(y^{1/p})}.
+\]
+Its acceleration principle is logarithmic: before applying the raw layer, choose
+a chart and a scale that make $|\log y|$ small.  This note extracts the
+non-Euclidean content of that principle.  On a general Riemannian manifold the
+expression $z^p$ has no canonical meaning, so a rigorous extension must choose
+extra structure.  The safest extension is the Hadamard/geodesic-dilation model:
+replace the scalar logarithm by the Riemannian logarithm, replace inversion by
+geodesic symmetry, and replace scalar scale cells by cells in a tangent
+logarithmic chart.  In that model one renormalized raw Pandrosion layer remains
+quadratic in the geodesic logarithmic residual, and $k$ layers have dyadic local
+order $2^k$.  Hyperbolic space gives an explicit Poincare-ball implementation.
+Lie groups and symmetric spaces give a richer, noncommutative version in which
+curvature and Baker--Campbell--Hausdorff commutators enter as higher-order
+defect terms.
+\end{abstract}
+
+\begin{takeaway}
+\textbf{Main research translation.}
+Pandrosion IRP does not need Euclidean straight lines; it needs a logarithmic
+chart in which residuals are measured by a norm, and a chart-scaling rule that
+keeps this residual norm small before the raw monomial layer acts.
+\end{takeaway}
+
+\section{Starting Point From The Monomial Paper}
+
+The monomial scheme is organized by three facts:
+\begin{enumerate}
+  \item The proportional-mean denominator is
+  \[
+    S_p(s)=1+s+\cdots+s^{p-1}.
+  \]
+  \item The raw multiplier at the normalized target $y$ is
+  \[
+    \lambda_{p,y}
+      =1-\frac{p}{S_p(y^{1/p})},
+      \qquad y\ge 1.
+  \]
+  It is strictly increasing in $\log y$.
+  \item Near the ideal target $y=1$,
+  \[
+    \lambda_{p,e^\delta}
+      =\frac{p-1}{2p}\delta+O_p(\delta^2).
+  \]
+\end{enumerate}
+Thus the geometry does not merely normalize magnitudes.  It preconditions the
+multiplier itself.  IRP repeats this operation dynamically by recomputing the
+residual chart after each raw layer.
+
+\section{The Necessary Obstruction}
+
+\begin{remark}[No canonical power on a manifold]
+On a general non-Euclidean manifold $M$, there is no intrinsic operation
+$z\mapsto z^p$.  A monomial problem therefore needs one of the following extra
+structures:
+\begin{itemize}
+  \item a chosen base point and geodesic dilation, giving
+  $D_p^o(z)=\Exp_o(p\Log_o z)$;
+  \item a group or symmetric-space structure, giving a meaningful group power
+  $z^p$ or a Cartan/geodesic power;
+  \item a concrete model, such as the Poincare ball, where geodesic scalar
+  multiplication has closed form.
+\end{itemize}
+Without one of these choices, ``Pandrosion for $z^p=x$'' is not a well-defined
+mathematical statement.
+\end{remark}
+
+The rest of this note uses the first option as the rigorous baseline and records
+the second option as the noncommutative research direction.
+
+\section{Hadamard Geodesic-Dilation Model}
+
+Let $(M,g)$ be a Hadamard manifold: complete, simply connected, with nonpositive
+sectional curvature.  Then each exponential map $\Exp_o:T_oM\to M$ is globally
+well behaved in the Cartan--Hadamard setting.  The positive multiplicative line
+used by the original paper is the flat special case after the coordinate change
+$y=e^\xi$.
+
+\begin{definition}[Geodesic monomial]
+Fix $o\in M$ and $p\ge2$.  Define the geodesic $p$-dilation
+\[
+  D_p^o(z)=\Exp_o(p\Log_o z).
+\]
+The Hadamard monomial root problem is
+\[
+  D_p^o(z)=x.
+\]
+If $X=\Log_o x$, its exact root is
+\[
+  r=\Exp_o(X/p).
+\]
+\end{definition}
+
+This problem is deliberately narrow, but it is the cleanest non-Euclidean
+analogue of the logarithmic root problem.  It replaces $\log y$ by the vector
+$X=\Log_o x$.
+
+\begin{definition}[Raw scalar Pandrosion length layer]
+For a residual length $\delta\ge0$, define
+\[
+  s_p(\delta)
+    =h_{p,e^\delta}(1)
+    =1-\frac{1-e^{-\delta}}{p},
+\]
+and
+\[
+  \Theta_p(\delta)
+    =\log\!\left(e^\delta s_p(\delta)^{p-1}\right)
+    =\delta+(p-1)\log s_p(\delta).
+\]
+The number $\Theta_p(\delta)$ is the logarithmic correction produced by one raw
+Pandrosion layer from the neutral point in the residual chart.
+\end{definition}
+
+\begin{lemma}[Scalar expansion]
+As $\delta\to0^+$,
+\[
+  \Theta_p(\delta)
+    =\frac{\delta}{p}
+      +\frac{(p-1)^2}{2p^2}\delta^2
+      +O_p(\delta^3).
+\]
+Consequently,
+\[
+  \delta-p\Theta_p(\delta)
+    =-\frac{(p-1)^2}{2p}\delta^2+O_p(\delta^3).
+\]
+\end{lemma}
+
+\begin{proof}
+Use
+\[
+  s_p(\delta)=1-\frac{\delta}{p}+\frac{\delta^2}{2p}+O_p(\delta^3)
+\]
+and expand $\log(1+t)$.  This gives
+\[
+  \log s_p(\delta)
+    =-\frac{\delta}{p}
+      +\frac{p-1}{2p^2}\delta^2
+      +O_p(\delta^3),
+\]
+which proves both displayed estimates.
+\end{proof}
+
+\begin{definition}[Continuous Hadamard IRP layer]
+Let $u=\Exp_o(U)$ be the current root-coordinate approximation and put
+\[
+  A(u)=X-pU\in T_oM,\qquad \delta(u)=\|A(u)\|_g.
+\]
+If $\delta(u)>0$, one continuous-scale Hadamard IRP layer is
+\[
+  U_+
+    =U+\Theta_p(\delta(u))\,\frac{A(u)}{\delta(u)},
+  \qquad
+  \IRP_p^o(u)=\Exp_o(U_+).
+\]
+If $\delta(u)=0$, set $\IRP_p^o(u)=u$.
+\end{definition}
+
+\begin{theorem}[Quadratic residual collapse in the Hadamard log chart]
+For the geodesic-dilation problem $D_p^o(z)=x$, the continuous Hadamard IRP layer
+satisfies
+\[
+  \|A(\IRP_p^o(u))\|_g
+    =\frac{(p-1)^2}{2p}\,\|A(u)\|_g^2
+      +O_p(\|A(u)\|_g^3).
+\]
+Equivalently, if the root logarithmic error is
+\[
+  E(u)=U-X/p,
+\]
+then
+\[
+  \|E(\IRP_p^o(u))\|_g
+    =\frac{(p-1)^2}{2}\,\|E(u)\|_g^2
+      +O_p(\|E(u)\|_g^3).
+\]
+\end{theorem}
+
+\begin{proof}
+Since $A(u)=X-pU=-pE(u)$, the update changes $A$ by
+\[
+  A_+
+    =X-pU_+
+    =A-p\Theta_p(\|A\|)\frac{A}{\|A\|}.
+\]
+Taking norms and applying the scalar expansion gives the result.
+\end{proof}
+
+\begin{corollary}[Dyadic local order]
+For every fixed $k\ge1$, the $k$-fold local composition satisfies
+\[
+  \|E((\IRP_p^o)^{\circ k}(u))\|_g
+    =O_{p,k}(\|E(u)\|_g^{2^k}).
+\]
+\end{corollary}
+
+\begin{proof}
+The previous theorem gives $\|E_+\|\le C\|E\|^2$ in a sufficiently small
+neighborhood of the root.  Iteration gives the displayed dyadic order.
+\end{proof}
+
+\section{Geodesic Chart Scaling}
+
+The continuous layer above assumes the residual length is already small.  The
+non-Euclidean analogue of Thales/Riemann scaling is to reduce the residual
+inside $T_oM$ before applying the raw layer.
+
+\begin{definition}[Logarithmic scale palette in a tangent chart]
+Let $\cL\subset T_oM$ be a finite or countable scale palette.  For a residual
+$A=X-pU$, choose $B\in\cL$ and work with the normalized residual
+\[
+  A_B=A-pB.
+\]
+The chart-scaled layer is
+\[
+  U_+
+    =U+B+\Theta_p(\|A_B\|)\frac{A_B}{\|A_B\|},
+\]
+with the evident convention when $A_B=0$.
+\end{definition}
+
+The geodesic inversion analogue is the symmetry at the chart center:
+\[
+  \sigma_o(\Exp_o V)=\Exp_o(-V).
+\]
+Thus the direct chart sees $A$, and the inverted chart sees $-A$.  Selecting the
+chart and scale means minimizing $\|A_B\|$ or $\|-A-pB\|$ among admissible
+choices.
+
+\begin{proposition}[Radial two-chart lattice bound]
+Fix a geodesic ray and a root-scale spacing $h=\log q>0$.  Let admissible scales
+on that ray be $B_m=mh\,\nu$, $m\in\mathbb Z$, where $\nu$ is a unit tangent
+direction.  For a radial residual $A=a\nu$, the best direct scale leaves a
+remainder $r\in[0,ph)$, while allowing the geodesic symmetry leaves a remainder
+\[
+  r_*=\min(r,ph-r).
+\]
+Hence the worst normalized residual length is at most $ph/2$, and the exact raw
+multiplier is bounded by
+\[
+  1-\frac{p}{S_p(e^{h/2})}.
+\]
+With $K$ equally spaced offsets on the same logarithmic period, the sharp
+worst-case bound becomes
+\[
+  1-\frac{p}{S_p(e^{h/(2K)})}
+  =
+  1-\frac{p}{S_p(q^{1/(2K)})}.
+\]
+\end{proposition}
+
+\begin{proof}
+This is the same circle-covering proof as in the monomial paper, now applied to
+the scalar coordinate $a$ along the geodesic ray.  The multiplier bound follows
+from the monotonicity of $\lambda_{p,e^\delta}$ in $\delta$ and the identity
+$\lambda_{p,e^\delta}=1-p/S_p(e^{\delta/p})$.
+\end{proof}
+
+\section{Hyperbolic Poincare-Ball Realization}
+
+The most concrete non-Euclidean model is the Poincare ball
+\[
+  \mathbb B^n=\{x\in\R^n:\|x\|<1\}
+\]
+with curvature $-1$ and center $0$.  Its radial exponential and logarithm are
+\[
+  \Exp_0(V)=\tanh(\|V\|/2)\frac{V}{\|V\|},
+  \qquad
+  \Log_0(x)=2\,\operatorname{artanh}(\|x\|)
+          \frac{x}{\|x\|}.
+\]
+Therefore geodesic scalar dilation is
+\[
+  D_a^0(x)
+    =\Exp_0(a\Log_0 x)
+    =
+    \tanh\!\left(a\,\operatorname{artanh}\|x\|\right)\frac{x}{\|x\|}.
+\]
+This is the Mobius/gyrovector scalar multiplication used in hyperbolic models.
+
+\begin{example}[Hyperbolic Pandrosion IRP layer]
+Given target $x\in\mathbb B^n$ and current $u\in\mathbb B^n$:
+\begin{enumerate}
+  \item Compute $X=\Log_0 x$ and $U=\Log_0 u$.
+  \item Set $A=X-pU$ and $\delta=\|A\|$.
+  \item Optionally choose a tangent scale $B$ and replace $A$ by $A-pB$.
+  \item Update
+  \[
+    U_+=U+B+\Theta_p(\|A-pB\|)
+      \frac{A-pB}{\|A-pB\|}.
+  \]
+  \item Return $u_+=\Exp_0(U_+)$.
+\end{enumerate}
+This solves the hyperbolic geodesic root problem
+$D_p^0(u)=x$, not the Euclidean coordinate equation $u^p=x$.
+\end{example}
+
+\section{Beyond The Radial Model: Curvature And Noncommutativity}
+
+The Hadamard construction above is rigorous because it fixes a logarithmic chart.
+It becomes genuinely curved when the chart center moves, or when the monomial
+power is a group/symmetric-space operation rather than a radial geodesic
+dilation.
+
+\begin{definition}[Lie-group residual IRP, local form]
+Let $G$ be a Lie group with exponential map $\exp:\mathfrak g\to G$.  For the
+local group-power problem $z^p=x$, define a right residual
+\[
+  R(u)=u^{-p}x,\qquad A(u)=\log R(u)\in\mathfrak g.
+\]
+A residual Pandrosion layer applies the scalar length correction in the residual
+direction:
+\[
+  u_+=u\,\exp\!\left(
+    \Theta_p(\|A(u)\|)
+    \frac{A(u)}{\|A(u)\|}
+  \right),
+\]
+with scale and inversion choices made in $\mathfrak g$.
+\end{definition}
+
+\begin{remark}[Where curvature appears]
+In the abelian case, the preceding formula reduces to the scalar logarithmic IRP.
+In the noncommutative case,
+\[
+  \log(\exp A\,\exp B)
+    =A+B+\frac12[A,B]+\cdots
+\]
+introduces Baker--Campbell--Hausdorff commutators.  On symmetric spaces the same
+role is played by curvature/Jacobi-field terms.  Thus the local research target
+is not the scalar quadratic term, which is already known, but the estimate
+\[
+\begin{aligned}
+  \|A_+\|
+    &\le C_p\|A\|^2
+      +C_{\mathrm{curv}}\|A\|\,\|[A,U]\|  \\
+    &\quad +O(\|A\|^3).
+\end{aligned}
+\]
+If the residual direction nearly commutes with the current chart, or if the
+problem is radial in a symmetric space, the commutator term vanishes and the
+Hadamard theorem above is recovered.
+\end{remark}
+
+\begin{proposition}[Local curvature-stable template]
+Let a moving-chart non-Euclidean IRP layer be written in normal coordinates at a
+root $r$ as
+\[
+  E_+=Q_p(E)+C_\kappa(E),
+\]
+where $Q_p(E)$ is the flat Pandrosion residual map with
+$\|Q_p(E)\|\le c_p\|E\|^2$ and the curvature defect satisfies
+$\|C_\kappa(E)\|\le c_\kappa\|E\|^3$ on a normal ball.  Then the layer remains
+quadratic:
+\[
+  \|E_+\|\le C\|E\|^2.
+\]
+Consequently fixed $k$-fold IRP compositions still have local order $2^k$.
+\end{proposition}
+
+\begin{proof}
+For $\|E\|$ sufficiently small, the cubic defect is dominated by the quadratic
+term.  The dyadic-order argument is the same as in the flat and Hadamard
+settings.
+\end{proof}
+
+\section{Research Program}
+
+\begin{enumerate}
+  \item \textbf{Formal baseline.}  Prove the Hadamard geodesic-dilation theorem
+  in Lean or another proof assistant.  This requires only normal coordinates,
+  vector norms, and the scalar expansion of $\Theta_p$.
+  \item \textbf{Hyperbolic implementation.}  Implement the Poincare-ball layer
+  with $\Exp_0$, $\Log_0$, and tangent scale palettes.  Verify exact reduction
+  to the monomial paper on every geodesic ray.
+  \item \textbf{Spherical local model.}  Repeat the construction on the sphere
+  only inside injectivity-radius balls.  The cut locus replaces the global
+  Hadamard guarantee, so atlas switching is mandatory.
+  \item \textbf{Symmetric positive-definite model.}  Use the affine-invariant
+  SPD geometry, where logarithms and geodesics are explicit.  Radial spectral
+  problems are exact; noncommuting updates measure the first serious curvature
+  defect.
+  \item \textbf{Lie-group BCH bounds.}  Quantify when the noncommutative group
+  residual keeps the same quadratic IRP order.  The key estimate is the size of
+  the commutator defect relative to the scalar Pandrosion residual collapse.
+\end{enumerate}
+
+\section{Conclusion}
+
+The non-Euclidean version of Pandrosion IRP should not be phrased as a naive
+replacement of straight lines by curved lines.  The correct invariant object is
+the logarithmic residual.  In the original monomial paper this residual is the
+number $\log y$ on the positive multiplicative line.  In a Hadamard manifold it
+becomes $\Log_o x-p\Log_o u$.  Chart scaling means minimizing the norm of that
+residual before the raw layer acts.  Under this translation, the local IRP
+mechanism survives unchanged: one renormalized raw layer is quadratic, and
+iterated layers have dyadic order.  Curvature enters only when the chart moves
+or when the underlying power law is noncommutative; those terms form the next
+research problem.
+
+\begin{thebibliography}{9}
+
+\bibitem{besevic000}
+I. Besevic,
+\emph{A Monomial Pandrosion Scheme: Contraction, Chart Scaling, and Iterated
+Renormalization for $z^p=x$}, 2026.
+
+\bibitem{bridsonhaefliger}
+M. R. Bridson and A. Haefliger,
+\emph{Metric Spaces of Non-Positive Curvature},
+Springer, 1999.
+\url{https://doi.org/10.1007/978-3-662-12494-9}
+
+\bibitem{bacak}
+M. Bacak,
+\emph{Convex Analysis and Optimization in Hadamard Spaces},
+De Gruyter, 2014.
+\url{https://doi.org/10.1515/9783110361629}
+
+\bibitem{absil}
+P.-A. Absil, R. Mahony, and R. Sepulchre,
+\emph{Optimization Algorithms on Matrix Manifolds},
+Princeton University Press, 2008.
+\url{https://sites.uclouvain.be/absil/amsbook/}
+
+\bibitem{nickelkiela}
+M. Nickel and D. Kiela,
+\emph{Poincare Embeddings for Learning Hierarchical Representations},
+Advances in Neural Information Processing Systems 30, 2017.
+\url{https://papers.neurips.cc/paper/7213-poincare-embeddings-for-learning-hierarchical-representations}
+
+\end{thebibliography}
+
+\end{document}
