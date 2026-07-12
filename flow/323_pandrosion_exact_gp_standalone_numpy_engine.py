@@ -854,7 +854,9 @@ def self_test(args: argparse.Namespace) -> dict[str, Any]:
     first = gp.eval_batch(Z); cached = gp.eval_batch(Z); covariance_error = norm(gp.L@gp.L.conj().T-gp.kernel(Z, Z))
     checks.append({"name": "exact-gp-covariance-cache", "passed": bool(np.array_equal(first, cached) and len(gp.cache) == 3 and covariance_error < 1e-9),
                    "covariance_error": covariance_error, "unique_points": len(gp.cache), "stabilizations": gp.stabilizations})
-    dense = KostlanOracle(2, 3, 7, 10, 32, False, 32); phi = dense._basis(Z)
+    dense = KostlanOracle(2, 3, 7, 10, 32, False, 32)
+    weights = np.asarray([math.sqrt(math.factorial(3)/(math.factorial(3-int(e.sum()))*math.prod(math.factorial(int(x)) for x in e))) for e in dense.exps])
+    phi = np.prod(Z[:, None, :]**dense.exps[None, :, :], axis=2)*weights[None, :]
     dense_cov = phi@phi.conj().T; dense_cov /= np.sqrt(np.diag(dense_cov))[:, None]*np.sqrt(np.diag(dense_cov))[None, :]
     kernel_error = norm(dense_cov-gp.kernel(Z, Z))
     checks.append({"name": "gp-kernel-dense-equivalence", "passed": kernel_error < 1e-12, "kernel_error": kernel_error})
