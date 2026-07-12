@@ -646,6 +646,9 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
                        "origin_backward_error": origin_error,
                        "exact_terms_per_polynomial": math.comb(n+d, d),
                        "feature_count": (len(oracle.exps) if isinstance(oracle, KostlanOracle) else None),
+                       "multiresolution_stability_established": (not isinstance(oracle, KostlanOracle) or not oracle.feature_mode),
+                       "surrogate_warning": ("root is validated only for this fixed feature bank; nested-bank convergence is not established"
+                                             if isinstance(oracle, KostlanOracle) and oracle.feature_mode else None),
                        "feature_degree_range": ([int(np.min(oracle.degrees)), int(np.max(oracle.degrees))] if isinstance(oracle, KostlanOracle) and oracle.feature_mode else None)},
             "parameters": {"count": args.count, "pool": args.pool, "epochs": args.epochs, "accept": args.accept,
                 "broyden": args.broyden, "higher_order": args.higher_order, "validation_accept": args.validation_accept,
