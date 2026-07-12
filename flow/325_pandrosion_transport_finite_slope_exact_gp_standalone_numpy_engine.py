@@ -446,6 +446,19 @@ def slope_step(Q: np.ndarray, f: np.ndarray, trust: float, y: np.ndarray) -> tup
     return np.asarray(delta, np.complex128), method
 
 
+def close_finite_slope(Q: np.ndarray, b: np.ndarray, fb: np.ndarray, y: np.ndarray,
+                       f: np.ndarray, limit: float) -> tuple[np.ndarray,float,float,bool]:
+    """Reclose one column so the transported matrix satisfies the finite identity exactly."""
+    d=b-y; j=int(np.argmax(np.abs(d)))
+    if abs(d[j])<=1e-14*max(1,norm(b),norm(y)): return Q,float("inf"),float("inf"),False
+    mismatch=(fb-f)-Q@d; correction=mismatch/d[j]
+    ratio=norm(correction)/max(norm(Q[:,j]),1e-300)
+    if not math.isfinite(ratio) or ratio>limit: return Q,float("inf"),ratio,False
+    out=Q.copy(); out[:,j]+=correction
+    defect=norm((fb-f)-out@d)/max(norm(fb-f),norm(out@d),1e-300)
+    return out,defect,ratio,bool(math.isfinite(defect))
+
+
 def deflation_logs(Y: Any, roots: Sequence[np.ndarray], alpha: float) -> np.ndarray:
     yy = np.asarray(Y, np.complex128)
     if yy.ndim == 1: yy = yy[None, :]
@@ -500,14 +513,14 @@ def probe_endpoint(target: Target, y: np.ndarray, f: np.ndarray, prev: Optional[
             Q, defect, used = finite_slope(target, y, B[int(idx)])
             s = np.linalg.svd(Q, compute_uv=False); cond = float(s[0]/s[-1]) if s[-1] > 0 else float("inf")
             total = float(scores[int(idx)]) + args.probe_cond_weight*math.log1p(cond if math.isfinite(cond) else 1e300)
-            item = (total, B[int(idx)].copy(), Q, defect, cond, float(s[-1]), float(s[0]), used)
+            item = (total, B[int(idx)].copy(), FB[int(idx)].copy(), Q, defect, cond, float(s[-1]), float(s[0]), used)
             if best is None or item[0] < best[0]: best = item
         except Exception:
             continue
     if best is None: raise RuntimeError("no usable finite-slope endpoint")
-    _, b, Q, defect, cond, smin, smax, used = best
+    _, b, fb, Q, defect, cond, smin, smax, used = best
     return b, Q, {"probe_evals": len(B), "slope_evals": used, "telescope_defect": defect,
-                   "cond": cond, "smin": smin, "smax": smax, "endpoint_residual": float(np.min(R))}
+                   "cond": cond, "smin": smin, "smax": smax, "endpoint_residual": norm(fb), "endpoint_value":fb}
 
 
 @dataclass
@@ -525,6 +538,7 @@ class CorrectResult:
     line_evals: int
     parabolic_evals: int
     max_telescope_defect: float
+    max_transport_correction: float
     smin: Optional[float]
     smax: Optional[float]
     cond: Optional[float]
@@ -535,13 +549,13 @@ def correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[n
     y = np.asarray(y0, np.complex128).copy(); f = target.eval(y); r = norm(f)
     best_y, best_f, best_r = y.copy(), f.copy(), r; prev = None
     slopes = transports = probe_evals = slope_evals = line_evals = para = done = 0
-    max_defect = 0.; smin = smax = cond = None; status = "max-epochs"
+    max_defect = max_transport = 0.; smin = smax = cond = None; status = "max-epochs"
     L = np.asarray(floats(args.line_grid, [1, .75, .5, .25, .125, .0625]))
     for ep in range(max(1, epochs)):
         if deadline is not None and clock() >= deadline: status = "timeout"; break
         if best_r < args.accept: status = "converged"; break
         try:
-            _, Q, meta = probe_endpoint(target, y, f, prev, args, target.oracle.seed, ep)
+            b, Q, meta = probe_endpoint(target, y, f, prev, args, target.oracle.seed, ep); fb=meta["endpoint_value"]
             slopes += 1; probe_evals += meta["probe_evals"]; slope_evals += meta["slope_evals"]
             max_defect = max(max_defect, meta["telescope_defect"])
             smin, smax, cond = meta["smin"], meta["smax"], meta["cond"]
@@ -556,7 +570,7 @@ def correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[n
             for retry in range(args.slope_retries):
                 retry_args=argparse.Namespace(**vars(args)); retry_args.probe_scale=args.probe_scale*(args.slope_retry_factor**(retry+1))
                 try:
-                    _, Q, meta = probe_endpoint(target,y,f,prev,retry_args,target.oracle.seed,ep+1000*(retry+1))
+                    b,Q,meta=probe_endpoint(target,y,f,prev,retry_args,target.oracle.seed,ep+1000*(retry+1)); fb=meta["endpoint_value"]
                     slopes+=1; probe_evals+=meta["probe_evals"]; slope_evals+=meta["slope_evals"]
                     max_defect=max(max_defect,meta["telescope_defect"]); smin,smax,cond=meta["smin"],meta["smax"],meta["cond"]
                     delta,method=slope_step(Q,f,args.trust_radius,y)
@@ -584,6 +598,9 @@ def correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[n
         TL = np.asarray(floats(args.transport_line_grid, [1,.5,.25]))
         for _ in range(args.transport_steps):
             if r < args.accept or (deadline is not None and clock() >= deadline): break
+            Q,cdef,cratio,closed=close_finite_slope(Q,b,fb,y,f,args.transport_closure_limit)
+            if not closed: break
+            max_defect=max(max_defect,cdef); max_transport=max(max_transport,cratio)
             td, tmethod = slope_step(Q, f, args.transport_trust_radius, y)
             if tmethod == "failed" or not np.all(np.isfinite(td)) or norm(td) <= 1e-15: break
             TY = y[None,:]+TL[:,None]*td[None,:]; TF = target.eval_batch(TY); TR = norms(TF); line_evals += len(TY)
@@ -596,7 +613,7 @@ def correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[n
     ok = best_r < args.accept
     if ok: status = "converged"
     return CorrectResult(best_y, best_f, best_r, ok, status, done, slopes, transports, probe_evals,
-                         slope_evals, line_evals, para, max_defect, smin, smax, cond)
+                         slope_evals, line_evals, para, max_defect, max_transport, smin, smax, cond)
 
 
 def add_results(base: CorrectResult, loc: CorrectResult, y: np.ndarray, f: np.ndarray,
@@ -607,6 +624,7 @@ def add_results(base: CorrectResult, loc: CorrectResult, y: np.ndarray, f: np.nd
         base.slope_evals+loc.slope_evals, base.line_evals+loc.line_evals,
         base.parabolic_evals+loc.parabolic_evals,
         max(base.max_telescope_defect, loc.max_telescope_defect),
+        max(base.max_transport_correction, loc.max_transport_correction),
         loc.smin if loc.smin is not None else base.smin,
         loc.smax if loc.smax is not None else base.smax,
         loc.cond if loc.cond is not None else base.cond)
@@ -716,6 +734,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
             "transported_finite_slope_steps":loc.transported_steps,
             "probe_evals":loc.probe_evals,"slope_path_evals":loc.slope_evals,"line_evals":loc.line_evals,
             "parabolic_evals":loc.parabolic_evals,"max_telescope_defect":loc.max_telescope_defect,
+            "max_transport_correction":loc.max_transport_correction,
             "oracle_samples":oracle.eval_count-before,"conditioning":condmeta}
         if args.verbose_trials: rec.update({"start":y0,"z":z})
         if not accepted:
@@ -735,7 +754,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
       "method":{"family":"pure-pandrosion-finite-slope","derivatives":False,"jacobian":False,"newton":False,
         "broyden":False,"levenberg_marquardt":False,
         "identity":"F(b)-F(a)=Q(a,b)(b-a) by coordinate telescoping",
-        "transport":"frozen exact finite-slope matrix, rebuilt after a bounded number of accepted steps",
+        "transport":"one-column finite closure preserves F(b)-F(a)=Q(a,b)(b-a); bounded then fully rebuilt",
         "irp_scope":"dynamic direct/reciprocal chart renormalization; exact article IRP only in monomial audit"},
       "oracle":{"kind":oracle.kind,"seed":oracle.seed,"samples":oracle.eval_count,"seconds":oracle.seconds,
         "residual_mode":"raw" if isinstance(oracle,ExpressionOracle) else "root-equivalent-degree-normalized",
@@ -819,6 +838,7 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--trust-radius",type=float,default=10); p.add_argument("--line-grid",default="1,.75,.5,.25,.125,.0625")
     p.add_argument("--transport-steps",type=int,default=2); p.add_argument("--transport-ratio",type=float,default=.85)
     p.add_argument("--transport-trust-radius",type=float,default=5); p.add_argument("--transport-line-grid",default="1,.5,.25")
+    p.add_argument("--transport-closure-limit",type=float,default=2.)
     p.add_argument("--slope-retries",type=int,default=2); p.add_argument("--slope-retry-factor",type=float,default=.25)
     p.add_argument("--deflation-alpha",type=float,default=.15)
     p.add_argument("--parabolic",action="store_true",default=True); p.add_argument("--no-parabolic",dest="parabolic",action="store_false")
@@ -844,7 +864,7 @@ def validate(args: argparse.Namespace) -> None:
     if args.accept<=0 or args.validation_accept<=0 or args.trust_radius<=0: raise ValueError("invalid tolerances")
     if args.gp_jitter<=0 or args.gp_max_points<=0 or args.gp_jet_radius<=0 or args.gp_swarm_cap<=0 or args.gp_probe_cap<=0: raise ValueError("invalid GP controls")
     if args.probe_scale<=0 or args.probe_cond_weight<0 or args.equal_value_weight<0: raise ValueError("invalid probe controls")
-    if args.transport_steps<0 or not 0<args.transport_ratio<=1 or args.transport_trust_radius<=0: raise ValueError("invalid finite-slope transport controls")
+    if args.transport_steps<0 or not 0<args.transport_ratio<=1 or args.transport_trust_radius<=0 or args.transport_closure_limit<=0: raise ValueError("invalid finite-slope transport controls")
     if args.slope_retries<0 or not 0<args.slope_retry_factor<1: raise ValueError("invalid finite-slope retry controls")
     if args.target<=0 or args.monomial_start<=0 or args.monomial_layers<=0 or args.palette_q<=1 or args.palette_k<=0: raise ValueError("invalid monomial IRP controls")
 
@@ -861,6 +881,10 @@ def self_test(args: argparse.Namespace) -> dict[str,Any]:
     o=make_oracle(a,2,2); t=Target(o); aa=np.asarray([.2+.1j,-.3j]); bb=np.asarray([1-.2j,.4+.1j])
     Q,defect,_=finite_slope(t,aa,bb); identity=norm((t.eval(bb)-t.eval(aa))-Q@(bb-aa))
     checks.append({"name":"exact-telescoping","passed":identity<1e-12 and defect<1e-12,"identity_error":identity,"defect":defect})
+    yy=.7*aa+.3*bb; fy=t.eval(yy); fb=t.eval(bb); closed,cdef,cratio,ok=close_finite_slope(Q,bb,fb,yy,fy,100.)
+    closure_error=norm((fb-fy)-closed@(bb-yy))
+    checks.append({"name":"exact-finite-transport-closure","passed":ok and cdef<1e-12 and closure_error<1e-12,
+        "identity_error":closure_error,"defect":cdef,"correction_ratio":cratio})
     u,h=monomial_irp(4.,3,1.,3); checks.append({"name":"article-001-exact-irp","passed":h[-1]<2e-12,"history":h,"root":u})
     a=argparse.Namespace(**vars(args)); a.system_source="monomial"; a.target=4.; a.monomial_layers=4
     mr=run_case(a,"1,3"); checks.append({"name":"article-001-cli-mode","passed":mr["summary"]["success"],"result":mr})
