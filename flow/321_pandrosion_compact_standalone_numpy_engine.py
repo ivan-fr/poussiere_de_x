@@ -634,6 +634,10 @@ def self_test(args: argparse.Namespace) -> dict[str, Any]:
     loc = correct(target, np.asarray([2+0j]), a, [], 2, None)
     checks.append({"name": "immediate-broyden", "passed": loc.rebuilds == 1 and loc.broyden >= 1,
                    "rebuilds": loc.rebuilds, "updates": loc.broyden})
+    a = argparse.Namespace(**vars(args)); a.self_test = False; a.system_source = "ks"; a.cases = "2,3"
+    a.starts = None; a.count = 2; a.pool = 32; a.epochs = 14; a.swarm = True; a.swarm_size = 32
+    result = run_case(a, "2,3")
+    checks.append({"name": "kostlan-smoke", "passed": bool(result["summary"]["success"]), "result": result})
     return {"script": Path(__file__).name, "self_test": True, "passed": all(c["passed"] for c in checks), "checks": checks}
 
 
