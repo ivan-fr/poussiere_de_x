@@ -809,6 +809,9 @@ def self_test(args: argparse.Namespace) -> dict[str,Any]:
     a=argparse.Namespace(**vars(args)); a.system_source="poly"; a.polys="x^2-3*x-10"; a.variables=None
     a.starts="-8,4"; a.count=2; a.pool=8; a.swarm=False; a.epochs=24
     r=run_case(a,"1,2"); checks.append({"name":"two-roots-pure-slope","passed":r["summary"]["success"],"result":r})
+    a=argparse.Namespace(**vars(args)); a.system_source="poly"; a.polys="x1^2-1;x2^2-1"; a.variables=None
+    a.starts="-2,-2;-2,2;2,-2;2,2"; a.count=4; a.pool=8; a.swarm=False; a.epochs=30
+    r=run_case(a,"2,2"); checks.append({"name":"four-roots-pure-slope","passed":r["summary"]["success"],"result":r})
     a=argparse.Namespace(**vars(args)); a.system_source="poly"; a.polys="x1^2+x1*x2-1;x2^2-x1"; a.variables=None
     o=make_oracle(a,2,2); t=Target(o); aa=np.asarray([.2+.1j,-.3j]); bb=np.asarray([1-.2j,.4+.1j])
     Q,defect,_=finite_slope(t,aa,bb); identity=norm((t.eval(bb)-t.eval(aa))-Q@(bb-aa))
@@ -822,9 +825,24 @@ def self_test(args: argparse.Namespace) -> dict[str,Any]:
     gp=make_oracle(a,2,3); Z=np.asarray([[0,0],[.2+.1j,-.3j],[1,-.5j]],np.complex128)
     first=gp.eval_batch(Z); cached=gp.eval_batch(Z); cov=norm(gp.L@gp.L.conj().T-gp.kernel(Z,Z))
     checks.append({"name":"gp-covariance-cache","passed":np.array_equal(first,cached) and cov<1e-9,"covariance_error":cov})
+    dense=KostlanOracle(2,3,7,10,32,False,32)
+    weights=np.asarray([math.sqrt(math.factorial(3)/(math.factorial(3-int(e.sum()))*math.prod(math.factorial(int(x)) for x in e))) for e in dense.exps])
+    phi=np.prod(Z[:,None,:]**dense.exps[None,:,:],axis=2)*weights[None,:]
+    C=phi@phi.conj().T; C/=np.sqrt(np.diag(C))[:,None]*np.sqrt(np.diag(C))[None,:]
+    kernel_error=norm(C-gp.kernel(Z,Z)); checks.append({"name":"gp-kernel-dense-equivalence","passed":kernel_error<1e-12,"kernel_error":kernel_error})
     finite=ExactKSGPOracle(1,2,9,1e-9,64,1e-3); finite.eval_batch(np.linspace(-2,2,17,dtype=np.complex128)[:,None])
     checks.append({"name":"gp-finite-rank","passed":len(finite.cache)==17 and len(finite.points)<=3,
         "queries":len(finite.cache),"active_rank":len(finite.points)})
+    a=argparse.Namespace(**vars(args)); a.system_source="ks"; a.ks_backend="feature"; a.features=512
+    feature=make_oracle(a,20,20); origin=feature.backward_error(np.zeros(20,np.complex128))
+    checks.append({"name":"feature-origin-guard","passed":origin>a.validation_accept and np.min(feature.degrees)==0,"origin_backward_error":origin})
+    capped=ExactKSGPOracle(2,3,11,1e-9,1,1e-3); cap_ok=False
+    try: capped.eval_batch(np.asarray([[0,0],[1,1]],np.complex128))
+    except RuntimeError: cap_ok=True
+    checks.append({"name":"gp-cap-guard","passed":cap_ok})
+    a=argparse.Namespace(**vars(args)); a.system_source="ks"; a.ks_backend="gp"; a.seed_index=0
+    a.count=1; a.pool=4; a.epochs=40; a.swarm=True; a.swarm_size=4; a.swarm_keep=4; a.gp_max_points=3000
+    r=run_case(a,"20,20"); checks.append({"name":"pure-gp-20x20","passed":r["summary"]["success"],"result":r})
     return {"script":Path(__file__).name,"self_test":True,"passed":all(c["passed"] for c in checks),"checks":checks}
 
 
