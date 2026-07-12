@@ -107,9 +107,17 @@ def stable_seed(n: int, d: int, index: int, salt: int = 0) -> int:
     return int(mix64(0x50414E44524F5349 + 1000003 * n + 9176 * d + 97 * index + salt) & 0x7FFFFFFF)
 
 
+def u01(x: int) -> float:
+    return ((mix64(x) >> 11) & ((1 << 53)-1))/float(1 << 53)
+
+
 def direction(n: int, index: int, seed: int) -> np.ndarray:
-    rng = np.random.default_rng(mix64(seed + 104729 * index))
-    v = rng.standard_normal(n) + 1j * rng.standard_normal(n)
+    vals = []
+    for j in range(n):
+        a = 2*math.pi*u01(seed+0xD1A5E+1000003*index+4099*(j+1))
+        gain = math.exp(.45*(2*u01(seed+0xBADC0DE+1000033*index+9176*(j+1))-1))
+        vals.append(gain*complex(math.cos(a), math.sin(a)))
+    v = np.asarray(vals, np.complex128)
     return np.asarray(v / max(norm(v), 1e-300) * math.sqrt(n), np.complex128)
 
 
@@ -528,16 +536,17 @@ def irp_rescue(base: Target, result: CorrectResult, args: argparse.Namespace,
 # ---------- starts, swarm and root finishing --------------------------------
 
 def atlas_start(n: int, trial: int, seed: int) -> np.ndarray:
-    radii = [.025, .04, .06, .08, .12, .18, .27, .4, .6, .85, 1.15, 1.55, 2.05, 2.75, 3.6, 4.8, 6.4]
+    radii = [2**(k/3) for k in range(-15, 16)]
     return radii[(trial*17) % len(radii)] * direction(n, trial, seed)
 
 
 def swarm(base: Target, args: argparse.Namespace, n: int, seed: int) -> tuple[list[np.ndarray], dict[str, Any]]:
     size = args.swarm_size or min(args.pool, max(32, 8*args.count))
     keep = args.swarm_keep or max(8, 3*args.count)
-    Y = np.stack([atlas_start(n, i, seed + 31337) for i in range(max(1, size))])
+    radii = [.025, .04, .06, .08, .12, .18, .27, .4, .6, .85, 1.15, 1.55, 2.05, 2.75, 3.6, 4.8, 6.4]
+    Y = np.stack([radii[i % len(radii)]*direction(n, i, seed+0x320000+65537*i) for i in range(max(1, size))])
     F = base.eval_batch(Y); R = norms(F); alive = np.isfinite(R); jet_samples = line_samples = 0
-    L = np.asarray([1, .5, .25])
+    L = np.asarray([1, .5, .25, .1])
     for _ in range(args.swarm_iters):
         ids = np.flatnonzero(alive)
         if not len(ids): break
