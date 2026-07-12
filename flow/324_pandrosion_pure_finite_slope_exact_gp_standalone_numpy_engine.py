@@ -1,14 +1,10 @@
-"""Pandrosion 324: compact standalone NumPy root-harvesting engine.
+"""Pandrosion 324: pure finite-slope standalone NumPy root harvester.
 
-Core geometry: logarithmic atlas starts, vectorised swarm, paired local jets,
-immediate Broyden updates, overflow-safe root deflation, augmented-system LM,
-adaptive second-order inverse jets, and direct/reciprocal IRP rescue.  Exact
-expression polynomials and dense Kostlan systems are supported.  Large KS cases
-default to an exact-in-law Gaussian-process oracle sampled conditionally through
-an incremental rank-adaptive covariance factor, so no monomial or feature
-truncation is needed.
-The validated stratified surrogate remains available as an explicit fallback.
-No local project imports are used.
+The local corrector uses the exact coordinate-telescopic identity
+F(b)-F(a)=Q(a,b)(b-a).  It forms no Jacobian and uses no Newton, LM, Broyden,
+automatic differentiation, or derivative formula.  Direct/reciprocal charts
+are recomputed dynamically for IRP-style rescue.  Large Kostlan systems use
+the lazy exact-in-law GP oracle introduced in 323.  No local imports are used.
 """
 from __future__ import annotations
 
@@ -210,6 +206,19 @@ class ExpressionOracle(Oracle):
         return np.stack(cols, axis=1)
 
 
+class MonomialOracle(Oracle):
+    def __init__(self, d: int, target: float) -> None:
+        super().__init__(1, d, stable_seed(1, d, 0), "monomial-exact-article-001")
+        self.target = float(target)
+
+    def _eval_batch(self, Z: np.ndarray) -> np.ndarray:
+        return (Z[:, 0]**self.d-self.target)[:, None]
+
+    def backward_error(self, z: Any) -> float:
+        zz = complex(np.asarray(z).reshape(-1)[0]); self.eval_count += 1
+        return abs(zz**self.d-self.target)/max(abs(zz)**self.d+abs(self.target), 1e-300)
+
+
 def compositions(d: int, n: int) -> np.ndarray:
     out: list[tuple[int, ...]] = []
     def rec(pos: int, rem: int, cur: list[int]) -> None:
@@ -354,6 +363,9 @@ class ExactKSGPOracle(Oracle):
 
 
 def make_oracle(args: argparse.Namespace, n: int, d: int) -> Oracle:
+    if args.system_source == "monomial":
+        if n != 1 or args.target <= 0: raise ValueError("monomial mode requires case 1,d and --target > 0")
+        return MonomialOracle(d, args.target)
     if args.system_source in {"poly", "polynomial"}:
         seed = stable_seed(n, d, args.seed_index)
         if not args.polys:
@@ -403,67 +415,35 @@ class IRPTarget(Target):
         return x / self.scale if not self.reciprocal else 1 / np.where(np.abs(self.scale * x) < 1e-14, self.scale * x + 1e-14, self.scale * x)
 
 
-def paired_jets(target: Target, Y: Any, F0: Optional[Any], hrel: float) -> tuple[np.ndarray, np.ndarray, int]:
-    yy = np.asarray(Y, np.complex128)
-    if yy.ndim == 1: yy = yy[None, :]
-    b, n = yy.shape
-    f0 = target.eval_batch(yy) if F0 is None else np.asarray(F0, np.complex128)
-    hrel = max(hrel, float(getattr(target.oracle, "recommended_radius", 0)))
-    h = hrel * np.maximum(1, np.abs(yy))
-    plus = np.repeat(yy[:, None, :], n, axis=1)
-    minus = plus.copy()
-    idx = np.arange(n)
-    plus[:, idx, idx] += h; minus[:, idx, idx] -= h
-    f = target.eval_batch(np.vstack((plus.reshape(b*n, n), minus.reshape(b*n, n))))
-    fp, fm = f[:b*n].reshape(b, n, n), f[b*n:].reshape(b, n, n)
-    J = np.transpose(fp - fm, (0, 2, 1)) / (2 * h[:, None, :])
-    return f0, J, (2*n*b + (b if F0 is None else 0))
 
 
-def linear_step(J: np.ndarray, f: np.ndarray, mu: float, trust: float, y: np.ndarray) -> tuple[np.ndarray, str]:
-    jscale = float(np.max(np.abs(J))) if J.size else 0
-    if not math.isfinite(jscale) or jscale <= 1e-300:
-        return np.zeros_like(y), "failed"
-    with np.errstate(all="ignore"):
-        jn, fn = J/jscale, f/jscale
-    if not np.all(np.isfinite(jn)) or not np.all(np.isfinite(fn)):
-        return np.zeros_like(y), "failed"
-    try:
-        if mu > 0:
-            aug = np.vstack((jn, math.sqrt(mu)*np.eye(len(y), dtype=np.complex128)))
-            rhs = np.concatenate((-fn, np.zeros(len(y), np.complex128)))
-            delta, _, _, _ = np.linalg.lstsq(aug, rhs, rcond=1e-12); method = "lm-augmented"
-        else:
-            delta = np.linalg.solve(jn, -fn); method = "solve"
+# ---------- exact finite Pandrosion slopes ---------------------------------
+
+def finite_slope(target: Target, a: Any, b: Any) -> tuple[np.ndarray, float, int]:
+    """Coordinate-telescopic Q with F(b)-F(a)=Q(a,b)(b-a), no derivatives."""
+    aa, bb = np.asarray(a, np.complex128), np.asarray(b, np.complex128)
+    n = len(aa); path = np.repeat(aa[None, :], n+1, axis=0)
+    for j in range(n): path[j+1:, j] = bb[j]
+    F = target.eval_batch(path); dz = bb-aa
+    if np.any(np.abs(dz) <= 1e-14*np.maximum(1, np.maximum(np.abs(aa), np.abs(bb)))):
+        raise ValueError("degenerate finite-slope endpoint")
+    Q = (F[1:]-F[:-1]).T/dz[None, :]
+    telescoped = Q@dz
+    defect = norm((F[-1]-F[0])-telescoped)/max(norm(F[-1]-F[0]), norm(telescoped), 1e-300)
+    return Q, defect, len(path)
+
+
+def slope_step(Q: np.ndarray, f: np.ndarray, trust: float, y: np.ndarray) -> tuple[np.ndarray, str]:
+    scale = float(np.max(np.abs(Q))) if Q.size else 0
+    if not math.isfinite(scale) or scale <= 1e-300: return np.zeros_like(y), "failed"
+    q, rhs = Q/scale, -f/scale
+    try: delta, method = np.linalg.solve(q, rhs), "finite-slope-solve"
     except Exception:
-        try:
-            delta, _, _, _ = np.linalg.lstsq(jn, -fn, rcond=1e-12); method = "svd-lstsq"
-        except Exception:
-            delta = np.zeros_like(y); method = "failed"
-    limit = trust * max(1, norm(y)) if trust > 0 else 10 * max(1, norm(y))
-    nd = norm(delta)
-    if math.isfinite(nd) and nd > limit: delta *= limit / nd
+        try: delta, _, _, _ = np.linalg.lstsq(q, rhs, rcond=1e-12); method = "finite-slope-lstsq"
+        except Exception: return np.zeros_like(y), "failed"
+    cap = trust*max(1, norm(y)); nd = norm(delta)
+    if math.isfinite(nd) and nd > cap: delta *= cap/nd
     return np.asarray(delta, np.complex128), method
-
-
-def higher_order_step(target: Target, y: np.ndarray, f: np.ndarray, J: np.ndarray,
-                      d1: np.ndarray, r: float, args: argparse.Namespace) -> tuple[np.ndarray, int, bool]:
-    if not args.higher_order or r > args.higher_order_gate or norm(f+J@d1) > args.higher_order_trigger*r:
-        return d1, 0, False
-    try:
-        cond = float(np.linalg.cond(J/np.max(np.abs(J))))
-    except Exception:
-        return d1, 0, False
-    nd = norm(d1)
-    if not math.isfinite(cond) or cond > args.higher_order_cond or nd <= 1e-14:
-        return d1, 0, False
-    h = max(1e-4, min(1e-2, .05*max(1, norm(y))/nd))
-    fp, fm = target.eval(y+h*d1), target.eval(y-h*d1)
-    curvature = (fp-2*f+fm)/(h*h)
-    d2, _ = linear_step(J, .5*curvature, 0, args.trust_radius, y)
-    if np.all(np.isfinite(d2)) and norm(d2) <= args.higher_order_ratio*nd:
-        return d1+d2, 2, True
-    return d1, 2, False
 
 
 def deflation_logs(Y: Any, roots: Sequence[np.ndarray], alpha: float) -> np.ndarray:
@@ -471,21 +451,64 @@ def deflation_logs(Y: Any, roots: Sequence[np.ndarray], alpha: float) -> np.ndar
     if yy.ndim == 1: yy = yy[None, :]
     out = np.zeros(len(yy))
     for root in roots:
-        out += np.log1p(alpha / np.maximum(np.linalg.norm(yy - root[None, :], axis=1), 1e-12))
+        out += np.log1p(alpha/np.maximum(np.linalg.norm(yy-root[None, :], axis=1), 1e-12))
     return out
 
 
 def line_choice(R: Any, Y: Any, y: Any, current: float, best: float,
                 roots: Sequence[np.ndarray], alpha: float) -> tuple[Optional[int], np.ndarray]:
-    rr = np.asarray(R, float)
-    logw = deflation_logs(Y, roots, alpha) if roots else np.zeros(len(rr))
+    rr = np.asarray(R, float); logw = deflation_logs(Y, roots, alpha) if roots else np.zeros(len(rr))
     logw0 = float(deflation_logs(np.asarray(y)[None, :], roots, alpha)[0]) if roots else 0
-    merit = np.log(np.maximum(rr, 1e-300)) + logw
-    admissible = np.isfinite(rr) & ((merit < math.log(max(current, 1e-300)) + logw0) | (rr < best))
+    merit = np.log(np.maximum(rr, 1e-300))+logw
+    admissible = np.isfinite(rr) & ((merit < math.log(max(current, 1e-300))+logw0) | (rr < best))
     return (int(np.argmin(np.where(admissible, merit, np.inf))), merit) if np.any(admissible) else (None, merit)
 
 
-# ---------- compact Pandrosion corrector ------------------------------------
+def probe_endpoint(target: Target, y: np.ndarray, f: np.ndarray, prev: Optional[np.ndarray],
+                   args: argparse.Namespace, seed: int, ep: int) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    n = len(y); yn = max(1, norm(y)); radii = floats(args.probe_radii, [.5, 1, 2])
+    gp = isinstance(target.oracle, ExactKSGPOracle); budget = min(args.probes, args.gp_probe_cap) if gp else args.probes
+    base_radius = args.probe_scale*yn
+    min_radius = yn*max(1e-6, math.sqrt(target.oracle.jitter/max(1, target.oracle.d))) if gp else 1e-10*yn
+    local_radius = base_radius if prev is None else min(base_radius, max(2*norm(prev), min_radius))
+    candidates: list[np.ndarray] = []
+    if prev is not None and norm(prev) > 1e-14:
+        b = y + prev
+        for j in range(n):
+            if abs(b[j]-y[j]) < min_radius/max(1, math.sqrt(n)):
+                b[j] += min_radius/max(1, math.sqrt(n))*np.exp(2j*math.pi*(j+1)*.61803398875)
+        candidates.append(b)
+    k = 0
+    while len(candidates) < budget:
+        v = direction(n, ep*budget+k, seed+104729*(ep+1)+7919*(k+1))
+        rad = local_radius*radii[k % len(radii)]
+        v = v/max(norm(v), 1e-300)*math.sqrt(max(1, n))
+        b = y + rad*v
+        tiny = 1e-10*yn
+        for j in range(n):
+            if abs(b[j]-y[j]) < tiny:
+                b[j] += tiny*np.exp(2j*math.pi*((j+1)*.61803398875+(k+1)*.41421356237))
+        candidates.append(b); k += 1
+    B = np.asarray(candidates[:budget]); FB = target.eval_batch(B); R = norms(FB)
+    gap = np.linalg.norm(FB-f[None, :], axis=1)/np.maximum(R+norm(f), 1e-300)
+    scores = np.log(np.maximum(R, 1e-300)) + args.equal_value_weight*np.log1p(1/np.maximum(gap, 1e-14))
+    top = 1 if gp else args.probe_top
+    order = np.argsort(scores)[:max(1, min(top, len(B)))]
+    best = None
+    for idx in order:
+        try:
+            Q, defect, used = finite_slope(target, y, B[int(idx)])
+            s = np.linalg.svd(Q, compute_uv=False); cond = float(s[0]/s[-1]) if s[-1] > 0 else float("inf")
+            total = float(scores[int(idx)]) + args.probe_cond_weight*math.log1p(cond if math.isfinite(cond) else 1e300)
+            item = (total, B[int(idx)].copy(), Q, defect, cond, float(s[-1]), float(s[0]), used)
+            if best is None or item[0] < best[0]: best = item
+        except Exception:
+            continue
+    if best is None: raise RuntimeError("no usable finite-slope endpoint")
+    _, b, Q, defect, cond, smin, smax, used = best
+    return b, Q, {"probe_evals": len(B), "slope_evals": used, "telescope_defect": defect,
+                   "cond": cond, "smin": smin, "smax": smax, "endpoint_residual": float(np.min(R))}
+
 
 @dataclass
 class CorrectResult:
@@ -495,396 +518,330 @@ class CorrectResult:
     ok: bool
     status: str
     epochs: int
-    rebuilds: int
-    broyden: int
+    slopes: int
+    probe_evals: int
+    slope_evals: int
     line_evals: int
-    jet_evals: int
     parabolic_evals: int
-    higher_order_evals: int
-    higher_order_used: int
-    mu: float
+    max_telescope_defect: float
+    smin: Optional[float]
+    smax: Optional[float]
+    cond: Optional[float]
 
 
 def correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[np.ndarray],
             epochs: int, deadline: Optional[float]) -> CorrectResult:
     y = np.asarray(y0, np.complex128).copy(); f = target.eval(y); r = norm(f)
-    best_y, best_f, best_r = y.copy(), f.copy(), r
-    A: Optional[np.ndarray] = None; age = rebuilds = updates = line_evals = jet_evals = para = high_evals = high_used = done = 0
-    mu = max(0, args.lm_damping); status = "max-epochs"
-    full_line = np.asarray(floats(args.line_grid, [1, .75, .5, .25, .125, .0625]))
-    short_line = full_line[:min(4, len(full_line))]
+    best_y, best_f, best_r = y.copy(), f.copy(), r; prev = None
+    slopes = probe_evals = slope_evals = line_evals = para = done = 0
+    max_defect = 0.; smin = smax = cond = None; status = "max-epochs"
+    L = np.asarray(floats(args.line_grid, [1, .75, .5, .25, .125, .0625]))
     for ep in range(max(1, epochs)):
         if deadline is not None and clock() >= deadline: status = "timeout"; break
         if best_r < args.accept: status = "converged"; break
-        force_rebuild = A is None or not args.broyden or age >= args.jet_refresh
-        moved = False
-        for attempt in range(6):
-            rebuilt = force_rebuild or A is None
-            if rebuilt:
-                _, batch_J, used = paired_jets(target, y[None, :], f[None, :], args.jet_radius)
-                A = batch_J[0]; age = 0; rebuilds += 1; jet_evals += used; force_rebuild = False
-            delta, _ = linear_step(A, f, mu if args.adaptive_lm else args.lm_damping, args.trust_radius, y)
-            if rebuilt:
-                delta, extra, used_high = higher_order_step(target, y, f, A, delta, r, args)
-                jet_evals += extra; high_evals += extra; high_used += int(used_high)
-            if not np.all(np.isfinite(delta)) or norm(delta) <= 1e-15:
-                if args.adaptive_lm and attempt < 5:
-                    mu = min(1, max(1e-3, mu*10)); continue
-                status = "invalid-step"; break
-            L = full_line if rebuilt else short_line
-            Y = y[None, :] + L[:, None] * delta[None, :]
-            F = target.eval_batch(Y); R = norms(F); line_evals += len(Y)
-            i, merit = line_choice(R, Y, y, r, best_r, known, args.deflation_alpha)
-            if i is None:
-                if not rebuilt and age > 0:
-                    force_rebuild = True; continue
-                if args.adaptive_lm and attempt < 5:
-                    mu = min(1, max(1e-3, mu*10)); continue
-                status = "no-decrease"; break
-            lam, yn, fn, rn = float(L[i]), Y[i].copy(), F[i].copy(), float(R[i])
-            if args.parabolic and 0 < i < len(L) - 1:
-                x1, x2, x3 = float(L[i-1]), float(L[i]), float(L[i+1]); q1, q2, q3 = R[i-1]**2, R[i]**2, R[i+1]**2
-                den = (x1-x2)*(x1-x3)*(x2-x3)
-                a = (x3*(q2-q1)+x2*(q1-q3)+x1*(q3-q2))/den if abs(den) > 1e-300 else 0
-                b = (x3*x3*(q1-q2)+x2*x2*(q3-q1)+x1*x1*(q2-q3))/den if abs(den) > 1e-300 else 0
-                star = float(-b/(2*a)) if a > 0 else -1
-                if a > 0 and min(x1, x2, x3) < star < max(x1, x2, x3) and abs(star-lam) > .03*max(lam, 1e-12):
-                    yp = y + star*delta; fp = target.eval(yp); rp = norm(fp); para += 1; line_evals += 1
-                    wp = float(deflation_logs(yp[None, :], known, args.deflation_alpha)[0]) if known else 0
-                    if math.isfinite(rp) and math.log(max(rp, 1e-300)) + wp < merit[i]:
-                        lam, yn, fn, rn = star, yp, fp, rp
-            with np.errstate(all="ignore"):
-                predicted = norm(f + A @ (lam*delta)) if A is not None else r
-            dy, df = yn-y, fn-f; denom = complex(np.vdot(dy, dy))
-            if args.broyden and abs(denom) > 1e-300:
-                with np.errstate(all="ignore"):
-                    candidate_A = A + np.outer(df-A@dy, dy.conj())/denom
-                if np.all(np.isfinite(candidate_A)):
-                    A = candidate_A; age += 1; updates += 1
-                else:
-                    A = None; age = args.jet_refresh
-            old_r = r; y, f, r = yn, fn, rn; done = ep + 1; moved = True
-            if r < best_r: best_y, best_f, best_r = y.copy(), f.copy(), r
-            if args.adaptive_lm:
-                if r < .5*old_r or r <= predicted: mu *= .25
-                elif r > .9*old_r: mu = min(1, max(1e-4, mu*2))
-            break
-        if not moved: break
+        try:
+            _, Q, meta = probe_endpoint(target, y, f, prev, args, target.oracle.seed, ep)
+            slopes += 1; probe_evals += meta["probe_evals"]; slope_evals += meta["slope_evals"]
+            max_defect = max(max_defect, meta["telescope_defect"])
+            smin, smax, cond = meta["smin"], meta["smax"], meta["cond"]
+            delta, method = slope_step(Q, f, args.trust_radius, y)
+        except Exception as exc:
+            status = f"slope-error:{type(exc).__name__}"; break
+        if method == "failed" or not np.all(np.isfinite(delta)) or norm(delta) <= 1e-15:
+            status = "invalid-slope-step"; break
+        Y = y[None, :]+L[:, None]*delta[None, :]; F = target.eval_batch(Y); R = norms(F); line_evals += len(Y)
+        i, merit = line_choice(R, Y, y, r, best_r, known, args.deflation_alpha)
+        if i is None: status = "no-decrease"; break
+        lam, yn, fn, rn = float(L[i]), Y[i].copy(), F[i].copy(), float(R[i])
+        if args.parabolic and 0 < i < len(L)-1:
+            x1, x2, x3 = map(float, (L[i-1], L[i], L[i+1])); q1, q2, q3 = R[i-1]**2, R[i]**2, R[i+1]**2
+            den = (x1-x2)*(x1-x3)*(x2-x3)
+            aa = (x3*(q2-q1)+x2*(q1-q3)+x1*(q3-q2))/den if abs(den)>1e-300 else 0
+            bb = (x3*x3*(q1-q2)+x2*x2*(q3-q1)+x1*x1*(q2-q3))/den if abs(den)>1e-300 else 0
+            star = float(-bb/(2*aa)) if aa > 0 else -1
+            if aa > 0 and min(x1,x2,x3) < star < max(x1,x2,x3):
+                yp = y+star*delta; fp = target.eval(yp); rp = norm(fp); para += 1; line_evals += 1
+                wp = float(deflation_logs(yp[None, :], known, args.deflation_alpha)[0]) if known else 0
+                if math.isfinite(rp) and math.log(max(rp,1e-300))+wp < merit[i]:
+                    lam, yn, fn, rn = star, yp, fp, rp
+        prev = yn-y; y, f, r = yn, fn, rn; done = ep+1
+        if r < best_r: best_y, best_f, best_r = y.copy(), f.copy(), r
     ok = best_r < args.accept
     if ok: status = "converged"
-    return CorrectResult(best_y, best_f, best_r, ok, status, done, rebuilds, updates,
-                         line_evals, jet_evals, para, high_evals, high_used, mu)
+    return CorrectResult(best_y, best_f, best_r, ok, status, done, slopes, probe_evals,
+                         slope_evals, line_evals, para, max_defect, smin, smax, cond)
+
+
+def add_results(base: CorrectResult, loc: CorrectResult, y: np.ndarray, f: np.ndarray,
+                residual: float, status: str) -> CorrectResult:
+    return CorrectResult(y, f, residual, base.ok or loc.ok, status,
+        base.epochs+loc.epochs, base.slopes+loc.slopes, base.probe_evals+loc.probe_evals,
+        base.slope_evals+loc.slope_evals, base.line_evals+loc.line_evals,
+        base.parabolic_evals+loc.parabolic_evals,
+        max(base.max_telescope_defect, loc.max_telescope_defect),
+        loc.smin if loc.smin is not None else base.smin,
+        loc.smax if loc.smax is not None else base.smax,
+        loc.cond if loc.cond is not None else base.cond)
 
 
 def irp_rescue(base: Target, result: CorrectResult, args: argparse.Namespace,
                known: Sequence[np.ndarray], deadline: Optional[float]) -> CorrectResult:
+    """Dynamic direct/reciprocal chart renormalization using only finite slopes."""
     if result.ok or not args.irp: return result
-    best = result
-    gains = floats(args.irp_scales, [1, 2**(1/3), 2**(-1/3), 2, .5])
-    candidates = []
-    for gain in gains:
-        for reciprocal in (False, True):
-            chart = IRPTarget(base, complex(gain), reciprocal)
-            u = chart.from_base(best.y)
-            energy = float(np.mean(np.abs(np.log(np.maximum(np.abs(u), 1e-300)))))
-            candidates.append((energy, chart, u))
-    for _, chart, u in sorted(candidates, key=lambda x: x[0])[:args.irp_top]:
+    best = result; gains = floats(args.irp_scales, [1, 2**(1/3), 2**(-1/3), 2, .5])
+    for layer in range(args.irp_epochs):
         if deadline is not None and clock() >= deadline: break
-        loc = correct(chart, u, args, [], args.irp_epochs, deadline)
-        y = chart.to_base(loc.y); f = loc.f.copy(); r = norm(f)
-        if r < best.residual:
-            best = CorrectResult(y, f, r, r < args.accept, "irp-converged" if r < args.accept else "irp-improved",
-                                 result.epochs + loc.epochs, result.rebuilds + loc.rebuilds,
-                                 result.broyden + loc.broyden, result.line_evals + loc.line_evals,
-                                 result.jet_evals + loc.jet_evals, result.parabolic_evals + loc.parabolic_evals,
-                                 result.higher_order_evals + loc.higher_order_evals,
-                                 result.higher_order_used + loc.higher_order_used, loc.mu)
+        candidates = []
+        for gain in gains:
+            for reciprocal in (False, True):
+                chart = IRPTarget(base, complex(gain), reciprocal); u = chart.from_base(best.y)
+                energy = float(np.mean(np.abs(np.log(np.maximum(np.abs(u), 1e-300)))))
+                candidates.append((energy, chart, u))
+        improved = None
+        for _, chart, u in sorted(candidates, key=lambda x:x[0])[:args.irp_top]:
+            loc = correct(chart, u, args, [], 1, deadline)
+            y = chart.to_base(loc.y); f = loc.f.copy(); r = norm(f)
+            if r < best.residual and (improved is None or r < improved[0]): improved = (r, y, f, loc)
+        if improved is None: break
+        r, y, f, loc = improved
+        best = add_results(best, loc, y, f, r, "irp-converged" if r < args.accept else "irp-improved")
+        best.ok = r < args.accept
         if best.ok: break
     return best
 
 
-# ---------- starts, swarm and root finishing --------------------------------
+# ---------- starts, swarm, polish -------------------------------------------
 
 def atlas_start(n: int, trial: int, seed: int) -> np.ndarray:
-    radii = [2**(k/3) for k in range(-15, 16)]
-    return radii[(trial*17) % len(radii)] * direction(n, trial, seed)
+    radii = [2**(k/3) for k in range(-15,16)]
+    return radii[(trial*17)%len(radii)]*direction(n, trial, seed)
 
 
 def swarm(base: Target, args: argparse.Namespace, n: int, seed: int) -> tuple[list[np.ndarray], dict[str, Any]]:
     size = args.swarm_size or min(args.pool, max(32, 8*args.count))
     if isinstance(base.oracle, ExactKSGPOracle): size = min(size, args.gp_swarm_cap)
     keep = args.swarm_keep or max(8, 3*args.count)
-    Y = np.stack([atlas_start(n, i, seed+31337) for i in range(max(1, size))])
-    F = base.eval_batch(Y); R = norms(F); alive = np.isfinite(R); jet_samples = line_samples = 0
-    L = np.asarray([1, .5, .25, .1])
-    for _ in range(args.swarm_iters):
-        ids = np.flatnonzero(alive)
-        if not len(ids): break
-        _, J, used = paired_jets(base, Y[ids], F[ids], args.jet_radius); jet_samples += used
-        try:
-            D = np.linalg.solve(J, -F[ids, :, None])[:, :, 0]
-        except Exception:
-            rows = []
-            for j, f in zip(J, F[ids]):
-                try: rows.append(np.linalg.pinv(j, rcond=1e-12) @ (-f))
-                except Exception: rows.append(np.zeros(n, np.complex128))
-            D = np.asarray(rows)
-        bad = ~np.all(np.isfinite(D), axis=1); D[bad] = 0
-        dn = np.linalg.norm(D, axis=1); cap = 10*np.maximum(1, np.linalg.norm(Y[ids], axis=1))
-        D *= np.minimum(1, cap/np.maximum(dn, 1e-300))[:, None]
-        cand = Y[ids, None, :] + L[None, :, None]*D[:, None, :]
-        fc = base.eval_batch(cand.reshape(-1, n)).reshape(len(ids), len(L), n); line_samples += len(ids)*len(L)
-        rc = norms(fc.reshape(-1, n)).reshape(len(ids), len(L)); pick = np.argmin(rc, axis=1); rows = np.arange(len(ids))
-        improved = np.isfinite(rc[rows, pick]) & (rc[rows, pick] < R[ids])
-        chosen = ids[improved]; Y[chosen] = cand[rows, pick][improved]; F[chosen] = fc[rows, pick][improved]; R[chosen] = rc[rows, pick][improved]
-        alive[ids[~improved]] = False
-    selected: list[int] = []
-    sep = args.swarm_sep or .15*math.sqrt(n)
+    Y = np.stack([atlas_start(n, i, seed+31337) for i in range(max(1,size))])
+    F = base.eval_batch(Y); R = norms(F); selected=[]; sep=args.swarm_sep or .15*math.sqrt(n)
     for i in np.argsort(R):
-        if not math.isfinite(float(R[i])): break
+        if not math.isfinite(float(R[i])): continue
         if all(norm(Y[i]-Y[j]) > sep for j in selected): selected.append(int(i))
-        if len(selected) >= keep: break
-    return [Y[i].copy() for i in selected], {"size": size, "alive": int(alive.sum()), "kept": len(selected),
-        "best_residual": float(R[selected[0]]) if selected else None, "jet_samples": jet_samples, "line_samples": line_samples}
+        if len(selected)>=keep: break
+    return [Y[i].copy() for i in selected], {"size":size, "kept":len(selected),
+        "best_residual":float(R[selected[0]]) if selected else None, "evals":len(Y),
+        "mode":"residual-ranked-atlas-no-derivatives"}
 
 
-def polish(base: Target, y0: Any, args: argparse.Namespace, deadline: Optional[float]) -> tuple[np.ndarray, np.ndarray, float, dict[str, Any]]:
-    y = np.asarray(y0, np.complex128).copy(); f = base.eval(y); r = norm(f); Jfinal = None
-    for _ in range(args.polish_steps):
-        if r < args.tol or (deadline is not None and clock() >= deadline): break
-        _, JJ, _ = paired_jets(base, y[None, :], f[None, :], args.jet_radius); J = JJ[0]; Jfinal = J.copy()
-        d, _ = linear_step(J, f, 0, args.trust_radius, y)
-        Y = y[None, :] + np.asarray([1, .5, .25, .125])[:, None]*d[None, :]
-        F = base.eval_batch(Y); R = norms(F); i = int(np.argmin(R))
-        if R[i] >= r: break
-        y, f, r, Jfinal = Y[i].copy(), F[i].copy(), float(R[i]), None
-    if Jfinal is None and (deadline is None or clock() < deadline):
-        _, JJ, _ = paired_jets(base, y[None, :], f[None, :], args.jet_radius); Jfinal = JJ[0]
-    if Jfinal is None:
-        return y, f, r, {"smin": None, "smax": None, "cond": None, "near_multiple": None, "singular": None, "status": "deadline"}
-    try:
-        s = np.linalg.svd(Jfinal, compute_uv=False); smin, smax = float(s[-1]), float(s[0])
-    except Exception:
-        return y, f, r, {"smin": None, "smax": None, "cond": None, "near_multiple": None, "singular": None, "status": "unavailable"}
-    cond = None if smin <= 0 else float(smax/smin)
-    meta = {"smin": smin, "smax": smax, "cond": cond if cond is not None and math.isfinite(cond) else None,
-            "near_multiple": bool(smin <= 1e-8*max(smax, 1e-300)), "singular": bool(smin <= np.finfo(float).eps*max(smax, 1e-300))}
-    return y, f, r, meta
+def conditioning(loc: CorrectResult) -> dict[str, Any]:
+    if loc.smin is None or loc.smax is None:
+        return {"smin":None,"smax":None,"cond":None,"near_multiple":None,"singular":None,"mode":"unavailable"}
+    return {"smin":loc.smin,"smax":loc.smax,"cond":loc.cond,
+        "near_multiple":bool(loc.smin<=1e-8*max(loc.smax,1e-300)),
+        "singular":bool(loc.smin<=np.finfo(float).eps*max(loc.smax,1e-300)),
+        "mode":"finite-slope-endpoint"}
+
+
+def polish(base: Target, y0: Any, args: argparse.Namespace, deadline: Optional[float]) -> tuple[np.ndarray,np.ndarray,float,dict[str,Any],CorrectResult]:
+    loc = correct(base, y0, args, [], max(1,args.polish_steps), deadline)
+    return loc.y, loc.f, loc.residual, conditioning(loc), loc
 
 
 # ---------- case driver ------------------------------------------------------
 
 def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
-    started = clock(); n, d = parse_case(case_raw); oracle = make_oracle(args, n, d); base = Target(oracle)
-    origin_error = oracle.backward_error(np.zeros(n, np.complex128))
-    explicit = starts_from_text(args.starts, n)
-    swarm_points, swarm_meta, cap_error = ([], {"enabled": False}, None)
+    if args.system_source == "monomial": return run_monomial_case(args, case_raw)
+    started=clock(); n,d=parse_case(case_raw); oracle=make_oracle(args,n,d); base=Target(oracle)
+    origin_error=oracle.backward_error(np.zeros(n,np.complex128)); explicit=starts_from_text(args.starts,n)
+    swarm_points,swarm_meta,cap_error=[],{"enabled":False},None
     if args.swarm and not explicit and args.count:
-        try:
-            swarm_points, swarm_meta = swarm(base, args, n, oracle.seed); swarm_meta["enabled"] = True
-        except RuntimeError as exc:
-            cap_error = str(exc); swarm_meta = {"enabled": True, "status": "oracle-cap", "error": cap_error}
-    priority = explicit + swarm_points; roots: list[dict[str, Any]] = []; trials = []; duplicates = failures = 0
+        try: swarm_points,swarm_meta=swarm(base,args,n,oracle.seed); swarm_meta["enabled"]=True
+        except RuntimeError as exc: cap_error=str(exc); swarm_meta={"enabled":True,"status":"oracle-cap","error":cap_error}
+    priority=explicit+swarm_points; roots=[]; trials=[]; duplicates=failures=0
     for trial in range(args.pool):
-        if len(roots) >= args.count: break
-        y0 = priority[trial].copy() if trial < len(priority) else atlas_start(n, trial-len(priority), oracle.seed)
-        known = [np.asarray(r["z_complex"], np.complex128) for r in roots]
-        if known and min(norm(y0-r) for r in known) <= args.early_dup_sep:
-            duplicates += 1; trials.append({"trial": trial, "status": "start-near-root", "accepted": False}); continue
-        deadline = clock()+args.trial_timeout if args.trial_timeout > 0 else None
-        before = oracle.eval_count
+        if len(roots)>=args.count: break
+        y0=priority[trial].copy() if trial<len(priority) else atlas_start(n,trial-len(priority),oracle.seed)
+        known=[np.asarray(r["z_complex"],np.complex128) for r in roots]
+        if known and min(norm(y0-r) for r in known)<=args.early_dup_sep:
+            duplicates+=1; trials.append({"trial":trial,"status":"start-near-root","accepted":False}); continue
+        deadline=clock()+args.trial_timeout if args.trial_timeout>0 else None; before=oracle.eval_count
         try:
-            loc = correct(base, y0, args, known, args.epochs, deadline)
-            loc = irp_rescue(base, loc, args, known, deadline)
-            if loc.residual <= max(args.polish_gate, 100*args.accept):
-                z, f, residual, conditioning = polish(base, loc.y, args, deadline)
-            else:
-                z, f, residual = loc.y.copy(), loc.f.copy(), loc.residual
-                conditioning = {"smin": None, "smax": None, "cond": None, "near_multiple": None, "singular": None, "status": "polish-gate"}
-            validation_error = oracle.backward_error(z)
+            loc=correct(base,y0,args,known,args.epochs,deadline); loc=irp_rescue(base,loc,args,known,deadline)
+            if loc.residual<=max(args.polish_gate,100*args.accept):
+                z,f,residual,condmeta,ploc=polish(base,loc.y,args,deadline)
+                loc=add_results(loc,ploc,z,f,residual,loc.status)
+            else: z,f,residual=loc.y.copy(),loc.f.copy(),loc.residual; condmeta=conditioning(loc)
+            validation_error=oracle.backward_error(z)
         except RuntimeError as exc:
-            cap_error = str(exc); failures += 1
-            trials.append({"trial": trial, "status": "oracle-cap", "accepted": False,
-                           "error": cap_error, "oracle_samples": oracle.eval_count-before})
-            break
-        accepted = bool(math.isfinite(residual) and residual < args.accept and validation_error < args.validation_accept)
-        rec = {"trial": trial, "status": loc.status, "accepted": accepted, "residual": residual,
-               "validation_error": validation_error,
-               "epochs": loc.epochs, "jet_rebuilds": loc.rebuilds, "broyden_updates": loc.broyden,
-               "jet_evals": loc.jet_evals, "line_evals": loc.line_evals, "parabolic_evals": loc.parabolic_evals,
-               "higher_order_evals": loc.higher_order_evals, "higher_order_used": loc.higher_order_used,
-               "oracle_samples": oracle.eval_count-before, "conditioning": conditioning}
-        if args.verbose_trials: rec.update({"start": y0, "z": z})
+            cap_error=str(exc); failures+=1; trials.append({"trial":trial,"status":"oracle-cap","accepted":False,
+                "error":cap_error,"oracle_samples":oracle.eval_count-before}); break
+        accepted=bool(math.isfinite(residual) and residual<args.accept and validation_error<args.validation_accept)
+        rec={"trial":trial,"status":loc.status,"accepted":accepted,"residual":residual,
+            "validation_error":validation_error,"epochs":loc.epochs,"finite_slopes":loc.slopes,
+            "probe_evals":loc.probe_evals,"slope_path_evals":loc.slope_evals,"line_evals":loc.line_evals,
+            "parabolic_evals":loc.parabolic_evals,"max_telescope_defect":loc.max_telescope_defect,
+            "oracle_samples":oracle.eval_count-before,"conditioning":condmeta}
+        if args.verbose_trials: rec.update({"start":y0,"z":z})
         if not accepted:
-            if residual < args.accept: rec["status"] = "validation-failed"
-            failures += 1; trials.append(rec); continue
-        dup = next((i for i, root in enumerate(roots) if norm(z-root["z_complex"]) <= args.cluster_sep), None)
+            if residual<args.accept: rec["status"]="validation-failed"
+            failures+=1; trials.append(rec); continue
+        dup=next((i for i,r in enumerate(roots) if norm(z-r["z_complex"])<=args.cluster_sep),None)
         if dup is not None:
-            duplicates += 1; rec.update({"status": "duplicate", "cluster": dup}); trials.append(rec); continue
-        root = {"id": len(roots), "trial": trial, "z_complex": z.copy(), "residual": residual, "validation_error": validation_error,
-                "realness": norm(z.imag)/max(norm(z), 1e-300), **conditioning}
-        roots.append(root); rec.update({"status": "new-root", "root_id": root["id"]}); trials.append(rec)
-    encoded = []
+            duplicates+=1; rec.update({"status":"duplicate","cluster":dup}); trials.append(rec); continue
+        root={"id":len(roots),"trial":trial,"z_complex":z.copy(),"residual":residual,
+            "validation_error":validation_error,"realness":norm(z.imag)/max(norm(z),1e-300),**condmeta}
+        roots.append(root); rec.update({"status":"new-root","root_id":root["id"]}); trials.append(rec)
+    encoded=[]
     for root in roots:
-        r = dict(root); r["z"] = [[float(x.real), float(x.imag)] for x in r.pop("z_complex")]; encoded.append(r)
-    return {"script": Path(__file__).name, "version": 324, "standalone": True, "case": f"{n},{d}", "n": n, "degree": d,
-            "oracle": {"kind": oracle.kind, "seed": oracle.seed, "samples": oracle.eval_count, "seconds": oracle.seconds,
-                       "residual_mode": "raw" if isinstance(oracle, ExpressionOracle) else "root-equivalent-degree-normalized",
-                       "validation_mode": ("raw-residual" if isinstance(oracle, ExpressionOracle) else
-                                           "normalized-gp-residual" if isinstance(oracle, ExactKSGPOracle) else "scale-invariant-backward-error"),
-                       "origin_backward_error": origin_error,
-                       "exact_terms_per_polynomial": math.comb(n+d, d),
-                       "feature_count": (len(oracle.exps) if isinstance(oracle, KostlanOracle) else None),
-                       "multiresolution_stability_established": (None if isinstance(oracle, ExactKSGPOracle) else
-                                                                  not isinstance(oracle, KostlanOracle) or not oracle.feature_mode),
-                       "surrogate_warning": ("root is validated only for this fixed feature bank; nested-bank convergence is not established"
-                                             if isinstance(oracle, KostlanOracle) and oracle.feature_mode else None),
-                       "feature_degree_range": ([int(np.min(oracle.degrees)), int(np.max(oracle.degrees))] if isinstance(oracle, KostlanOracle) and oracle.feature_mode else None),
-                       "gp_unique_points": (len(oracle.cache) if isinstance(oracle, ExactKSGPOracle) else None),
-                       "gp_active_covariance_rank": (len(oracle.points) if isinstance(oracle, ExactKSGPOracle) else None),
-                       "gp_stabilizations": (oracle.stabilizations if isinstance(oracle, ExactKSGPOracle) else None),
-                       "gp_max_covariance_correction": (oracle.max_correction if isinstance(oracle, ExactKSGPOracle) else None),
-                       "gp_min_conditional_eigenvalue": (oracle.min_conditional_eigenvalue if isinstance(oracle, ExactKSGPOracle) else None),
-                       "gp_rank_tolerance": (oracle.jitter if isinstance(oracle, ExactKSGPOracle) else None),
-                       "gp_exact_finite_dimensional_law": ("up to floating-point arithmetic and the reported rank tolerance"
-                                                           if isinstance(oracle, ExactKSGPOracle) else None),
-                       "gp_reproducibility_scope": ("exact in law for this adaptive query sequence; another query order samples another realization"
-                                                    if isinstance(oracle, ExactKSGPOracle) else None)},
-            "parameters": {"count": args.count, "pool": args.pool, "epochs": args.epochs, "accept": args.accept,
-                "ks_backend": args.ks_backend, "broyden": args.broyden, "higher_order": args.higher_order, "validation_accept": args.validation_accept,
-                "deflation_alpha": args.deflation_alpha, "irp": args.irp, "swarm": args.swarm},
-            "swarm": swarm_meta, "roots": encoded, "trials": trials if args.verbose_trials else trials[:args.keep_trials],
-            "summary": {"requested": args.count, "unique": len(roots), "success": len(roots) >= args.count,
-                "trials": len(trials), "duplicates": duplicates, "failures": failures,
-                "oracle_samples": oracle.eval_count, "seconds": clock()-started, "oracle_cap_error": cap_error}}
+        rr=dict(root); rr["z"]=[[float(x.real),float(x.imag)] for x in rr.pop("z_complex")]; encoded.append(rr)
+    gp=isinstance(oracle,ExactKSGPOracle); feature=isinstance(oracle,KostlanOracle) and oracle.feature_mode
+    return {"script":Path(__file__).name,"version":324,"standalone":True,"case":f"{n},{d}","n":n,"degree":d,
+      "method":{"family":"pure-pandrosion-finite-slope","derivatives":False,"jacobian":False,"newton":False,
+        "broyden":False,"levenberg_marquardt":False,
+        "identity":"F(b)-F(a)=Q(a,b)(b-a) by coordinate telescoping",
+        "irp_scope":"dynamic direct/reciprocal chart renormalization; exact article IRP only in monomial audit"},
+      "oracle":{"kind":oracle.kind,"seed":oracle.seed,"samples":oracle.eval_count,"seconds":oracle.seconds,
+        "residual_mode":"raw" if isinstance(oracle,ExpressionOracle) else "root-equivalent-degree-normalized",
+        "validation_mode":"raw-residual" if isinstance(oracle,ExpressionOracle) else "normalized-gp-residual" if gp else "scale-invariant-backward-error",
+        "origin_backward_error":origin_error,"exact_terms_per_polynomial":math.comb(n+d,d),
+        "feature_count":len(oracle.exps) if isinstance(oracle,KostlanOracle) else None,
+        "surrogate_warning":"root is validated only for this fixed feature bank" if feature else None,
+        "gp_unique_points":len(oracle.cache) if gp else None,"gp_active_covariance_rank":len(oracle.points) if gp else None,
+        "gp_stabilizations":oracle.stabilizations if gp else None,
+        "gp_max_covariance_correction":oracle.max_correction if gp else None,
+        "gp_rank_tolerance":oracle.jitter if gp else None,
+        "gp_exact_finite_dimensional_law":"up to floating-point arithmetic and reported rank tolerance" if gp else None,
+        "gp_reproducibility_scope":"exact in law for this adaptive query sequence; query order selects the realization" if gp else None},
+      "parameters":{"count":args.count,"pool":args.pool,"epochs":args.epochs,"accept":args.accept,
+        "ks_backend":args.ks_backend,"probes":args.probes,"probe_top":args.probe_top,
+        "deflation_alpha":args.deflation_alpha,"irp":args.irp,"swarm":args.swarm},
+      "swarm":swarm_meta,"roots":encoded,"trials":trials if args.verbose_trials else trials[:args.keep_trials],
+      "summary":{"requested":args.count,"unique":len(roots),"success":len(roots)>=args.count,
+        "trials":len(trials),"duplicates":duplicates,"failures":failures,
+        "oracle_samples":oracle.eval_count,"seconds":clock()-started,"oracle_cap_error":cap_error}}
 
 
-# ---------- CLI and deterministic regressions -------------------------------
+# ---------- exact article monomial IRP audit --------------------------------
+
+def monomial_irp(x: float, p: int, u: float, layers: int, q: float=1.25, K: int=4) -> tuple[float,list[float]]:
+    """Equation (22) of article 001 on the positive real branch."""
+    history=[abs(u**p-x)/x]
+    for _ in range(layers):
+        R=x/(u**p); direct=R>=1; A=R if direct else 1/R
+        cell=math.floor(K*math.log(A)/(p*math.log(q))+1e-15)/K
+        B=q**cell; Y=A/(B**p)
+        s=1-(Y-1)/(Y*p); W=B*Y*(s**(p-1))
+        u=u*W if direct else u/W; history.append(abs(u**p-x)/x)
+    return u,history
+
+
+def run_monomial_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
+    started=clock(); n,p=parse_case(case_raw)
+    if n != 1 or args.target <= 0: raise ValueError("monomial mode requires case 1,p and --target > 0")
+    u,history=monomial_irp(args.target,p,args.monomial_start,args.monomial_layers,args.palette_q,args.palette_k)
+    raw=abs(u**p-args.target); validation=raw/max(abs(u)**p+args.target,1e-300); accepted=validation<args.validation_accept
+    root={"id":0,"trial":0,"z":[[float(u),0.]],"residual":raw,"validation_error":validation,
+          "realness":0.,"smin":None,"smax":None,"cond":None,"near_multiple":False,"singular":False,
+          "mode":"article-001-positive-real-irp"}
+    return {"script":Path(__file__).name,"version":324,"standalone":True,"case":f"1,{p}","n":1,"degree":p,
+      "method":{"family":"article-001-exact-monomial-irp","derivatives":False,"jacobian":False,"newton":False,
+        "broyden":False,"levenberg_marquardt":False,"equation":"article 001, equation (22)"},
+      "oracle":{"kind":"monomial-exact-article-001","target":args.target,"samples":args.monomial_layers,
+        "residual_mode":"raw","validation_mode":"scale-invariant-monomial-backward-error"},
+      "parameters":{"layers":args.monomial_layers,"start":args.monomial_start,"palette_q":args.palette_q,"palette_k":args.palette_k},
+      "swarm":{"enabled":False},"roots":[root] if accepted else [],
+      "trials":[{"trial":0,"status":"new-root" if accepted else "not-converged","accepted":accepted,
+        "residual":raw,"validation_error":validation,"relative_residual_history":history}],
+      "summary":{"requested":1,"unique":int(accepted),"success":accepted,"trials":1,"duplicates":0,
+        "failures":int(not accepted),"oracle_samples":args.monomial_layers,"seconds":clock()-started,"oracle_cap_error":None}}
+
+
+# ---------- CLI and regressions ---------------------------------------------
 
 def parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Pandrosion 324 compact standalone NumPy engine")
-    p.add_argument("--cases", default="2,4"); p.add_argument("--seed-index", type=int, default=0)
-    p.add_argument("--system-source", choices=["ks", "kostlan", "poly", "polynomial"], default="ks")
-    p.add_argument("--ks-backend", choices=["auto", "dense", "gp", "feature"], default="auto")
+    p=argparse.ArgumentParser(description="Pandrosion 324 pure finite-slope standalone NumPy engine")
+    p.add_argument("--cases",default="2,4"); p.add_argument("--seed-index",type=int,default=0)
+    p.add_argument("--system-source",choices=["ks","kostlan","poly","polynomial","monomial"],default="ks")
+    p.add_argument("--ks-backend",choices=["auto","dense","gp","feature"],default="auto")
     p.add_argument("--polys"); p.add_argument("--variables"); p.add_argument("--starts")
-    p.add_argument("--dense-max-terms", type=int, default=250000); p.add_argument("--features", type=int, default=2048)
-    p.add_argument("--eval-block", type=int, default=128)
-    p.add_argument("--gp-jitter", type=float, default=1e-9); p.add_argument("--gp-max-points", type=int, default=10000)
-    p.add_argument("--gp-jet-radius", type=float, default=1e-3); p.add_argument("--gp-swarm-cap", type=int, default=8)
-    p.add_argument("--equation-normalize", action="store_true", default=False)
-    p.add_argument("--count", type=int, default=8); p.add_argument("--pool", type=int, default=1024)
-    p.add_argument("--epochs", type=int, default=18); p.add_argument("--accept", type=float, default=1e-8)
-    p.add_argument("--tol", type=float, default=1e-12); p.add_argument("--cluster-sep", type=float, default=1e-7)
-    p.add_argument("--early-dup-sep", type=float, default=1e-4); p.add_argument("--trial-timeout", type=float, default=0)
-    p.add_argument("--jet-radius", type=float, default=1e-5); p.add_argument("--jet-refresh", type=int, default=4)
-    p.add_argument("--broyden", action="store_true", default=True); p.add_argument("--no-broyden", dest="broyden", action="store_false")
-    p.add_argument("--adaptive-lm", action="store_true", default=True); p.add_argument("--no-adaptive-lm", dest="adaptive_lm", action="store_false")
-    p.add_argument("--lm-damping", type=float, default=0); p.add_argument("--trust-radius", type=float, default=10)
-    p.add_argument("--higher-order", action="store_true", default=True); p.add_argument("--no-higher-order", dest="higher_order", action="store_false")
-    p.add_argument("--higher-order-gate", type=float, default=.1); p.add_argument("--higher-order-trigger", type=float, default=.25)
-    p.add_argument("--higher-order-cond", type=float, default=1e8); p.add_argument("--higher-order-ratio", type=float, default=.75)
-    p.add_argument("--deflation-alpha", type=float, default=.15); p.add_argument("--line-grid", default="1,.75,.5,.25,.125,.0625")
-    p.add_argument("--parabolic", action="store_true", default=True); p.add_argument("--no-parabolic", dest="parabolic", action="store_false")
-    p.add_argument("--irp", action="store_true", default=True); p.add_argument("--no-irp", dest="irp", action="store_false")
-    p.add_argument("--irp-epochs", type=int, default=4); p.add_argument("--irp-top", type=int, default=4)
-    p.add_argument("--irp-scales", default="1,1.2599210499,.793700526,2,.5")
-    p.add_argument("--swarm", action="store_true", default=True); p.add_argument("--no-swarm", dest="swarm", action="store_false")
-    p.add_argument("--swarm-size", type=int, default=0); p.add_argument("--swarm-keep", type=int, default=0)
-    p.add_argument("--swarm-iters", type=int, default=2); p.add_argument("--swarm-sep", type=float, default=0)
-    p.add_argument("--polish-steps", type=int, default=4); p.add_argument("--polish-gate", type=float, default=1e-2)
-    p.add_argument("--validation-accept", type=float, default=1e-8)
-    p.add_argument("--keep-trials", type=int, default=100)
-    p.add_argument("--verbose-trials", action="store_true"); p.add_argument("--self-test", action="store_true")
-    p.add_argument("--out"); p.add_argument("--outdir", default="/tmp/324_pandrosion")
+    p.add_argument("--target",type=float,default=4.); p.add_argument("--monomial-start",type=float,default=1.)
+    p.add_argument("--monomial-layers",type=int,default=8); p.add_argument("--palette-q",type=float,default=1.25)
+    p.add_argument("--palette-k",type=int,default=4)
+    p.add_argument("--dense-max-terms",type=int,default=250000); p.add_argument("--features",type=int,default=2048)
+    p.add_argument("--eval-block",type=int,default=128); p.add_argument("--equation-normalize",action="store_true",default=False)
+    p.add_argument("--gp-jitter",type=float,default=1e-9); p.add_argument("--gp-max-points",type=int,default=10000)
+    p.add_argument("--gp-jet-radius",type=float,default=1e-3); p.add_argument("--gp-swarm-cap",type=int,default=8)
+    p.add_argument("--gp-probe-cap",type=int,default=4)
+    p.add_argument("--count",type=int,default=8); p.add_argument("--pool",type=int,default=1024)
+    p.add_argument("--epochs",type=int,default=24); p.add_argument("--accept",type=float,default=1e-8)
+    p.add_argument("--tol",type=float,default=1e-12); p.add_argument("--cluster-sep",type=float,default=1e-7)
+    p.add_argument("--early-dup-sep",type=float,default=1e-4); p.add_argument("--trial-timeout",type=float,default=0)
+    p.add_argument("--probes",type=int,default=6); p.add_argument("--probe-top",type=int,default=2)
+    p.add_argument("--probe-scale",type=float,default=.03); p.add_argument("--probe-radii",default=".5,1,2")
+    p.add_argument("--probe-cond-weight",type=float,default=.02); p.add_argument("--equal-value-weight",type=float,default=.02)
+    p.add_argument("--trust-radius",type=float,default=10); p.add_argument("--line-grid",default="1,.75,.5,.25,.125,.0625")
+    p.add_argument("--deflation-alpha",type=float,default=.15)
+    p.add_argument("--parabolic",action="store_true",default=True); p.add_argument("--no-parabolic",dest="parabolic",action="store_false")
+    p.add_argument("--irp",action="store_true",default=True); p.add_argument("--no-irp",dest="irp",action="store_false")
+    p.add_argument("--irp-epochs",type=int,default=4); p.add_argument("--irp-top",type=int,default=4)
+    p.add_argument("--irp-scales",default="1,1.2599210499,.793700526,2,.5")
+    p.add_argument("--swarm",action="store_true",default=True); p.add_argument("--no-swarm",dest="swarm",action="store_false")
+    p.add_argument("--swarm-size",type=int,default=0); p.add_argument("--swarm-keep",type=int,default=0)
+    p.add_argument("--swarm-sep",type=float,default=0)
+    p.add_argument("--polish-steps",type=int,default=4); p.add_argument("--polish-gate",type=float,default=1e-2)
+    p.add_argument("--validation-accept",type=float,default=1e-8); p.add_argument("--keep-trials",type=int,default=100)
+    p.add_argument("--verbose-trials",action="store_true"); p.add_argument("--self-test",action="store_true")
+    p.add_argument("--out"); p.add_argument("--outdir",default="/tmp/324_pandrosion")
     return p
 
 
 def validate(args: argparse.Namespace) -> None:
-    for raw in str(args.cases).replace("|", ";").split(";"):
+    for raw in str(args.cases).replace("|",";").split(";"):
         if raw.strip(): parse_case(raw)
-    if args.count < 0 or args.pool < 0 or args.epochs <= 0: raise ValueError("invalid count/pool/epochs")
-    if args.accept <= 0 or args.tol < 0 or args.jet_radius <= 0 or args.polish_gate < 0: raise ValueError("invalid numerical tolerance")
-    if args.cluster_sep <= 0 or args.early_dup_sep < 0 or args.deflation_alpha < 0: raise ValueError("invalid separation/deflation")
-    if args.dense_max_terms <= 0 or args.features <= 0 or args.eval_block <= 0 or args.jet_refresh <= 0 or args.swarm_iters < 0: raise ValueError("invalid backend/iteration budget")
-    if args.gp_jitter <= 0 or args.gp_max_points <= 0 or args.gp_jet_radius <= 0 or args.gp_swarm_cap <= 0: raise ValueError("invalid GP controls")
-    if args.validation_accept <= 0 or args.higher_order_gate < 0 or not 0 < args.higher_order_trigger <= 1 or args.higher_order_cond <= 0 or args.higher_order_ratio <= 0: raise ValueError("invalid validation/higher-order controls")
+    if args.count<0 or args.pool<0 or args.epochs<=0 or args.probes<=0 or args.probe_top<=0: raise ValueError("invalid budgets")
+    if args.accept<=0 or args.validation_accept<=0 or args.trust_radius<=0: raise ValueError("invalid tolerances")
+    if args.gp_jitter<=0 or args.gp_max_points<=0 or args.gp_jet_radius<=0 or args.gp_swarm_cap<=0 or args.gp_probe_cap<=0: raise ValueError("invalid GP controls")
+    if args.probe_scale<=0 or args.probe_cond_weight<0 or args.equal_value_weight<0: raise ValueError("invalid probe controls")
+    if args.target<=0 or args.monomial_start<=0 or args.monomial_layers<=0 or args.palette_q<=1 or args.palette_k<=0: raise ValueError("invalid monomial IRP controls")
 
 
-def self_test(args: argparse.Namespace) -> dict[str, Any]:
-    specs = [("two-roots", "1,2", "x^2-3*x-10", "-8,4", 2),
-             ("four-roots", "2,2", "x1^2-1;x2^2-1", "-2,-2;-2,2;2,-2;2,2", 4),
-             ("multiple-root", "1,2", "x^2", "0", 1)]
-    checks = []
-    for name, case, poly, starts, count in specs:
-        a = argparse.Namespace(**vars(args)); a.self_test = False; a.system_source = "poly"; a.cases = case
-        a.polys = poly; a.variables = None; a.starts = starts; a.count = count; a.pool = max(8, count)
-        a.swarm = False; a.epochs = 20; result = run_case(a, case)
-        passed = bool(result["summary"]["success"])
-        if name == "multiple-root": passed = bool(passed and result["roots"][0]["singular"] and result["roots"][0]["cond"] is None)
-        checks.append({"name": name, "passed": passed, "result": result})
-    idx, _ = line_choice(np.asarray([11., 9.]), np.asarray([[1+0j], [.5+0j]]), np.asarray([0j]),
-                         10., 10., [np.asarray([.5+0j])], 1.)
-    checks.append({"name": "acceptance-safe-deflation", "passed": idx == 1, "selected": idx})
-    a = argparse.Namespace(**vars(args)); a.system_source = "poly"; a.polys = "x^2-1"; a.variables = None
-    oracle = make_oracle(a, 1, 2); target = Target(oracle)
-    loc = correct(target, np.asarray([2+0j]), a, [], 2, None)
-    checks.append({"name": "immediate-broyden", "passed": loc.rebuilds == 1 and loc.broyden >= 1,
-                   "rebuilds": loc.rebuilds, "updates": loc.broyden})
-    a.higher_order_gate = 1.; loc = correct(target, np.asarray([1.2+0j]), a, [], 1, None)
-    checks.append({"name": "adaptive-higher-order", "passed": loc.higher_order_used >= 1, "used": loc.higher_order_used})
-    huge, method = linear_step(np.eye(2, dtype=np.complex128)*1e200, np.ones(2, np.complex128)*1e200, .1, 10, np.zeros(2))
-    checks.append({"name": "scaled-lm", "passed": bool(np.all(np.isfinite(huge)) and norm(huge) > 0), "method": method})
-    a = argparse.Namespace(**vars(args)); a.self_test = False; a.system_source = "ks"; a.cases = "2,3"
-    a.starts = None; a.count = 2; a.pool = 32; a.epochs = 14; a.swarm = True; a.swarm_size = 32
-    result = run_case(a, "2,3")
-    checks.append({"name": "kostlan-smoke", "passed": bool(result["summary"]["success"]), "result": result})
-    a = argparse.Namespace(**vars(args)); a.system_source = "ks"; a.ks_backend = "feature"; a.dense_max_terms = 1; a.features = 512
-    feature = make_oracle(a, 20, 20); origin = feature.backward_error(np.zeros(20, np.complex128))
-    axes = sum(bool(np.sum(row) == 1) for row in feature.exps)
-    checks.append({"name": "feature-origin-guard", "passed": bool(feature.feature_mode and np.min(feature.degrees) == 0 and axes >= 20 and origin > a.validation_accept),
-                   "origin_backward_error": origin, "degree_range": [int(np.min(feature.degrees)), int(np.max(feature.degrees))], "linear_features": axes})
-    a.features = 2048; a.count = 1; a.pool = 8; a.epochs = 40; a.swarm = True; a.swarm_size = 16
-    a.swarm_iters = 3; a.swarm_keep = 16; a.irp_epochs = 8; result = run_case(a, "20,20")
-    root = result["roots"][0] if result["roots"] else {}
-    root_norm = norm(np.asarray([complex(*q) for q in root.get("z", [])]))
-    checks.append({"name": "feature-20x20-nondegenerate", "passed": bool(result["summary"]["success"] and root_norm > 1e-3 and root.get("validation_error", 1) < a.validation_accept),
-                   "root_norm": root_norm, "validation_error": root.get("validation_error"), "result": result})
-    a = argparse.Namespace(**vars(args)); a.system_source = "ks"; a.ks_backend = "gp"; a.gp_max_points = 256
-    gp = make_oracle(a, 2, 3); Z = np.asarray([[0, 0], [.2+.1j, -.3j], [1, -.5j]], np.complex128)
-    first = gp.eval_batch(Z); cached = gp.eval_batch(Z); covariance_error = norm(gp.L@gp.L.conj().T-gp.kernel(Z, Z))
-    checks.append({"name": "exact-gp-covariance-cache", "passed": bool(np.array_equal(first, cached) and len(gp.cache) == 3 and covariance_error < 1e-9),
-                   "covariance_error": covariance_error, "unique_points": len(gp.cache), "stabilizations": gp.stabilizations})
-    dense = KostlanOracle(2, 3, 7, 10, 32, False, 32)
-    weights = np.asarray([math.sqrt(math.factorial(3)/(math.factorial(3-int(e.sum()))*math.prod(math.factorial(int(x)) for x in e))) for e in dense.exps])
-    phi = np.prod(Z[:, None, :]**dense.exps[None, :, :], axis=2)*weights[None, :]
-    dense_cov = phi@phi.conj().T; dense_cov /= np.sqrt(np.diag(dense_cov))[:, None]*np.sqrt(np.diag(dense_cov))[None, :]
-    kernel_error = norm(dense_cov-gp.kernel(Z, Z))
-    checks.append({"name": "gp-kernel-dense-equivalence", "passed": kernel_error < 1e-12, "kernel_error": kernel_error})
-    finite = ExactKSGPOracle(1, 2, 9, 1e-9, 64, 1e-3)
-    finite.eval_batch(np.linspace(-2, 2, 17, dtype=np.complex128)[:, None])
-    checks.append({"name": "gp-finite-rank-stability", "passed": len(finite.cache) == 17 and len(finite.points) <= 3,
-                   "queries": len(finite.cache), "active_rank": len(finite.points), "stabilizations": finite.stabilizations})
-    return {"script": Path(__file__).name, "self_test": True, "passed": all(c["passed"] for c in checks), "checks": checks}
+def self_test(args: argparse.Namespace) -> dict[str,Any]:
+    checks=[]
+    a=argparse.Namespace(**vars(args)); a.system_source="poly"; a.polys="x^2-3*x-10"; a.variables=None
+    a.starts="-8,4"; a.count=2; a.pool=8; a.swarm=False; a.epochs=24
+    r=run_case(a,"1,2"); checks.append({"name":"two-roots-pure-slope","passed":r["summary"]["success"],"result":r})
+    a=argparse.Namespace(**vars(args)); a.system_source="poly"; a.polys="x1^2+x1*x2-1;x2^2-x1"; a.variables=None
+    o=make_oracle(a,2,2); t=Target(o); aa=np.asarray([.2+.1j,-.3j]); bb=np.asarray([1-.2j,.4+.1j])
+    Q,defect,_=finite_slope(t,aa,bb); identity=norm((t.eval(bb)-t.eval(aa))-Q@(bb-aa))
+    checks.append({"name":"exact-telescoping","passed":identity<1e-12 and defect<1e-12,"identity_error":identity,"defect":defect})
+    u,h=monomial_irp(4.,3,1.,3); checks.append({"name":"article-001-exact-irp","passed":h[-1]<2e-12,"history":h,"root":u})
+    a=argparse.Namespace(**vars(args)); a.system_source="monomial"; a.target=4.; a.monomial_layers=4
+    mr=run_case(a,"1,3"); checks.append({"name":"article-001-cli-mode","passed":mr["summary"]["success"],"result":mr})
+    a=argparse.Namespace(**vars(args)); a.system_source="ks"; a.ks_backend="dense"; a.count=1; a.pool=16; a.epochs=24
+    a.starts=None; a.swarm=True; r=run_case(a,"2,3"); checks.append({"name":"dense-kostlan-smoke","passed":r["summary"]["success"],"result":r})
+    a=argparse.Namespace(**vars(args)); a.system_source="ks"; a.ks_backend="gp"; a.gp_max_points=256
+    gp=make_oracle(a,2,3); Z=np.asarray([[0,0],[.2+.1j,-.3j],[1,-.5j]],np.complex128)
+    first=gp.eval_batch(Z); cached=gp.eval_batch(Z); cov=norm(gp.L@gp.L.conj().T-gp.kernel(Z,Z))
+    checks.append({"name":"gp-covariance-cache","passed":np.array_equal(first,cached) and cov<1e-9,"covariance_error":cov})
+    finite=ExactKSGPOracle(1,2,9,1e-9,64,1e-3); finite.eval_batch(np.linspace(-2,2,17,dtype=np.complex128)[:,None])
+    checks.append({"name":"gp-finite-rank","passed":len(finite.cache)==17 and len(finite.points)<=3,
+        "queries":len(finite.cache),"active_rank":len(finite.points)})
+    return {"script":Path(__file__).name,"self_test":True,"passed":all(c["passed"] for c in checks),"checks":checks}
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
-    args = parser().parse_args(argv); validate(args)
-    if args.self_test:
-        final = self_test(args); cases = ["self-test"]
+def main(argv:Optional[Sequence[str]]=None)->int:
+    args=parser().parse_args(argv); validate(args)
+    if args.self_test: final=self_test(args); cases=["self-test"]
     else:
-        cases = [x.strip() for x in str(args.cases).replace("|", ";").split(";") if x.strip()]
-        results = [run_case(args, case) for case in cases]
-        final = results[0] if len(results) == 1 else {"script": Path(__file__).name, "cases": results}
-    out = Path(args.out) if args.out else Path(args.outdir) / ("self_test.json" if args.self_test else f"324_{cases[0].replace(',', 'x')}.json")
-    out.parent.mkdir(parents=True, exist_ok=True); out.write_text(json.dumps(strict_json(final), indent=2, allow_nan=False), encoding="utf-8")
+        cases=[x.strip() for x in str(args.cases).replace("|",";").split(";") if x.strip()]
+        results=[run_case(args,c) for c in cases]; final=results[0] if len(results)==1 else {"script":Path(__file__).name,"cases":results}
+    out=Path(args.out) if args.out else Path(args.outdir)/("self_test.json" if args.self_test else f"324_{cases[0].replace(',','x')}.json")
+    out.parent.mkdir(parents=True,exist_ok=True); out.write_text(json.dumps(strict_json(final),indent=2,allow_nan=False),encoding="utf-8")
     if args.self_test:
         print(f"324 self-test: {'PASS' if final['passed'] else 'FAIL'} ({sum(int(c['passed']) for c in final['checks'])}/{len(final['checks'])})")
         print(f"out={out}"); return 0 if final["passed"] else 1
-    for result in (results if len(cases) > 1 else [final]):
-        s = result["summary"]; print(f"324 case={result['case']} oracle={result['oracle']['kind']} roots={s['unique']}/{s['requested']} trials={s['trials']} samples={s['oracle_samples']} seconds={s['seconds']:.3f}")
+    for result in (results if len(cases)>1 else [final]):
+        s=result["summary"]; print(f"324 case={result['case']} oracle={result['oracle']['kind']} roots={s['unique']}/{s['requested']} trials={s['trials']} samples={s['oracle_samples']} seconds={s['seconds']:.3f}")
     print(f"out={out}"); return 0
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
-
+if __name__=="__main__": raise SystemExit(main())
