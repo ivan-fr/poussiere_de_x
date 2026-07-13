@@ -572,9 +572,12 @@ def _pandrosion_dogleg(Q: np.ndarray, f: np.ndarray, radius: float) -> tuple[np.
     nn = norm(pn)
     if nn <= radius:
         return np.asarray(pn, np.complex128), mode
-    g = Q.conj().T @ f
+    with np.errstate(all="ignore"):
+        g = Q.conj().T @ f
+        qg = Q @ g
+    if not np.all(np.isfinite(g)) or not np.all(np.isfinite(qg)):
+        return np.asarray(pn * (radius/max(nn,1e-300)), np.complex128), mode+"-radial-nonfinite"
     gg = float(np.vdot(g, g).real)
-    qg = Q @ g
     den = float(np.vdot(qg, qg).real)
     if gg <= 1e-300 or den <= 1e-300:
         return np.asarray(pn * (radius/max(nn,1e-300)), np.complex128), mode+"-radial"
@@ -598,13 +601,16 @@ def _transport_secant(Q: np.ndarray, s: np.ndarray, ydiff: np.ndarray,
     ss = float(np.vdot(s,s).real)
     if ss <= 1e-300:
         return Q, float("inf"), False
-    mismatch = ydiff - Q @ s
-    corr = np.outer(mismatch, s.conj()) / ss
+    with np.errstate(all="ignore"):
+        mismatch = ydiff - Q @ s
+        corr = np.outer(mismatch, s.conj()) / ss
     ratio = norm(corr)/max(norm(Q),1e-300)
     if not math.isfinite(ratio) or ratio > limit:
         return Q, ratio, False
     out = Q + corr
-    defect = norm(ydiff-out@s)/max(norm(ydiff),norm(out@s),1e-300)
+    with np.errstate(all="ignore"):
+        projected=out@s
+    defect = norm(ydiff-projected)/max(norm(ydiff),norm(projected),1e-300)
     return out, defect, True
 
 
@@ -651,7 +657,7 @@ def _initial_pandrosion_slope(target: Target, x: np.ndarray, fx: np.ndarray,
     Fnew=_eval_real_batch(target,path[1:])
     F=np.vstack((np.asarray(fx,float)[None,:],Fnew)); dz=b-x
     Q=(F[1:]-F[:-1]).T/dz[None,:]
-    telescoped=Q@dz
+    with np.errstate(all="ignore"): telescoped=Q@dz
     defect=norm((F[-1]-F[0])-telescoped)/max(norm(F[-1]-F[0]),norm(telescoped),1e-300)
     return np.asarray(Q,float),len(path)-1,defect
 
@@ -663,8 +669,8 @@ class CachedStart:
     fc: np.ndarray
 
 
-def correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[np.ndarray],
-            epochs: int, deadline: Optional[float], cached: Optional[CachedStart]=None) -> CorrectResult:
+def _finite_slope_correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[np.ndarray],
+                          epochs: int, deadline: Optional[float], cached: Optional[CachedStart]=None) -> CorrectResult:
     """Fast 328 corrector in R^(2n), using only finite Pandrosion identities."""
     if cached is None:
         z0=np.asarray(y0,np.complex128).copy(); x=_real_pack(z0); fx,fc=_eval_real(target,x)
@@ -702,7 +708,8 @@ def correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[n
             Q=None; stale+=1
             if stale>args.fast_max_rebuilds: status="invalid-step"; break
             continue
-        pred_vec=fx+Q@step; pred=max(0.0,r*r-norm(pred_vec)**2)
+        with np.errstate(all="ignore"): pred_vec=fx+Q@step
+        pred=max(0.0,r*r-norm(pred_vec)**2)
         xn=x+np.asarray(step.real,float); fn,fcn=_eval_real(target,xn); rn=norm(fn); line_evals+=1
         actual=r*r-rn*rn; rho=actual/max(pred,1e-300)
         accepted=math.isfinite(rn) and (rho>args.fast_eta or rn<r*args.fast_force_ratio or rn<best_r)
@@ -729,6 +736,162 @@ def correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[n
     return CorrectResult(best_z,best_fc,best_r,ok,status,done+1,slopes,transports,probe_evals,
                          slope_evals,line_evals,para,max_defect,max_transport,smin,smax,cond)
 
+
+def _residual_chain_escape(target: Target, y0: Any, args: argparse.Namespace,
+                           deadline: Optional[float]) -> CorrectResult:
+    """Escape a stationary start by following square-system residual chains.
+
+    The full ``x-F(x)`` move is deliberately preferred when it does not raise
+    the residual.  This preserves neutral propagation such as
+    ``x_i^2-x_{i+1}=0`` from the origin; ordinary best-residual ranking would
+    take half steps and stall before the information reaches the first block.
+    """
+    x=_real_pack(np.asarray(y0,np.complex128)); fx,fc=_eval_real(target,x); r=norm(fx)
+    best_x,best_f,best_fc,best_r=x.copy(),fx.copy(),fc.copy(),r
+    seen=[x.copy()]; line_evals=0; steps=0; status="escape-stalled"
+    scales=np.asarray([-1.,1.,-.5,.5,-.25,.25,-2.,2.],float)
+    limit=max(8,min(int(args.residual_escape_steps),2*target.oracle.n+4))
+    for ep in range(limit):
+        if deadline is not None and clock()>=deadline: status="timeout"; break
+        X=x[None,:]+scales[:,None]*fx[None,:]
+        F=_eval_real_batch(target,X); R=np.linalg.norm(F,axis=1); line_evals+=len(X)
+        order=list(range(len(scales))) if R[0]<=r*(1+1e-12) else list(np.argsort(R))
+        chosen=None
+        for raw_i in order:
+            i=int(raw_i)
+            if not math.isfinite(float(R[i])) or R[i]>r*(1+1e-12): continue
+            if all(norm(X[i]-old)>1e-12 for old in seen): chosen=i; break
+        if chosen is None: break
+        x,fx,r=X[chosen].copy(),F[chosen].copy(),float(R[chosen]); fc=np.asarray(fx[:len(fx)//2]+1j*fx[len(fx)//2:],np.complex128)
+        # Re-evaluate the complex vector only when the real packing cannot be
+        # carried losslessly (the common path above is exact and sample-free).
+        steps=ep+1; seen.append(x.copy())
+        if r<best_r or (r<=best_r*(1+1e-15) and steps==1):
+            best_x,best_f,best_fc,best_r=x.copy(),fx.copy(),fc.copy(),r
+        if r<args.accept: status="escape-converged"; break
+    ok=best_r<args.accept
+    return CorrectResult(_real_unpack(best_x),best_fc,best_r,ok,status,steps,0,0,0,0,
+                         line_evals,0,0.,0.,None,None,None,0,steps)
+
+
+def _armijo_residual_line(target: Target, x: np.ndarray, fx: np.ndarray,
+                          step: np.ndarray) -> tuple[np.ndarray,np.ndarray,float,int]:
+    """Dependency-free Armijo interpolation for the inverse-Broyden rescue."""
+    phi0=float(np.vdot(fx,fx).real); derivative=-phi0
+    cache: dict[float,tuple[np.ndarray,np.ndarray,float]]={0.:(x,fx,phi0)}
+    def phi(scale: float) -> float:
+        key=float(scale)
+        if key not in cache:
+            with np.errstate(all="ignore"): xx=x+key*step
+            if not np.all(np.isfinite(xx)):
+                ff=np.full_like(fx,1e300); value=float("inf")
+                cache[key]=(xx,ff,value); return value
+            ff,_=_eval_real(target,xx)
+            value=float(np.vdot(ff,ff).real)
+            cache[key]=(xx,ff,value if math.isfinite(value) else float("inf"))
+        return cache[key][2]
+    a0=1.; p0=phi(a0)
+    if p0<=phi0+1e-4*a0*derivative:
+        xx,ff,value=cache[a0]; return xx,ff,value,len(cache)-1
+    den=2*(p0-phi0-derivative*a0)
+    a1=-(derivative)*a0*a0/den if abs(den)>1e-300 else .5
+    if not math.isfinite(a1) or a1<=0: a1=.5
+    p1=phi(a1)
+    if p1<=phi0+1e-4*a1*derivative:
+        xx,ff,value=cache[a1]; return xx,ff,value,len(cache)-1
+    while a1>1e-2:
+        factor=a0*a0*a1*a1*(a1-a0)
+        if abs(factor)<=1e-300: a2=.5*a1
+        else:
+            aa=(a0*a0*(p1-phi0-derivative*a1)-a1*a1*(p0-phi0-derivative*a0))/factor
+            bb=(-a0**3*(p1-phi0-derivative*a1)+a1**3*(p0-phi0-derivative*a0))/factor
+            a2=.5*a1 if abs(aa)<=1e-300 else (-bb+math.sqrt(abs(bb*bb-3*aa*derivative)))/(3*aa)
+        if not math.isfinite(a2) or a2<=0 or (a1-a2)>a1/2 or (1-a2/a1)<.96: a2=.5*a1
+        p2=phi(a2)
+        if p2<=phi0+1e-4*a2*derivative:
+            xx,ff,value=cache[a2]; return xx,ff,value,len(cache)-1
+        a0,a1,p0,p1=a1,a2,p1,p2
+    # Matching the robust inexact-Newton convention, keep the full step when
+    # interpolation cannot certify a shorter one.
+    xx,ff,value=cache[1.]; return xx,ff,value,len(cache)-1
+
+
+def _broyden_rescue(target: Target, y0: Any, args: argparse.Namespace,
+                    deadline: Optional[float]) -> CorrectResult:
+    """Globalized dense inverse-Broyden rescue, implemented with NumPy only."""
+    def initial_scale(xx: np.ndarray, rr: float) -> float:
+        nx=norm(xx); num=max(nx,1.) if math.isfinite(nx) else 1.
+        den=max(rr,1e-300) if math.isfinite(rr) else 1.
+        value=.5*num/den
+        return max(1e-300,value) if math.isfinite(value) else 1.
+    x=_real_pack(np.asarray(y0,np.complex128)); fx,fc=_eval_real(target,x); r=norm(fx)
+    best_x,best_fx,best_fc,best_r=x.copy(),fx.copy(),fc.copy(),r
+    m=len(x); alpha=initial_scale(x,r); H=-alpha*np.eye(m)
+    line_evals=updates=resets=done=0; status="broyden-max-epochs"
+    for ep in range(max(1,int(args.broyden_rescue_epochs))):
+        done=ep+1
+        if deadline is not None and clock()>=deadline: status="timeout"; break
+        if best_r<args.accept: status="broyden-converged"; break
+        with np.errstate(all="ignore"): step=-H@fx
+        if not np.all(np.isfinite(step)) or norm(step)<=1e-15:
+            alpha=initial_scale(x,norm(fx)); H=-alpha*np.eye(m); resets+=1
+            step=-H@fx
+        xn,fn,phi,used=_armijo_residual_line(target,x,fx,step); line_evals+=used
+        rn=math.sqrt(max(0.,phi)) if math.isfinite(phi) else float("inf")
+        if rn<best_r:
+            best_x,best_fx,best_r=xn.copy(),fn.copy(),rn
+            best_fc=np.asarray(fn[:m//2]+1j*fn[m//2:],np.complex128)
+        dx=xn-x; df=fn-fx
+        with np.errstate(all="ignore"):
+            v=H.T@dx; c=dx-H@df; den=float(np.dot(df,v))
+            candidate=H+np.outer(c,v/den) if abs(den)>1e-300 else np.full_like(H,np.nan)
+        if np.all(np.isfinite(candidate)):
+            H=candidate; updates+=1
+        else:
+            alpha=initial_scale(xn,rn); H=-alpha*np.eye(m); resets+=1
+        x,fx=xn,fn
+    ok=best_r<args.accept
+    if ok: status="broyden-converged"
+    return CorrectResult(_real_unpack(best_x),best_fc,best_r,ok,status,done,0,0,0,0,
+                         line_evals,0,0.,0.,None,None,None,updates,0)
+
+
+def correct(target: Target, y0: Any, args: argparse.Namespace, known: Sequence[np.ndarray],
+            epochs: int, deadline: Optional[float], cached: Optional[CachedStart]=None) -> CorrectResult:
+    """Backend-aware 360 portfolio with deterministic, dependency-free rescue."""
+    start=np.asarray(y0,np.complex128).copy()
+    long_call=epochs>=args.broyden_rescue_min_epochs
+    is_expression=isinstance(target.oracle,ExpressionOracle)
+    is_feature=isinstance(target.oracle,KostlanOracle) and target.oracle.feature_mode
+    is_lazy_gp=isinstance(target.oracle,ExactKSGPOracle)
+    is_coupled=is_expression and any(
+        len({node.id for node in ast.walk(expr.tree) if isinstance(node,ast.Name) and node.id in target.oracle.names})>1
+        for expr in target.oracle.expressions
+    )
+
+    if is_expression and norm(start)<=1e-14 and args.residual_escape:
+        escaped=_residual_chain_escape(target,start,args,deadline)
+        if escaped.ok: return escaped
+        if escaped.residual<norm(target.eval(start)): start=escaped.y.copy()
+
+    if (is_feature or is_lazy_gp) and long_call and args.broyden_rescue:
+        broy=_broyden_rescue(target,start,args,deadline)
+        if broy.ok: return broy
+        finite=_finite_slope_correct(target,np.asarray(y0,np.complex128),args,known,epochs,deadline,cached)
+        winner=finite if finite.residual<broy.residual else broy
+        return add_results(broy,finite,winner.y,winner.f,winner.residual,winner.status)
+
+    finite_epochs=min(epochs,args.coupled_finite_epochs) if is_coupled and long_call else epochs
+    finite=_finite_slope_correct(target,start,args,known,finite_epochs,deadline,cached if np.array_equal(start,np.asarray(y0)) else None)
+    if finite.ok or not (long_call and args.broyden_rescue and is_expression): return finite
+    broy=_broyden_rescue(target,np.asarray(y0,np.complex128),args,deadline)
+    winner=broy if broy.residual<finite.residual else finite
+    combined=add_results(finite,broy,winner.y,winner.f,winner.residual,winner.status)
+    if combined.ok or finite_epochs>=epochs: return combined
+    tail=_finite_slope_correct(target,finite.y,args,known,epochs-finite_epochs,deadline)
+    winner=tail if tail.residual<combined.residual else combined
+    return add_results(combined,tail,winner.y,winner.f,winner.residual,winner.status)
+
 def add_results(base: CorrectResult, loc: CorrectResult, y: np.ndarray, f: np.ndarray,
                 residual: float, status: str) -> CorrectResult:
     return CorrectResult(y, f, residual, base.ok or loc.ok, status,
@@ -740,7 +903,9 @@ def add_results(base: CorrectResult, loc: CorrectResult, y: np.ndarray, f: np.nd
         max(base.max_transport_correction, loc.max_transport_correction),
         loc.smin if loc.smin is not None else base.smin,
         loc.smax if loc.smax is not None else base.smax,
-        loc.cond if loc.cond is not None else base.cond)
+        loc.cond if loc.cond is not None else base.cond,
+        base.broyden_steps+loc.broyden_steps,
+        base.escape_steps+loc.escape_steps)
 
 
 def irp_rescue(base: Target, result: CorrectResult, args: argparse.Namespace,
@@ -987,6 +1152,7 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
             "validation_error":validation_error,"epochs":loc.epochs,"finite_slopes":loc.slopes,
             "transported_finite_slope_steps":loc.transported_steps,
             "probe_evals":loc.probe_evals,"slope_path_evals":loc.slope_evals,"line_evals":loc.line_evals,
+            "broyden_rescue_steps":loc.broyden_steps,"residual_escape_steps":loc.escape_steps,
             "parabolic_evals":loc.parabolic_evals,"max_telescope_defect":loc.max_telescope_defect,
             "max_transport_correction":loc.max_transport_correction,
             "oracle_samples":oracle.eval_count-before,"conditioning":condmeta}
@@ -1004,12 +1170,12 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
     for root in roots:
         rr=dict(root); rr["z"]=[[float(x.real),float(x.imag)] for x in rr.pop("z_complex")]; encoded.append(rr)
     gp=isinstance(oracle,ExactKSGPOracle); feature=isinstance(oracle,KostlanOracle) and oracle.feature_mode
-    return {"script":Path(__file__).name,"version":339,"standalone":True,"case":f"{n},{d}","n":n,"degree":d,
-      "method":{"family":"pure-pandrosion-origin-pilot-finite-transport","derivatives":False,"jacobian":False,"newton":False,
-        "broyden":False,"levenberg_marquardt":False,
+    return {"script":Path(__file__).name,"version":360,"standalone":True,"case":f"{n},{d}","n":n,"degree":d,
+      "method":{"family":"pandrosion-finite-transport-with-residual-chain-and-broyden-rescue","derivatives":False,"jacobian":False,"newton":False,
+        "broyden":True,"levenberg_marquardt":False,"scipy":False,
         "identity":"F(b)-F(a)=Q(a,b)(b-a) by coordinate telescoping",
         "transport":"one-column finite closure preserves F(b)-F(a)=Q(a,b)(b-a); bounded then fully rebuilt",
-        "irp_scope":"disabled; no rescue/fallback solver path"},
+        "irp_scope":"optional chart rescue; backend-aware residual/Broyden rescue enabled"},
       "oracle":{"kind":oracle.kind,"seed":oracle.seed,"samples":oracle.eval_count,"seconds":oracle.seconds,
         "residual_mode":"raw" if isinstance(oracle,ExpressionOracle) else "root-equivalent-degree-normalized",
         "validation_mode":"raw-residual" if isinstance(oracle,ExpressionOracle) else "normalized-gp-residual" if gp else "scale-invariant-backward-error",
@@ -1024,7 +1190,9 @@ def run_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]:
         "gp_reproducibility_scope":"exact in law for this adaptive query sequence; query order selects the realization" if gp else None},
       "parameters":{"count":args.count,"pool":args.pool,"epochs":args.epochs,"accept":args.accept,
         "ks_backend":args.ks_backend,"probes":args.probes,"probe_top":args.probe_top,
-        "deflation_alpha":args.deflation_alpha,"irp":args.irp,"swarm":args.swarm},
+        "deflation_alpha":args.deflation_alpha,"irp":args.irp,"swarm":args.swarm,
+        "residual_escape":args.residual_escape,"broyden_rescue":args.broyden_rescue,
+        "broyden_rescue_epochs":args.broyden_rescue_epochs},
       "portfolio":{"small_chart_first":True,"screened_start":True,"start_meta":start_meta,"pilot_meta":pilot_meta,"origin_fallback":args.origin_fallback,"origin_after":args.origin_after},"swarm":swarm_meta,"roots":encoded,"trials":trials if args.verbose_trials else trials[:args.keep_trials],
       "summary":{"requested":args.count,"unique":len(roots),"success":len(roots)>=args.count,
         "trials":len(trials),"duplicates":duplicates,"failures":failures,
@@ -1053,7 +1221,7 @@ def run_monomial_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]
     root={"id":0,"trial":0,"z":[[float(u),0.]],"residual":raw,"validation_error":validation,
           "realness":0.,"smin":None,"smax":None,"cond":None,"near_multiple":False,"singular":False,
           "mode":"article-001-positive-real-irp"}
-    return {"script":Path(__file__).name,"version":339,"standalone":True,"case":f"1,{p}","n":1,"degree":p,
+    return {"script":Path(__file__).name,"version":360,"standalone":True,"case":f"1,{p}","n":1,"degree":p,
       "method":{"family":"article-001-exact-monomial-irp","derivatives":False,"jacobian":False,"newton":False,
         "broyden":False,"levenberg_marquardt":False,"equation":"article 001, equation (22)"},
       "oracle":{"kind":"monomial-exact-article-001","target":args.target,"samples":args.monomial_layers,
@@ -1069,7 +1237,7 @@ def run_monomial_case(args: argparse.Namespace, case_raw: str) -> dict[str, Any]
 # ---------- CLI and regressions ---------------------------------------------
 
 def parser() -> argparse.ArgumentParser:
-    p=argparse.ArgumentParser(description="Pandrosion 359 lazy-diagnostics pure finite-slope engine")
+    p=argparse.ArgumentParser(description="Pandrosion 360 failure-aware finite-slope engine")
     p.add_argument("--cases",default="2,4"); p.add_argument("--seed-index",type=int,default=0)
     p.add_argument("--system-source",choices=["ks","kostlan","poly","polynomial","monomial"],default="ks")
     p.add_argument("--ks-backend",choices=["auto","dense","gp","feature","gaussian"],default="auto")
@@ -1130,9 +1298,17 @@ def parser() -> argparse.ArgumentParser:
     p.add_argument("--fast-rebuild-after",type=int,default=1)
     p.add_argument("--fast-max-rebuilds",type=int,default=20)
     p.add_argument("--fast-refresh",type=int,default=12)
+    p.add_argument("--residual-escape",action="store_true",default=True)
+    p.add_argument("--no-residual-escape",dest="residual_escape",action="store_false")
+    p.add_argument("--residual-escape-steps",type=int,default=96)
+    p.add_argument("--broyden-rescue",action="store_true",default=True)
+    p.add_argument("--no-broyden-rescue",dest="broyden_rescue",action="store_false")
+    p.add_argument("--broyden-rescue-epochs",type=int,default=128)
+    p.add_argument("--broyden-rescue-min-epochs",type=int,default=12)
+    p.add_argument("--coupled-finite-epochs",type=int,default=24)
     p.add_argument("--diagnostic-svd",action="store_true",default=False,help="compute singular-value diagnostics on every rebuilt slope")
     p.add_argument("--verbose-trials",action="store_true"); p.add_argument("--self-test",action="store_true")
-    p.add_argument("--out"); p.add_argument("--outdir",default="/tmp/359_pandrosion")
+    p.add_argument("--out"); p.add_argument("--outdir",default="/tmp/360_pandrosion")
     return p
 
 
@@ -1149,6 +1325,7 @@ def validate(args: argparse.Namespace) -> None:
     if args.probe_scale<=0 or args.probe_cond_weight<0 or args.equal_value_weight<0: raise ValueError("invalid probe controls")
     if args.transport_steps<0 or not 0<args.transport_ratio<=1 or args.transport_trust_radius<=0 or args.transport_closure_limit<=0: raise ValueError("invalid finite-slope transport controls")
     if args.slope_retries<0 or not 0<args.slope_retry_factor<1: raise ValueError("invalid finite-slope retry controls")
+    if args.residual_escape_steps<=0 or args.broyden_rescue_epochs<=0 or args.broyden_rescue_min_epochs<=0 or args.coupled_finite_epochs<=0: raise ValueError("invalid 360 rescue controls")
     if args.target<=0 or args.monomial_start<=0 or args.monomial_layers<=0 or args.palette_q<=1 or args.palette_k<=0: raise ValueError("invalid monomial IRP controls")
 
 
@@ -1194,10 +1371,11 @@ def self_test(args: argparse.Namespace) -> dict[str,Any]:
     checks.append({"name":"gp-cap-guard","passed":cap_ok})
     a=argparse.Namespace(**vars(args)); a.system_source="ks"; a.ks_backend="gp"; a.seed_index=0
     a.count=1; a.pool=4; a.epochs=40; a.swarm=True; a.swarm_size=4; a.swarm_keep=4; a.gp_max_points=3000
-    r=run_case(a,"20,20"); checks.append({"name":"pure-gp-20x20","passed":r["summary"]["success"],"result":r})
+    r=run_case(a,"20,20"); checks.append({"name":"gp-20x20","passed":r["summary"]["success"],"result":r})
     flags=r["method"]; transported=sum(t.get("transported_finite_slope_steps",0) for t in r["trials"])
-    checks.append({"name":"pure-transport-audit","passed":transported>0 and not any(flags[k] for k in ("derivatives","jacobian","newton","broyden","levenberg_marquardt")),
-        "transported_steps":transported,"method":flags})
+    rescued=sum(t.get("broyden_rescue_steps",0) for t in r["trials"])
+    checks.append({"name":"360-method-audit","passed":rescued>0 and flags["broyden"] and not any(flags[k] for k in ("derivatives","jacobian","newton","levenberg_marquardt","scipy")),
+        "transported_steps":transported,"broyden_rescue_steps":rescued,"method":flags})
     return {"script":Path(__file__).name,"self_test":True,"passed":all(c["passed"] for c in checks),"checks":checks}
 
 
@@ -1207,13 +1385,13 @@ def main(argv:Optional[Sequence[str]]=None)->int:
     else:
         cases=[x.strip() for x in str(args.cases).replace("|",";").split(";") if x.strip()]
         results=[run_case(args,c) for c in cases]; final=results[0] if len(results)==1 else {"script":Path(__file__).name,"cases":results}
-    out=Path(args.out) if args.out else Path(args.outdir)/("self_test.json" if args.self_test else f"356_{cases[0].replace(',','x')}.json")
+    out=Path(args.out) if args.out else Path(args.outdir)/("self_test.json" if args.self_test else f"360_{cases[0].replace(',','x')}.json")
     out.parent.mkdir(parents=True,exist_ok=True); out.write_text(json.dumps(strict_json(final),indent=2,allow_nan=False),encoding="utf-8")
     if args.self_test:
-        print(f"331 self-test: {'PASS' if final['passed'] else 'FAIL'} ({sum(int(c['passed']) for c in final['checks'])}/{len(final['checks'])})")
+        print(f"360 self-test: {'PASS' if final['passed'] else 'FAIL'} ({sum(int(c['passed']) for c in final['checks'])}/{len(final['checks'])})")
         print(f"out={out}"); return 0 if final["passed"] else 1
     for result in (results if len(cases)>1 else [final]):
-        s=result["summary"]; print(f"348 case={result['case']} oracle={result['oracle']['kind']} roots={s['unique']}/{s['requested']} trials={s['trials']} samples={s['oracle_samples']} seconds={s['seconds']:.3f}")
+        s=result["summary"]; print(f"360 case={result['case']} oracle={result['oracle']['kind']} roots={s['unique']}/{s['requested']} trials={s['trials']} samples={s['oracle_samples']} seconds={s['seconds']:.3f}")
     print(f"out={out}"); return 0
 
 

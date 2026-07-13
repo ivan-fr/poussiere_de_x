@@ -65,7 +65,9 @@ The active standalone engines are in [`flow/`](flow/):
 - `300` to `304`: atlas, geodesic, basin, universal-atlas, and full-cubic
   Halley NumPy engines;
 - `306`: universal atlas plus hypercube inverse-jet correction;
-- `307`: full Schwarzschild Pandrosion geodesic solver.
+- `307`: full Schwarzschild Pandrosion geodesic solver;
+- `359`, `360`: direct finite-slope solver and failure-aware successor, with
+  residual escape and a standalone NumPy inverse-Broyden rescue.
 
 Example: run the 304 autonomous universal-atlas engine:
 
