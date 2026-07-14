@@ -66,8 +66,26 @@ The active standalone engines are in [`flow/`](flow/):
   Halley NumPy engines;
 - `306`: universal atlas plus hypercube inverse-jet correction;
 - `307`: full Schwarzschild Pandrosion geodesic solver;
-- `359`, `360`: direct finite-slope solver and failure-aware successor, with
-  residual escape and a standalone NumPy inverse-Broyden rescue.
+- `359`, `360`, `361`: direct finite-slope solver and failure-aware successors;
+- `362`: pure Pandrosion corrector under the hard `40*n+100` sample cap.  It
+  rebuilds exact coordinate-telescopic slopes in frozen root-equivalent charts
+  and uses five dyadic steps from the same model—without homotopy, fallback,
+  restart, quasi-Newton update, derivatives, or SciPy.
+
+Run the 362 audit:
+
+```bash
+python3 flow/362_pandrosion_direct_solve_standalone.py --self-test
+```
+
+The paired 1,200-system regression and 1,200-system unseen-seed holdout are
+reproducible with:
+
+```bash
+python3 benchmarks/benchmark_362_vs_360_scipy_root_1200.py
+python3 benchmarks/benchmark_362_vs_360_scipy_root_1200.py --holdout \
+  --outdir benchmarks/362_vs_360_scipy_root_1200_holdout
+```
 
 Example: run the 304 autonomous universal-atlas engine:
 
