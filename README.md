@@ -82,10 +82,22 @@ The paired 1,200-system regression and 1,200-system unseen-seed holdout are
 reproducible with:
 
 ```bash
-python3 benchmarks/benchmark_362_vs_360_scipy_root_1200.py
-python3 benchmarks/benchmark_362_vs_360_scipy_root_1200.py --holdout \
-  --outdir benchmarks/362_vs_360_scipy_root_1200_holdout
+python3 benchmarks/benchmark_362_vs_scipy_root_1200.py
+python3 benchmarks/benchmark_362_vs_scipy_root_1200.py --holdout \
+  --outdir benchmarks/362_vs_scipy_root_1200_holdout
 ```
+
+The sealed blind/adversarial campaign compares 362 with SciPy `root` methods
+`hybr`, `lm`, `broyden1`, `krylov`, and `df-sane` on 5,400 systems spanning 18
+families.  It also runs 7 repeated timings on 10 preregistered cases per family:
+
+```bash
+python3 benchmarks/benchmark_362_blind_adversarial_scipy_root.py --create-manifest
+python3 benchmarks/benchmark_362_blind_adversarial_scipy_root.py
+```
+
+Its generated report is
+`benchmarks/362_blind_adversarial_scipy_root/report.md`.
 
 Example: run the 304 autonomous universal-atlas engine:
 
